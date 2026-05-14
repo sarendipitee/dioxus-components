@@ -5,6 +5,7 @@ const BASE_URL = "http://127.0.0.1:8080";
 async function gotoSidebarBlock(page: Page) {
   await page.goto(`${BASE_URL}/component/block/?name=sidebar&variant=main&`, {
     timeout: 20 * 60 * 1000,
+    waitUntil: 'load'
   });
 
   await expect(page.locator('[data-slot="sidebar-wrapper"]')).toBeVisible();
@@ -13,6 +14,7 @@ async function gotoSidebarBlock(page: Page) {
 test("sidebar: preview page renders block", async ({ page }) => {
   await page.goto(`${BASE_URL}/component/?name=sidebar&`, {
     timeout: 20 * 60 * 1000,
+    waitUntil: 'load'
   });
   const iframe = page.locator("iframe").first();
   await expect(iframe).toBeVisible();

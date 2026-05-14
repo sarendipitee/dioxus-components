@@ -15,6 +15,7 @@ const list = (page: Page) =>
 
 test("opens from the focused input with the keyboard", async ({ page }) => {
     await page.goto(URL, { timeout: 20 * 60 * 1000 });
+    await page.waitForLoadState('networkidle');
 
     const trigger = input(page);
     await expect(trigger).toBeVisible();
@@ -32,6 +33,7 @@ test("opens from the focused input with the keyboard", async ({ page }) => {
 
 test("filters and selects with the keyboard", async ({ page }) => {
     await page.goto(URL, { timeout: 20 * 60 * 1000 });
+    await page.waitForLoadState('networkidle');
 
     const trigger = input(page);
     await trigger.click();
@@ -58,6 +60,7 @@ test("filters and selects with the keyboard", async ({ page }) => {
 
 test("shows an empty state when no options match", async ({ page }) => {
     await page.goto(URL, { timeout: 20 * 60 * 1000 });
+    await page.waitForLoadState('networkidle');
 
     const trigger = input(page);
     await trigger.click();
@@ -69,6 +72,7 @@ test("shows an empty state when no options match", async ({ page }) => {
 
 test("arrow keys stay on visible filtered options", async ({ page }) => {
     await page.goto(URL, { timeout: 20 * 60 * 1000 });
+    await page.waitForLoadState('networkidle');
 
     const trigger = input(page);
     await trigger.click();
@@ -94,6 +98,7 @@ test("arrow keys stay on visible filtered options", async ({ page }) => {
 
 test("keeps filtered options in source order", async ({ page }) => {
     await page.goto(URL, { timeout: 20 * 60 * 1000 });
+    await page.waitForLoadState('networkidle');
 
     const trigger = input(page);
     await trigger.click();
@@ -125,6 +130,7 @@ test("keeps filtered options in source order", async ({ page }) => {
 
 test("keeps filtered options during keyboard close animation", async ({ page }) => {
     await page.goto(URL, { timeout: 20 * 60 * 1000 });
+    await page.waitForLoadState('networkidle');
 
     const trigger = input(page);
     await trigger.click();
@@ -145,6 +151,7 @@ test("keeps filtered options during keyboard close animation", async ({ page }) 
 
 test("clicking an option commits and closes", async ({ page }) => {
     await page.goto(URL, { timeout: 20 * 60 * 1000 });
+    await page.waitForLoadState('networkidle');
 
     const trigger = input(page);
     await trigger.click();
@@ -156,6 +163,7 @@ test("clicking an option commits and closes", async ({ page }) => {
 
 test("tabbing away closes the list", async ({ page }) => {
     await page.goto(URL, { timeout: 20 * 60 * 1000 });
+    await page.waitForLoadState('networkidle');
 
     const trigger = input(page);
     await trigger.click();
@@ -167,6 +175,7 @@ test("tabbing away closes the list", async ({ page }) => {
 
 test("disabled options are exposed but skipped by keyboard selection", async ({ page }) => {
     await page.goto(variantUrl("disabled"), { timeout: 20 * 60 * 1000 });
+    await page.waitForLoadState('networkidle');
 
     await expect(page.getByRole("combobox", { name: "Disabled combobox" })).toBeDisabled();
 
@@ -195,6 +204,7 @@ test("disabled options are exposed but skipped by keyboard selection", async ({ 
 
 test("controlled value and controlled open stay in sync", async ({ page }) => {
     await page.goto(variantUrl("controlled"), { timeout: 20 * 60 * 1000 });
+    await page.waitForLoadState('networkidle');
 
     const trigger = page.getByRole("combobox", { name: "Controlled framework" });
     const storedValue = page.getByTestId("combobox-controlled-value");
@@ -217,6 +227,7 @@ test("controlled value and controlled open stay in sync", async ({ page }) => {
 
 test("dynamic option removal updates filtering and keyboard selection", async ({ page }) => {
     await page.goto(variantUrl("dynamic"), { timeout: 20 * 60 * 1000 });
+    await page.waitForLoadState('networkidle');
 
     const trigger = page.getByRole("combobox", { name: "Dynamic framework" });
     await trigger.click();
@@ -258,6 +269,7 @@ test("touch selection commits and closes", async ({ browser, browserName }) => {
     try {
         const page = await context.newPage();
         await page.goto(URL, { timeout: 20 * 60 * 1000 });
+        await page.waitForLoadState('networkidle');
 
         const trigger = input(page);
         await trigger.tap();

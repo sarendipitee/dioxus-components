@@ -4,6 +4,8 @@ test("test", async ({ page }) => {
   await page.goto("http://127.0.0.1:8080/component/?name=calendar&", {
     timeout: 20 * 60 * 1000,
   }); // Increase timeout to 20 minutes
+  await page.waitForLoadState('networkidle');
+
   const calendar = page.locator("#component-preview-frame").first();
   const prevButton = calendar.getByRole("button").first();
   const nextButton = calendar.getByRole("button").nth(1);

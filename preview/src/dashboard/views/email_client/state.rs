@@ -10,22 +10,22 @@ use super::filters::{message_matches_filters, message_matches_folder};
 
 #[derive(Clone, PartialEq, Store)]
 pub(super) struct EmailClientState {
-    pub(super) messages: BTreeMap<String, MessageState>,
-    pub(super) message_order: Vec<String>,
-    pub(super) active_folder: FolderId,
-    pub(super) active_tab: TabId,
-    pub(super) search_query: String,
-    pub(super) selected_tags: Vec<MessageTag>,
-    pub(super) selected_id: String,
-    pub(super) read_open: bool,
-    pub(super) compose_open: bool,
-    pub(super) compose_to: String,
-    pub(super) compose_subject: String,
-    pub(super) compose_body: String,
+    pub messages: BTreeMap<String, MessageState>,
+    pub message_order: Vec<String>,
+    pub active_folder: FolderId,
+    pub active_tab: TabId,
+    pub search_query: String,
+    pub selected_tags: Vec<MessageTag>,
+    pub selected_id: String,
+    pub read_open: bool,
+    pub compose_open: bool,
+    pub compose_to: String,
+    pub compose_subject: String,
+    pub compose_body: String,
 }
 
 impl EmailClientState {
-    pub(super) fn new() -> Self {
+    pub fn new() -> Self {
         let seeded = seed_message_states();
         let message_order = seeded.iter().map(|message| message.uid.clone()).collect();
         let messages = seeded
@@ -50,7 +50,7 @@ impl EmailClientState {
     }
 }
 
-#[store(pub(crate))]
+#[store(pub)]
 impl<Lens> Store<EmailClientState, Lens> {
     fn active_folder_label(&self) -> &'static str {
         let active_folder = self.active_folder().cloned();

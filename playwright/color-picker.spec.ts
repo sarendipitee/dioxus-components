@@ -5,6 +5,8 @@ const PAGE_TIMEOUT = 20 * 60 * 1000;
 
 async function openPicker(page: Page) {
   await page.goto(PAGE_URL, { timeout: PAGE_TIMEOUT });
+  await page.waitForLoadState('networkidle');
+
   // The color picker button's aria-label contains the current hex.
   const button = page.getByRole('button', { name: /Color picker/i }).first();
   await expect(button).toBeVisible();

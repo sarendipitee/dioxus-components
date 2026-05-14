@@ -4,9 +4,10 @@ members = ["primitives", "preview", "test-harness", "dioxus-attributes"]
 
 [workspace.dependencies]
 dioxus-primitives = { path = "primitives" }
-
-dioxus = "0.7.0"
 tracing = { version = "0.1", features = ["std"] }
+
+dioxus = "0.7.8"
+dioxus-rsx = "0.7.8"
 
 [profile.release]
 opt-level = "z"
@@ -15,3 +16,10 @@ lto = true
 codegen-units = 1
 strip = true
 incremental = false
+
+[profile.dev]
+debug = 0
+
+[profile.dev.build-override]
+opt-level = 3
+codegen-units = 1

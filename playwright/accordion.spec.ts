@@ -4,7 +4,7 @@ const URL = "http://127.0.0.1:8080/component/?name=accordion&";
 const LOAD_TIMEOUT = 20 * 60 * 1000;
 
 async function loadAccordion(page: Page) {
-  await page.goto(URL, { timeout: LOAD_TIMEOUT });
+  await page.goto(URL, { timeout: LOAD_TIMEOUT, waitUntil: 'networkidle' });
   const accordionItems = page.locator("[data-open]").filter({ has: page.getByRole("button") });
   await expect(accordionItems.first()).toHaveAttribute("data-disabled", "false", {
     timeout: 30000,

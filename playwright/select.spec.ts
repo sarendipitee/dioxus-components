@@ -9,6 +9,7 @@ const multiSelectTrigger = (page: Page) =>
 test("test", async ({ page }) => {
     await page.goto("http://127.0.0.1:8080/component/?name=select&", {
         timeout: 20 * 60 * 1000,
+        waitUntil: 'networkidle'
     }); // Increase timeout to 20 minutes
     // Find Select a fruit...
     let selectTrigger = singleSelectTrigger(page);

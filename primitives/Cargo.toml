@@ -22,7 +22,7 @@ serde = { version = "1.0", features = ["derive"] }
 palette = "0.7.6"
 
 [build-dependencies]
-lazy-js-bundle = "0.6.2"
+lazy-js-bundle = "0.7.9"
 
 [dev-dependencies]
 dioxus-ssr = "0.7.0"

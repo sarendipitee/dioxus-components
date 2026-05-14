@@ -1,5 +1,55 @@
 use super::{ComponentDemoData, ComponentType, ComponentVariantDemoData, HighlightedCode};
 
+#[derive(Copy, Clone, PartialEq, Eq)]
+pub enum ComponentCategory {
+    Forms,
+    Navigation,
+    Overlays,
+    Feedback,
+    Disclosure,
+    DataDisplay,
+}
+
+impl ComponentCategory {
+    pub const ALL: &'static [Self] = &[
+        Self::Forms,
+        Self::Navigation,
+        Self::Overlays,
+        Self::Feedback,
+        Self::Disclosure,
+        Self::DataDisplay,
+    ];
+
+    pub const fn label(self) -> &'static str {
+        match self {
+            Self::Forms => "Forms",
+            Self::Navigation => "Navigation",
+            Self::Overlays => "Overlays",
+            Self::Feedback => "Feedback",
+            Self::Disclosure => "Disclosure",
+            Self::DataDisplay => "Data display",
+        }
+    }
+}
+
+pub fn category_of(name: &str) -> ComponentCategory {
+    match name {
+        "button" | "input" | "textarea" | "label" | "checkbox" | "switch" | "radio_group"
+        | "toggle" | "toggle_group" | "select" | "slider" | "calendar" | "date_picker"
+        | "color_picker" => ComponentCategory::Forms,
+        "navbar" | "sidebar" | "tabs" | "pagination" | "menubar" | "toolbar" | "context_menu"
+        | "dropdown_menu" => ComponentCategory::Navigation,
+        "dialog" | "alert_dialog" | "sheet" | "popover" | "tooltip" | "hover_card" => {
+            ComponentCategory::Overlays
+        }
+        "toast" | "progress" | "skeleton" | "badge" => ComponentCategory::Feedback,
+        "accordion" | "collapsible" => ComponentCategory::Disclosure,
+        "avatar" | "card" | "separator" | "aspect_ratio" | "item" | "drag_and_drop_list"
+        | "virtual_list" | "scroll_area" => ComponentCategory::DataDisplay,
+        _ => ComponentCategory::DataDisplay,
+    }
+}
+
 macro_rules! examples {
     ($($name:ident $(($kind:ident))? $([$($variant:ident),*])?),* $(,)?) => {
         $(
@@ -33,6 +83,12 @@ macro_rules! examples {
         ComponentDemoData {
             name: stringify!($name),
             r#type: ComponentType::Normal,
+            description: include_str!(concat!(
+                env!("OUT_DIR"),
+                "/",
+                stringify!($name),
+                "/description.txt"
+            )),
             docs: include_str!(concat!(env!("OUT_DIR"), "/", stringify!($name), "/docs.html")),
             component: HighlightedCode {
                 source: dioxus_code::code!(concat!("/src/components/", stringify!($name), "/component.rs")),
@@ -70,6 +126,12 @@ macro_rules! examples {
         ComponentDemoData {
             name: stringify!($name),
             r#type: ComponentType::Block,
+            description: include_str!(concat!(
+                env!("OUT_DIR"),
+                "/",
+                stringify!($name),
+                "/description.txt"
+            )),
             docs: include_str!(concat!(env!("OUT_DIR"), "/", stringify!($name), "/docs.html")),
             component: HighlightedCode {
                 source: dioxus_code::code!(concat!("/src/components/", stringify!($name), "/component.rs")),
@@ -115,12 +177,12 @@ examples!(
     badge,
     button[size, icon],
     calendar[simple, internationalized, range, multi_month, unavailable_dates],
+    card,
     checkbox,
     collapsible,
     color_picker,
     combobox[controlled, disabled, dynamic],
     context_menu,
-    card,
     date_picker[internationalized, range, multi_month, unavailable_dates],
     dialog,
     drag_and_drop_list[removable],
@@ -135,7 +197,6 @@ examples!(
     popover,
     progress,
     radio_group,
-    virtual_list[random_heights],
     scroll_area,
     select[multi],
     separator,
@@ -147,8 +208,9 @@ examples!(
     tabs,
     textarea[outline, fade, ghost],
     toast,
-    toggle_group,
     toggle,
+    toggle_group,
     toolbar,
     tooltip,
+    virtual_list[random_heights],
 );
