@@ -1,6 +1,6 @@
-use super::super::component::*;
-use crate::components::avatar::{ImageAvatar, AvatarImageSize};
-use crate::components::button::{Button, ButtonVariant};
+use dioxus_components::item::*;
+use dioxus_components::avatar::{ImageAvatar, AvatarImageSize};
+use dioxus_components::button::{Button, ButtonVariant};
 use dioxus::prelude::*;
 use dioxus_icons::lucide::Plus;
 

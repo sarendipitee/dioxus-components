@@ -1,4 +1,4 @@
-use super::super::component::*;
+use dioxus_components::drag_and_drop_list::*;
 use dioxus::prelude::*;
 
 #[component]

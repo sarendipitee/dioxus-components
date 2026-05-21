@@ -1,4 +1,4 @@
-use super::super::component::*;
+use dioxus_components::time_picker::*;
 use dioxus::prelude::*;
 use dioxus_primitives::time_picker::{
     TimePickerFormat, TimePickerSteps, TimePickerType, TimePickerValue,

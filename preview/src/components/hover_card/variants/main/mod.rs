@@ -1,4 +1,4 @@
-use super::super::component::*;
+use dioxus_components::hover_card::*;
 use dioxus::prelude::*;
 use dioxus_primitives::ContentSide;
 

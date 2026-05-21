@@ -1,24 +1,23 @@
 use dioxus::prelude::*;
-use dioxus_icons::lucide::{Check, ChevronDown};
-use dioxus_primitives::select as primitive_select;
+use dioxus_icons::lucide::ChevronDown;
 
 use crate::components::avatar::{AvatarImageSize, AvatarShape, ImageAvatar};
 use crate::components::button::{Button, ButtonVariant};
 use crate::components::item::{
     Item, ItemActions, ItemContent, ItemDescription, ItemMedia, ItemMediaVariant, ItemTitle,
 };
-use crate::components::tabs::component::{TabList, TabTrigger, Tabs};
+use crate::components::select::{
+    SelectGroup, SelectGroupLabel, SelectList, SelectMulti, SelectOption, SelectTrigger,
+};
 use crate::components::virtual_list::VirtualList;
 use crate::dashboard::common::{
     lookup_message, IconKind, LucideIcon, MessageState, MessageStateStoreExt, MessageTag, TabId,
     LOREM_IPSUM, TABS,
 };
+use dioxus_components::tabs::{TabList, TabTrigger, Tabs};
 
 use super::avatars::avatar_profile_for_key;
 use super::state::{EmailClientState, EmailClientStateStoreExt, EmailClientStateStoreImplExt};
-
-#[css_module("/src/components/select/style.css")]
-struct SelectStyles;
 
 #[derive(Clone, PartialEq)]
 pub(super) enum ListRow {
@@ -63,7 +62,10 @@ pub(super) fn ListPane(
                     class: "ec-mail-tabs",
                     default_value: TabId::All.as_str().to_string(),
                     horizontal: true,
-                    on_value_change: move |v: String| {
+                    on_value_change: move |v: Option<String>| {
+                        let Some(v) = v else {
+                            return;
+                        };
                         if let Some(tab) = TabId::from_str(&v) {
                             state.set_active_tab(tab);
                         }
@@ -83,15 +85,13 @@ pub(super) fn ListPane(
                         }
                     }
                 }
-                primitive_select::SelectMulti::<MessageTag> {
-                    class: SelectStyles::dx_select,
-                    values: Some(tags.clone()),
+                SelectMulti::<MessageTag> {                    values: Some(tags.clone()),
                     default_values: vec![],
                     on_values_change: move |values| {
                         state.set_selected_tags(values);
                     },
-                    primitive_select::SelectTrigger {
-                        class: format!("{} ec-filter-trigger", SelectStyles::dx_select_trigger),
+                    SelectTrigger {
+                        class: "ec-filter-trigger",
                         aria_label: "Filter by tag",
                         LucideIcon { kind: IconKind::Filter }
                         if !tags.is_empty() {
@@ -103,26 +103,17 @@ pub(super) fn ListPane(
                             stroke: "var(--primary-color-7)",
                         }
                     }
-                    primitive_select::SelectList {
-                        class: format!("{} ec-filter-list", SelectStyles::dx_select_list),
+                    SelectList {
+                        class: "ec-filter-list",
                         aria_label: "Filter by tag",
-                        primitive_select::SelectGroup {
-                            primitive_select::SelectGroupLabel { class: SelectStyles::dx_select_group_label, "Tags" }
+                        SelectGroup {
+                            SelectGroupLabel { "Tags" }
                             for (index, tag) in MessageTag::ALL.iter().enumerate() {
-                                primitive_select::SelectOption::<MessageTag> {
-                                    class: SelectStyles::dx_select_option,
-                                    key: "{tag.label()}",
+                                SelectOption::<MessageTag> {                                    key: "{tag.label()}",
                                     index,
                                     value: *tag,
                                     text_value: "{tag.label()}",
-                                    {tag.label()}
-                                    primitive_select::SelectItemIndicator {
-                                        Check {
-                                            size: "1rem",
-                                            stroke: "var(--secondary-color-5)",
-                                        }
-                                    }
-                                }
+                                    {tag.label()}                                }
                             }
                         }
                     }

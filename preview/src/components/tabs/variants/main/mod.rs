@@ -1,49 +1,83 @@
-use super::super::component::*;
+use crate::components::button::{Button, ButtonSize, ButtonVariant};
+use crate::components::tabs::*;
 use dioxus::prelude::*;
+use dioxus_primitives::tabs::TabsOrientation;
+
+const VARIANT_OPTIONS: &[(TabsVariant, &str)] = &[
+    (TabsVariant::Default, "Default"),
+    (TabsVariant::Outline, "Outline"),
+    (TabsVariant::Pills, "Pills"),
+    (TabsVariant::Ghost, "Ghost"),
+    (TabsVariant::None, "None"),
+];
+
+const ORIENTATION_OPTIONS: &[(TabsOrientation, &str)] = &[
+    (TabsOrientation::Horizontal, "Horizontal"),
+    (TabsOrientation::Vertical, "Vertical"),
+];
 
 #[component]
 pub fn Demo() -> Element {
+    let mut variant = use_signal(|| TabsVariant::Default);
+    let mut orientation = use_signal(|| TabsOrientation::Horizontal);
+    let is_vertical = move || orientation() == TabsOrientation::Vertical;
+
     rsx! {
-        Tabs {
-            default_value: "tab1".to_string(),
-            horizontal: true,
-            max_width: "16rem",
-            TabList {
-                TabTrigger { value: "tab1".to_string(), index: 0usize, "Tab 1" }
-                TabTrigger { value: "tab2".to_string(), index: 1usize, "Tab 2" }
-                TabTrigger { value: "tab3".to_string(), index: 2usize, "Tab 3" }
-            }
-            TabContent { index: 0usize, value: "tab1".to_string(),
+        div { display: "grid", gap: "1rem",
+
+            div { display: "grid", gap: "1rem", margin_bottom: "2rem",
+
+                span { font_weight: "600", "Variant" }
                 div {
-                    width: "100%",
-                    height: "5rem",
                     display: "flex",
+                    flex_wrap: "wrap",
                     align_items: "center",
-                    justify_content: "center",
-                    "Tab 1 Content"
+                    gap: "0.5rem",
+
+                    for (value , label) in VARIANT_OPTIONS {
+                        Button {
+                            key: "variant-{label}",
+                            variant: if variant() == *value { ButtonVariant::Primary } else { ButtonVariant::Outline },
+                            size: ButtonSize::Sm,
+                            onclick: move |_| variant.set(*value),
+                            "{label}"
+                        }
+                    }
+                }
+
+                span { font_weight: "600", "Orientation" }
+                div {
+                    display: "flex",
+                    flex_wrap: "wrap",
+                    align_items: "center",
+                    gap: "0.5rem",
+
+                    for (value , label) in ORIENTATION_OPTIONS {
+                        Button {
+                            key: "orientation-{label}",
+                            variant: if orientation() == *value { ButtonVariant::Primary } else { ButtonVariant::Outline },
+                            size: ButtonSize::Sm,
+                            onclick: move |_| orientation.set(*value),
+                            "{label}"
+                        }
+                    }
                 }
             }
-            TabContent {
-                index: 1usize,
-                value: "tab2".to_string(),
-                div {
-                    width: "100%",
-                    height: "5rem",
-                    display: "flex",
-                    align_items: "center",
-                    justify_content: "center",
-                    "Tab 2 Content"
+
+            Tabs {
+                default_value: "overview",
+                variant: variant(),
+                orientation: Some(orientation()),
+                width: "100%",
+                max_width: if is_vertical() { "48rem" } else { "100%" },
+                TabList { aria_label: "Automatic tabs demo",
+                    TabTrigger { value: "overview", index: 0usize, "Overview" }
+                    TabTrigger { value: "metrics", index: 1usize, "Metrics" }
+                    TabTrigger { value: "files", index: 2usize, "Files" }
                 }
-            }
-            TabContent { index: 2usize, value: "tab3".to_string(),
-                div {
-                    width: "100%",
-                    height: "5rem",
-                    display: "flex",
-                    align_items: "center",
-                    justify_content: "center",
-                    "Tab 3 Content"
-                }
+                TabContent { index: 0usize, value: "overview", "Overview content" }
+                TabContent { index: 1usize, value: "metrics", "Metrics content" }
+                TabContent { index: 2usize, value: "files", "Files content" }
             }
         }
     }

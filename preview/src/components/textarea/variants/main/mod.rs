@@ -1,5 +1,5 @@
-use super::super::component::*;
-use crate::components::label::Label;
+use dioxus_components::textarea::*;
+use dioxus_components::label::Label;
 use dioxus::prelude::*;
 
 #[component]

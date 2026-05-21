@@ -1,4 +1,4 @@
-use super::super::component::*;
+use dioxus_components::virtual_list::*;
 use dioxus::prelude::*;
 
 const INLINE_STYLE: &str = r#".dx-virtual-list-container {

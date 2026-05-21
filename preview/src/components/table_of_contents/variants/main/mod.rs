@@ -1,4 +1,4 @@
-use super::super::component::*;
+use dioxus_components::table_of_contents::*;
 use dioxus::prelude::*;
 use dioxus_primitives::scroll_spy::{ScrollSpyOptions, ScrollSpyScrollHost};
 

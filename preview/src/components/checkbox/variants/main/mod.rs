@@ -1,4 +1,4 @@
-use super::super::component::*;
+use dioxus_components::checkbox::*;
 use dioxus::prelude::*;
 
 #[component]

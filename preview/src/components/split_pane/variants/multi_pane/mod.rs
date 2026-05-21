@@ -1,4 +1,4 @@
-use super::super::component::*;
+use dioxus_components::split_pane::*;
 use dioxus::prelude::*;
 
 #[component]

@@ -1,14 +1,15 @@
-use super::super::component::*;
+use dioxus_components::switch::*;
 use dioxus::prelude::*;
-
-#[css_module("/src/components/switch/style.css")]
-struct Styles;
 
 #[component]
 pub fn Demo() -> Element {
     let mut checked = use_signal(|| false);
     rsx! {
-        div { class: Styles::dx_switch_example,
+        div {
+            display: "flex",
+            align_items: "center",
+            padding: "20px",
+            gap: "15px",
             Switch {
                 checked: checked(),
                 aria_label: "Switch Demo",

@@ -1,5 +1,5 @@
-use super::super::component::*;
-use crate::components::slider::Slider;
+use dioxus_components::split_pane::*;
+use dioxus_components::slider::Slider;
 use dioxus::prelude::*;
 
 #[component]

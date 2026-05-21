@@ -1,6 +1,5 @@
 use dioxus::prelude::*;
-use dioxus_icons::lucide::{Check, ChevronDown};
-use dioxus_primitives::select as primitive_select;
+use dioxus_icons::lucide::ChevronDown;
 use dioxus_primitives::toast::{use_toast, ToastOptions};
 use std::rc::Rc;
 
@@ -8,20 +7,18 @@ use crate::components::avatar::{AvatarImageSize, AvatarShape, ImageAvatar};
 use crate::components::badge::{Badge, BadgeVariant};
 use crate::components::button::{Button, ButtonVariant};
 use crate::components::card::{Card, CardContent, CardDescription, CardHeader, CardTitle};
-use crate::components::textarea::Textarea;
-use crate::components::toolbar::component::{
-    Toolbar, ToolbarButton, ToolbarGroup, ToolbarSeparator,
+use crate::components::select::{
+    SelectGroup, SelectGroupLabel, SelectList, SelectMulti, SelectOption, SelectTrigger,
 };
+use crate::components::textarea::Textarea;
 use crate::dashboard::common::{
     lookup_message, IconKind, LucideIcon, MessageState, MessageStateStoreExt, MessageTag,
     AVATAR_PROFILE_OPTIONS, LOREM_IPSUM,
 };
+use dioxus_components::toolbar::{Toolbar, ToolbarButton, ToolbarGroup, ToolbarSeparator};
 
 use super::avatars::avatar_profile_for_key;
 use super::state::{EmailClientState, EmailClientStateStoreExt, EmailClientStateStoreImplExt};
-
-#[css_module("/src/components/select/style.css")]
-struct SelectStyles;
 
 #[component]
 pub(super) fn ReadPane(
@@ -157,15 +154,13 @@ pub(super) fn ReadPane(
                                         span {
                                             "{selected_static.thread_count} message{(selected_static.thread_count > 1).then(|| \"s\").unwrap_or(\"\")} in this thread"
                                         }
-                                        primitive_select::SelectMulti::<MessageTag> {
-                                            class: SelectStyles::dx_select,
-                                            values: Some(selected_tags.clone()),
+                                        SelectMulti::<MessageTag> {                                            values: Some(selected_tags.clone()),
                                             default_values: selected_tags.clone(),
                                             on_values_change: move |values: Vec<MessageTag>| {
                                                 state.set_message_tags(tag_edit_uid.clone(), values);
                                             },
-                                            primitive_select::SelectTrigger {
-                                                class: format!("{} ec-tag-edit-trigger", SelectStyles::dx_select_trigger),
+                                            SelectTrigger {
+                                                class: "ec-tag-edit-trigger",
                                                 aria_label: "Add tag",
                                                 "+ Tag"
                                                 ChevronDown {
@@ -174,26 +169,17 @@ pub(super) fn ReadPane(
                                                     stroke: "var(--primary-color-7)",
                                                 }
                                             }
-                                            primitive_select::SelectList {
-                                                class: format!("{} ec-filter-list", SelectStyles::dx_select_list),
+                                            SelectList {
+                                                class: "ec-filter-list",
                                                 aria_label: "Edit tags",
-                                                primitive_select::SelectGroup {
-                                                    primitive_select::SelectGroupLabel { class: SelectStyles::dx_select_group_label, "Tags" }
+                                                SelectGroup {
+                                                    SelectGroupLabel { "Tags" }
                                                     for (index, tag) in MessageTag::ALL.iter().enumerate() {
-                                                        primitive_select::SelectOption::<MessageTag> {
-                                                            class: SelectStyles::dx_select_option,
-                                                            key: "{tag.label()}",
+                                                        SelectOption::<MessageTag> {                                                            key: "{tag.label()}",
                                                             index,
                                                             value: *tag,
                                                             text_value: "{tag.label()}",
-                                                            {tag.label()}
-                                                            primitive_select::SelectItemIndicator {
-                                                                Check {
-                                                                    size: "1rem",
-                                                                    stroke: "var(--secondary-color-5)",
-                                                                }
-                                                            }
-                                                        }
+                                                            {tag.label()}                                                        }
                                                     }
                                                 }
                                             }

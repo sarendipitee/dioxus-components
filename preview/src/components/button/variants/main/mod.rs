@@ -1,5 +1,5 @@
 // demo.rs
-use super::super::component::*;
+use dioxus_components::button::*;
 use dioxus::prelude::*;
 
 #[component]

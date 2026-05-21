@@ -12,6 +12,7 @@ fn main() {
         let folder_path = folder.path();
         walk_markdown_dir(&folder_path, &out_dir).unwrap();
     }
+    render_theme_css(&out_dir).unwrap();
 }
 
 fn walk_markdown_dir(dir: &std::path::Path, out_dir: &std::path::Path) -> std::io::Result<()> {
@@ -38,7 +39,51 @@ fn walk_markdown_dir(dir: &std::path::Path, out_dir: &std::path::Path) -> std::i
             let out_file_path = out_folder.join("description.txt");
             std::fs::write(out_file_path, description).unwrap();
         }
+        if file.file_name() == "component.rs" {
+            let source = std::fs::read_to_string(file.path())?;
+            let out_file_path = out_folder.join("component.rs.html");
+            std::fs::write(
+                out_file_path,
+                render_source_html(dioxus_code::Language::Rust, &source),
+            )?;
+        }
+        if file.file_name() == "mod.rs" {
+            let source = std::fs::read_to_string(file.path())?;
+            let out_file_path = out_folder.join("mod.rs.html");
+            std::fs::write(
+                out_file_path,
+                render_source_html(dioxus_code::Language::Rust, &source),
+            )?;
+        }
+        if file.file_name() == "demo.css" {
+            let source = std::fs::read_to_string(file.path())?;
+            let out_file_path = out_folder.join("demo.css.html");
+            std::fs::write(
+                out_file_path,
+                render_source_html(dioxus_code::Language::Css, &source),
+            )?;
+        }
     }
+
+    if dir
+        .parent()
+        .and_then(std::path::Path::file_name)
+        .is_some_and(|name| name == "components")
+    {
+        let crate_style = std::path::Path::new("../dioxus-components/src/components")
+            .join(&*folder_name)
+            .join("style.css");
+        if crate_style.exists() {
+            println!("cargo:rerun-if-changed={}", crate_style.display());
+            let source = std::fs::read_to_string(crate_style)?;
+            let out_file_path = out_folder.join("style.css.html");
+            std::fs::write(
+                out_file_path,
+                render_source_html(dioxus_code::Language::Css, &source),
+            )?;
+        }
+    }
+
     Ok(())
 }
 
@@ -136,6 +181,37 @@ fn render_plain_code_block(source: &str) -> String {
             code { "{source}" }
         }
     })
+}
+
+fn render_source_html(language: dioxus_code::Language, source: &str) -> String {
+    let highlighted: dioxus_code::advanced::HighlightedSource =
+        dioxus_code::SourceCode::new(language, source.trim_end_matches('\n')).into();
+
+    dioxus_ssr::render_element(rsx! {
+        div {
+            class: "dx-preview-code-theme",
+            tabindex: "0",
+            dioxus_code::Code {
+                src: highlighted,
+                theme: dioxus_code::CodeTheme::system(
+                    dioxus_code::Theme::GITHUB_LIGHT,
+                    dioxus_code::Theme::GITHUB_DARK,
+                ),
+            }
+        }
+    })
+}
+
+fn render_theme_css(out_dir: &std::path::Path) -> std::io::Result<()> {
+    let theme_path = std::path::Path::new("../dioxus-components/assets/dx-components-theme.css");
+    println!("cargo:rerun-if-changed={}", theme_path.display());
+    let source = std::fs::read_to_string(theme_path)?;
+    let out_assets = out_dir.join("assets");
+    std::fs::create_dir_all(&out_assets)?;
+    std::fs::write(
+        out_assets.join("dx-components-theme.css.html"),
+        render_source_html(dioxus_code::Language::Css, &source),
+    )
 }
 
 fn language_from_slug(slug: &str) -> Option<dioxus_code::Language> {

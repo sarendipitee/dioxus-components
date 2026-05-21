@@ -1,4 +1,4 @@
-use super::super::component::*;
+use dioxus_components::date_picker::*;
 use dioxus::prelude::*;
 
 use dioxus_primitives::calendar::DateRange;

@@ -1,4 +1,4 @@
-use super::super::component::*;
+use dioxus_components::pagination::*;
 use dioxus::prelude::*;
 
 #[component]

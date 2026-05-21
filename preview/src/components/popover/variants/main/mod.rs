@@ -1,6 +1,6 @@
-use crate::components::button::component::Button;
+use dioxus_components::button::Button;
 
-use super::super::component::*;
+use dioxus_components::popover::*;
 use dioxus::prelude::*;
 
 #[component]

@@ -1,4 +1,4 @@
-use super::super::component::*;
+use dioxus_components::item::*;
 use dioxus::prelude::*;
 
 const TRACKS: &[(&str, &str, &str, &str)] = &[

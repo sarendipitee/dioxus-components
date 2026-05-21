@@ -1,4 +1,4 @@
-use super::super::component::*;
+use dioxus_components::combobox::*;
 use dioxus::prelude::*;
 use dioxus_primitives::combobox::default_combobox_filter;
 

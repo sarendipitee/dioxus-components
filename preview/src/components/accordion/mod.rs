@@ -1,2 +1,1 @@
-mod component;
-pub use component::*;
+pub use dioxus_components::accordion::*;

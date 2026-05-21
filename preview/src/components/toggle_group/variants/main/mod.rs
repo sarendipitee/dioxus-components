@@ -1,4 +1,4 @@
-use super::super::component::*;
+use dioxus_components::toggle_group::*;
 use dioxus::prelude::*;
 
 #[component]

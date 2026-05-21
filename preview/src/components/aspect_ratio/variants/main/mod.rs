@@ -1,14 +1,14 @@
-use super::super::component::AspectRatio;
+use dioxus_components::aspect_ratio::AspectRatio;
 use dioxus::prelude::*;
-
-#[css_module("/src/components/aspect_ratio/style.css")]
-struct Styles;
 
 #[component]
 pub fn Demo() -> Element {
     rsx! {
         div {
-            class: Styles::dx_aspect_ratio_container,
+            overflow: "hidden",
+            box_sizing: "border-box",
+            padding: "1rem",
+            border_radius: ".5rem",
             width: "20rem",
             max_width: "30vw",
             AspectRatio { ratio: 4.0 / 3.0,

@@ -36,7 +36,7 @@ Set `layout: ScheduleLayout::Responsive` to render both desktop and mobile conta
 
 ## Custom Rendering And Header
 
-Use `render_event_body` to replace the default event body. Use `with_default_header: false` to suppress the top-level schedule header, pass `header` to replace it with custom content, or compose with the exported primitive `ScheduleHeader` and `ScheduleViewButton` controls. Per-view config structs expose `with_default_header` toggles for the day, week, month, year, and mobile month view headers.
+Use `render_event_body` to replace the default event body. Use `with_default_header: false` to suppress the top-level schedule header or pass `header` to replace it with custom content. Per-view config structs expose `with_default_header` toggles for the day, week, month, year, and mobile month view headers.
 
 ## Styling
 

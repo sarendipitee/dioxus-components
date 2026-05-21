@@ -1,4 +1,4 @@
-use super::super::component::*;
+use dioxus_components::scroll_area::*;
 use dioxus::prelude::*;
 use dioxus_primitives::scroll_area::ScrollDirection;
 

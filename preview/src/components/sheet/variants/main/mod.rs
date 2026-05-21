@@ -1,4 +1,4 @@
-use crate::components::{
+use dioxus_components::{
     button::{Button, ButtonVariant},
     input::Input,
     label::Label,

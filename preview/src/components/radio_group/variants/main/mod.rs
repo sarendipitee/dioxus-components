@@ -1,4 +1,4 @@
-use super::super::component::*;
+use dioxus_components::radio_group::*;
 use dioxus::prelude::*;
 
 #[component]

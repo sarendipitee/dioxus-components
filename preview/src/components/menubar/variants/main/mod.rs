@@ -1,4 +1,4 @@
-use super::super::component::*;
+use dioxus_components::menubar::*;
 use dioxus::prelude::*;
 
 #[component]

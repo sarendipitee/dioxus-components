@@ -1,4 +1,4 @@
-use super::super::component::*;
+use dioxus_components::collapsible::*;
 use dioxus::prelude::*;
 
 #[component]

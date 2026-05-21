@@ -1,5 +1,5 @@
-use super::super::component::*;
-use crate::components::avatar::{ImageAvatar, AvatarImageSize};
+use dioxus_components::drag_and_drop_list::*;
+use dioxus_components::avatar::{ImageAvatar, AvatarImageSize};
 use dioxus::prelude::*;
 
 const INLINE_STYLE: &str = r#".dx-tasks-demo {

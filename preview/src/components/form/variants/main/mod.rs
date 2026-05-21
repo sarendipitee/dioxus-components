@@ -1,23 +1,29 @@
 use dioxus::prelude::*;
-use dioxus_primitives::checkbox::{Checkbox, CheckboxIndicator};
-
-#[css_module("/src/components/form/style.css")]
-struct Styles;
+use dioxus_components::checkbox::{Checkbox, CheckboxIndicator};
 
 #[component]
 pub fn Demo() -> Element {
     rsx! {
         form {
-            class: Styles::dx_form_example,
             onsubmit: move |e| {
                 tracing::info!("{:?}", e.values());
             },
-            Checkbox { id: "tos-check", class: Styles::dx_tos_check, name: "tos-check",
+            Checkbox { id: "tos-check", name: "tos-check",
                 CheckboxIndicator { "+" }
             }
             label { r#for: "tos-check", "I agree to the terms presented." }
             br {}
-            button { r#type: "submit", "Submit" }
+            button {
+                r#type: "submit",
+                padding: "8px 16px",
+                border: "1px solid var(--primary-color-6)",
+                border_radius: "4px",
+                background_color: "var(--primary-color-1)",
+                color: "var(--secondary-color-4)",
+                cursor: "pointer",
+                font_size: "14px",
+                "Submit"
+            }
         }
     }
 }

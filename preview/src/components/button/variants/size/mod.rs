@@ -1,4 +1,4 @@
-use super::super::component::*;
+use dioxus_components::button::*;
 use dioxus::prelude::*;
 use dioxus_icons::lucide::ArrowUpRight;
 

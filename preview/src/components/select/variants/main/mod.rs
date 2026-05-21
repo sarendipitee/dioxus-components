@@ -1,4 +1,4 @@
-use super::super::component::*;
+use dioxus_components::select::*;
 use dioxus::prelude::*;
 use strum::{EnumCount, IntoEnumIterator};
 

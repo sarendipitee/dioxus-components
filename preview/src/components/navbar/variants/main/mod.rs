@@ -1,4 +1,4 @@
-use super::super::component::*;
+use dioxus_components::navbar::*;
 use crate::Route;
 use dioxus::prelude::*;
 

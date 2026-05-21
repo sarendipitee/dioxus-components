@@ -1,4 +1,4 @@
-use super::super::component::*;
+use dioxus_components::calendar::*;
 use dioxus::prelude::*;
 use dioxus_i18n::tid;
 

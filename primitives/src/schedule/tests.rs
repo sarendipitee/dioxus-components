@@ -737,10 +737,22 @@ fn add_months_clamps_to_last_day_of_target_month() {
 fn shift_date_uses_schedule_view_granularity() {
     let anchor = date!(2026 - 05 - 15);
 
-    assert_eq!(shift_date(anchor, super::types::ScheduleView::Day, 2), date!(2026 - 05 - 17));
-    assert_eq!(shift_date(anchor, super::types::ScheduleView::Week, -1), date!(2026 - 05 - 08));
-    assert_eq!(shift_date(anchor, super::types::ScheduleView::Month, 1), date!(2026 - 06 - 15));
-    assert_eq!(shift_date(anchor, super::types::ScheduleView::Year, 1), date!(2027 - 05 - 15));
+    assert_eq!(
+        shift_date(anchor, super::types::ScheduleView::Day, 2),
+        date!(2026 - 05 - 17)
+    );
+    assert_eq!(
+        shift_date(anchor, super::types::ScheduleView::Week, -1),
+        date!(2026 - 05 - 08)
+    );
+    assert_eq!(
+        shift_date(anchor, super::types::ScheduleView::Month, 1),
+        date!(2026 - 06 - 15)
+    );
+    assert_eq!(
+        shift_date(anchor, super::types::ScheduleView::Year, 1),
+        date!(2027 - 05 - 15)
+    );
 }
 
 #[test]

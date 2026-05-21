@@ -1,6 +1,6 @@
-use super::super::component::*;
-use crate::components::label::Label;
-use crate::components::switch::Switch;
+use dioxus_components::slider::*;
+use dioxus_components::label::Label;
+use dioxus_components::switch::Switch;
 use dioxus::prelude::*;
 
 #[component]

@@ -1,4 +1,4 @@
-use super::super::component::{Accordion, AccordionContent, AccordionItem, AccordionTrigger};
+use dioxus_components::accordion::{Accordion, AccordionContent, AccordionItem, AccordionTrigger};
 use dioxus::prelude::*;
 #[component]
 pub fn Demo() -> Element {

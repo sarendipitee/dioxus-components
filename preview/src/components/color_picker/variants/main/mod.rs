@@ -1,6 +1,6 @@
 use dioxus::prelude::*;
 
-use super::super::component::*;
+use dioxus_components::color_picker::*;
 use dioxus_primitives::color_picker::Color;
 use palette::{encoding, Hsv, IntoColor};
 

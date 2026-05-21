@@ -1,6 +1,6 @@
-use crate::components::input::component::Input;
+use dioxus_components::input::Input;
 
-use super::super::component::*;
+use dioxus_components::label::*;
 use dioxus::prelude::*;
 
 #[component]

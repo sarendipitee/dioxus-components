@@ -1,7 +1,7 @@
-use super::super::component::*;
-use crate::components::button::{Button, ButtonVariant};
-use crate::components::input::Input;
-use crate::components::label::Label;
+use dioxus_components::card::*;
+use dioxus_components::button::{Button, ButtonVariant};
+use dioxus_components::input::Input;
+use dioxus_components::label::Label;
 use dioxus::prelude::*;
 
 #[component]

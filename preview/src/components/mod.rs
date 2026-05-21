@@ -54,9 +54,8 @@ macro_rules! examples {
     ($($name:ident $(($kind:ident))? $([$($variant:ident),*])?),* $(,)?) => {
         $(
             pub(crate) mod $name {
-                pub(crate) mod component;
                 #[allow(unused)]
-                pub use component::*;
+                pub use dioxus_components::$name::*;
                 pub(crate) mod variants {
                     pub(crate) mod main;
                     $(
@@ -237,7 +236,7 @@ examples!(
     ],
     slider[dynamic_range, range],
     switch,
-    tabs,
+    tabs[manual, vertical, controlled],
     table_of_contents,
     textarea[outline, fade, ghost, bottom_section, autosize, resize],
     time_picker,

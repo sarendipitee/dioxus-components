@@ -1,4 +1,4 @@
-use super::super::component::*;
+use dioxus_components::context_menu::*;
 use dioxus::prelude::*;
 #[component]
 pub fn Demo() -> Element {

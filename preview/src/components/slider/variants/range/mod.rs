@@ -1,4 +1,4 @@
-use super::super::component::*;
+use dioxus_components::slider::*;
 use dioxus::prelude::*;
 use std::ops::Range;
 

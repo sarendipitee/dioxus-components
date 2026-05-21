@@ -1,14 +1,14 @@
 use dioxus::prelude::*;
 
-use super::super::component::*;
-
-#[css_module("/src/components/badge/style.css")]
-struct Styles;
+use dioxus_components::badge::*;
 
 #[component]
 pub fn Demo() -> Element {
     rsx! {
-        div { class: Styles::dx_badge_example,
+        div {
+            display: "flex",
+            align_items: "center",
+            gap: "1rem",
 
             Badge { "Primary" }
             Badge { variant: BadgeVariant::Secondary, "Secondary" }
