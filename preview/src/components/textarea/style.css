@@ -1,5 +1,14 @@
 /* Base */
+.dx-textarea-root {
+  display: flex;
+  width: 100%;
+  flex-direction: column;
+  gap: 0.375rem;
+}
+
 .dx-textarea {
+  --dx-textarea-row-height: 24px;
+  --dx-textarea-border-block: 0px;
   width: 100%;
   min-height: 4rem;
   box-sizing: border-box;
@@ -11,10 +20,36 @@
   background: none;
   color: var(--secondary-color-4);
   font-family: inherit;
-  line-height: 1.5;
+  line-height: var(--dx-textarea-row-height);
   outline: none;
   resize: vertical;
   transition: background-color 100ms ease-out, border-color 100ms ease-out, box-shadow 100ms ease-out;
+}
+
+.dx-textarea-bottom-section {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  color: var(--secondary-color-5);
+  font-size: 0.8125rem;
+  line-height: 1.4;
+}
+
+.dx-textarea[data-resize="none"] {
+  resize: none;
+}
+
+.dx-textarea[data-resize="vertical"] {
+  resize: vertical;
+}
+
+.dx-textarea[data-resize="both"] {
+  resize: both;
+}
+
+.dx-textarea[data-autosize="true"] {
+  min-height: 0;
+  resize: none;
 }
 
 .dx-textarea:disabled {
@@ -51,6 +86,7 @@
 
 /* Outline Variant */
 .dx-textarea[data-style="outline"] {
+  --dx-textarea-border-block: 2px;
   border: 1px solid var(--primary-color-6);
   background-color: var(--light, var(--primary-color))
     var(--dark, var(--primary-color-3));

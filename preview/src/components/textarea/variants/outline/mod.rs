@@ -6,12 +6,7 @@ use dioxus::prelude::*;
 pub fn Demo() -> Element {
     let mut description = use_signal(|| "sample text".to_string());
     rsx! {
-        div {
-            display: "flex",
-            flex_direction: "column",
-            gap: "1.5rem",
-
-            p { id: "textarea-message", "Description here: {description}" }
+        div { display: "flex", flex_direction: "column", gap: "1.5rem",
 
             div {
                 display: "flex",
