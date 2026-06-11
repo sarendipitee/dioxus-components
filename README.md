@@ -109,7 +109,14 @@ dx serve -p preview --desktop
 or for the web build:
 
 ```sh
-dx serve -p preview --web
+scripts/preview-web.sh serve
+```
+
+The web wrapper clears stale Dioxus CSS module assets before starting. To build the
+web preview without serving it, use:
+
+```sh
+scripts/preview-web.sh build
 ```
 
 ## License
