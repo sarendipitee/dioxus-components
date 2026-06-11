@@ -1267,10 +1267,17 @@ fn WidgetMasonry() -> Element {
 }
 
 #[allow(unpredictable_function_pointer_comparisons)]
+#[derive(Props, Clone, PartialEq)]
+struct MasonryCardProps {
+    component: fn() -> Element,
+    #[props(default)]
+    popout: bool,
+}
+
 #[component]
-fn MasonryCard(component: fn() -> Element, #[props(default)] popout: bool) -> Element {
-    let Comp = component;
-    let class = if popout {
+fn MasonryCard(props: MasonryCardProps) -> Element {
+    let Comp = props.component;
+    let class = if props.popout {
         "dx-widget-card dx-widget-card-popout"
     } else {
         "dx-widget-card"

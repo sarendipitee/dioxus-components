@@ -25,6 +25,7 @@ pub mod combobox;
 pub mod context_menu;
 pub mod date_picker;
 pub mod dialog;
+pub mod disclosure;
 pub mod drag_and_drop_list;
 pub mod dropdown_menu;
 mod focus;
