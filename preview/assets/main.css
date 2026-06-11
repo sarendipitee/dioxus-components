@@ -5,7 +5,7 @@
 :root {
   --highlight-color-main: #dd7230;
   --highlight-color-secondary: #eb5160;
-  --highlight-color-tertiary: #2b7fff;
+  --highlight-color-tertiary: var(--accent);
   --dx-content-width: 1360px;
 }
 
@@ -19,8 +19,8 @@ body {
 body {
   padding: 0;
   margin: 0;
-  background-color: var(--primary-color);
-  color: var(--secondary-color-4);
+  background: var(--bg);
+  color: var(--fg);
   font-family: Geist, system-ui, -apple-system, "Segoe UI", sans-serif;
   font-optical-sizing: auto;
   font-style: normal;
@@ -34,7 +34,7 @@ body {
   }
 
   :hover {
-    scrollbar-color: var(--secondary-color-2) rgb(0 0 0 / 0%);
+    scrollbar-color: var(--surface-active) rgb(0 0 0 / 0%);
   }
 }
 
@@ -46,11 +46,29 @@ body {
 }
 
 .dx-dark-mode-only {
-  display: var(--dark, initial) var(--light, none);
+  display: none;
 }
 
 .dx-light-mode-only {
-  display: var(--dark, none) var(--light, initial);
+  display: initial;
+}
+
+:root[data-theme="dark"] .dx-dark-mode-only {
+  display: initial;
+}
+
+:root[data-theme="dark"] .dx-light-mode-only {
+  display: none;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme]) .dx-dark-mode-only {
+    display: initial;
+  }
+
+  :root:not([data-theme]) .dx-light-mode-only {
+    display: none;
+  }
 }
 
 .dx-preview-navbar {
@@ -63,7 +81,6 @@ body {
   align-items: center;
   justify-content: center;
   padding: 0;
-  background-color: var(--primary-color);
   inset-block-start: 0;
 }
 
@@ -74,23 +91,23 @@ body {
   align-items: center;
   justify-content: space-between;
   padding: 0.5rem 4.5rem;
-  border-right: 1px solid var(--primary-color-6);
-  border-bottom: 1px solid var(--primary-color-6);
-  border-left: 1px solid var(--primary-color-6);
+  border-right: 1px solid var(--surface-border);
+  border-bottom: 1px solid var(--surface-border);
+  border-left: 1px solid var(--surface-border);
 }
 
 .dx-navbar-link {
   display: inline-flex;
   align-items: center;
   padding: 0.5em 0;
-  color: var(--secondary-color-4);
+  color: var(--fg-muted);
   font-size: 0.95rem;
   font-weight: 450;
   text-decoration: none;
 }
 
 .dx-navbar-link:hover {
-  color: var(--secondary-color-3);
+  color: var(--fg);
 }
 
 .dx-navbar-primary,
@@ -103,7 +120,7 @@ body {
 .dx-navbar-brand {
   display: flex;
   align-items: center;
-  color: var(--secondary-color-4);
+  color: var(--fg-muted);
   font-size: 0.98rem;
   font-weight: 400;
   gap: 0.55rem;
@@ -114,9 +131,9 @@ body {
 /* stylelint-disable-next-line selector-class-pattern */
 .dx-preview-code-theme {
   overflow: auto;
-  border: 1px solid var(--primary-color-6);
-  border-radius: 0.5rem;
-  background-color: var(--primary-color-1);
+  border: 1px solid var(--surface-border);
+  border-radius: var(--radius);
+  background: var(--surface-muted);
 }
 
 /* stylelint-disable-next-line selector-class-pattern */
@@ -139,7 +156,7 @@ body {
   height: 100%;
   max-height: 80vh;
   box-sizing: border-box;
-  border-radius: 0.5rem;
+  border-radius: var(--radius);
   margin: 0;
 }
 
@@ -155,7 +172,7 @@ body {
   padding: 0;
   border: none;
   background: none;
-  color: var(--secondary-color-4);
+  color: var(--fg-muted);
   cursor: pointer;
 }
 
@@ -171,10 +188,10 @@ body {
   justify-content: center;
   padding: 0;
   border: none;
-  border-radius: 0.5rem;
+  border-radius: var(--radius);
   margin: 0;
   background: none;
-  color: var(--secondary-color-4);
+  color: var(--fg-muted);
   cursor: pointer;
   gap: 0.5em;
 }
@@ -184,7 +201,7 @@ body {
 }
 
 .dx-copy-button[data-copied="true"] {
-  color: var(--secondary-success-color);
+  color: var(--success-subtle-fg);
 }
 
 /* Docs and component pages */
@@ -194,9 +211,9 @@ body {
   min-height: calc(100vh - 3.25rem);
   box-sizing: border-box;
   padding-right: 1.5rem;
-  padding-left: 4.5rem;
-  border-right: 1px solid var(--primary-color-6);
-  border-left: 1px solid var(--primary-color-6);
+  padding-left: 1.5rem;
+  border-right: 1px solid var(--surface-border);
+  border-left: 1px solid var(--surface-border);
   margin: 0 auto;
   grid-template-columns: 14rem minmax(0, 1fr);
 }
@@ -210,7 +227,7 @@ body {
   flex-direction: column;
   align-self: start;
   padding: 2.25rem 1rem 0 0;
-  border-right: 1px solid var(--primary-color-6);
+  border-right: 1px solid var(--surface-border);
 }
 
 .dx-docs-sidebar-scroll {
@@ -227,7 +244,7 @@ body {
 
 .dx-docs-sidebar-heading {
   margin: 0 0 0.5rem;
-  color: var(--secondary-color-5);
+  color: var(--fg-faint);
   font-size: 0.75rem;
   font-weight: 700;
   text-transform: uppercase;
@@ -237,7 +254,7 @@ body {
   display: block;
   padding: 0.35rem 0.5rem;
   border-radius: 0.25rem;
-  color: var(--secondary-color-5);
+  color: var(--fg);
   font-size: 0.9rem;
   line-height: 1.25;
   text-decoration: none;
@@ -246,8 +263,8 @@ body {
 
 .dx-docs-sidebar-link:hover,
 .dx-docs-sidebar-link-active {
-  background-color: var(--primary-color-1);
-  color: var(--secondary-color-3);
+  background: var(--surface-muted);
+  color: var(--fg);
 }
 
 /* Mobile drawer affordances — hidden by default, shown via media query below */
@@ -269,13 +286,8 @@ body {
 .dx-component-page-header {
   display: grid;
   padding-bottom: 1.75rem;
-  border-bottom: 1px solid var(--primary-color-6);
+  border-bottom: 1px solid var(--surface-border);
   gap: 1rem;
-}
-
-.dx-docs-page-header > *,
-.dx-component-page-header > * {
-  /* max-width: 44rem; */
 }
 
 .dx-component-page-title-row {
@@ -292,7 +304,7 @@ body {
 
 .dx-component-page-title-row .dx-component-inline-command {
   padding: 0.4rem 0.45rem 0.4rem 0.65rem;
-  border-color: var(--primary-color-6);
+  border-color: var(--surface-border);
 }
 
 .dx-component-page-title-row .dx-component-inline-command code {
@@ -311,7 +323,7 @@ body {
 .dx-docs-page-header h1,
 .dx-component-page-header h1 {
   margin: 0;
-  color: var(--secondary-color-3);
+  color: var(--fg);
   font-size: 2.5rem;
   font-weight: 700;
   letter-spacing: -0.015em;
@@ -325,7 +337,7 @@ body {
 .dx-docs-page-header p,
 .dx-component-page-header p {
   margin: 0;
-  color: var(--secondary-color-5);
+  color: var(--fg-muted);
   font-size: 1rem;
   line-height: 1.65;
 }
@@ -343,9 +355,9 @@ body {
 .dx-docs-section h2,
 .dx-component-section-heading h2 {
   padding-bottom: 0.4rem;
-  border-bottom: 1px solid var(--primary-color-6);
+  border-bottom: 1px solid var(--surface-border);
   margin: 0 0 0.75rem;
-  color: var(--secondary-color-3);
+  color: var(--fg);
   font-size: 1.5rem;
   font-weight: 660;
   letter-spacing: -0.005em;
@@ -355,15 +367,14 @@ body {
 .dx-docs-section p,
 .dx-component-section-heading p {
   margin: 0;
-  color: var(--secondary-color-5);
-  line-height: 1.6;
+  color: var(--fg-muted);
 }
 
 .dx-docs-section ol {
   display: grid;
   padding: 0;
   margin: 1rem 0 0;
-  color: var(--secondary-color-4);
+  color: var(--fg-muted);
   counter-reset: dx-docs-steps;
   gap: 0.625rem;
   list-style: none;
@@ -386,10 +397,10 @@ body {
   height: 1.35rem;
   align-items: center;
   justify-content: center;
-  border: 1px solid var(--primary-color-6);
+  border: 1px solid var(--surface-border);
   border-radius: 999px;
-  background-color: var(--primary-color-1);
-  color: var(--secondary-color-5);
+  background: var(--surface-muted);
+  color: var(--fg-faint);
   content: counter(dx-docs-steps);
   font-family: "Geist Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
   font-size: 0.75rem;
@@ -402,11 +413,11 @@ body {
   box-sizing: border-box;
   align-items: center;
   padding: 0.5rem 0.5rem 0.5rem 0.75rem;
-  border: 1px solid var(--primary-color-6);
+  border: 1px solid var(--surface-border);
   border-radius: 0.4rem;
   margin: 0.85rem 0 1.25rem;
-  background-color: var(--primary-color);
-  color: var(--secondary-color-4);
+  background: var(--surface);
+  color: var(--fg-muted);
   gap: 1rem;
 }
 
@@ -420,13 +431,13 @@ body {
 
 .dx-docs-muted {
   margin-top: 0.75rem;
-  color: var(--secondary-color-5);
+  color: var(--fg-faint);
   font-size: 0.9rem;
 }
 
 /* GitHub-flavored markdown prose for docs pages */
 .dx-docs-prose {
-  color: var(--secondary-color-4);
+  color: var(--fg-muted);
   font-size: 1rem;
   line-height: 1.65;
 }
@@ -441,9 +452,9 @@ body {
 
 .dx-docs-prose .dx-docs-section h2 {
   padding-bottom: 0.4rem;
-  border-bottom: 1px solid var(--primary-color-6);
+  border-bottom: 1px solid var(--surface-border);
   margin: 0 0 1rem;
-  color: var(--secondary-color-3);
+  color: var(--fg);
   font-size: 1.5rem;
   font-weight: 660;
   letter-spacing: -0.005em;
@@ -452,7 +463,7 @@ body {
 
 .dx-docs-prose .dx-docs-section h3 {
   margin: 1.5rem 0 0.5rem;
-  color: var(--secondary-color-3);
+  color: var(--fg);
   font-size: 1.15rem;
   font-weight: 600;
   line-height: 1.3;
@@ -460,7 +471,7 @@ body {
 
 .dx-docs-prose .dx-docs-section p {
   margin: 0 0 0.95rem;
-  color: var(--secondary-color-4);
+  color: var(--fg-muted);
   font-size: 1rem;
   line-height: 1.65;
 }
@@ -474,20 +485,20 @@ body {
 .dx-docs-prose li code {
   padding: 0.15em 0.4em;
   border-radius: 0.25rem;
-  background-color: var(--primary-color-2);
-  color: var(--secondary-color-3);
+  background: var(--surface-hover);
+  color: var(--surface-hover-fg);
   font-family: "Geist Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
   font-size: 0.875em;
 }
 
 /* Block code — github-style fenced block */
 .dx-docs-prose pre {
-  /* border: 1px solid var(--primary-color-6); */
+  /* border: 1px solid var(--surface-border); */
   padding: 1rem 1.1rem;
-  border-radius: 0.5rem;
+  border-radius: var(--radius);
   margin: 0 0 1.1rem;
-  background-color: var(--primary-color-1);
-  color: var(--secondary-color-3);
+  background: var(--surface-muted);
+  color: var(--fg);
   font-family: "Geist Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
   font-size: 0.875rem;
   line-height: 1.5;
@@ -506,7 +517,7 @@ body {
 .dx-docs-prose .dx-docs-section ul {
   padding-left: 1.25rem;
   margin: 0 0 1rem;
-  color: var(--secondary-color-4);
+  color: var(--fg-muted);
 }
 
 .dx-docs-prose .dx-docs-section ul li {
@@ -540,10 +551,10 @@ body {
   box-sizing: border-box;
   align-items: center;
   padding: 0.3rem 0.35rem 0.3rem 0.55rem;
-  border: 1px solid var(--primary-color-6);
+  border: 1px solid var(--surface-border);
   border-radius: 0.4rem;
-  background-color: var(--primary-color-1);
-  color: var(--secondary-color-4);
+  background: var(--surface-muted);
+  color: var(--fg-muted);
   gap: 0.75rem;
 }
 
@@ -565,9 +576,9 @@ body {
   align-items: center;
   justify-content: center;
   padding: 1.75rem;
-  border: 1px solid var(--primary-color-6);
-  border-radius: 0.5rem;
-  background-color: var(--primary-color-1);
+  border: 1px solid var(--surface-border);
+  border-radius: var(--radius);
+  /* background: var(--surface-muted); */
   background-image:
     radial-gradient(circle, rgb(0 0 0 / 6%) 1px, transparent 1px);
   background-position: -1px -1px;
@@ -580,22 +591,22 @@ body {
   min-height: auto;
   padding: 0;
   border: none;
-  background-color: transparent;
+  background: transparent;
   background-image: none;
 }
 
 .dx-component-manual-install {
   overflow: hidden;
-  border: 1px solid var(--primary-color-6);
-  border-radius: 0.5rem;
-  background-color: var(--primary-color-1);
+  border: 1px solid var(--surface-border);
+  border-radius: var(--radius);
+  background: var(--surface-muted);
 }
 
 .dx-component-manual-install summary {
   display: flex;
   align-items: center;
   padding: 0.85rem 1rem;
-  color: var(--secondary-color-3);
+  color: var(--fg);
   cursor: pointer;
   font-weight: 600;
   gap: 0.6rem;
@@ -610,8 +621,8 @@ body {
   display: inline-block;
   width: 0.5rem;
   height: 0.5rem;
-  border-right: 1.5px solid var(--secondary-color-5);
-  border-bottom: 1.5px solid var(--secondary-color-5);
+  border-right: 1.5px solid var(--fg-faint);
+  border-bottom: 1.5px solid var(--fg-faint);
   content: "";
   transform: rotate(-45deg);
   transition: transform 0.15s ease;
@@ -624,7 +635,7 @@ body {
 }
 
 .dx-component-manual-install summary:hover {
-  background-color: var(--primary-color-2);
+  background: var(--surface-hover);
 }
 
 .dx-component-manual-copy {
@@ -633,7 +644,7 @@ body {
 
 .dx-component-manual-copy p {
   margin: 0;
-  color: var(--secondary-color-5);
+  color: var(--fg-faint);
 }
 
 .dx-component-manual-code {
@@ -644,7 +655,7 @@ body {
   overflow: visible;
   border: none;
   border-radius: 0;
-  background-color: transparent;
+  background: transparent;
 }
 
 .dx-component-manual-install-code summary {
@@ -652,7 +663,7 @@ body {
 }
 
 .dx-component-manual-install-code summary:hover {
-  background-color: transparent;
+  background: transparent;
   color: var(--highlight-color-tertiary);
 }
 
@@ -671,17 +682,17 @@ body {
 
 .dx-component-manual-install-code .dx-tabs-content-themed {
   border: none;
-  background-color: transparent;
+  background: transparent;
   box-shadow: none;
 }
 
 .dx-component-manual-install-code .dx-code-block {
   max-width: 100%;
-  border-radius: 0.5rem;
+  border-radius: var(--radius);
 }
 
 .dx-component-description {
-  color: var(--secondary-color-4);
+  color: var(--fg-muted);
   font-size: 1rem;
   line-height: 1.65;
 
@@ -691,7 +702,7 @@ body {
 
 .dx-component-description p {
   margin: 0 0 0.95rem;
-  color: var(--secondary-color-4);
+  color: var(--fg-muted);
 }
 
 .dx-component-description p:last-child {
@@ -700,7 +711,7 @@ body {
 
 .dx-component-description h2,
 .dx-component-description h3 {
-  color: var(--secondary-color-3);
+  color: var(--fg);
 }
 
 .dx-component-description h3 {
@@ -715,8 +726,8 @@ body {
 .dx-component-description li code {
   padding: 0.15em 0.4em;
   border-radius: 0.25rem;
-  background-color: var(--primary-color-2);
-  color: var(--secondary-color-3);
+  background: var(--surface-hover);
+  color: var(--fg);
   font-family: "Geist Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
   font-size: 0.875em;
 }
@@ -742,13 +753,54 @@ body {
   text-underline-offset: 3px;
 }
 
+.dx-component-props-table-wrap {
+  overflow-x: auto;
+  border: 1px solid var(--surface-border);
+  border-radius: var(--radius);
+  background: var(--surface);
+  max-height: 70svh;
+}
+
+.dx-component-props-table {
+  width: 100%;
+  min-width: 720px;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+}
+
+.dx-component-props-table-heading {
+  padding: 0.7rem 0.85rem;
+  border-bottom: 1px solid var(--surface-border);
+  color: var(--fg);
+  text-align: left;
+  font-size: 0.78rem;
+  font-weight: 650;
+  text-transform: uppercase;
+}
+
+.dx-component-props-table-cell {
+  padding: 0.75rem 0.85rem;
+  border-bottom: 1px solid var(--surface-border);
+  vertical-align: top;
+  color: var(--fg);
+}
+
+.dx-component-props-table-cell-muted {
+  color: var(--fg-muted);
+}
+
+.dx-component-props-table-cell-docs {
+  color: var(--fg-faint);
+  line-height: 1.45;
+}
+
 .dx-component-variant + .dx-component-variant {
   margin-top: 2rem;
 }
 
 .dx-component-variant-title {
   margin: 0 0 0.75rem;
-  color: var(--secondary-color-3);
+  color: var(--fg);
   font-size: 1rem;
   text-transform: capitalize;
 }
@@ -759,8 +811,8 @@ body {
   box-sizing: border-box;
   padding-right: 4.5rem;
   padding-left: 4.5rem;
-  border-right: 1px solid var(--primary-color-6);
-  border-left: 1px solid var(--primary-color-6);
+  border-right: 1px solid var(--surface-border);
+  border-left: 1px solid var(--surface-border);
   margin: 0 auto;
 }
 
@@ -768,7 +820,7 @@ body {
 .dx-home-section {
   width: 100%;
   padding: 4.5rem 0;
-  border-bottom: 1px solid var(--primary-color-6);
+  border-bottom: 1px solid var(--surface-border);
 }
 
 .dx-home-section:last-child {
@@ -794,7 +846,7 @@ body {
 
 .dx-section-title {
   margin: 0;
-  color: var(--secondary-color-3);
+  color: var(--fg);
   font-size: 2.25rem;
   font-weight: 720;
   letter-spacing: -0.01em;
@@ -803,7 +855,7 @@ body {
 
 .dx-section-summary {
   margin: 0;
-  color: var(--secondary-color-5);
+  color: var(--fg-muted);
   font-size: 1rem;
   line-height: 1.6;
 }
@@ -820,10 +872,9 @@ body {
   width: 100%;
   box-sizing: border-box;
   padding: 1.75rem 1.75rem 1.85rem;
-  border: 1px solid var(--primary-color-6);
-  border-radius: 0.5rem;
+  border-radius: var(--radius);
   margin: 0 0 1.5rem;
-  background-color: var(--primary-color-1);
+  border: 1px solid var(--surface-muted-border);
   break-inside: avoid;
 }
 
@@ -861,22 +912,22 @@ body {
   overflow: hidden;
   width: 100%;
   flex-direction: column;
-  border: 1px solid var(--primary-color-6);
-  border-radius: 0.5rem;
-  background-color: var(--primary-color-1);
+  border: 1px solid var(--surface-border);
+  border-radius: var(--radius);
+  background: var(--surface-muted);
   color: inherit;
   text-decoration: none;
   transition: border-color 0.15s ease, transform 0.15s ease, box-shadow 0.15s ease;
 }
 
 .dx-demos-card:hover {
-  border-color: var(--primary-color-7);
+  border-color: var(--surface-selected-border);
   box-shadow: 0 12px 32px -20px rgb(0 0 0 / 35%);
   transform: translateY(-2px);
 }
 
 .dx-demos-card:focus-visible {
-  outline: 2px solid var(--focused-border-color);
+  outline: 2px solid var(--focus);
   outline-offset: 3px;
 }
 
@@ -885,8 +936,8 @@ body {
   height: 180px;
   align-items: center;
   justify-content: center;
-  border-bottom: 1px solid var(--primary-color-6);
-  background: linear-gradient(135deg, var(--primary-color-2), var(--primary-color));
+  border-bottom: 1px solid var(--surface-border);
+  background: linear-gradient(135deg, var(--surface-hover), var(--surface));
   color: var(--highlight-color-tertiary);
 }
 
@@ -901,10 +952,10 @@ body {
 .dx-demos-card-tag {
   align-self: flex-start;
   padding: 0.2rem 0.55rem;
-  border: 1px solid var(--primary-color-6);
+  border: 1px solid var(--surface-border);
   border-radius: 999px;
-  background-color: var(--primary-color);
-  color: var(--secondary-color-5);
+  background: var(--surface);
+  color: var(--fg-faint);
   font-size: 0.72rem;
   font-weight: 600;
   letter-spacing: 0.08em;
@@ -913,7 +964,7 @@ body {
 
 .dx-demos-card-title {
   margin: 0;
-  color: var(--secondary-color-3);
+  color: var(--fg);
   font-size: 1.15rem;
   font-weight: 660;
   line-height: 1.25;
@@ -921,7 +972,7 @@ body {
 
 .dx-demos-card-description {
   margin: 0;
-  color: var(--secondary-color-5);
+  color: var(--fg-faint);
   font-size: 0.92rem;
   line-height: 1.55;
 }
@@ -973,7 +1024,7 @@ body {
 .dx-component-card-title-link {
   display: inline-flex;
   align-items: center;
-  color: var(--secondary-color-3);
+  color: var(--fg);
   gap: 0.35rem;
   text-decoration: none;
 }
@@ -984,14 +1035,14 @@ body {
 
 .dx-component-card-title-link:focus-visible {
   border-radius: 0.25rem;
-  outline: 2px solid var(--focused-border-color);
+  outline: 2px solid var(--focus);
   outline-offset: 3px;
 }
 
 .dx-component-card-description {
   max-width: 36rem;
   margin: 0;
-  color: var(--secondary-color-5);
+  color: var(--fg-faint);
   font-size: 0.95rem;
   line-height: 1.55;
 }
@@ -1011,10 +1062,10 @@ body {
   box-sizing: border-box;
   align-items: center;
   padding: 0.375rem 0.375rem 0.375rem 0.5rem;
-  border: 1px solid var(--primary-color-6);
+  border: 1px solid var(--surface-border);
   border-radius: 0.25rem;
-  background-color: var(--primary-color);
-  color: var(--secondary-color-4);
+  background: var(--surface);
+  color: var(--fg-muted);
   gap: 1rem;
 }
 
@@ -1030,7 +1081,7 @@ body {
   width: 1rem;
   height: 1rem;
   flex: 0 0 auto;
-  color: var(--secondary-color-5);
+  color: var(--fg-faint);
 }
 
 .dx-component-card-copy svg {
@@ -1043,7 +1094,7 @@ body {
   min-height: 6rem;
   align-items: center;
   justify-content: center;
-  color: var(--secondary-color-4);
+  color: var(--fg-muted);
   font-size: 0.925rem;
   font-weight: 600;
   gap: 0.35rem;
@@ -1051,12 +1102,12 @@ body {
 }
 
 .dx-component-card-block-link:hover {
-  color: var(--secondary-color-3);
+  color: var(--fg);
 }
 
 .dx-component-card-block-link:focus-visible {
   border-radius: 0.25rem;
-  outline: 2px solid var(--focused-border-color);
+  outline: 2px solid var(--focus);
   outline-offset: 3px;
 }
 
@@ -1069,9 +1120,9 @@ body {
   align-items: center;
   justify-content: center;
   padding: 2rem;
-  border: 1px solid var(--primary-color-6);
+  border: 1px solid var(--surface-border);
   border-radius: 0.25rem;
-  background-color: var(--primary-color-1);
+  background: var(--surface-muted);
 }
 
 .dx-component-card-preview > * {
@@ -1085,8 +1136,8 @@ body {
   box-sizing: border-box;
   flex-direction: column;
   align-items: center;
-  border-top: 1px solid var(--primary-color-6);
-  background-color: var(--primary-color);
+  border-top: 1px solid var(--surface-border);
+  background: var(--surface);
 }
 
 .dx-footer-inner {
@@ -1094,8 +1145,8 @@ body {
   width: min(var(--dx-content-width), calc(100vw - 2rem));
   box-sizing: border-box;
   padding: 3rem 4.5rem 2.5rem;
-  border-right: 1px solid var(--primary-color-6);
-  border-left: 1px solid var(--primary-color-6);
+  border-right: 1px solid var(--surface-border);
+  border-left: 1px solid var(--surface-border);
   gap: 3rem;
   grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr);
 }
@@ -1109,7 +1160,7 @@ body {
 .dx-footer-brand-link {
   display: inline-flex;
   align-items: center;
-  color: var(--secondary-color-3);
+  color: var(--fg);
   font-size: 1rem;
   font-weight: 700;
   gap: 0.55rem;
@@ -1119,7 +1170,7 @@ body {
 .dx-footer-tagline {
   max-width: 32rem;
   margin: 0;
-  color: var(--secondary-color-5);
+  color: var(--fg-faint);
   font-size: 0.9rem;
   line-height: 1.55;
 }
@@ -1137,7 +1188,7 @@ body {
 }
 
 .dx-footer-nav-heading {
-  color: var(--secondary-color-3);
+  color: var(--fg);
   font-size: 0.8rem;
   font-weight: 600;
   letter-spacing: 0.08em;
@@ -1145,7 +1196,7 @@ body {
 }
 
 .dx-footer-link {
-  color: var(--secondary-color-5);
+  color: var(--fg-faint);
   font-size: 0.92rem;
   font-weight: 500;
   text-decoration: none;
@@ -1153,12 +1204,12 @@ body {
 }
 
 .dx-footer-link:hover {
-  color: var(--secondary-color-3);
+  color: var(--fg);
 }
 
 .dx-footer-link:focus-visible {
   border-radius: 0.25rem;
-  outline: 2px solid var(--focused-border-color);
+  outline: 2px solid var(--focus);
   outline-offset: 3px;
 }
 
@@ -1169,13 +1220,13 @@ body {
   align-items: center;
   justify-content: flex-start;
   padding: 1rem 4.5rem 1.5rem;
-  border-right: 1px solid var(--primary-color-6);
-  border-bottom: 1px solid var(--primary-color-6);
-  border-left: 1px solid var(--primary-color-6);
+  border-right: 1px solid var(--surface-border);
+  border-bottom: 1px solid var(--surface-border);
+  border-left: 1px solid var(--surface-border);
 }
 
 .dx-footer-copy {
-  color: var(--secondary-color-5);
+  color: var(--fg-faint);
   font-size: 0.82rem;
 }
 
@@ -1211,11 +1262,11 @@ body {
     display: inline-flex;
     align-items: center;
     padding: 0.45rem 0.7rem;
-    border: 1px solid var(--primary-color-6);
+    border: 1px solid var(--surface-border);
     border-radius: 0.4rem;
     margin: 1rem 0 0;
-    background-color: var(--primary-color);
-    color: var(--secondary-color-3);
+    background: var(--surface);
+    color: var(--fg);
     cursor: pointer;
     font-family: inherit;
     font-size: 0.85rem;
@@ -1224,14 +1275,14 @@ body {
   }
 
   .dx-docs-sidebar-toggle:hover {
-    background-color: var(--primary-color-1);
+    background: var(--surface-muted);
   }
 
   .dx-docs-sidebar-backdrop {
     position: fixed;
     z-index: 1100;
     display: block;
-    background-color: rgb(0 0 0 / 35%);
+    background: rgb(0 0 0 / 35%);
     inset: 0;
     opacity: 0;
     pointer-events: none;
@@ -1255,9 +1306,9 @@ body {
     max-height: none;
     flex-direction: column;
     padding: 1rem 1rem 0;
-    border-right: 1px solid var(--primary-color-6);
+    border-right: 1px solid var(--surface-border);
     border-bottom: none;
-    background-color: var(--primary-color);
+    background: var(--surface);
     transform: translateX(-100%);
     transition: transform 0.22s ease;
   }
@@ -1285,13 +1336,13 @@ body {
     border: none;
     border-radius: 0.3rem;
     margin-bottom: 0.5rem;
-    background-color: transparent;
-    color: var(--secondary-color-3);
+    background: transparent;
+    color: var(--fg);
     cursor: pointer;
   }
 
   .dx-docs-sidebar-close:hover {
-    background-color: var(--primary-color-1);
+    background: var(--surface-muted);
   }
 
   .dx-docs-page,

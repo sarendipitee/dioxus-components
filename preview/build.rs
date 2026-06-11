@@ -70,6 +70,19 @@ fn walk_markdown_dir(dir: &std::path::Path, out_dir: &std::path::Path) -> std::i
         .and_then(std::path::Path::file_name)
         .is_some_and(|name| name == "components")
     {
+        let crate_component = std::path::Path::new("../dioxus-components/src/components")
+            .join(&*folder_name)
+            .join("component.rs");
+        if crate_component.exists() {
+            println!("cargo:rerun-if-changed={}", crate_component.display());
+            let source = std::fs::read_to_string(crate_component)?;
+            let out_file_path = out_folder.join("component.rs.html");
+            std::fs::write(
+                out_file_path,
+                render_source_html(dioxus_code::Language::Rust, &source),
+            )?;
+        }
+
         let crate_style = std::path::Path::new("../dioxus-components/src/components")
             .join(&*folder_name)
             .join("style.css");
@@ -203,9 +216,13 @@ fn render_source_html(language: dioxus_code::Language, source: &str) -> String {
 }
 
 fn render_theme_css(out_dir: &std::path::Path) -> std::io::Result<()> {
-    let theme_path = std::path::Path::new("../dioxus-components/assets/dx-components-theme.css");
+    let theme_path = std::path::Path::new("../themes/default.css");
     println!("cargo:rerun-if-changed={}", theme_path.display());
     let source = std::fs::read_to_string(theme_path)?;
+    let app_assets = std::path::Path::new("assets");
+    std::fs::create_dir_all(app_assets)?;
+    std::fs::write(app_assets.join("dx-components-theme.css"), &source)?;
+
     let out_assets = out_dir.join("assets");
     std::fs::create_dir_all(&out_assets)?;
     std::fs::write(

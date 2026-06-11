@@ -7,17 +7,17 @@
   align-items: center;
   justify-content: space-between;
   padding: 0;
-  padding-top: 1rem;
-  padding-bottom: 1rem;
+  padding-top: calc(var(--space) * 4);
+  padding-bottom: calc(var(--space) * 4);
   border: none;
-  background-color: transparent;
-  color: var(--secondary-color-4);
+  background: transparent;
+  color: var(--fg);
   outline: none;
   text-align: left;
 }
 
 .dx-collapsible-trigger:focus-visible {
-  box-shadow: inset 0 0 0 2px var(--focused-border-color);
+  box-shadow: inset 0 0 0 2px var(--focus);
 }
 
 .dx-collapsible-trigger:hover {

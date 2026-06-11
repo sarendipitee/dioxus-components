@@ -1,0 +1,262 @@
+/* This file contains the theme variables for the styled dioxus-components components. You only
+ * need to import this file once in your project root.
+ */
+
+:root {
+  /* Theme gates. "initial" enables a fallback; an empty value disables it.
+     Keep --OFF empty. Formatters must not remove the declaration. */
+  --ON: initial;
+  --OFF: ;
+  --is-light: var(--ON);
+  --is-dark: var(--OFF);
+
+  accent-color: var(--accent);
+  color-scheme: var(--is-light, light) var(--is-dark, dark);
+
+  /* Default foreground roles. Use for text and icons when a component does
+     not need a full foreground/border recipe. */
+  --bg: var(--is-light, #fff) var(--is-dark, #000);
+  --fg: var(--is-light, #111111) var(--is-dark, #d4d4d4);
+  --fg-muted: var(--is-light, #717171) var(--is-dark, #a1a1a1);
+  --fg-faint: var(--is-light, #b0b0b0) var(--is-dark, #5d5d5d);
+
+  /* Base surface recipe. Use for pages, cards, neutral panels, and default
+     component backgrounds. */
+  --surface: var(--is-light, #ffffff) var(--is-dark, #111111);
+  --surface-fg: var(--is-light, #111111) var(--is-dark, #d4d4d4);
+  --surface-border: var(--is-light, #e5e5e5) var(--is-dark, #252525);
+
+  /* Muted surface recipe. Use for secondary panels, quiet grouped regions,
+     subtle callouts, and low-emphasis rows. */
+  --surface-muted: var(--is-light, #f5f5f5) var(--is-dark, #232323);
+  --surface-muted-fg: var(--is-light, #717171) var(--is-dark, #a1a1a1);
+  --surface-muted-border: var(--is-light, #e5e5e5) var(--is-dark, #3e3e3e);
+
+  /* Hover surface recipe. Use for neutral hover states on ghost controls,
+     menu items, list rows, tabs, and selectable items. */
+  --surface-hover: var(--is-light, #f7f7f7) var(--is-dark, #262626);
+  --surface-hover-fg: var(--is-light, #111111) var(--is-dark, #d4d4d4);
+  --surface-hover-border: var(--is-light, #b0b0b0) var(--is-dark, #5d5d5d);
+
+  /* Active surface recipe. Use for pressed neutral controls and active rows
+     where the state is temporary or interaction-driven. */
+  --surface-active: var(--is-light, #d0d0d0) var(--is-dark, #5d5d5d);
+  --surface-active-fg: var(--is-light, #111111) var(--is-dark, #d4d4d4);
+  --surface-active-border: var(--is-light, #b0b0b0) var(--is-dark, #848484);
+
+  /* Selected surface recipe. Use for current tabs, selected menu options,
+     selected list rows, and persistent neutral selection. */
+  --surface-selected: var(--is-light, #d0d0d0) var(--is-dark, #5d5d5d);
+  --surface-selected-fg: var(--is-light, #111111) var(--is-dark, #d4d4d4);
+  --surface-selected-border: var(--is-light, #b0b0b0) var(--is-dark, #848484);
+
+  /* Disabled surface recipe. Use for disabled controls and disabled rows. */
+  --surface-disabled: var(--is-light, #f5f5f5) var(--is-dark, #232323);
+  --surface-disabled-fg: var(--is-light, #b0b0b0) var(--is-dark, #5d5d5d);
+  --surface-disabled-border: var(--is-light, #e5e5e5) var(--is-dark, #3e3e3e);
+
+  /* Input recipe. Use for text fields, textareas, selects, combobox triggers,
+     date/time inputs, and other field shells. */
+  --input: var(--is-light, #ffffff) var(--is-dark, #111111);
+  --input-fg: var(--is-light, #111111) var(--is-dark, #d4d4d4);
+  --input-fg-muted: var(--is-light, #717171) var(--is-dark, #a1a1a1);
+  --input-fg-faint: var(--is-light, #b0b0b0) var(--is-dark, #5d5d5d);
+  --input-border: var(--is-light, #ecf1f6) var(--is-dark, #3e3e3e);
+
+  /* Input hover recipe. Use when a field shell is hovered but not focused. */
+  --input-hover: var(--is-light, #ffffff) var(--is-dark, #111111);
+  --input-hover-fg: var(--is-light, #111111) var(--is-dark, #d4d4d4);
+  --input-hover-border: var(--is-light, #e3e5e9) var(--is-dark, #5d5d5d);
+
+  /* Input focus recipe. Use for the field shell while focus-visible or
+     focus-within is active. The focus ring still uses --focus. */
+  --input-focus: var(--is-light, #ffffff) var(--is-dark, #232323);
+  --input-focus-fg: var(--is-light, #111111) var(--is-dark, #d4d4d4);
+  --input-focus-border: var(--is-light, #2b7fff) var(--is-dark, #2b7fff);
+
+  /* Input disabled recipe. Use for disabled field shells. */
+  --input-disabled: var(--is-light, #f5f5f5) var(--is-dark, #232323);
+  --input-disabled-fg: var(--is-light, #b0b0b0) var(--is-dark, #5d5d5d);
+  --input-disabled-border: var(--is-light, #e5e5e5) var(--is-dark, #3e3e3e);
+
+  /* Overlay recipe. Use for popovers, dropdown menus, command palettes,
+     tooltips, floating panels, and dialogs. */
+  --overlay: var(--is-light, #ffffff) var(--is-dark, #111111);
+  --overlay-fg: var(--is-light, #111111) var(--is-dark, #d4d4d4);
+  --overlay-border: var(--is-light, #e5e5e5) var(--is-dark, #3e3e3e);
+
+  /* Accent recipe. Use for primary actions, selected accent controls, brand
+     highlights, and links that are intentionally accent-colored. */
+  --accent: var(--is-light, #2b7fff) var(--is-dark, #2b7fff);
+  --accent-fg: var(--is-light, #ffffff) var(--is-dark, #ffffff);
+  --accent-border: var(--is-light, #0d69e7) var(--is-dark, #3c90ff);
+
+  /* Accent hover recipe. Use for hovered primary/accent actions. */
+  --accent-hover: var(--is-light, #0d69e7) var(--is-dark, #3c90ff);
+  --accent-hover-fg: var(--is-light, #ffffff) var(--is-dark, #ffffff);
+  --accent-hover-border: var(--is-light, #0055d2) var(--is-dark, #50a3ff);
+
+  /* Accent active recipe. Use for pressed primary/accent actions. */
+  --accent-active: var(--is-light, #0055d2) var(--is-dark, #0d69e7);
+  --accent-active-fg: var(--is-light, #ffffff) var(--is-dark, #ffffff);
+  --accent-active-border: var(--is-light, #0041be) var(--is-dark, #277cfc);
+
+  /* Accent subtle recipe. Use for low-emphasis accent badges, selected
+     rows that should read as branded, and quiet accent callouts. */
+  --accent-subtle: var(--is-light, #d4e9ff) var(--is-dark, #162946);
+  --accent-subtle-fg: var(--is-light, #2b7fff) var(--is-dark, #bbddff);
+  --accent-subtle-border: var(--is-light, #99b9eb) var(--is-dark, #3a5581);
+
+  /* Focus indicator color. Use for focus-visible rings and outlines only. */
+  --focus: var(--is-light, #2b7fff) var(--is-dark, #2b7fff);
+
+  /* Success filled recipe. Use for high-emphasis positive status. */
+  --success: var(--is-light, #ecfdf5) var(--is-dark, #22740a);
+  --success-fg: var(--is-light, #02271c) var(--is-dark, #b8fab6);
+  --success-border: var(--is-light, #10b981) var(--is-dark, #10b981);
+
+  /* Success subtle recipe. Use for success alerts, badges, toasts, and
+     validation messages that should not be filled with the strong color. */
+  --success-subtle: var(--is-light, #ecfdf5) var(--is-dark, #02271c);
+  --success-subtle-fg: var(--is-light, #02271c) var(--is-dark, #b6fae3);
+  --success-subtle-border: var(--is-light, #a7f3d0) var(--is-dark, #10b981);
+
+  /* Warning filled recipe. Use for high-emphasis cautionary status. */
+  --warning: var(--is-light, #fffbeb) var(--is-dark, #342203);
+  --warning-fg: var(--is-light, #342203) var(--is-dark, #feeac7);
+  --warning-border: var(--is-light, #f59e09) var(--is-dark, #f59e09);
+
+  /* Warning subtle recipe. Use for warning alerts, badges, toasts, and
+     validation messages that should not be filled with the strong color. */
+  --warning-subtle: var(--is-light, #fffbeb) var(--is-dark, #342203);
+  --warning-subtle-fg: var(--is-light, #342203) var(--is-dark, #feeac7);
+  --warning-subtle-border: var(--is-light, #fde68a) var(--is-dark, #f59e09);
+
+  /* Danger filled recipe. Use for destructive actions and high-emphasis
+     error states. */
+  --danger: var(--is-light, #dc2626) var(--is-dark, #a22e2e);
+  --danger-fg: var(--is-light, #ffffff) var(--is-dark, #ffffff);
+  --danger-border: var(--is-light, #dc2626) var(--is-dark, #a22e2e);
+
+  /* Danger hover recipe. Use for hovered destructive actions. */
+  --danger-hover: var(--is-light, #cb0314) var(--is-dark, #b6423f);
+  --danger-hover-fg: var(--is-light, #ffffff) var(--is-dark, #ffffff);
+  --danger-hover-border: var(--is-light, #cb0314) var(--is-dark, #b6423f);
+
+  /* Danger active recipe. Use for pressed destructive actions. */
+  --danger-active: var(--is-light, #b90000) var(--is-dark, #8e181d);
+  --danger-active-fg: var(--is-light, #ffffff) var(--is-dark, #ffffff);
+  --danger-active-border: var(--is-light, #b90000) var(--is-dark, #8e181d);
+
+  /* Danger subtle recipe. Use for validation messages, error alerts, danger
+     badges, and invalid field background treatments. */
+  --danger-subtle: var(--is-light, #fef2f2) var(--is-dark, #9b1c1c);
+  --danger-subtle-fg: var(--is-light, #991b1b) var(--is-dark, #ffffff);
+  --danger-subtle-border: var(--is-light, #fecaca) var(--is-dark, #9b1c1c);
+
+  /* Info filled recipe. Use for high-emphasis informational status. */
+  --info: var(--is-light, #f5f5f5) var(--is-dark, #262626);
+  --info-fg: var(--is-light, #2b2b2b) var(--is-dark, #dcdcdc);
+  --info-border: var(--is-light, #e5e5e5) var(--is-dark, #3e3e3e);
+
+  /* Info subtle recipe. Use for informational alerts, badges, and toasts. */
+  --info-subtle: var(--is-light, #f5f5f5) var(--is-dark, #262626);
+  --info-subtle-fg: var(--is-light, #2b2b2b) var(--is-dark, #dcdcdc);
+  --info-subtle-border: var(--is-light, #e5e5e5) var(--is-dark, #3e3e3e);
+
+  /* Focus ring shadow color. Use for standard focus-visible box shadows. */
+  --focus-ring: var(--is-light, rgba(43, 127, 255, 0.18)) var(--is-dark, rgba(43, 127, 255, 0.18));
+
+  /* Strong focus ring shadow color. Use where the ring sits over busy controls. */
+  --focus-ring-strong: var(--is-light, rgba(43, 127, 255, 0.5)) var(--is-dark, rgba(43, 127, 255, 0.5));
+
+  /* Input focus shadow color. Use for field focus-visible box shadows. */
+  --input-focus-ring: var(--is-light, rgba(43, 127, 255, 0.18)) var(--is-dark, rgba(43, 127, 255, 0.18));
+
+  /* Danger focus shadow color. Use for invalid focus-visible box shadows. */
+  --danger-ring: var(--is-light, rgba(220, 38, 38, 0.18)) var(--is-dark, rgba(162, 46, 46, 0.18));
+
+  /* Base radius. Change this to make the whole system sharper or softer. */
+  --radius: 0.5rem;
+
+  /* Surface radius. Use for panels, cards, popovers, menus, and dialogs. */
+  --radius-surface: var(--radius);
+
+  /* Input radius. Use for text fields, textareas, selects, combobox triggers,
+     and segmented date/time inputs. */
+  --radius-input: var(--radius);
+
+  /* Control radius. Use for buttons, toggles, chips, checkboxes, radios, and
+     compact controls. */
+  --radius-control: var(--radius);
+
+  /* Base spacing unit. Change this to make component spacing denser or looser
+     without changing page layout. */
+  --space: 0.25rem;
+
+  /* Surface padding. Use for cards, popovers, dialogs, menus, and panels. */
+  --surface-padding: calc(var(--space) * 4);
+
+  /* Surface gap. Use between sections inside cards, popovers, dialogs, and
+     other contained surfaces. */
+  --surface-gap: calc(var(--space) * 3);
+
+  /* Content gap. Use between labels, descriptions, validation messages, and
+     related field content. */
+  --content-gap: calc(var(--space) * 2);
+
+  /* Item gap. Use between icon + text, checkbox + label, and inline content
+     inside a single row/control. */
+  --item-gap: calc(var(--space) * 2);
+
+  /* Control height. Use for buttons, toolbar controls, selects */
+  --control-height-sm: 1.5rem;
+  --control-height-md: 2.0rem;
+  --control-height-lg: 2.5rem;
+
+  /* Input height. Use for text fields, selects, combobox triggers, and other field shells. */
+  --input-height-sm: var(--control-height-sm);
+  --input-height-md: var(--control-height-md);
+  --input-height-lg: var(--control-height-lg);
+
+  /* Horizontal padding for small/default/large buttons and compact controls. */
+  --control-padding-x-sm: calc(var(--space) * 2);
+  --control-padding-x-md: calc(var(--space) * 2);
+  --control-padding-x-lg: calc(var(--space) * 3);
+
+  /* Gap between icon and label inside buttons and compact controls. */
+  --control-gap: calc(var(--space) * 2);
+
+  /* Horizontal padding for small/default/large field controls. */
+  --input-padding-x-sm: calc(var(--space) * 2);
+  --input-padding-x-md: calc(var(--space) * 2);
+  --input-padding-x-lg: calc(var(--space) * 3);
+
+  /* Vertical padding for multiline inputs and textareas. Single-line inputs
+     should usually use height tokens instead. */
+  --input-padding-y: calc(var(--space) * 1);
+
+  /* Option/menu row padding. Use for select options, combobox options, menu
+     items, command rows, and similar list actions. */
+  --list-item-padding-x: calc(var(--space) * 1.5);
+  --list-item-padding-y: calc(var(--space) * 1);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"], [data-theme="dark"]) {
+    --is-light: var(--OFF);
+    --is-dark: var(--ON);
+  }
+}
+
+:root[data-theme="light"],
+html[data-theme="light"] {
+  --is-light: var(--ON);
+  --is-dark: var(--OFF);
+}
+
+:root[data-theme="dark"],
+html[data-theme="dark"] {
+  --is-light: var(--OFF);
+  --is-dark: var(--ON);
+}

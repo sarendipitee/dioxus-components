@@ -12,11 +12,11 @@
   position: absolute;
   z-index: 1000;
   max-width: 250px;
-  padding: 8px 12px;
-  border-radius: 0.5rem;
+  padding: calc(var(--space) * 2) calc(var(--space) * 3);
+  border-radius: var(--radius-surface);
   animation: dx-tooltip-fade-in 0.2s ease-in-out;
-  background-color: var(--secondary-color-4);
-  color: var(--primary-color);
+  background: var(--overlay);
+  color: var(--overlay-fg);
   font-size: 14px;
   line-height: 1.4;
 }
@@ -35,14 +35,14 @@
   position: absolute;
   bottom: 100%;
   left: 50%;
-  margin-bottom: 8px;
+  margin-bottom: calc(var(--space) * 2);
   transform: translateX(-50%);
 }
 
 .dx-tooltip-content[data-side="top"]::after {
   top: calc(100% - 0.25rem);
   left: 50%;
-  border-color: var(--secondary-color-4);
+  border-color: var(--overlay);
   border-radius: 0 0 0.1rem;
 }
 
@@ -50,14 +50,14 @@
   position: absolute;
   top: 50%;
   left: 100%;
-  margin-left: 8px;
+  margin-left: calc(var(--space) * 2);
   transform: translateY(-50%);
 }
 
 .dx-tooltip-content[data-side="right"]::after {
   top: calc(50% - 0.25rem);
   left: 0;
-  border-color: var(--secondary-color-4);
+  border-color: var(--overlay);
   border-radius: 0 0 0 0.1rem;
 }
 
@@ -65,14 +65,14 @@
   position: absolute;
   top: 100%;
   left: 50%;
-  margin-top: 8px;
+  margin-top: calc(var(--space) * 2);
   transform: translateX(-50%);
 }
 
 .dx-tooltip-content[data-side="bottom"]::after {
   bottom: calc(100% - 0.25rem);
   left: 50%;
-  border-color: var(--secondary-color-4);
+  border-color: var(--overlay);
   border-radius: 0.1rem 0 0;
 }
 
@@ -80,14 +80,14 @@
   position: absolute;
   top: 50%;
   right: 100%;
-  margin-right: 8px;
+  margin-right: calc(var(--space) * 2);
   transform: translateY(-50%);
 }
 
 .dx-tooltip-content[data-side="left"]::after {
   top: calc(50% - 0.25rem);
   right: -0.25rem;
-  border-color: var(--secondary-color-4);
+  border-color: var(--overlay);
   border-radius: 0 0.1rem 0 0;
 }
 

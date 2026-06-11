@@ -27,6 +27,6 @@
     "tooltip"
   ],
   "globalAssets": [
-    "../../../assets/dx-components-theme.css"
+    "../../../../themes/default.css"
   ]
 }

@@ -29,7 +29,7 @@ pub struct AspectRatioProps {
 /// fn App() -> Element {
 ///     rsx! {
 ///         AspectRatio { ratio: 16.0 / 9.0,
-///             div { style: "background-color: lightblue; width: 100%; height: 100%;",
+///             div { style: "background: lightblue; width: 100%; height: 100%;",
 ///                 "This div maintains a 16:9 aspect ratio."
 ///             }
 ///         }
@@ -41,14 +41,8 @@ pub fn AspectRatio(props: AspectRatioProps) -> Element {
     let ratio = 100.0 / (props.ratio);
 
     rsx! {
-        div {
-            style: "position: relative; width: 100%; padding-bottom: {ratio}%;",
-            div {
-                style: "position: absolute; inset: 0;",
-                ..props.attributes,
-
-                {props.children}
-            }
+        div { style: "position: relative; width: 100%; padding-bottom: {ratio}%;",
+            div { style: "position: absolute; inset: 0;", ..props.attributes, {props.children} }
         }
     }
 }

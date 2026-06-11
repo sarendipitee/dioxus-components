@@ -77,7 +77,7 @@ pub fn Schedule(props: ScheduleProps) -> Element {
             "data-locale": props.locale,
             "data-dragging": dragging_event().is_some(),
             "data-resizing": resizing_event().is_some(),
-            style: props.radius.as_ref().map(|radius| format!("--dxc-schedule-radius: {radius};")),
+            style: props.radius.as_ref().map(|radius| format!("--schedule-prop-radius: {radius};")),
             ..props.attributes,
 
             if let Some(header) = props.header {

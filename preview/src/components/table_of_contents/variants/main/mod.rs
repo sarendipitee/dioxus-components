@@ -21,10 +21,10 @@ pub fn Demo() -> Element {
             max_height: "40rem",
             overflow_y: "auto",
             padding: "2rem",
-            border: "1px solid var(--primary-color-6)",
+            border: "1px solid var(--surface-border)",
             border_radius: "1rem",
-            background: "var(--primary-color-2)",
-            color: "var(--secondary-color-1)",
+            background: "var(--surface-hover)",
+            color: "var(--fg)",
 
             article {
                 max_width: "44rem",
@@ -55,7 +55,7 @@ pub fn Demo() -> Element {
                         flex_direction: "column",
                         gap: "1rem",
                         padding_left: "1.5rem",
-                        border_left: "1px solid var(--primary-color-6)",
+                        border_left: "1px solid var(--surface-border)",
                         h3 { id: "configuration", "Configuration" }
                         p { "Use the selector to scope which headings participate and choose a scroll host when the document uses an internal panel instead of the browser window." }
                         p { "Indentation in the rendered list reflects heading depth, so a mix of h2, h3, and h4 entries is useful when checking hierarchy." }
@@ -65,7 +65,7 @@ pub fn Demo() -> Element {
                             flex_direction: "column",
                             gap: "1rem",
                             padding_left: "1.25rem",
-                            border_left: "1px solid var(--primary-color-6)",
+                            border_left: "1px solid var(--surface-border)",
                             h4 { id: "offsets", "Offsets" }
                             p { "Offset tuning decides when a heading becomes active. In this demo the active item flips before the heading reaches the top edge, which keeps the label change readable during slower scrolling." }
                         }
@@ -85,7 +85,7 @@ pub fn Demo() -> Element {
                         flex_direction: "column",
                         gap: "1rem",
                         padding_left: "1.5rem",
-                        border_left: "1px solid var(--primary-color-6)",
+                        border_left: "1px solid var(--surface-border)",
                         h3 { id: "reinitialization", "Reinitialization" }
                         p { "Call reinitialize after heading content changes so the hook can rescan the document and keep the table of contents aligned with the rendered article." }
                     }
@@ -104,7 +104,7 @@ pub fn Demo() -> Element {
                         flex_direction: "column",
                         gap: "1rem",
                         padding_left: "1.5rem",
-                        border_left: "1px solid var(--primary-color-6)",
+                        border_left: "1px solid var(--surface-border)",
                         h3 { id: "accessibility", "Accessibility" }
                         p { "Consistent heading order and stable ids help keyboard users and assistive technology users move between the article and its generated navigation." }
                     }

@@ -12,15 +12,15 @@
     flex-direction: column;
     align-items: flex-start;
     padding: 6rem 0 8rem;
-    border-bottom: 1px solid var(--primary-color-6);
+    border-bottom: 1px solid var(--surface-border);
     gap: 1rem;
 }
 
 .dx-hero-shell::before {
     position: absolute;
     background-image:
-        linear-gradient(var(--primary-color-6) 1px, transparent 1px),
-        linear-gradient(90deg, var(--primary-color-6) 1px, transparent 1px);
+        linear-gradient(var(--surface-border) 1px, transparent 1px),
+        linear-gradient(90deg, var(--surface-border) 1px, transparent 1px);
     background-size: 28px 28px;
     content: "";
     inset: 0;
@@ -48,10 +48,10 @@
     box-sizing: border-box;
     align-items: center;
     padding: 0 1rem;
-    border: 1px solid var(--secondary-color-3);
+    border: 1px solid var(--fg);
     border-radius: 0.25rem;
-    background-color: var(--secondary-color-3);
-    color: var(--primary-color);
+    background: var(--fg);
+    color: var(--surface);
     font-size: 0.925rem;
     font-weight: 500;
     gap: 0.4rem;
@@ -62,13 +62,13 @@
 }
 
 .dx-hero-cta-primary:hover {
-    border-color: var(--secondary-color-2);
-    background-color: var(--secondary-color-2);
+    border-color: var(--accent);
+    background: var(--accent);
     transform: translateY(-1px);
 }
 
 .dx-hero-cta-primary:focus-visible {
-    outline: 2px solid var(--focused-border-color);
+    outline: 2px solid var(--focus);
     outline-offset: 3px;
 }
 
@@ -86,17 +86,17 @@
 }
 
 .dx-hero-title {
-    color: var(--secondary-color-3);
+    color: var(--fg);
 }
 
 .dx-hero-subtitle {
-    color: var(--secondary-color-5);
+    color: var(--fg-muted);
 }
 
 .dx-hero-summary {
     max-width: 40rem;
     margin: 0 0 2rem;
-    color: var(--secondary-color-5);
+    color: var(--fg-muted);
     font-size: 0.95rem;
     line-height: 1.6;
     text-wrap: pretty;
@@ -109,10 +109,10 @@
     box-sizing: border-box;
     align-items: center;
     padding: 0 0.5rem 0 0.75rem;
-    border: 1px solid var(--primary-color-6);
+    border: 1px solid var(--surface-border);
     border-radius: 0.25rem;
-    background-color: var(--primary-color-1);
-    color: var(--secondary-color-4);
+    background: var(--surface-muted);
+    color: var(--fg-muted);
     gap: 0.5rem;
 }
 

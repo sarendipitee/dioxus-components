@@ -29,7 +29,7 @@ fn PaneContent(title: &'static str, content: &'static str) -> Element {
         div {
             style: "height: 100%; box-sizing: border-box; padding: 1rem;",
             h3 { style: "margin: 0 0 0.5rem; font-size: 1rem;", "{title}" }
-            p { style: "margin: 0; color: var(--primary-color-11);", "{content}" }
+            p { style: "margin: 0; color: var(--fg);", "{content}" }
         }
     }
 }

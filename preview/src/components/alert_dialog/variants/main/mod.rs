@@ -25,7 +25,7 @@ pub fn Demo() -> Element {
             }
         }
         if confirmed() {
-            p { style: "color: var(--contrast-error-color); margin-top: 16px; font-weight: 600;",
+            p { style: "color: var(--danger-subtle-fg); margin-top: 16px; font-weight: 600;",
                 "Item deleted!"
             }
         }

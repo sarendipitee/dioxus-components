@@ -47,38 +47,38 @@
   max-width: calc(100% - 2rem);
   box-sizing: border-box;
   flex-direction: column;
-  padding: 32px 24px 24px;
-  border: 1px solid var(--primary-color-6);
-  border-radius: 8px;
+  padding: calc(var(--space) * 8) calc(var(--space) * 6) calc(var(--space) * 6);
+  border: 1px solid var(--overlay-border);
+  border-radius: var(--radius-surface);
   margin: 0;
   animation: none;
-  background: var(--primary-color-2);
+  background: var(--overlay);
   box-shadow: 0 2px 10px rgb(0 0 0 / 18%);
-  color: var(--secondary-color-4);
+  color: var(--overlay-fg);
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica,
     Arial, sans-serif;
-  gap: 16px;
+  gap: calc(var(--space) * 4);
   text-align: center;
   transform: translate(-50%, -50%);
 }
 
 .dx-alert-dialog-title {
   margin: 0;
-  color: var(--secondary-color-4);
+  color: var(--overlay-fg);
   font-size: 1.25rem;
   font-weight: 700;
 }
 
 .dx-alert-dialog-description {
   margin: 0;
-  color: var(--secondary-color-5);
+  color: var(--fg-muted);
   font-size: 1rem;
 }
 
 .dx-alert-dialog-actions {
   display: flex;
   flex-direction: column-reverse;
-  gap: 12px;
+  gap: calc(var(--space) * 3);
 }
 
 @media (width >= 40rem) {
@@ -95,39 +95,38 @@
 
 .dx-alert-dialog-cancel {
   padding: 8px 18px;
-  border: 1px solid var(--primary-color-6);
-  border-radius: 0.5rem;
-  background-color: var(--light, var(--primary-color))
-    var(--dark, var(--primary-color-3));
-  color: var(--secondary-color-4);
+  border: 1px solid var(--overlay-border);
+  border-radius: var(--radius-control);
+  background: var(--surface);
+  color: var(--surface-fg);
   cursor: pointer;
   font-size: 1rem;
   transition: background-color 0.2s ease;
 }
 
 .dx-alert-dialog-cancel:hover {
-  background-color: var(--primary-color-4);
+  background: var(--surface-hover);
 }
 
 .dx-alert-dialog-cancel:focus-visible {
-  box-shadow: 0 0 0 2px var(--focused-border-color);
+  box-shadow: 0 0 0 2px var(--focus);
 }
 
 .dx-alert-dialog-action {
   padding: 8px 18px;
-  border: 1px solid var(--primary-error-color);
-  border-radius: 0.5rem;
-  background-color: var(--primary-error-color);
-  color: var(--contrast-error-color);
+  border: 1px solid var(--danger-border);
+  border-radius: var(--radius-control);
+  background: var(--danger);
+  color: var(--danger-fg);
   cursor: pointer;
   font-size: 1rem;
   transition: background-color 0.2s ease;
 }
 
 .dx-alert-dialog-action:hover {
-  background-color: var(--secondary-error-color);
+  background: var(--danger-hover);
 }
 
 .dx-alert-dialog-action:focus-visible {
-  box-shadow: 0 0 0 2px var(--focused-border-color);
+  box-shadow: 0 0 0 2px var(--focus);
 }

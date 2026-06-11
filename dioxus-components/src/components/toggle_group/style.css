@@ -7,8 +7,8 @@
   padding: 10px;
   border: none;
   border-radius: 0;
-  background-color: transparent;
-  color: var(--secondary-color-4);
+  background: transparent;
+  color: var(--surface-fg);
   font-size: 14px;
   outline: none;
   transition: background-color 200ms ease, border 200ms ease, outline-color 150ms;
@@ -16,51 +16,51 @@
 
 .dx-toggle-group[data-allow-multiple-pressed="true"]
   .dx-toggle-item {
-  border-top: 1px solid var(--primary-color-6);
-  border-right: 1px solid var(--primary-color-6);
-  border-bottom: 1px solid var(--primary-color-6);
+  border-top: 1px solid var(--surface-border);
+  border-right: 1px solid var(--surface-border);
+  border-bottom: 1px solid var(--surface-border);
 }
 
 .dx-toggle-item:hover,
 .dx-toggle-item:focus-visible {
-  background-color: var(--primary-color-4);
+  background: var(--surface-hover);
   cursor: pointer;
 }
 
 .dx-toggle-item[data-state="on"] {
-  background-color: var(--primary-color-7);
-  color: var(--secondary-color-1);
+  background: var(--accent);
+  color: var(--accent-fg);
 }
 
 .dx-toggle-item:focus-visible {
   position: relative;
   z-index: 1;
-  outline: 2px solid var(--focused-border-color);
+  outline: 2px solid var(--focus);
   outline-offset: 2px;
 }
 
 .dx-toggle-group[data-allow-multiple-pressed="true"]
   .dx-toggle-item[data-state="on"] {
-  border-top: 1px solid var(--secondary-color-6);
-  border-right: 1px solid var(--secondary-color-6);
-  border-bottom: 1px solid var(--secondary-color-6);
+  border-top: 1px solid var(--accent-border);
+  border-right: 1px solid var(--accent-border);
+  border-bottom: 1px solid var(--accent-border);
 }
 
 .dx-toggle-group[data-allow-multiple-pressed="true"]
   .dx-toggle-item:first-child[data-state="on"] {
-  border: 1px solid var(--secondary-color-6);
+  border: 1px solid var(--accent-border);
 }
 
 .dx-toggle-item:first-child {
-  border-bottom-left-radius: 0.5rem;
-  border-top-left-radius: 0.5rem;
+  border-bottom-left-radius: var(--radius-control);
+  border-top-left-radius: var(--radius-control);
 }
 
 .dx-toggle-group[data-allow-multiple-pressed="true"] .dx-toggle-item:first-child {
-  border: 1px solid var(--primary-color-6);
+  border: 1px solid var(--surface-border);
 }
 
 .dx-toggle-item:last-child {
-  border-bottom-right-radius: 0.5rem;
-  border-top-right-radius: 0.5rem;
+  border-bottom-right-radius: var(--radius-control);
+  border-top-right-radius: var(--radius-control);
 }

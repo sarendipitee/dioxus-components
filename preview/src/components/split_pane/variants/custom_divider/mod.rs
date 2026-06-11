@@ -10,7 +10,7 @@ pub fn Demo() -> Element {
                 direction: SplitPaneDirection::Horizontal,
                 divider_size: 18.0,
                 divider_class: "split-pane-demo-divider",
-                divider_style: "background: color-mix(in oklab, var(--secondary-color-2) 18%, var(--primary-color-3));",
+                divider_style: "background: color-mix(in srgb, var(--accent) 18%, var(--surface-muted));",
                 Pane {
                     default_size: SplitPaneSize::percent(45.0),
                     min_size: SplitPaneSize::px(180.0),
@@ -19,7 +19,7 @@ pub fn Demo() -> Element {
                 SplitPaneDivider {
                     divider: rsx! {
                         span {
-                            style: "width: 0.375rem; height: 3rem; border-radius: 9999px; background: var(--secondary-color-2); box-shadow: 0 0 0 1px var(--primary-color-1);"
+                            style: "width: 0.375rem; height: 3rem; border-radius: 9999px; background: var(--accent); box-shadow: 0 0 0 1px var(--surface-muted);"
                         }
                     },
                 }
@@ -38,7 +38,7 @@ fn Panel(title: &'static str, body: &'static str) -> Element {
         div {
             style: "height: 100%; box-sizing: border-box; padding: 1rem;",
             h3 { style: "margin: 0 0 0.5rem; font-size: 1rem;", "{title}" }
-            p { style: "margin: 0; color: var(--primary-color-11);", "{body}" }
+            p { style: "margin: 0; color: var(--fg);", "{body}" }
         }
     }
 }

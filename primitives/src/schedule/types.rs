@@ -547,7 +547,7 @@ pub struct ScheduleProps {
     /// schedule header regardless of [`ScheduleProps::with_default_header`].
     #[props(default)]
     pub header: Option<Element>,
-    /// Radius token exposed through `--dxc-schedule-radius` for style layers.
+    /// Runtime radius value exposed through `--schedule-prop-radius` for style layers.
     #[props(default)]
     pub radius: Option<String>,
     /// Class names for stable schedule styling hooks.

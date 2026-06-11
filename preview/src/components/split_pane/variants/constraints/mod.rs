@@ -30,7 +30,7 @@ fn Panel(title: &'static str, body: &'static str) -> Element {
         div {
             style: "height: 100%; box-sizing: border-box; padding: 1rem;",
             h3 { style: "margin: 0 0 0.5rem; font-size: 1rem;", "{title}" }
-            p { style: "margin: 0; color: var(--primary-color-11);", "{body}" }
+            p { style: "margin: 0; color: var(--fg);", "{body}" }
         }
     }
 }

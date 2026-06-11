@@ -14,5 +14,5 @@
     }
   ],
   "componentDependencies": [],
-  "globalAssets": ["../../../assets/dx-components-theme.css"]
+  "globalAssets": ["../../../../themes/default.css"]
 }

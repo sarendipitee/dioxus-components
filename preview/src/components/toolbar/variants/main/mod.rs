@@ -13,8 +13,8 @@ fn ToggleToolbarButton(
             index,
             on_click,
             "data-state": if is_on { "on" } else { "off" },
-            background: if is_on { "var(--light, var(--primary-color-5)) var(--dark, var(--primary-color-6))" } else { "" },
-            color: if is_on { "var(--secondary-color-1)" } else { "" },
+            background: if is_on { "var(--surface-selected)" } else { "" },
+            color: if is_on { "var(--fg)" } else { "" },
             {children}
         }
     }

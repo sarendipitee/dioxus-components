@@ -5,15 +5,12 @@
 .dx-select-trigger {
   display: flex;
   box-sizing: border-box;
-  flex-direction: row;
-  align-items: center;
-  justify-content: space-between;
-  padding: 8px 12px;
-  border: none;
-  border-radius: 0.5rem;
-  background: var(--light, var(--primary-color)) var(--dark, var(--primary-color-3));
-  box-shadow: inset 0 0 0 1px var(--light, var(--primary-color-6)) var(--dark, var(--primary-color-7));
-  color: var(--secondary-color-4);
+  width: 100%;
+  min-width: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--input-fg);
   cursor: pointer;
   font-family: inherit;
   gap: 0.25rem;
@@ -21,24 +18,39 @@
   transition: background-color 100ms ease-out;
 }
 
-.dx-select-trigger:hover:not([data-disabled="true"]),
-.dx-select-trigger:focus-visible {
-  background: var(--light, var(--primary-color-4)) var(--dark, var(--primary-color-5));
-  color: var(--secondary-color-1);
+.dx-select-trigger:disabled {
+  cursor: not-allowed;
+}
+
+.dx-select-trigger:focus-visible:not(:disabled) .dx-select-input:not([data-error="true"]) {
+  border-color: var(--input-focus-border);
+  background: var(--input-focus);
+  color: var(--input-focus-fg);
+  box-shadow: 0 0 0 3px var(--input-focus-ring);
+}
+
+.dx-select-trigger:not(:disabled) .dx-select-input {
+  cursor: pointer;
+}
+
+.dx-select-value {
+  display: flex;
+  min-width: 0;
+  flex: 1 1 auto;
+  align-items: center;
+  font-size: 0.875rem;
 }
 
 .dx-select-trigger span[data-placeholder="true"] {
-  color: var(--secondary-color-5);
+  color: var(--input-fg-muted);
 }
 
 .dx-select[data-state="open"] .dx-select-trigger {
   pointer-events: none;
 }
 
-.dx-select[data-disabled="true"] .dx-select-trigger {
-  color: var(--secondary-color-5);
-  cursor: not-allowed;
-  opacity: 0.5;
+.dx-select-expand-icon {
+  color: var(--input-fg-muted);
 }
 
 .dx-select-list {
@@ -48,12 +60,12 @@
   left: 0;
   min-width: 100%;
   box-sizing: border-box;
-  padding: 0.25rem;
-  border-radius: 0.5rem;
-  margin-top: 0.25rem;
-  background: var(--light, var(--primary-color)) var(--dark, var(--primary-color-5));
-  box-shadow: inset 0 0 0 1px var(--light, var(--primary-color-6)) var(--dark, var(--primary-color-7));
-  color: var(--secondary-color-1);
+  padding: var(--space);
+  border-radius: var(--radius-surface);
+  margin-top: var(--space);
+  background: var(--surface);
+  box-shadow: inset 0 0 0 1px var(--surface-border);
+  color: var(--surface-fg);
   opacity: 0;
   pointer-events: none;
   transform-origin: top;
@@ -98,8 +110,8 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 8px 12px;
-  border-radius: 0.375rem;
+  padding: calc(var(--space) * 2) calc(var(--space) * 3);
+  border-radius: var(--radius-control);
   cursor: pointer;
   font-size: 0.875rem;
   outline: none;
@@ -108,19 +120,19 @@
 
 .dx-select-option:hover:not([data-disabled="true"]),
 .dx-select-option:focus-visible {
-  background: var(--light, var(--primary-color-4)) var(--dark, var(--primary-color-7));
-  color: var(--secondary-color-1);
+  background: var(--surface-hover);
+  color: var(--surface-hover-fg);
 }
 
 .dx-select-option[data-disabled="true"] {
-  color: var(--secondary-color-5);
+  color: var(--input-disabled-fg);
   cursor: not-allowed;
   opacity: 0.5;
   pointer-events: none;
 }
 
 .dx-select-group-label {
-  padding: 4px 12px;
-  color: var(--secondary-color-5);
+  padding: var(--space) calc(var(--space) * 3);
+  color: var(--input-fg-muted);
   font-size: 0.75rem;
 }

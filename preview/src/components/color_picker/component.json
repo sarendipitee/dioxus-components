@@ -14,5 +14,5 @@
     }
   ],
   "componentDependencies": ["popover", "input"],
-  "globalAssets": ["../../../assets/dx-components-theme.css"]
+  "globalAssets": ["../../../../themes/default.css"]
 }

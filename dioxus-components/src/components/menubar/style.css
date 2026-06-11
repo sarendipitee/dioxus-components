@@ -1,12 +1,12 @@
 .dx-menubar {
   display: flex;
   box-sizing: border-box;
-  padding: 0.25rem;
+  padding: var(--space);
   border: none;
-  border-radius: 0.5rem;
-  background: var(--primary-color-2);
-  box-shadow: inset 0 0 0 1px var(--primary-color-6);
-  gap: 0.25rem;
+  border-radius: var(--radius-surface);
+  background: var(--surface);
+  box-shadow: inset 0 0 0 1px var(--surface-border);
+  gap: var(--space);
 }
 
 .dx-menubar-menu {
@@ -14,32 +14,30 @@
 }
 
 .dx-menubar-trigger {
-  padding: 8px 12px;
+  padding: calc(var(--space) * 2) calc(var(--space) * 3);
   border: none;
-  border-radius: calc(0.5rem - 0.25rem);
+  border-radius: calc(var(--radius) - var(--space));
   background: none;
-  color: var(--secondary-color-4);
+  color: var(--surface-fg);
   cursor: pointer;
   transition: background-color 100ms ease-out;
 }
 
 .dx-menubar-menu[data-state="open"] .dx-menubar-trigger {
-  background-color: var(--light, var(--primary-color-4))
-    var(--dark, var(--primary-color-7));
-  color: var(--secondary-color-1);
+  background: var(--surface-selected);
+  color: var(--surface-selected-fg);
 }
 
 .dx-menubar-trigger[data-disabled="true"] {
-  color: var(--secondary-color-5);
+  color: var(--surface-disabled-fg);
   cursor: not-allowed;
   opacity: 0.5;
 }
 
 .dx-menubar-trigger:hover:not([data-disabled="true"]),
 .dx-menubar-trigger:focus-visible {
-  background: var(--light, var(--primary-color-4))
-    var(--dark, var(--primary-color-7));
-  color: var(--secondary-color-1);
+  background: var(--surface-hover);
+  color: var(--surface-hover-fg);
   outline: none;
 }
 
@@ -49,13 +47,11 @@
   top: 100%;
   left: 0;
   min-width: 200px;
-  padding: 0.25rem;
-  border-radius: 0.5rem;
-  margin-top: 0.5rem;
-  background: var(--light, var(--primary-color))
-    var(--dark, var(--primary-color-5));
-  box-shadow: inset 0 0 0 1px var(--light, var(--primary-color-6))
-    var(--dark, var(--primary-color-7));
+  padding: var(--space);
+  border-radius: var(--radius-surface);
+  margin-top: calc(var(--space) * 2);
+  background: var(--overlay);
+  box-shadow: inset 0 0 0 1px var(--overlay-border);
   opacity: 0;
   pointer-events: none;
   transform-origin: top;
@@ -63,7 +59,7 @@
 }
 
 .dx-menubar-menu:first-child .dx-menubar-content {
-  margin-left: -0.25rem;
+  margin-left: calc(var(--space) * -1);
 }
 
 .dx-menubar-content[data-state="closed"] {
@@ -102,22 +98,21 @@
 
 .dx-menubar-item {
   display: block;
-  padding: 8px 12px;
-  border-radius: calc(0.5rem - 0.25rem);
+  padding: calc(var(--space) * 2) calc(var(--space) * 3);
+  border-radius: calc(var(--radius) - var(--space));
   cursor: pointer;
   font-size: 14px;
 }
 
 .dx-menubar-item[data-disabled="true"] {
-  color: var(--secondary-color-5);
+  color: var(--surface-disabled-fg);
   cursor: not-allowed;
   opacity: 0.5;
 }
 
 .dx-menubar-item:hover:not([data-disabled="true"]),
 .dx-menubar-item:focus-visible {
-  background: var(--light, var(--primary-color-4))
-    var(--dark, var(--primary-color-7));
-  color: var(--secondary-color-1);
+  background: var(--surface-hover);
+  color: var(--surface-hover-fg);
   outline: none;
 }

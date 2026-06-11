@@ -11,7 +11,7 @@ struct Styles;
 pub fn Accordion(props: AccordionProps) -> Element {
     rsx! {
         accordion::Accordion {
-            class: Styles::dx_accordion,
+            class: Styles::dx_accordion.to_string(),
             width: "15rem",
             id: props.id,
             allow_multiple_open: props.allow_multiple_open,
@@ -28,7 +28,7 @@ pub fn Accordion(props: AccordionProps) -> Element {
 pub fn AccordionItem(props: AccordionItemProps) -> Element {
     rsx! {
         accordion::AccordionItem {
-            class: Styles::dx_accordion_item,
+            class: Styles::dx_accordion_item.to_string(),
             disabled: props.disabled,
             default_open: props.default_open,
             on_change: props.on_change,
@@ -44,12 +44,12 @@ pub fn AccordionItem(props: AccordionItemProps) -> Element {
 pub fn AccordionTrigger(props: AccordionTriggerProps) -> Element {
     rsx! {
         accordion::AccordionTrigger {
-            class: Styles::dx_accordion_trigger,
+            class: Styles::dx_accordion_trigger.to_string(),
             id: props.id,
             attributes: props.attributes,
             {props.children}
             ChevronDown {
-                class: Styles::dx_accordion_expand_icon,
+                class: Styles::dx_accordion_expand_icon.to_string(),
                 size: "20px",
                 stroke: "var(--secondary-color-4)",
             }
@@ -61,7 +61,7 @@ pub fn AccordionTrigger(props: AccordionTriggerProps) -> Element {
 pub fn AccordionContent(props: AccordionContentProps) -> Element {
     rsx! {
         accordion::AccordionContent {
-            class: Styles::dx_accordion_content,
+            class: Styles::dx_accordion_content.to_string(),
             style: "--collapsible-content-width: 140px",
             id: props.id,
             attributes: props.attributes,

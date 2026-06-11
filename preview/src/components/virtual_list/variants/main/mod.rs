@@ -23,26 +23,26 @@ pub fn Demo() -> Element {
 .dx-virtual-list-demo .dx-virtual-list-subtitle {{
   margin: 0;
   margin-bottom: 0.75rem;
-  color: var(--primary-color-9);
+  color: var(--fg-muted);
   font-size: 0.9rem;
 }}
 
 .dx-virtual-list-card {{
   padding: 0.75rem 0.9rem;
-  border: 1px solid var(--primary-color-6);
+  border: 1px solid var(--surface-border);
   border-radius: 0.625rem;
-  background: var(--primary-color-2);
+  background: var(--surface-hover);
 }}
 
 .dx-virtual-list-card h3 {{
   margin: 0 0 0.3rem;
-  color: var(--primary-color-12);
+  color: var(--fg);
   font-size: 0.95rem;
 }}
 
 .dx-virtual-list-card p {{
   margin: 0;
-  color: var(--primary-color-11);
+  color: var(--fg);
   font-size: 0.875rem;
   line-height: 1.4;
 }}"# }

@@ -1,5 +1,5 @@
 .dx-dnd-list {
-  --dx-item-gap: 6px;
+  --dx-item-gap: calc(var(--space) * 1.5);
 
   width: 100%;
 }
@@ -23,11 +23,10 @@
   align-items: center;
   justify-content: space-between;
   padding: 12px 14px 12px 10px;
-  border: 1px solid var(--primary-color-6);
-  border-radius: 10px;
-  background-color: var(--light, #fff)
-    var(--dark, var(--primary-color-4));
-  color: var(--secondary-color-4);
+  border: 1px solid var(--surface-border);
+  border-radius: var(--radius-surface);
+  background: var(--surface);
+  color: var(--surface-fg);
   cursor: grab;
   list-style: none;
   outline: none;
@@ -46,8 +45,8 @@
   .dx-dnd-list-item:hover {
     --gap-shift: -1px;
 
-    border-color: var(--primary-color-7);
-    background-color: var(--light, #fff) var(--dark, var(--primary-color-6));
+    border-color: var(--surface-hover-border);
+    background: var(--surface-hover);
     box-shadow:
       0 1px 2px rgb(0 0 0 / 4%),
       0 3px 8px rgb(0 0 0 / 4%);
@@ -61,9 +60,9 @@
 }
 
 .dx-dnd-list-item:focus-visible {
-  border-color: var(--focused-border-color);
+  border-color: var(--focus);
   box-shadow: 0 0 0 3px
-    var(--light, rgb(43 127 255 / 18%)) var(--dark, rgb(43 127 255 / 30%));
+    color-mix(in srgb, var(--focus) 24%, transparent);
 }
 
 .dx-dnd-list-item[data-is-grabbing="true"] {
@@ -71,8 +70,8 @@
   --tilt: 0deg;
 
   border-style: dashed;
-  border-color: var(--primary-color-7);
-  background-color: transparent;
+  border-color: var(--surface-hover-border);
+  background: transparent;
   box-shadow: none;
   cursor: grabbing;
   opacity: 0.5;
@@ -81,22 +80,22 @@
 
 .dx-dnd-list-item[data-is-grabbing="true"][data-drop-at-origin="true"] {
   border-style: solid;
-  border-color: var(--focused-border-color);
+  border-color: var(--focus);
   box-shadow: 0 0 0 3px
-    var(--light, rgb(43 127 255 / 18%)) var(--dark, rgb(43 127 255 / 30%));
+    color-mix(in srgb, var(--focus) 24%, transparent);
   opacity: 0.75;
 }
 
 .dx-item-icon {
   flex-shrink: 0;
-  margin-right: 6px;
-  color: var(--secondary-color-6);
+  margin-right: calc(var(--space) * 1.5);
+  color: var(--fg-faint);
   transition: color 150ms ease;
 }
 
 @media (hover: hover) and (pointer: fine) {
   .dx-dnd-list-item:hover .dx-item-icon {
-    color: var(--secondary-color-2);
+    color: var(--accent-subtle-fg);
   }
 }
 
@@ -118,10 +117,10 @@
   justify-content: center;
   padding: 0;
   border-style: none;
-  border-radius: 6px;
+  border-radius: var(--radius-control);
   margin-left: 10px;
-  background-color: transparent;
-  color: var(--secondary-color-6);
+  background: transparent;
+  color: var(--fg-faint);
   cursor: pointer;
   transition:
     background-color 120ms ease,
@@ -130,9 +129,8 @@
 }
 
 .dx-remove-button:hover {
-  background-color: var(--light, var(--primary-color-5))
-    var(--dark, var(--primary-color-6));
-  color: var(--secondary-color-2);
+  background: var(--surface-hover);
+  color: var(--accent-subtle-fg);
 }
 
 .dx-remove-button:active {
@@ -140,7 +138,7 @@
 }
 
 .dx-remove-button:focus-visible {
-  outline: 2px solid var(--focused-border-color);
+  outline: 2px solid var(--focus);
   outline-offset: 2px;
 }
 
@@ -155,7 +153,7 @@
   left: 10px;
   height: 3px;
   border-radius: 999px;
-  background-color: var(--focused-border-color);
+  background: var(--focus);
   content: "";
   opacity: 0;
   pointer-events: none;

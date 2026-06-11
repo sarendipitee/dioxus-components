@@ -70,6 +70,8 @@ cargo check -p dioxus-components
 
 The `preview/src/components` tree remains the source of truth for the component registry. The sync script updates the library crate from that registry source so downstream apps can depend on this repository as a normal Git dependency instead of copying component files manually.
 
+The default theme preset lives at `themes/default.css`. Styled components should consume those CSS custom properties, but the `dioxus-components` crate should not own or export the theme tokens. The preview app derives its local Dioxus asset from this preset during build so there is a single authored copy.
+
 4. Add tests in `playwright` to ensure the component behaves as expected.
 
 ### Testing changes

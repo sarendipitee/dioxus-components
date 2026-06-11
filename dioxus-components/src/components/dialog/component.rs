@@ -60,31 +60,3 @@ pub fn DialogDescription(props: DialogDescriptionProps) -> Element {
         }
     }
 }
-
-/// A styled close button for the [`Dialog`] component.
-#[component]
-pub fn DialogClose(
-    #[props(extends = GlobalAttributes)]
-    #[props(extends = button)]
-    attributes: Vec<Attribute>,
-    onclick: Option<EventHandler<MouseEvent>>,
-    children: Element,
-) -> Element {
-    let base = attributes!(button {
-        class: Styles::dx_dialog_close.to_string(),
-        r#type: "button",
-    });
-    let merged = merge_attributes(vec![base, attributes]);
-
-    rsx! {
-        button {
-            onclick: move |event| {
-                if let Some(handler) = &onclick {
-                    handler.call(event);
-                }
-            },
-            ..merged,
-            {children}
-        }
-    }
-}

@@ -11,18 +11,17 @@
   width: 2rem;
   height: 1.15rem;
   border-radius: 9999px;
-  background-color: var(--primary-color-6);
+  background: var(--input-border);
   cursor: pointer;
   transition: background-color 150ms, box-shadow 150ms;
 }
 
 .dx-switch[data-state="checked"] {
-  background-color: var(--secondary-color-2);
+  background: var(--accent);
 }
 
 .dx-switch:focus-visible {
-  box-shadow: 0 0 0 3px
-    color-mix(in oklab, var(--focused-border-color) 50%, transparent);
+  box-shadow: 0 0 0 3px var(--focus-ring-strong);
 }
 
 .dx-switch-thumb {
@@ -30,14 +29,14 @@
   width: calc(1.15rem - 2px);
   height: calc(1.15rem - 2px);
   border-radius: 9999px;
-  background-color: var(--light, var(--primary-color)) var(--dark, var(--secondary-color-2));
+  background: var(--surface);
   transform: translateX(1px);
   transition: transform 150ms;
   will-change: transform;
 }
 
 .dx-switch[data-state="checked"] .dx-switch-thumb {
-  background-color: var(--light, var(--primary-color)) var(--dark, var(--primary-color-3));
+  background: var(--accent-fg);
   transform: translateX(calc(2rem - 1px - (1.15rem - 2px)));
 }
 

@@ -3,8 +3,8 @@
   box-sizing: border-box;
   padding: 0.25rem;
   border: none;
-  border-radius: 0.5rem;
-  gap: 0.25rem;
+  border-radius: var(--radius);
+  gap: calc(var(--space) * 2);
 }
 
 .dx-navbar-nav {
@@ -17,42 +17,41 @@
   flex-direction: row;
   align-items: center;
   justify-content: center;
-  padding: 8px 12px;
+  padding: calc(var(--space) * 2) calc(var(--space) * 3);
   border: none;
-  border-radius: calc(0.5rem - 0.25rem);
+  border-radius: var(--radius);
   background: none;
-  color: var(--secondary-color-4);
+  color: var(--surface-fg);
+  stroke: currentColor;
   cursor: pointer;
   transition: background-color 100ms ease-out;
 }
 
 .dx-navbar-nav[data-state="open"] .dx-navbar-trigger {
-  background-color: var(--light, var(--primary-color-4))
-    var(--dark, var(--primary-color-7));
-  color: var(--secondary-color-1);
+  background: var(--surface-selected);
+  color: var(--surface-selected-fg);
 }
 
 .dx-navbar-trigger[data-disabled="true"] {
-  color: var(--secondary-color-5);
+  color: var(--surface-disabled-fg);
   cursor: not-allowed;
   opacity: 0.5;
 }
 
 .dx-navbar-trigger:hover:not([data-disabled="true"]),
 .dx-navbar-trigger:focus-visible {
-  background: var(--light, var(--primary-color-4))
-    var(--dark, var(--primary-color-7));
-  color: var(--secondary-color-1);
+  background: var(--surface-hover);
+  color: var(--surface-hover-fg);
   outline: none;
 }
 
 /* Include the top margin in the navbar content pointer events */
 .dx-navbar-content::before {
   position: absolute;
-  top: -0.5rem;
+  top: calc(var(--space) * -2);
   left: 0;
   width: 100%;
-  height: 0.5rem;
+  height: calc(var(--space) * 2);
   content: "";
 }
 
@@ -63,12 +62,10 @@
   left: 0;
   min-width: 200px;
   padding: 0.25rem;
-  border-radius: 0.5rem;
-  margin-top: 0.5rem;
-  background: var(--light, var(--primary-color))
-    var(--dark, var(--primary-color-5));
-  box-shadow: inset 0 0 0 1px var(--light, var(--primary-color-6))
-    var(--dark, var(--primary-color-7));
+  border-radius: var(--radius-surface);
+  margin-top: calc(var(--space) * 2);
+  background: var(--overlay);
+  box-shadow: inset 0 0 0 1px var(--overlay-border);
   opacity: 0;
   pointer-events: none;
   transform-origin: top;
@@ -76,7 +73,7 @@
 }
 
 .dx-navbar-nav:first-child .dx-navbar-content {
-  margin-left: -0.25rem;
+  margin-left: calc(var(--space) * -1);
 }
 
 .dx-navbar-content[data-state="closed"] {
@@ -105,25 +102,24 @@
 
 .dx-navbar-item {
   display: block;
-  padding: 8px 12px;
-  border-radius: calc(0.5rem - 0.25rem);
-  color: var(--secondary-color-4);
+  padding: calc(var(--space) * 2) calc(var(--space) * 3);
+  border-radius: calc(var(--radius) - var(--space));
+  color: var(--overlay-fg);
   cursor: pointer;
   font-size: 14px;
   text-decoration: none;
 }
 
 .dx-navbar-item[data-disabled="true"] {
-  color: var(--secondary-color-5);
+  color: var(--surface-disabled-fg);
   cursor: not-allowed;
   opacity: 0.5;
 }
 
 .dx-navbar-item:hover:not([data-disabled="true"]),
 .dx-navbar-item:focus-visible {
-  background: var(--light, var(--primary-color-4))
-    var(--dark, var(--primary-color-7));
-  color: var(--secondary-color-1);
+  background: var(--surface-hover);
+  color: var(--surface-hover-fg);
   outline: none;
 }
 

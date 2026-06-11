@@ -71,7 +71,7 @@ pub(super) fn ListPane(
                         }
                     },
                     TabList { class: "ec-mail-tabs-list",
-                        for (idx, tab) in TABS.iter().enumerate() {
+                        for (idx , tab) in TABS.iter().enumerate() {
                             TabTrigger {
                                 class: "ec-mail-tab",
                                 key: "{tab.id.as_str()}",
@@ -85,7 +85,8 @@ pub(super) fn ListPane(
                         }
                     }
                 }
-                SelectMulti::<MessageTag> {                    values: Some(tags.clone()),
+                SelectMulti::<MessageTag> {
+                    values: Some(tags.clone()),
                     default_values: vec![],
                     on_values_change: move |values| {
                         state.set_selected_tags(values);
@@ -99,21 +100,21 @@ pub(super) fn ListPane(
                         }
                         ChevronDown {
                             class: "dx-select-expand-icon",
-                            size: "20px",
-                            stroke: "var(--primary-color-7)",
+                            size: "14px",
+                            stroke: "var(--surface-selected-border)",
                         }
                     }
-                    SelectList {
-                        class: "ec-filter-list",
-                        aria_label: "Filter by tag",
+                    SelectList { class: "ec-filter-list", aria_label: "Filter by tag",
                         SelectGroup {
                             SelectGroupLabel { "Tags" }
-                            for (index, tag) in MessageTag::ALL.iter().enumerate() {
-                                SelectOption::<MessageTag> {                                    key: "{tag.label()}",
+                            for (index , tag) in MessageTag::ALL.iter().enumerate() {
+                                SelectOption::<MessageTag> {
+                                    key: "{tag.label()}",
                                     index,
                                     value: *tag,
                                     text_value: "{tag.label()}",
-                                    {tag.label()}                                }
+                                    {tag.label()}
+                                }
                             }
                         }
                     }
@@ -221,7 +222,7 @@ fn MessageRow(
                         if flagged {
                             LucideIcon { kind: IconKind::Flag, size: 12 }
                         }
-                        for (i, tag) in tags.iter().enumerate() {
+                        for (i , tag) in tags.iter().enumerate() {
                             span { key: "{tag.label()}",
                                 if i > 0 {
                                     " · "

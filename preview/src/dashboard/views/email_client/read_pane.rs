@@ -154,7 +154,8 @@ pub(super) fn ReadPane(
                                         span {
                                             "{selected_static.thread_count} message{(selected_static.thread_count > 1).then(|| \"s\").unwrap_or(\"\")} in this thread"
                                         }
-                                        SelectMulti::<MessageTag> {                                            values: Some(selected_tags.clone()),
+                                        SelectMulti::<MessageTag> {
+                                            values: Some(selected_tags.clone()),
                                             default_values: selected_tags.clone(),
                                             on_values_change: move |values: Vec<MessageTag>| {
                                                 state.set_message_tags(tag_edit_uid.clone(), values);
@@ -165,8 +166,8 @@ pub(super) fn ReadPane(
                                                 "+ Tag"
                                                 ChevronDown {
                                                     class: "dx-select-expand-icon",
-                                                    size: "20px",
-                                                    stroke: "var(--primary-color-7)",
+                                                    size: "14px",
+                                                    stroke: "var(--surface-selected-border)",
                                                 }
                                             }
                                             SelectList {
@@ -174,12 +175,14 @@ pub(super) fn ReadPane(
                                                 aria_label: "Edit tags",
                                                 SelectGroup {
                                                     SelectGroupLabel { "Tags" }
-                                                    for (index, tag) in MessageTag::ALL.iter().enumerate() {
-                                                        SelectOption::<MessageTag> {                                                            key: "{tag.label()}",
+                                                    for (index , tag) in MessageTag::ALL.iter().enumerate() {
+                                                        SelectOption::<MessageTag> {
+                                                            key: "{tag.label()}",
                                                             index,
                                                             value: *tag,
                                                             text_value: "{tag.label()}",
-                                                            {tag.label()}                                                        }
+                                                            {tag.label()}
+                                                        }
                                                     }
                                                 }
                                             }

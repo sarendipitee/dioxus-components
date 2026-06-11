@@ -19,7 +19,7 @@ pub fn Demo() -> Element {
 
                 Label { html_for: "autosize", "Autosize" }
                 p {
-                    color: "var(--color-text-secondary)",
+                    color: "var(--fg-muted)",
                     font_size: ".875rem",
                     margin: "0",
                     "This demo grows from 3 rows up to a 6-row limit, then becomes scrollable."

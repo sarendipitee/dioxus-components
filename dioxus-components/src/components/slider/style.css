@@ -3,7 +3,7 @@
     display: flex;
     min-width: 200px;
     align-items: center;
-    padding: 0.5rem 0;
+    padding: calc(var(--space) * 2) 0;
     touch-action: none;
 }
 
@@ -19,7 +19,7 @@
     box-sizing: border-box;
     flex-grow: 1;
     border-radius: 9999px;
-    background: var(--primary-color-5);
+    background: var(--surface-muted);
 }
 
 .dx-slider[data-orientation="vertical"] .dx-slider-track {
@@ -31,7 +31,7 @@
     position: absolute;
     height: 100%;
     border-radius: 9999px;
-    background-color: var(--secondary-color-2);
+    background: var(--accent);
 }
 
 .dx-slider[data-orientation="vertical"] .dx-slider-range {
@@ -48,8 +48,8 @@
     box-sizing: border-box;
     border: 0;
     border-radius: 50%;
-    background-color: var(--primary-color-1);
-    box-shadow: inset 0 0 0 1px var(--secondary-color-2);
+    background: var(--surface);
+    box-shadow: inset 0 0 0 1px var(--accent);
     cursor: pointer;
     transform: translate3d(-50%, -50%, 0);
     transition: box-shadow 150ms;
@@ -64,8 +64,8 @@
 .dx-slider-thumb:focus-visible[data-dragging="true"],
 .dx-slider-thumb:focus-visible,
 .dx-slider-thumb:hover {
-    box-shadow: inset 0 0 0 1px var(--secondary-color-2),
-        0 0 0 4px color-mix(in oklab, var(--primary-color-7) 50%, transparent);
+    box-shadow: inset 0 0 0 1px var(--accent),
+        0 0 0 4px var(--focus-ring-strong);
     transition: box-shadow 150ms;
 }
 

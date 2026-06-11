@@ -16,10 +16,10 @@ pub fn Demo() -> Element {
             button {
                 r#type: "submit",
                 padding: "8px 16px",
-                border: "1px solid var(--primary-color-6)",
+                border: "1px solid var(--surface-border)",
                 border_radius: "4px",
-                background_color: "var(--primary-color-1)",
-                color: "var(--secondary-color-4)",
+                background_color: "var(--surface-muted)",
+                color: "var(--fg-muted)",
                 cursor: "pointer",
                 font_size: "14px",
                 "Submit"

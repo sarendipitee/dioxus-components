@@ -17,5 +17,5 @@
       "version": "0.3.44"
     }
   ],
-  "globalAssets": ["../../../assets/dx-components-theme.css"]
+  "globalAssets": ["../../../../themes/default.css"]
 }

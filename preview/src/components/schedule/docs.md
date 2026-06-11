@@ -40,7 +40,7 @@ Use `render_event_body` to replace the default event body. Use `with_default_hea
 
 ## Styling
 
-The primitive exposes a `radius` style variable, stateful `data-*` attributes, and `ScheduleClassNames` hooks for desktop/mobile containers, day/week/month/year/mobile-month surfaces, slots, days, and events.
+The primitive exposes a runtime `radius` style value, stateful `data-*` attributes, and `ScheduleClassNames` hooks for desktop/mobile containers, day/week/month/year/mobile-month surfaces, slots, days, and events.
 
 ## Localization And Labels
 

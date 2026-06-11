@@ -7,6 +7,6 @@
 
 .dx-avatar-label {
     margin: 0;
-    color: var(--secondary-color-4);
+    color: var(--fg-muted);
     font-size: 0.875rem;
 }

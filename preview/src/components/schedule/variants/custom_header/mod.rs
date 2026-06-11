@@ -24,7 +24,7 @@ pub fn Demo() -> Element {
                 header: rsx! {
                     div {
                         "data-schedule-custom-header": true,
-                        style: "display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px; padding: 12px; border-bottom: 1px solid var(--schedule-border); background: var(--schedule-surface-muted);",
+                        style: "display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px; padding: 12px; border-bottom: 1px solid var(--surface-border); background: var(--surface-muted);",
                         strong { "Custom planning header" }
                         span { "{date} · {view:?}" }
                     }
