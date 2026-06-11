@@ -1,38 +1,62 @@
-The TimePicker component renders a segmented time input with keyboard-friendly spinbutton segments, optional seconds, 12-hour mode, duration entry, clearing, presets, and an optional dropdown picker.
+The TimePicker preview now reflects the current public API: a primitive-style `TimePicker` container with `TimePickerInput {}` as its child. It supports basic clock times through `selected_time`, optional clearing, second precision, 12-hour formatting, and duration entry through `selected_value`.
 
-The default controlled value is `selected_time: Option<Time>`. For duration values with hours beyond 23, use `selected_value: Option<TimePickerValue>` with `picker_type: TimePickerType::Duration`.
+For normal clock-time usage, control the picker with `selected_time: Option<Time>` and `on_value_change`. For duration values that can exceed 23 hours, switch to `selected_value: Option<TimePickerValue>` with `picker_type: TimePickerType::Duration` and `on_picker_value_change`.
 
-## Component Structure
+## Basic clock time
 
 ```rust
 TimePicker {
     selected_time,
-    on_value_change: move |v: Option<Time>| selected_time.set(v),
-    with_seconds: true,
-    format: TimePickerFormat::TwelveHour,
-    am_pm_labels: ("am".to_string(), "pm".to_string()),
-    min_time: time!(09:00),
-    max_time: time!(17:30),
-    steps: TimePickerSteps {
-        hours: 1,
-        minutes: 15,
-        seconds: 10,
-    },
-    clearable: true,
-    with_dropdown: true,
+    on_value_change: move |value| selected_time.set(value),
+    TimePickerInput {}
 }
 ```
 
-Duration mode keeps the dropdown disabled and renders an unbounded hour segment:
+## Clearable and accessible labels
 
 ```rust
 TimePicker {
-    picker_type: TimePickerType::Duration,
-    selected_value,
-    on_picker_value_change: move |v| selected_value.set(v),
-    with_seconds: true,
-    min_hours_digits: 3,
+    selected_time,
+    on_value_change: move |value| selected_time.set(value),
+    clearable: true,
+    labels: TimePickerLabels {
+        group: "Reminder time".to_string(),
+        clear: "Clear reminder time".to_string(),
+        ..Default::default()
+    },
+    TimePickerInput {}
 }
 ```
 
-The preview wrapper also supports `label`, `description`, `error`, `variant`, `size`, `radius`, `right_section`, `clear_section_mode`, `presets`, `preset_groups`, dropdown placement/width/max-height props, custom accessibility labels, and aggregate focus handlers.
+## Seconds and 12-hour formatting
+
+```rust
+TimePicker {
+    selected_time,
+    on_value_change: move |value| selected_time.set(value),
+    with_seconds: true,
+    format: TimePickerFormat::TwelveHour,
+    am_pm_labels: ("am".to_string(), "pm".to_string()),
+    steps: TimePickerSteps {
+        hours: 1,
+        minutes: 15,
+        seconds: 15,
+    },
+    TimePickerInput {}
+}
+```
+
+## Duration mode
+
+```rust
+TimePicker {
+    selected_value,
+    on_picker_value_change: move |value| selected_value.set(value),
+    picker_type: TimePickerType::Duration,
+    with_seconds: true,
+    min_hours_digits: 3,
+    TimePickerInput {}
+}
+```
+
+The stale preview-only wrapper props are no longer documented here. Use the current public fields instead: `labels`, `clearable`, `with_seconds`, `format`, `selected_time`, `selected_value`, `picker_type`, `am_pm_labels`, and `steps`.

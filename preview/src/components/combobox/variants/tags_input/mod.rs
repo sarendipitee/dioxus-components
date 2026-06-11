@@ -1,5 +1,5 @@
-use dioxus_components::combobox::*;
 use dioxus::prelude::*;
+use dioxus_primitives::combobox::TagsInput;
 
 #[component]
 pub fn Demo() -> Element {

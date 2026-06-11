@@ -1,5 +1,6 @@
-use dioxus_components::combobox::*;
 use dioxus::prelude::*;
+use dioxus_components::combobox::{ComboboxEmpty, ComboboxOption};
+use dioxus_primitives::combobox::Autocomplete;
 
 #[component]
 pub fn Demo() -> Element {

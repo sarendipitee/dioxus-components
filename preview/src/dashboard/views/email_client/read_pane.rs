@@ -7,15 +7,14 @@ use crate::components::avatar::{AvatarImageSize, AvatarShape, ImageAvatar};
 use crate::components::badge::{Badge, BadgeVariant};
 use crate::components::button::{Button, ButtonVariant};
 use crate::components::card::{Card, CardContent, CardDescription, CardHeader, CardTitle};
-use crate::components::select::{
-    SelectGroup, SelectGroupLabel, SelectList, SelectMulti, SelectOption, SelectTrigger,
-};
+use crate::components::select::{SelectGroup, SelectGroupLabel, SelectOption};
 use crate::components::textarea::Textarea;
 use crate::dashboard::common::{
     lookup_message, IconKind, LucideIcon, MessageState, MessageStateStoreExt, MessageTag,
     AVATAR_PROFILE_OPTIONS, LOREM_IPSUM,
 };
 use dioxus_components::toolbar::{Toolbar, ToolbarButton, ToolbarGroup, ToolbarSeparator};
+use dioxus_primitives::select::{SelectList, SelectMulti, SelectTrigger};
 
 use super::avatars::avatar_profile_for_key;
 use super::state::{EmailClientState, EmailClientStateStoreExt, EmailClientStateStoreImplExt};

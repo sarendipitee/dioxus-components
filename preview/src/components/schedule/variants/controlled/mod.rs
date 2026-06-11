@@ -1,6 +1,9 @@
-use dioxus_components::schedule::*;
+use crate::components::schedule::*;
 use dioxus::prelude::*;
 use time::Duration;
+#[path = "../demo_support.rs"]
+mod demo_support;
+use demo_support::*;
 
 #[component]
 pub fn Demo() -> Element {

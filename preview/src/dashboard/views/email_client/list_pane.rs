@@ -6,15 +6,14 @@ use crate::components::button::{Button, ButtonVariant};
 use crate::components::item::{
     Item, ItemActions, ItemContent, ItemDescription, ItemMedia, ItemMediaVariant, ItemTitle,
 };
-use crate::components::select::{
-    SelectGroup, SelectGroupLabel, SelectList, SelectMulti, SelectOption, SelectTrigger,
-};
+use crate::components::select::{SelectGroup, SelectGroupLabel, SelectOption};
 use crate::components::virtual_list::VirtualList;
 use crate::dashboard::common::{
     lookup_message, IconKind, LucideIcon, MessageState, MessageStateStoreExt, MessageTag, TabId,
     LOREM_IPSUM, TABS,
 };
 use dioxus_components::tabs::{TabList, TabTrigger, Tabs};
+use dioxus_primitives::select::{SelectList, SelectMulti, SelectTrigger};
 
 use super::avatars::avatar_profile_for_key;
 use super::state::{EmailClientState, EmailClientStateStoreExt, EmailClientStateStoreImplExt};

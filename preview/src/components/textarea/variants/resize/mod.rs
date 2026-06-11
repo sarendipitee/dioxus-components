@@ -19,7 +19,7 @@ pub fn Demo() -> Element {
                 Textarea {
                     id: "resize-none",
                     variant: TextareaVariant::Default,
-                    resize: TextareaResize::None,
+                    style: "resize: none;",
                     value: none_value,
                     oninput: move |e: FormEvent| none_value.set(e.value()),
                 }
@@ -34,7 +34,7 @@ pub fn Demo() -> Element {
                 Textarea {
                     id: "resize-vertical",
                     variant: TextareaVariant::Default,
-                    resize: TextareaResize::Vertical,
+                    style: "resize: vertical;",
                     value: vertical_value,
                     oninput: move |e: FormEvent| vertical_value.set(e.value()),
                 }
@@ -49,7 +49,7 @@ pub fn Demo() -> Element {
                 Textarea {
                     id: "resize-both",
                     variant: TextareaVariant::Default,
-                    resize: TextareaResize::Both,
+                    style: "resize: both;",
                     value: both_value,
                     oninput: move |e: FormEvent| both_value.set(e.value()),
                 }

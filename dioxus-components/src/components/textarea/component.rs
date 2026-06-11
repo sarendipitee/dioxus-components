@@ -1,4 +1,9 @@
 use dioxus::prelude::*;
+use dioxus_primitives::{
+    dioxus_attributes::attributes,
+    merge_attributes,
+    textarea::{self, TextareaProps as PrimitiveTextareaProps},
+};
 
 #[css_module("/src/components/textarea/style.css")]
 struct Styles;
@@ -45,38 +50,68 @@ pub fn Textarea(
     oncut: Option<EventHandler<ClipboardEvent>>,
     onpaste: Option<EventHandler<ClipboardEvent>>,
     onmounted: Option<EventHandler<MountedEvent>>,
+    #[props(default)] bottom_section: Option<Element>,
+    #[props(default = false)] autosize: bool,
+    #[props(default)] min_rows: Option<usize>,
+    #[props(default)] max_rows: Option<usize>,
+    #[props(default = 24.0)] autosize_line_height_px: f64,
+    #[props(default = 16.0)] autosize_vertical_chrome_px: f64,
     #[props(default)] variant: TextareaVariant,
-    #[props(extends=GlobalAttributes)]
-    #[props(extends=textarea)]
+    #[props(extends = GlobalAttributes)]
+    #[props(extends = textarea)]
     attributes: Vec<Attribute>,
+    #[props(default)] root_attributes: Vec<Attribute>,
+    #[props(default)] bottom_section_attributes: Vec<Attribute>,
     children: Element,
 ) -> Element {
-    rsx! {
-        textarea {
-            class: Styles::dx_textarea.to_string(),
-            "data-slot": "textarea",
-            "data-style": variant.class(),
-            oninput: move |e| _ = oninput.map(|callback| callback(e)),
-            onchange: move |e| _ = onchange.map(|callback| callback(e)),
-            oninvalid: move |e| _ = oninvalid.map(|callback| callback(e)),
-            onselect: move |e| _ = onselect.map(|callback| callback(e)),
-            onselectionchange: move |e| _ = onselectionchange.map(|callback| callback(e)),
-            onfocus: move |e| _ = onfocus.map(|callback| callback(e)),
-            onblur: move |e| _ = onblur.map(|callback| callback(e)),
-            onfocusin: move |e| _ = onfocusin.map(|callback| callback(e)),
-            onfocusout: move |e| _ = onfocusout.map(|callback| callback(e)),
-            onkeydown: move |e| _ = onkeydown.map(|callback| callback(e)),
-            onkeypress: move |e| _ = onkeypress.map(|callback| callback(e)),
-            onkeyup: move |e| _ = onkeyup.map(|callback| callback(e)),
-            oncompositionstart: move |e| _ = oncompositionstart.map(|callback| callback(e)),
-            oncompositionupdate: move |e| _ = oncompositionupdate.map(|callback| callback(e)),
-            oncompositionend: move |e| _ = oncompositionend.map(|callback| callback(e)),
-            oncopy: move |e| _ = oncopy.map(|callback| callback(e)),
-            oncut: move |e| _ = oncut.map(|callback| callback(e)),
-            onpaste: move |e| _ = onpaste.map(|callback| callback(e)),
-            onmounted: move |e| _ = onmounted.map(|callback| callback(e)),
-            ..attributes,
-            {children}
-        }
-    }
+    let textarea_base = attributes!(textarea {
+        class: Styles::dx_textarea.to_string(),
+        "data-slot": "textarea",
+        "data-style": variant.class(),
+    });
+    let root_base = attributes!(div {
+        class: "dx-textarea-root",
+        style: "display: flex; flex-direction: column; gap: 0.5rem;",
+    });
+    let bottom_section_base = attributes!(div {
+        class: "dx-textarea-bottom-section",
+        style: "display: flex; align-items: center; justify-content: space-between; gap: 0.75rem; color: var(--secondary-color-5); font-size: 0.875rem;",
+    });
+
+    let attributes = merge_attributes(vec![textarea_base, attributes]);
+    let root_attributes = merge_attributes(vec![root_base, root_attributes]);
+    let bottom_section_attributes =
+        merge_attributes(vec![bottom_section_base, bottom_section_attributes]);
+
+    textarea::Textarea(PrimitiveTextareaProps {
+        oninput,
+        onchange,
+        oninvalid,
+        onselect,
+        onselectionchange,
+        onfocus,
+        onblur,
+        onfocusin,
+        onfocusout,
+        onkeydown,
+        onkeypress,
+        onkeyup,
+        oncompositionstart,
+        oncompositionupdate,
+        oncompositionend,
+        oncopy,
+        oncut,
+        onpaste,
+        onmounted,
+        bottom_section,
+        autosize,
+        min_rows,
+        max_rows,
+        autosize_line_height_px,
+        autosize_vertical_chrome_px,
+        attributes,
+        root_attributes,
+        bottom_section_attributes,
+        children,
+    })
 }

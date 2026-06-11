@@ -60,15 +60,19 @@ MultiSelect::<String> {
 ## Virtualized Options
 
 ```rust
-VirtualizedCombobox::<String> {
-    count: 1000usize,
-    estimate_size: |_: usize| 36,
-    render_option: |index: usize| rsx! {
-        ComboboxOption::<String> {
-            index,
-            value: format!("option-{index}"),
-            text_value: format!("Option {index}"),
-            "Option {index}"
+use dioxus_primitives::combobox::VirtualizedComboboxOptions;
+
+Combobox::<String> {
+    VirtualizedComboboxOptions {
+        count: 1000usize,
+        estimate_size: |_: usize| 36,
+        render_option: |index: usize| rsx! {
+            ComboboxOption::<String> {
+                index,
+                value: format!("option-{index}"),
+                text_value: format!("Option {index}"),
+                "Option {index}"
+            }
         }
     }
 }

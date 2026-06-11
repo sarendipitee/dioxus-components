@@ -1,6 +1,6 @@
 use dioxus_components::combobox::*;
 use dioxus::prelude::*;
-use dioxus_primitives::combobox::default_combobox_filter;
+use dioxus_primitives::combobox::{default_combobox_filter, VirtualizedComboboxOptions};
 
 #[component]
 pub fn Demo() -> Element {
@@ -15,7 +15,7 @@ pub fn Demo() -> Element {
 
     rsx! {
         div { class: "dx-combobox-demo-stack",
-            VirtualizedCombobox::<String> {
+            Combobox::<String> {
                 value: Some(value.into()),
                 on_value_change: move |next| value.set(next),
                 query: Some(query()),
@@ -23,6 +23,7 @@ pub fn Demo() -> Element {
                 placeholder: "Search 1,000 options...",
                 aria_label: "Virtualized option picker",
                 list_aria_label: "Virtualized options",
+                VirtualizedComboboxOptions {
                 count: 1000usize,
                 visible_indices: Some(visible_indices.into()),
                 estimate_size: |_: usize| 36,
@@ -34,6 +35,7 @@ pub fn Demo() -> Element {
                         "Option {index}"
                     }
                 },
+                }
             }
             p { class: "dx-combobox-demo-value",
                 "Selected: {value().unwrap_or_else(|| \"none\".to_string())}"
