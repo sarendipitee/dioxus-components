@@ -1,6 +1,8 @@
 import { defineConfig, devices } from "@playwright/test";
 const path = require("path");
 
+const runHeaded = process.env.PLAYWRIGHT_HEADED === "1";
+
 /**
  * Read environment variables from file.
  * https://github.com/motdotla/dotenv
@@ -23,9 +25,11 @@ export default defineConfig({
   /* Opt out of parallel tests on CI. */
   workers: process.env.CI ? 1 : undefined,
   /* Reporter to use. See https://playwright.dev/docs/test-reporters */
-  reporter: process.env.CI ? [["list"], ["html"]] : "html",
+  reporter: process.env.CI ? [["list"], ["html", { open: "never" }]] : "list",
   /* Shared settings for all the projects below. See https://playwright.dev/docs/api/class-testoptions. */
   use: {
+    headless: !runHeaded,
+
     /* Base URL to use in actions like `await page.goto('/')`. */
     baseURL: process.env.PLAYWRIGHT_BASE_URL ?? "http://127.0.0.1:8080",
 
