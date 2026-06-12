@@ -5,10 +5,7 @@ use dioxus_components::badge::*;
 #[component]
 pub fn Demo() -> Element {
     rsx! {
-        div {
-            display: "flex",
-            align_items: "center",
-            gap: "1rem",
+        div { display: "flex", align_items: "center", gap: "1rem",
 
             Badge { "Primary" }
             Badge { variant: BadgeVariant::Secondary, "Secondary" }

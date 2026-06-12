@@ -1,4 +1,4 @@
-The TimePicker preview now reflects the current public API: a primitive-style `TimePicker` container with `TimePickerInput {}` as its child. It supports basic clock times through `selected_time`, optional clearing, second precision, 12-hour formatting, and duration entry through `selected_value`.
+The TimePicker preview reflects the picker-surface API: a primitive-style `TimePicker` container with `TimePickerInput {}` as its child. Use `TimeInput` from the `time_input` registry entry for first-class styled field chrome with label, description, error, sections, and shared input sizing.
 
 For normal clock-time usage, control the picker with `selected_time: Option<Time>` and `on_value_change`. For duration values that can exceed 23 hours, switch to `selected_value: Option<TimePickerValue>` with `picker_type: TimePickerType::Duration` and `on_picker_value_change`.
 
@@ -12,7 +12,7 @@ TimePicker {
 }
 ```
 
-## Clearable and accessible labels
+## Clearable
 
 ```rust
 TimePicker {
@@ -28,7 +28,7 @@ TimePicker {
 }
 ```
 
-## Seconds and 12-hour formatting
+## Seconds and 12-hour
 
 ```rust
 TimePicker {

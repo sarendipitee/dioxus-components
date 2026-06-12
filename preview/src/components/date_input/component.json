@@ -1,0 +1,22 @@
+{
+  "name": "date_input",
+  "description": "Styled date input composition built on the shared input foundation.",
+  "authors": ["Evan Almloff"],
+  "exclude": ["variants", "docs.md", "component.json"],
+  "cargoDependencies": [
+    {
+      "name": "dioxus-primitives",
+      "git": "https://github.com/DioxusLabs/components"
+    },
+    {
+      "name": "dioxus-icons",
+      "version": "0.1.0"
+    },
+    {
+      "name": "time",
+      "version": "0.3.44"
+    }
+  ],
+  "componentDependencies": ["input", "popover", "calendar", "date_picker"],
+  "globalAssets": ["../../../../themes/default.css"]
+}

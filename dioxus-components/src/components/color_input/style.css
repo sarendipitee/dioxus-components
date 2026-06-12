@@ -1,4 +1,4 @@
-.dx-color-input-trigger {
+.dx-color-input {
     display: flex;
     width: 100%;
     min-width: 0;
@@ -11,65 +11,25 @@
     appearance: none;
     background: transparent;
     color: inherit;
-    cursor: pointer;
     font: inherit;
     line-height: 1.5;
     outline: 0;
     text-align: start;
 }
 
-.dx-color-input-trigger:disabled {
+.dx-color-input-field:disabled {
     color: var(--input-disabled-fg);
     cursor: not-allowed;
-}
-
-.dx-color-input-value {
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
 }
 
 .dx-color-input-popover-root {
     width: 100%;
 }
 
-.dx-color-input-popover-content {
-    border-radius: var(--radius-surface);
-    background: var(--overlay);
-    box-shadow:
-        inset 0 0 0 1px var(--overlay-border),
-        0 4px 16px rgb(0 0 0 / 15%);
-}
-
-.dx-color-input-popover-content[data-state="open"] {
-    animation: dx-color-input-popover-fade-in .15s ease-out;
-}
-
-.dx-color-input-popover-content[data-state="closed"] {
-    animation: dx-color-input-popover-fade-out .15s ease-out forwards;
-    pointer-events: none;
-}
-
-@keyframes dx-color-input-popover-fade-in {
-    from {
-        opacity: 0;
-        transform: translateY(-4px);
-    }
-
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
-
-@keyframes dx-color-input-popover-fade-out {
-    from {
-        opacity: 1;
-        transform: translateY(0);
-    }
-
-    to {
-        opacity: 0;
-        transform: translateY(-4px);
-    }
+.dx-color-input-color-swatch {
+    background: var(--swatch-color);
+    border-radius: var(--radius-control);
+    width: calc(var(--input-height) - var(--space) * 4);
+    height: calc(var(--input-height) - var(--space) * 4);
+    border: 1px solid var(--fg);
 }

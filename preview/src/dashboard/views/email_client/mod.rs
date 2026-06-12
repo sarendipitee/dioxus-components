@@ -1,6 +1,6 @@
 use dioxus::prelude::*;
 
-use crate::components::input::Input;
+use crate::components::input::TextInput;
 use crate::components::separator::Separator;
 use crate::components::sidebar::{SidebarInset, SidebarProvider, SidebarTrigger};
 use crate::components::toast::ToastProvider;
@@ -46,7 +46,7 @@ pub fn EmailClient() -> Element {
                         SidebarTrigger {}
                         Separator { horizontal: false, decorative: true }
                         h1 { class: "ec-title", {folder_label} }
-                        Input {
+                        TextInput {
                             r#type: "search",
                             "aria-label": "Search mail",
                             name: "mail-search",

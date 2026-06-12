@@ -15,6 +15,14 @@ fn main() {
     render_theme_css(&out_dir).unwrap();
 }
 
+fn crate_component_source_folder(folder_name: &str) -> &str {
+    match folder_name {
+        "autocomplete" | "multi_select" | "pills_input" | "tags_input" => "combobox",
+        "text_input" => "input",
+        _ => folder_name,
+    }
+}
+
 fn walk_markdown_dir(dir: &std::path::Path, out_dir: &std::path::Path) -> std::io::Result<()> {
     let folder_name = dir.file_name().unwrap();
     let folder_name = folder_name.to_string_lossy();
@@ -70,8 +78,9 @@ fn walk_markdown_dir(dir: &std::path::Path, out_dir: &std::path::Path) -> std::i
         .and_then(std::path::Path::file_name)
         .is_some_and(|name| name == "components")
     {
+        let crate_folder_name = crate_component_source_folder(&folder_name);
         let crate_component = std::path::Path::new("../dioxus-components/src/components")
-            .join(&*folder_name)
+            .join(crate_folder_name)
             .join("component.rs");
         if crate_component.exists() {
             println!("cargo:rerun-if-changed={}", crate_component.display());
@@ -84,7 +93,7 @@ fn walk_markdown_dir(dir: &std::path::Path, out_dir: &std::path::Path) -> std::i
         }
 
         let crate_style = std::path::Path::new("../dioxus-components/src/components")
-            .join(&*folder_name)
+            .join(crate_folder_name)
             .join("style.css");
         if crate_style.exists() {
             println!("cargo:rerun-if-changed={}", crate_style.display());

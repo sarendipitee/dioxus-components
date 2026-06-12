@@ -21,6 +21,7 @@ struct BaseDatePickerContext {
     // State
     open: Signal<bool>,
     read_only: ReadSignal<bool>,
+    close_on_input_focus: bool,
 
     // Configuration
     disabled: ReadSignal<bool>,
@@ -141,6 +142,7 @@ pub fn DatePicker(props: DatePickerProps) -> Element {
     use_context_provider(|| BaseDatePickerContext {
         open,
         read_only: props.read_only,
+        close_on_input_focus: true,
         disabled: props.disabled,
         focus,
         enabled_date_range: DateRange::new(props.min_date, props.max_date),
@@ -276,6 +278,7 @@ pub fn DateRangePicker(props: DateRangePickerProps) -> Element {
     use_context_provider(|| BaseDatePickerContext {
         open,
         read_only: props.read_only,
+        close_on_input_focus: true,
         disabled: props.disabled,
         focus,
         enabled_date_range: DateRange::new(props.min_date, props.max_date),
@@ -316,6 +319,14 @@ pub struct DatePickerPopoverProps {
     /// Callback fired when the open state changes.
     #[props(default)]
     pub on_open_change: Callback<bool>,
+
+    /// Whether focusing an editable date segment closes the popover.
+    ///
+    /// Defaults to `true` for picker-style usage where focus moves back to the input after
+    /// opening. Field compositions that open the dropdown from input focus can set this to
+    /// `false` so the segment focus does not immediately close the dropdown again.
+    #[props(default = true)]
+    pub close_on_input_focus: bool,
 
     /// Additional attributes to apply to the popover root element.
     #[props(extends = GlobalAttributes)]
@@ -369,13 +380,41 @@ pub struct DatePickerPopoverProps {
 /// ```
 #[component]
 pub fn DatePickerPopover(props: DatePickerPopoverProps) -> Element {
-    let ctx = use_context::<BaseDatePickerContext>();
-    let mut open = ctx.open;
+    let base_ctx = use_context::<BaseDatePickerContext>();
+    let mut open = base_ctx.open;
+    let controlled_open = (props.open)();
+
+    use_context_provider(|| BaseDatePickerContext {
+        close_on_input_focus: props.close_on_input_focus,
+        ..base_ctx
+    });
+
+    use_hook(move || {
+        if controlled_open.is_none() && props.default_open {
+            open.set(true);
+        }
+    });
+
+    use_effect(move || {
+        if let Some(next_open) = controlled_open {
+            if open() != next_open {
+                open.set(next_open);
+            }
+        }
+    });
+
+    use_effect(move || {
+        let current = open();
+        if controlled_open != Some(current) {
+            props.on_open_change.call(current);
+        }
+    });
 
     let PopoverRoot = props.popover_root;
 
     rsx! {
         PopoverRoot {
+            is_modal: props.is_modal,
             open: open(),
             on_open_change: move |v| open.set(v),
             attributes: props.attributes,
@@ -804,7 +843,7 @@ fn DateSegment<T: Clone + Copy + Integer + FromStr + Display + 'static>(
             onfocus: move |_| {
                 reset_value.set(true);
                 ctx.focus.set_focus(Some(props.index.cloned()));
-                if (ctx.open)() {
+                if ctx.close_on_input_focus && (ctx.open)() {
                     ctx.open.set(false);
                 }
             },
@@ -1270,6 +1309,10 @@ pub struct DatePickerInputProps {
     #[props(extends = GlobalAttributes)]
     pub attributes: Vec<Attribute>,
 
+    /// Whether focusing inside the input should open the popover.
+    #[props(default = false)]
+    pub open_on_focus: bool,
+
     /// The children of the date picker element
     #[props(default)]
     pub children: Option<Element>,
@@ -1315,6 +1358,7 @@ pub struct DatePickerInputProps {
 /// ```
 #[component]
 pub fn DatePickerInput(props: DatePickerInputProps) -> Element {
+    let mut ctx = use_context::<BaseDatePickerContext>();
     let children = props.children.unwrap_or_else(|| {
         rsx! {
             DatePickerInputValue {
@@ -1326,7 +1370,13 @@ pub fn DatePickerInput(props: DatePickerInputProps) -> Element {
     });
 
     rsx! {
-        div { ..props.attributes,
+        div {
+            onfocusin: move |_| {
+                if props.open_on_focus && !(ctx.disabled)() {
+                    ctx.open.set(true);
+                }
+            },
+            ..props.attributes,
             {children}
         }
     }
@@ -1371,6 +1421,7 @@ pub fn DatePickerInput(props: DatePickerInputProps) -> Element {
 /// ```
 #[component]
 pub fn DateRangePickerInput(props: DatePickerInputProps) -> Element {
+    let mut ctx = use_context::<BaseDatePickerContext>();
     let children = props.children.unwrap_or_else(|| {
         rsx! {
             DateRangePickerInputValue {
@@ -1382,7 +1433,13 @@ pub fn DateRangePickerInput(props: DatePickerInputProps) -> Element {
     });
 
     rsx! {
-        div { ..props.attributes,
+        div {
+            onfocusin: move |_| {
+                if props.open_on_focus && !(ctx.disabled)() {
+                    ctx.open.set(true);
+                }
+            },
+            ..props.attributes,
             {children}
         }
     }

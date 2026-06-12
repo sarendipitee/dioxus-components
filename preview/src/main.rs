@@ -6,7 +6,7 @@ use crate::components::{
     color_picker::ColorPicker,
     combobox::{Combobox, ComboboxEmpty, ComboboxOption},
     drag_and_drop_list::DragAndDropList,
-    input::Input,
+    input::TextInput,
     item::{
         Item, ItemContent, ItemDescription, ItemMedia, ItemMediaVariant, ItemTitle, ItemVariant,
     },
@@ -408,9 +408,7 @@ pub struct HighlightedCode {
 #[component]
 fn CodeBlock(source: HighlightedCode) -> Element {
     rsx! {
-        div {
-            class: "dx-code-block",
-            tabindex: "0",
+        div { class: "dx-code-block", tabindex: "0",
             PreviewCode { html: source.html }
         }
         CopyButton { position: "absolute", top: "0.5em", right: "0.5em" }
@@ -449,20 +447,14 @@ fn CopyButton(#[props(extends=GlobalAttributes)] attributes: Vec<Attribute>) -> 
 #[component]
 fn CopyIcon() -> Element {
     rsx! {
-        Copy {
-            width: "24px",
-            height: "24px",
-        }
+        Copy { width: "24px", height: "24px" }
     }
 }
 
 #[component]
 fn CheckIcon() -> Element {
     rsx! {
-        Check {
-            width: "24px",
-            height: "24px",
-        }
+        Check { width: "24px", height: "24px" }
     }
 }
 
@@ -630,7 +622,9 @@ fn Docs(dark_mode: Option<bool>) -> Element {
                         " from the Git path:"
                     }
                     pre {
-                        code { r#"dioxus-primitives = {{ git = "https://github.com/DioxusLabs/components" }}"# }
+                        code {
+                            r#"dioxus-primitives = {{ git = "https://github.com/DioxusLabs/components" }}"#
+                        }
                     }
                     p {
                         "The styled components live in this same repository as a registry. The "
@@ -658,7 +652,9 @@ fn Docs(dark_mode: Option<bool>) -> Element {
                 }
                 section { class: "dx-docs-section",
                     h2 { "Add a component" }
-                    p { "Run the add command from your Dioxus app. Swap the final name for any component in the sidebar." }
+                    p {
+                        "Run the add command from your Dioxus app. Swap the final name for any component in the sidebar."
+                    }
                     div { class: "dx-docs-command",
                         code { "dx components add button" }
                         CopyCommandButton { command: "dx components add button".to_string() }
@@ -713,9 +709,7 @@ fn DocsSidebar(active_component: Option<&'static str>) -> Element {
                 X { size: "18" }
             }
             div { class: "dx-docs-sidebar-scroll",
-                nav {
-                    aria_label: "Components",
-                    onclick: close,
+                nav { aria_label: "Components", onclick: close,
                     div { class: "dx-docs-sidebar-section",
                         p { class: "dx-docs-sidebar-heading", "Start" }
                         Link {
@@ -782,9 +776,7 @@ fn Demos(dark_mode: Option<bool>) -> Element {
                 ul { class: "dx-demos-grid",
                     for entry in DEMO_ENTRIES {
                         li { class: "dx-demos-item",
-                            Link {
-                                to: (entry.route)(),
-                                class: "dx-demos-card",
+                            Link { to: (entry.route)(), class: "dx-demos-card",
                                 div { class: "dx-demos-card-thumb", {(entry.thumb)()} }
                                 div { class: "dx-demos-card-meta",
                                     span { class: "dx-demos-card-tag", "{entry.tag}" }
@@ -859,14 +851,21 @@ fn ComponentHighlight(demo: ComponentDemoData) -> Element {
                             ComponentVariantHighlight { variant: main.clone(), main_variant: true, component_name: None }
                         },
                         ComponentType::Block => rsx! {
-                            BlockComponentVariantHighlight { variant: main.clone(), main_variant: true, component_name: raw_name, show_install: false }
+                            BlockComponentVariantHighlight {
+                                variant: main.clone(),
+                                main_variant: true,
+                                component_name: raw_name,
+                                show_install: false,
+                            }
                         },
                     }
                 }
                 section { class: "dx-component-section",
                     div { class: "dx-component-section-heading",
                         h2 { "Installation" }
-                        p { "Use the CLI command for the common path, or copy the component files manually." }
+                        p {
+                            "Use the CLI command for the common path, or copy the component files manually."
+                        }
                     }
                     details { class: "dx-component-manual-install dx-component-manual-install-code",
                         summary { "Manual installation files" }
@@ -894,7 +893,12 @@ fn ComponentHighlight(demo: ComponentDemoData) -> Element {
                                         ComponentVariantHighlight { variant: variant.clone(), main_variant: false, component_name: None }
                                     },
                                     ComponentType::Block => rsx! {
-                                        BlockComponentVariantHighlight { variant: variant.clone(), main_variant: false, component_name: raw_name, show_install: false }
+                                        BlockComponentVariantHighlight {
+                                            variant: variant.clone(),
+                                            main_variant: false,
+                                            component_name: raw_name,
+                                            show_install: false,
+                                        }
                                     },
                                 }
                             }
@@ -1088,7 +1092,10 @@ fn BlockComponentVariantHighlight(
 fn EmailClientDashboard(dark_mode: Option<bool>) -> Element {
     rsx! {
         document::Link { rel: "stylesheet", href: asset!("/assets/main.css") }
-        document::Link { rel: "stylesheet", href: asset!("/assets/dx-components-theme.css") }
+        document::Link {
+            rel: "stylesheet",
+            href: asset!("/assets/dx-components-theme.css"),
+        }
         dashboard::views::email_client::EmailClient {}
     }
 }
@@ -1106,8 +1113,7 @@ fn ComponentBlockDemo(name: String, variant: Option<String>, dark_mode: Option<b
             Some(v) => v,
             None => {
                 return rsx! {
-                    div {
-                        style: "min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 2rem;",
+                    div { style: "min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 2rem;",
                         "Variant content not found: {wanted}"
                     }
                 };
@@ -1272,9 +1278,7 @@ fn MasonryCard(props: MasonryCardProps) -> Element {
         "dx-widget-card"
     };
     rsx! {
-        div { class,
-            Comp {}
-        }
+        div { class, Comp {} }
     }
 }
 
@@ -1292,7 +1296,11 @@ fn BlockSignIn() -> Element {
         div { style: "display: grid; gap: 0.75rem; margin-bottom: 1rem;",
             div { style: "display: grid; gap: 0.35rem;",
                 Label { html_for: "blk-signin-email", "Email" }
-                Input { id: "blk-signin-email", r#type: "email", placeholder: "you@example.com" }
+                TextInput {
+                    id: "blk-signin-email",
+                    r#type: "email",
+                    placeholder: "you@example.com",
+                }
             }
             div { style: "display: grid; gap: 0.35rem;",
                 div { style: "display: flex; align-items: center;",
@@ -1301,7 +1309,11 @@ fn BlockSignIn() -> Element {
                         "Forgot?"
                     }
                 }
-                Input { id: "blk-signin-pw", r#type: "password", placeholder: "••••••••" }
+                TextInput {
+                    id: "blk-signin-pw",
+                    r#type: "password",
+                    placeholder: "••••••••",
+                }
             }
         }
         div { style: "display: grid; gap: 0.5rem;",
@@ -1359,7 +1371,7 @@ fn BlockStats() -> Element {
                 }
                 Badge {
                     variant: BadgeVariant::Secondary,
-                    style: "background-color: rgba(34, 197, 94, 0.18); color: rgb(21, 128, 61);",
+                    style: "background: rgba(34, 197, 94, 0.18); color: rgb(21, 128, 61);",
                     "+12.4%"
                 }
             }
@@ -1389,10 +1401,30 @@ fn BlockNotifications() -> Element {
             }
         }
         div { style: "display: grid; gap: 0.95rem;",
-            NotificationRow { id: "blk-notif-comments", name: "Comments", description: "Replies on your posts", default_on: true }
-            NotificationRow { id: "blk-notif-mentions", name: "Mentions", description: "When someone @'s you", default_on: true }
-            NotificationRow { id: "blk-notif-weekly", name: "Weekly digest", description: "A Monday morning recap", default_on: false }
-            NotificationRow { id: "blk-notif-updates", name: "Product updates", description: "New features and releases", default_on: false }
+            NotificationRow {
+                id: "blk-notif-comments",
+                name: "Comments",
+                description: "Replies on your posts",
+                default_on: true,
+            }
+            NotificationRow {
+                id: "blk-notif-mentions",
+                name: "Mentions",
+                description: "When someone @'s you",
+                default_on: true,
+            }
+            NotificationRow {
+                id: "blk-notif-weekly",
+                name: "Weekly digest",
+                description: "A Monday morning recap",
+                default_on: false,
+            }
+            NotificationRow {
+                id: "blk-notif-updates",
+                name: "Product updates",
+                description: "New features and releases",
+                default_on: false,
+            }
         }
     }
 }
@@ -1501,11 +1533,22 @@ fn BlockPlayer() -> Element {
             }
             Button {
                 aria_label: "Play or pause",
-                onclick: move |_| { let v = !playing(); playing.set(v); },
+                onclick: move |_| {
+                    let v = !playing();
+                    playing.set(v);
+                },
                 if playing() {
-                    Pause { size: "18", fill: "currentColor", stroke_width: "1.5" }
+                    Pause {
+                        size: "18",
+                        fill: "currentColor",
+                        stroke_width: "1.5",
+                    }
                 } else {
-                    Play { size: "18", fill: "currentColor", stroke_width: "1.5" }
+                    Play {
+                        size: "18",
+                        fill: "currentColor",
+                        stroke_width: "1.5",
+                    }
                 }
             }
             Button {
@@ -1593,7 +1636,12 @@ fn BlockFilters() -> Element {
                     "Tags"
                 }
                 div { style: "display: grid; gap: 0.4rem;",
-                    for tag in [("ft-design", "Design", true), ("ft-eng", "Engineering", false), ("ft-research", "Research", false)] {
+                    for tag in [
+                        ("ft-design", "Design", true),
+                        ("ft-eng", "Engineering", false),
+                        ("ft-research", "Research", false),
+                    ]
+                    {
                         div { style: "display: flex; align-items: center; gap: 0.55rem;",
                             Checkbox {
                                 id: tag.0,
@@ -1629,6 +1677,7 @@ fn BlockColorPalette() -> Element {
                 "Tune the accent that shows up across the workspace."
             }
         }
+        ColorPicker { color: color(), on_color_change: move |c| color.set(c) }
     }
 }
 
@@ -1718,7 +1767,11 @@ fn BlockTabs() -> Element {
                             "/"
                         }
                         span { "Roadmap Q2.md" }
-                        Badge { variant: BadgeVariant::Outline, style: "margin-left: auto;", "Draft" }
+                        Badge {
+                            variant: BadgeVariant::Outline,
+                            style: "margin-left: auto;",
+                            "Draft"
+                        }
                     }
                     div { style: "display: flex; align-items: center; gap: 0.5rem;",
                         span { style: "font-family: monospace; color: var(--fg-faint);",
@@ -1853,7 +1906,9 @@ fn BlockTasks() -> Element {
         .iter()
         .map(|t| {
             rsx! {
-                div { key: "{t.0}", style: "display: flex; align-items: center; gap: 0.75rem; min-width: 0;",
+                div {
+                    key: "{t.0}",
+                    style: "display: flex; align-items: center; gap: 0.75rem; min-width: 0;",
                     div { style: "flex: 1; min-width: 0; display: grid; gap: 0.2rem;",
                         div { style: "color: var(--fg); font-size: 0.9rem; font-weight: 540; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;",
                             "{t.1}"
@@ -1923,7 +1978,10 @@ fn BlockComposer() -> Element {
             style: "width: 100%; min-height: 5.5rem; resize: vertical;",
         }
         div { style: "display: flex; align-items: center; gap: 0.55rem; margin-top: 0.85rem;",
-            ToggleGroup { horizontal: true, allow_multiple_pressed: true, aria_label: "Text formatting",
+            ToggleGroup {
+                horizontal: true,
+                allow_multiple_pressed: true,
+                aria_label: "Text formatting",
                 ToggleItem { index: 0usize, aria_label: "Bold",
                     b { "B" }
                 }

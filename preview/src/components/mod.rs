@@ -3,6 +3,7 @@ use super::{ComponentDemoData, ComponentType, ComponentVariantDemoData, Highligh
 #[derive(Copy, Clone, PartialEq, Eq)]
 pub enum ComponentCategory {
     Forms,
+    Combobox,
     Navigation,
     Overlays,
     Feedback,
@@ -13,6 +14,7 @@ pub enum ComponentCategory {
 impl ComponentCategory {
     pub const ALL: &'static [Self] = &[
         Self::Forms,
+        Self::Combobox,
         Self::Navigation,
         Self::Overlays,
         Self::Feedback,
@@ -23,6 +25,7 @@ impl ComponentCategory {
     pub const fn label(self) -> &'static str {
         match self {
             Self::Forms => "Forms",
+            Self::Combobox => "Combobox",
             Self::Navigation => "Navigation",
             Self::Overlays => "Overlays",
             Self::Feedback => "Feedback",
@@ -34,9 +37,13 @@ impl ComponentCategory {
 
 pub fn category_of(name: &str) -> ComponentCategory {
     match name {
-        "button" | "input" | "textarea" | "label" | "checkbox" | "switch" | "radio_group"
-        | "toggle" | "toggle_group" | "select" | "slider" | "calendar" | "date_picker"
-        | "schedule" | "color_picker" | "time_picker" => ComponentCategory::Forms,
+        "button" | "input" | "text_input" | "textarea" | "label" | "checkbox" | "switch"
+        | "radio_group" | "toggle" | "toggle_group" | "select" | "slider" | "calendar"
+        | "date_picker" | "date_input" | "schedule" | "color_picker" | "color_input"
+        | "time_picker" | "time_input" => ComponentCategory::Forms,
+        "combobox" | "autocomplete" | "multi_select" | "pills_input" | "tags_input" => {
+            ComponentCategory::Combobox
+        }
         "navbar" | "sidebar" | "tabs" | "pagination" | "menubar" | "toolbar" | "context_menu"
         | "dropdown_menu" | "table_of_contents" => ComponentCategory::Navigation,
         "dialog" | "alert_dialog" | "sheet" | "popover" | "tooltip" | "hover_card" => {
@@ -55,7 +62,7 @@ macro_rules! examples {
         $(
             pub(crate) mod $name {
                 #[allow(unused)]
-                pub use dioxus_components::$name::*;
+                pub use dioxus_components::*;
                 pub(crate) mod variants {
                     pub(crate) mod main;
                     $(
@@ -183,20 +190,25 @@ examples!(
     card,
     checkbox,
     collapsible,
+    color_input,
     color_picker,
+    autocomplete,
     combobox[controlled, disabled, dynamic, autocomplete, multi_select, tags_input, virtualized],
     context_menu,
+    date_input,
     date_picker[internationalized, range, multi_month, unavailable_dates],
     dialog,
     drag_and_drop_list[removable],
     dropdown_menu,
     hover_card,
-    input,
+    input[sections, composition],
     item[variant, size, image, group],
     label,
     menubar,
+    multi_select,
     navbar,
     pagination,
+    pills_input,
     popover,
     progress,
     radio_group,
@@ -238,8 +250,11 @@ examples!(
     switch,
     tabs[manual, vertical, controlled],
     table_of_contents,
+    text_input[description, error, size, sections],
     textarea[outline, fade, ghost, bottom_section, autosize, resize],
-    time_picker,
+    tags_input,
+    time_input,
+    time_picker[clearable, seconds_12_hour, duration],
     toast,
     toggle,
     toggle_group,

@@ -50,7 +50,7 @@ pub fn AccordionTrigger(props: AccordionTriggerProps) -> Element {
             {props.children}
             ChevronDown {
                 class: Styles::dx_accordion_expand_icon.to_string(),
-                size: "20px",
+                size: "14px",
                 stroke: "var(--secondary-color-4)",
             }
         }

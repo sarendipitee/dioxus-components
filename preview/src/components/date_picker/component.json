@@ -1,6 +1,6 @@
 {
   "name": "date_picker",
-  "description": "A date picker component to select or input dates.",
+  "description": "Inline date selection surface without shared input field chrome.",
   "authors": ["Evan Almloff"],
   "exclude": ["variants", "docs.md", "component.json"],
   "cargoDependencies": [
@@ -17,6 +17,6 @@
       "version": "0.3.44"
     }
   ],
-  "componentDependencies": ["calendar", "popover"],
+  "componentDependencies": ["calendar"],
   "globalAssets": ["../../../../themes/default.css"]
 }

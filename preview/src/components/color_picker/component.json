@@ -1,6 +1,6 @@
 {
   "name": "color_picker",
-  "description": "Allows to select a color using a variety of input methods",
+  "description": "Inline color picking surface without shared input field chrome.",
   "authors": ["Evan Almloff"],
   "exclude": ["variants", "docs.md", "component.json"],
   "cargoDependencies": [
@@ -13,6 +13,6 @@
       "version": "0.7.6"
     }
   ],
-  "componentDependencies": ["popover", "input"],
+  "componentDependencies": [],
   "globalAssets": ["../../../../themes/default.css"]
 }

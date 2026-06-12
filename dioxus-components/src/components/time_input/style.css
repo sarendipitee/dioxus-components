@@ -1,0 +1,12 @@
+.dx-time-input-field {
+    width: 100%;
+}
+
+.dx-time-input-popover-root {
+    width: 100%;
+}
+
+.dx-time-input-popover-content {
+    max-width: unset;
+    padding: calc(var(--space) * 3);
+}

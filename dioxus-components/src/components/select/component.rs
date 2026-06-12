@@ -6,7 +6,7 @@ use dioxus_icons::lucide::{Check, ChevronDown};
 use dioxus_primitives::select::{self, SelectGroupLabelProps, SelectOptionProps};
 use dioxus_primitives::{dioxus_attributes::attributes, merge_attributes};
 
-use crate::input::{Input, InputRadius, InputSize, InputVariant, InputWrapper};
+use crate::input::{element_label, Input, InputRadius, InputSize, InputVariant, InputWrapper};
 
 pub use dioxus_primitives::select::SelectGroup;
 
@@ -112,6 +112,9 @@ pub struct SelectProps<T: Clone + PartialEq + 'static = String> {
     /// Existing ids to prepend to generated description and error ids.
     #[props(default)]
     pub described_by: Option<String>,
+    /// Placeholder rendered when the selected option text has not been resolved.
+    #[props(default = ReadSignal::new(Signal::new(String::from("Select an option"))))]
+    pub placeholder: ReadSignal<String>,
     /// Additional attributes for the select root.
     #[props(extends = GlobalAttributes)]
     pub attributes: Vec<Attribute>,
@@ -224,7 +227,7 @@ pub fn Select<T: Clone + PartialEq + 'static>(props: SelectProps<T>) -> Element 
             attributes: merged,
             InputWrapper {
                 id: input_id.clone(),
-                label: props.label,
+                label: element_label(props.label),
                 description: props.description,
                 error: props.error.clone(),
                 required: props.required,
@@ -247,7 +250,7 @@ pub fn Select<T: Clone + PartialEq + 'static>(props: SelectProps<T>) -> Element 
                             ChevronDown { class: "dx-select-expand-icon", size: "14px", stroke: "currentColor" }
                         }),
                         attributes: attributes!(div { class : Styles::dx_select_input.to_string(), }),
-                        select::SelectValue {}
+                        select::SelectValue { placeholder: props.placeholder }
                     }
                 }
             }
@@ -285,7 +288,7 @@ pub fn SelectMulti<T: Clone + PartialEq + 'static>(props: SelectMultiProps<T>) -
             attributes: merged,
             InputWrapper {
                 id: input_id.clone(),
-                label: props.label,
+                label: element_label(props.label),
                 description: props.description,
                 error: props.error.clone(),
                 required: props.required,

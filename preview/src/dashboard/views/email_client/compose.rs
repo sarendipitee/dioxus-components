@@ -3,7 +3,7 @@ use dioxus_primitives::toast::{use_toast, ToastOptions};
 
 use crate::components::button::{Button, ButtonVariant};
 use crate::components::dialog::{Dialog, DialogDescription, DialogTitle};
-use crate::components::input::Input;
+use crate::components::input::TextInput;
 use crate::components::label::Label;
 use crate::components::separator::Separator;
 use crate::components::textarea::{Textarea, TextareaVariant};
@@ -63,7 +63,7 @@ pub(super) fn ComposeModal(mut state: Store<EmailClientState>) -> Element {
 
                 div { class: "ec-compose-field",
                     Label { html_for: "ec-compose-to", "To" }
-                    Input {
+                    TextInput {
                         id: "ec-compose-to",
                         r#type: "email",
                         required: true,
@@ -76,7 +76,7 @@ pub(super) fn ComposeModal(mut state: Store<EmailClientState>) -> Element {
 
                 div { class: "ec-compose-field",
                     Label { html_for: "ec-compose-subject", "Subject" }
-                    Input {
+                    TextInput {
                         id: "ec-compose-subject",
                         value: subject.clone(),
                         placeholder: "What's this about?",
@@ -104,7 +104,7 @@ pub(super) fn ComposeModal(mut state: Store<EmailClientState>) -> Element {
                         onclick: move |_| state.discard_compose(),
                         "Discard"
                     }
-                    Button { variant: ButtonVariant::Primary, r#type: "submit",
+                    Button { variant: ButtonVariant::Default, r#type: "submit",
                         LucideIcon { kind: IconKind::Send, size: 14 }
                         "Send"
                     }

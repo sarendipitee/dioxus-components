@@ -20,7 +20,7 @@ pub fn Demo() -> Element {
                     div { style: "display: flex; flex-direction: column; gap: 1.5rem;",
                         div { style: "display: grid; gap: 0.5rem;",
                             Label { html_for: "email", "Email" }
-                            Input {
+                            TextInput {
                                 id: "email",
                                 r#type: "email",
                                 placeholder: "m@example.com",
@@ -35,7 +35,7 @@ pub fn Demo() -> Element {
                                     "Forgot your password?"
                                 }
                             }
-                            Input { id: "password", r#type: "password" }
+                            TextInput { id: "password", r#type: "password" }
                         }
                     }
                 }

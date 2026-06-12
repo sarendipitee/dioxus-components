@@ -3,7 +3,7 @@
 }
 
 .dx-select-trigger {
-  display: flex;
+  display: block;
   box-sizing: border-box;
   width: 100%;
   min-width: 0;
@@ -13,9 +13,7 @@
   color: var(--input-fg);
   cursor: pointer;
   font-family: inherit;
-  gap: 0.25rem;
   outline: none;
-  transition: background-color 100ms ease-out;
 }
 
 .dx-select-trigger:disabled {

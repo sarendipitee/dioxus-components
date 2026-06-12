@@ -13,5 +13,6 @@
       "version": "0.1.0"
     }
   ],
+  "componentDependencies": ["input"],
   "globalAssets": ["../../../../themes/default.css"]
 }

@@ -300,7 +300,11 @@ fn CalendarHeader(props: CalendarHeaderProps) -> Element {
 #[component]
 fn CalendarNavigation(props: CalendarNavigationProps) -> Element {
     rsx! {
-        calendar::CalendarNavigation { class: Styles::dx_calendar_navigation.to_string(), attributes: props.attributes, {props.children} }
+        calendar::CalendarNavigation {
+            class: Styles::dx_calendar_navigation.to_string(),
+            attributes: props.attributes,
+            {props.children}
+        }
     }
 }
 
@@ -334,7 +338,7 @@ fn CalendarSelectMonth(props: CalendarSelectMonthProps) -> Element {
             class: Styles::dx_calendar_month_select_container.to_string(),
             CalendarSelectMonthSelect {}
             CalendarSelectMonthValue {
-                DropDownIcon { }
+                DropDownIcon {}
                 {props.children}
             }
         }
@@ -370,7 +374,7 @@ fn CalendarSelectYear(props: CalendarSelectYearProps) -> Element {
             class: Styles::dx_calendar_year_select_container.to_string(),
             CalendarSelectYearSelect {}
             CalendarSelectYearValue {
-                DropDownIcon { }
+                DropDownIcon {}
                 {props.children}
             }
         }
@@ -422,8 +426,7 @@ fn CalendarGrid(
                 for week in grid.weeks() {
                     CalendarGridWeek {
                         for date in week.iter().copied() {
-                            CalendarGridCell {
-                                key: "{date}",
+                            CalendarGridCell { key: "{date}",
                                 CalendarDay { date }
                             }
                         }
@@ -449,10 +452,7 @@ fn CalendarGridRoot(props: CalendarGridRootProps) -> Element {
 #[component]
 fn CalendarGridHead(props: CalendarGridHeadProps) -> Element {
     rsx! {
-        calendar::CalendarGridHead {
-            attributes: props.attributes,
-            {props.children}
-        }
+        calendar::CalendarGridHead { attributes: props.attributes, {props.children} }
     }
 }
 
@@ -504,10 +504,7 @@ fn CalendarGridWeek(props: CalendarGridWeekProps) -> Element {
 #[component]
 fn CalendarGridCell(props: CalendarGridCellProps) -> Element {
     rsx! {
-        calendar::CalendarGridCell {
-            attributes: props.attributes,
-            {props.children}
-        }
+        calendar::CalendarGridCell { attributes: props.attributes, {props.children} }
     }
 }
 
@@ -526,10 +523,7 @@ fn CalendarDay(props: CalendarDayProps) -> Element {
 #[component]
 fn DropDownIcon() -> Element {
     rsx! {
-        ChevronDown {
-            size: "20px",
-            stroke: "var(--secondary-color-4)",
-        }
+        ChevronDown { size: "14px", stroke: "var(--secondary-color-4)" }
     }
 }
 
@@ -540,19 +534,14 @@ mod tests {
     #[component]
     fn CalendarWithDefaultView() -> Element {
         rsx! {
-            Calendar {
-                view_date: fixed_date(2026, Month::May, 15),
-            }
+            Calendar { view_date: fixed_date(2026, Month::May, 15) }
         }
     }
 
     #[component]
     fn CalendarWithDefaultMonthCount() -> Element {
         rsx! {
-            Calendar {
-                view_date: fixed_date(2026, Month::May, 15),
-                month_count: 3,
-            }
+            Calendar { view_date: fixed_date(2026, Month::May, 15), month_count: 3 }
         }
     }
 

@@ -149,6 +149,7 @@ test("keeps filtered options during keyboard close animation", async ({ page }) 
     await expect(closingContent.getByRole("option", { name: "SvelteKit" })).toBeVisible();
     await expect(closingContent.getByRole("option")).toHaveCount(1);
     await expect(content(page)).toHaveCount(0);
+    await expect(trigger).toHaveValue("SvelteKit");
 });
 
 test("clicking an option commits and closes", async ({ page }) => {
@@ -159,8 +160,8 @@ test("clicking an option commits and closes", async ({ page }) => {
     await trigger.click();
     await list(page).getByRole("option", { name: "Dioxus" }).click();
 
-    await expect(content(page)).toHaveCount(0);
     await expect(trigger).toHaveValue("Dioxus");
+    await expect(content(page)).toHaveCount(0);
 });
 
 test("tabbing away closes the list", async ({ page }) => {
@@ -218,7 +219,7 @@ test("controlled value and controlled open stay in sync", async ({ page }) => {
     await expect(trigger).toHaveValue("Astro");
     await expect(storedValue).toHaveText("astro");
 
-    await page.getByRole("button", { name: "Open" }).click();
+    await page.getByRole("button", { name: "Open", exact: true }).click();
     await expect(content(page)).toBeVisible();
 
     await list(page).getByRole("option", { name: "Dioxus" }).click();
@@ -270,7 +271,9 @@ test("virtualized variant shows visible options when opened", async ({ page }) =
     await page.waitForLoadState('networkidle');
 
     const trigger = page.getByRole("combobox", { name: "Virtualized option picker" });
-    await trigger.click();
+    await trigger.focus();
+    await expect(trigger).toBeFocused();
+    await page.keyboard.press("ArrowDown");
 
     const menu = list(page);
     await expect(menu).toBeVisible();
@@ -283,7 +286,9 @@ test("virtualized variant keeps scrollHeight stable while scrolling", async ({ p
     await page.waitForLoadState('networkidle');
 
     const trigger = page.getByRole("combobox", { name: "Virtualized option picker" });
-    await trigger.click();
+    await trigger.focus();
+    await expect(trigger).toBeFocused();
+    await page.keyboard.press("ArrowDown");
 
     const menu = list(page);
     await expect(menu).toBeVisible();

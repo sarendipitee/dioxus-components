@@ -23,7 +23,7 @@
 }
 
 .dx-date-segment:focus-visible {
-    border-radius: 0.25rem;
+    border-radius: var(--radius-input);
     background: var(--input-focus);
     color: var(--input-focus-fg);
     outline: none;

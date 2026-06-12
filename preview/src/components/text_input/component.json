@@ -1,0 +1,14 @@
+{
+  "name": "text_input",
+  "description": "Styled text field built on the shared input foundation.",
+  "authors": ["Evan Almloff"],
+  "exclude": ["variants", "docs.md", "component.json"],
+  "cargoDependencies": [
+    {
+      "name": "dioxus-primitives",
+      "git": "https://github.com/DioxusLabs/components"
+    }
+  ],
+  "componentDependencies": ["input"],
+  "globalAssets": ["../../../../themes/default.css"]
+}

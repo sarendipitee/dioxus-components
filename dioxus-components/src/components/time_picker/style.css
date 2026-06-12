@@ -1,0 +1,83 @@
+.dx-time-picker {
+    display: inline-flex;
+    flex-direction: column;
+    gap: calc(var(--space) * 2);
+}
+
+.dx-time-picker-columns {
+    display: flex;
+    gap: calc(var(--space) * 1);
+}
+
+.dx-time-picker-col {
+    display: flex;
+    flex-direction: column;
+    overflow-y: auto;
+    max-height: 12rem;
+    scrollbar-width: none;
+}
+.dx-time-picker-col::-webkit-scrollbar { display: none; }
+
+.dx-time-picker-col-label {
+    font-size: var(--text-xs);
+    color: var(--input-fg-muted);
+    text-align: center;
+    padding-block-end: calc(var(--space) / 2);
+    position: sticky;
+    top: 0;
+    background: var(--popover-bg, var(--bg));
+    z-index: 1;
+}
+
+.dx-time-picker-col-item {
+    min-width: 3rem;
+    height: 2.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: none;
+    border: none;
+    cursor: pointer;
+    border-radius: var(--radius-sm);
+    font-size: var(--text-sm);
+    color: var(--input-fg);
+    padding: 0;
+}
+.dx-time-picker-col-item:hover:not([disabled]) {
+    background: var(--item-hover-bg);
+}
+.dx-time-picker-col-item[data-selected="true"] {
+    background: var(--input-focus);
+    color: var(--input-focus-fg);
+    font-weight: var(--font-medium);
+}
+.dx-time-picker-col-item[disabled] {
+    cursor: not-allowed;
+    opacity: 0.4;
+}
+
+.dx-time-picker-presets {
+    display: flex;
+    flex-wrap: wrap;
+    gap: calc(var(--space) / 2);
+    border-top: 1px solid var(--border);
+    padding-block-start: calc(var(--space) * 2);
+}
+
+.dx-time-picker-preset-btn {
+    background: none;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: calc(var(--space) / 2) var(--space);
+    font-size: var(--text-xs);
+    cursor: pointer;
+    color: var(--input-fg);
+}
+.dx-time-picker-preset-btn:hover:not([disabled]) {
+    background: var(--item-hover-bg);
+}
+[data-disabled="true"] .dx-time-picker-col-item,
+[data-disabled="true"] .dx-time-picker-preset-btn {
+    cursor: not-allowed;
+    pointer-events: none;
+}

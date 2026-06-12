@@ -1,23 +1,15 @@
-The DatePicker component is used to display a date input and a Calendar popover, allowing users to enter or select a date value.
+`DatePicker` and `DateRangePicker` are inline date selection surfaces. They own calendar state, disabled-date logic, locale formatting, and roving focus, but they do not render shared input field chrome or a popover trigger.
+
+Use `DateInput` or `DateRangePickerInput` from the `date_input` registry entry when you need a labeled field, shared input sizing, validation text, or dropdown composition.
 
 ## Component Structure
 
 ```rust
 DatePicker {
-    // The currently selected date in the date picker (if any).
     selected_date,
-    on_value_change: move |v: Option<Date>| {
-        // This callback is triggered when a date is selected in the
-        // calendar or the user entered it from the keyboard.
-        // The date parameter contains the selected date.
-    },
-    // Optional number of pre-composed calendar months to show in the popover.
+    on_value_change: move |value: Option<Date>| selected_date.set(value),
     month_count: 1,
-    // Optional placeholder formatters for the input fields.
-    on_format_day_placeholder: || "D",
-    on_format_month_placeholder: || "M",
-    on_format_year_placeholder: || "Y",
 }
 ```
 
-The styled `DatePicker` and `DateRangePicker` render the input, trigger, popover content, and calendar by default.
+For field-entry APIs, use `DateInput` and `DateRangePickerInput`.

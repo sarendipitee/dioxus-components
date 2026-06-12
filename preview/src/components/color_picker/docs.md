@@ -1,43 +1,14 @@
-Color picker used when the user needs to make a customized color selection.
+`ColorPicker` provides the inline color picking surface. It renders the color area, hue control, and swatch without shared input field chrome or a popover trigger.
+
+Use `ColorInput` from the `color_input` registry entry when you need a labeled field, shared input sizing, validation text, clear affordance, or dropdown composition.
 
 ## Component Structure
 
 ```rust
 ColorPicker {
-    // The currently selected color in the color picker.
     color,
-    on_color_change: move |c: Hsv<encoding::Srgb, f64>| {
-        // This callback is triggered when a color is selected in the popover.
-        // The HSV parameter contains the selected color.
-    },
-
-    // Optional label on the trigger button.
-    label: "Pick",
+    on_color_change: move |value: Hsv<encoding::Srgb, f64>| color.set(value),
 }
 ```
 
-### Custom Popover
-
-`ColorPicker` renders the default trigger and `ColorPickerSelect` content. If you
-want to fully replace the default popover UI, compose the picker from
-`ColorPickerRoot`, `ColorPickerTrigger`, and `ColorPickerPopover`:
-
-```rust
-ColorPickerRoot {
-    color,
-    on_color_change: move |c: Hsv<encoding::Srgb, f64>| { /* ... */ },
-
-    ColorPickerTrigger {
-        label: "Pick",
-    }
-
-    ColorPickerPopover {
-        div {
-            "Custom color picker content"
-        }
-    }
-}
-```
-
-If you only need to add content after the default controls, pass children to
-`ColorPicker`; they will be appended inside the default popover.
+Pass children to append custom content after the default picker controls.

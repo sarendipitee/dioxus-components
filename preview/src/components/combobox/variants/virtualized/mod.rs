@@ -23,18 +23,21 @@ pub fn Demo() -> Element {
                 placeholder: "Search 1,000 options...",
                 aria_label: "Virtualized option picker",
                 list_aria_label: "Virtualized options",
+                with_list: false,
                 VirtualizedComboboxOptions {
-                count: 1000usize,
-                visible_indices: Some(visible_indices.into()),
-                estimate_size: |_: usize| 36,
-                render_option: |index: usize| rsx! {
-                    ComboboxOption::<String> {
-                        index,
-                        value: format!("option-{index}"),
-                        text_value: format!("Option {index}"),
-                        "Option {index}"
-                    }
-                },
+                    class: "dx-combobox-list",
+                    aria_label: "Virtualized options",
+                    count: 1000usize,
+                    visible_indices: Some(visible_indices.into()),
+                    estimate_size: |_: usize| 36,
+                    render_option: |index: usize| rsx! {
+                        ComboboxOption::<String> {
+                            index,
+                            value: format!("option-{index}"),
+                            text_value: format!("Option {index}"),
+                            "Option {index}"
+                        }
+                    },
                 }
             }
             p { class: "dx-combobox-demo-value",

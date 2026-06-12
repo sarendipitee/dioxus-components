@@ -1,7 +1,7 @@
-use dioxus_components::input::Input;
+use dioxus_components::input::TextInput;
 
-use dioxus_components::label::*;
 use dioxus::prelude::*;
+use dioxus_components::label::*;
 
 #[component]
 pub fn Demo() -> Element {
@@ -9,7 +9,7 @@ pub fn Demo() -> Element {
         div { display: "flex", flex_direction: "column", gap: ".5rem",
             Label { html_for: "name", "Name" }
 
-            Input { id: "name", placeholder: "Enter your name" }
+            TextInput { id: "name", placeholder: "Enter your name" }
         }
 
     }

@@ -1,6 +1,6 @@
 {
   "name": "input",
-  "description": "An input field component for user text entry.",
+  "description": "Shared low-level input shell and wrapper primitives used by higher-level field components.",
   "authors": ["Evan Almloff"],
   "exclude": ["variants", "docs.md", "component.json"],
   "cargoDependencies": [

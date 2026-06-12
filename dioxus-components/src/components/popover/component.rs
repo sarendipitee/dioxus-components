@@ -38,6 +38,19 @@ pub fn PopoverTrigger(props: PopoverTriggerProps) -> Element {
     }
 }
 
+/// Styled popover trigger that opens the popover without toggling it closed.
+#[component]
+pub fn PopoverOpenTrigger(props: PopoverTriggerProps) -> Element {
+    let base = attributes!(button {
+        class: Styles::dx_popover_trigger.to_string()
+    });
+    let merged = merge_attributes(vec![base, props.attributes]);
+
+    rsx! {
+        popover::PopoverOpenTrigger { attributes: merged, {props.children} }
+    }
+}
+
 #[component]
 pub fn PopoverContent(props: PopoverContentProps) -> Element {
     let class = if let Some(class) = props.class {

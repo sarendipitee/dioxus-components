@@ -1,0 +1,18 @@
+{
+  "name": "autocomplete",
+  "description": "A combobox-backed text input that owns the visible query and selected label.",
+  "authors": ["Evan Almloff"],
+  "exclude": ["variants", "docs.md", "component.json"],
+  "cargoDependencies": [
+    {
+      "name": "dioxus-primitives",
+      "git": "https://github.com/DioxusLabs/components"
+    },
+    {
+      "name": "dioxus-icons",
+      "version": "0.1.0"
+    }
+  ],
+  "componentDependencies": ["input"],
+  "globalAssets": ["../../../../themes/default.css"]
+}
