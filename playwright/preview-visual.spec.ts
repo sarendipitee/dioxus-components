@@ -23,6 +23,10 @@ const skippedPreviewCases = new Map<string, string>([
     "virtual_list/random_heights",
     "Adaptive virtual-list measurement can produce browser-dependent scroll content after first paint.",
   ],
+  [
+    "data_table/virtualized",
+    "Virtualized row measurement and scroll position are browser-dependent after first paint; behavior is covered by data_table.spec.ts.",
+  ],
 ]);
 
 function previewComponents(): string[] {

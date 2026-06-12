@@ -54,7 +54,9 @@ pub fn category_of(name: &str) -> ComponentCategory {
         "toast" | "progress" | "skeleton" | "badge" => ComponentCategory::Feedback,
         "accordion" | "collapsible" => ComponentCategory::Disclosure,
         "avatar" | "card" | "separator" | "aspect_ratio" | "item" | "drag_and_drop_list"
-        | "virtual_list" | "scroll_area" | "split_pane" => ComponentCategory::DataDisplay,
+        | "virtual_list" | "scroll_area" | "split_pane" | "data_table" => {
+            ComponentCategory::DataDisplay
+        }
         _ => ComponentCategory::DataDisplay,
     }
 }
@@ -201,6 +203,7 @@ examples!(
     context_menu,
     date_input,
     date_picker[internationalized, range, multi_month, unavailable_dates],
+    data_table[controlled, server_backed, expansion, virtualized],
     dialog,
     drag_and_drop_list[removable],
     dropdown_menu,

@@ -1,0 +1,459 @@
+.dx_data_table {
+    display: flex;
+    width: 100%;
+    flex-direction: column;
+    gap: calc(var(--space) * 3);
+}
+
+.dx_data_table_toolbar {
+    display: flex;
+    align-items: center;
+    gap: var(--space);
+}
+
+.dx_data_table_toolbar_main,
+.dx_data_table_toolbar_aside,
+.dx_data_table_header_controls,
+.dx_data_table_toolbar_slot {
+    display: inline-flex;
+    align-items: center;
+    gap: calc(var(--space) * 2);
+}
+
+.dx_data_table_toolbar_main {
+    flex: 1 1 auto;
+    min-width: 0;
+}
+
+.dx_data_table_toolbar_aside {
+    flex: 0 0 auto;
+    justify-content: flex-end;
+}
+
+.dx_data_table_toolbar_slot,
+.dx_data_table_header_controls {
+    flex: 0 0 auto;
+}
+
+.dx_data_table_search,
+.dx_data_table_filter,
+.dx_data_table_page_size {
+}
+
+.dx_data_table_search {
+    flex: 1 1 16rem;
+    min-width: 10rem;
+    color: var(--input-placeholder);
+}
+
+.dx_data_table_search_input {
+    width: 100%;
+    min-width: 0;
+    flex: 1;
+}
+
+.dx_data_table_search_input:focus,
+.dx_data_table_search_input:focus-visible {
+    outline: 0;
+    box-shadow: none;
+}
+
+.dx_data_table_filters {
+    display: inline-flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: calc(var(--space) * 2);
+}
+
+.dx_data_table_active_filters {
+    display: inline-flex;
+    flex: 0 1 auto;
+    min-width: 0;
+    align-items: center;
+    gap: calc(var(--space) * 1.5);
+    overflow: hidden;
+}
+
+.dx_data_table_filter_chip {
+    max-width: 14rem;
+    gap: calc(var(--space) * 1.5);
+    overflow: hidden;
+    --button-border: var(--accent-active) !important;
+}
+
+.dx_data_table_filter_chip_label,
+.dx_data_table_filter_chip_value {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.dx_data_table_filter_chip_label {
+    color: var(--surface-muted-fg);
+}
+
+.dx_data_table_filter_chip_value {
+    color: var(--surface-fg);
+}
+
+.dx_data_table_input,
+.dx_data_table_select {
+    max-width: 12rem;
+    font: inherit;
+}
+
+.dx_data_table_select .dx_select_trigger {
+    min-height: var(--input-height-md, var(--control-height-md));
+}
+
+.dx_data_table_select .dx_select_input {
+    min-height: var(--input-height-md, var(--control-height-md));
+}
+
+.dx_data_table_range {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space);
+}
+
+.dx_data_table_range .dx_data_table_input {
+    max-width: 6.5rem;
+}
+
+.dx_data_table_column_menu,
+.dx_data_table_filter_menu {
+    position: relative;
+    font-size: 0.875rem;
+}
+
+.dx_data_table_filter_options,
+.dx_data_table_settings {
+    display: grid;
+    min-width: 16rem;
+    padding: var(--list-item-padding-y);
+    gap: calc(var(--list-item-padding-y) * 3);
+}
+
+.dx_data_table_settings_button {
+    min-width: var(--control-height-md);
+    padding-inline: calc(var(--space) * 2);
+}
+
+.dx_data_table_settings_slot {
+    display: grid;
+    gap: calc(var(--space) * 1.5);
+    padding: var(--list-item-padding-y) var(--list-item-padding-x);
+    border-bottom: 1px solid var(--surface-border);
+}
+
+.dx_data_table_column_options {
+    display: grid;
+    min-width: 12rem;
+    padding: var(--list-item-padding-y);
+    gap: var(--space);
+}
+
+.dx_data_table_column_options_header {
+    padding: var(--list-item-padding-y) var(--list-item-padding-x);
+    color: var(--fg-muted);
+    font-size: 0.75rem;
+    font-weight: 500;
+}
+
+.dx_data_table_option {
+    display: flex;
+    align-items: center;
+    gap: var(--space);
+    padding: var(--list-item-padding-y) var(--list-item-padding-x);
+    color: var(--overlay-fg);
+    border-radius: var(--radius-control);
+    white-space: nowrap;
+}
+
+@media (max-width: 640px) {
+    .dx_data_table_toolbar {
+        flex-wrap: wrap;
+    }
+
+    .dx_data_table_toolbar_main {
+        flex-basis: 100%;
+        order: 2;
+    }
+}
+
+.dx_data_table_inline_error {
+    color: var(--danger);
+    font-size: 0.875rem;
+}
+
+.dx_data_table_surface {
+    overflow: auto hidden;
+    width: 100%;
+    border: 1px solid var(--surface-border);
+    border-radius: var(--radius-surface);
+    background: var(--surface);
+}
+
+.dx_data_table_base {
+    width: 100%;
+    min-width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+}
+
+/* Virtualized tables scroll the body within a bounded surface with a sticky header. The reserved
+   scrollbar gutter keeps fixed-layout column widths from shifting when the scrollbar appears. */
+.dx_data_table_surface[data-virtualized="true"] {
+    overflow: auto;
+    scrollbar-gutter: stable;
+}
+
+/* Fixed layout keeps column widths stable as the mounted row set changes on scroll. */
+.dx_data_table_surface[data-virtualized="true"] .dx_data_table_base {
+    table-layout: fixed;
+}
+
+.dx_data_table_surface[data-virtualized="true"] .dx_data_table_head_cell,
+.dx_data_table_surface[data-virtualized="true"] .dx_data_table_selection_head_cell,
+.dx_data_table_surface[data-virtualized="true"] .dx_data_table_expansion_head_cell {
+    position: sticky;
+    z-index: 2;
+    top: 0;
+    background: var(--surface-muted);
+}
+
+.dx_data_table_surface[data-virtualized="true"] .dx_data_table_selection_head_cell,
+.dx_data_table_surface[data-virtualized="true"] .dx_data_table_selection_cell,
+.dx_data_table_surface[data-virtualized="true"] .dx_data_table_expansion_head_cell,
+.dx_data_table_surface[data-virtualized="true"] .dx_data_table_expansion_cell {
+    width: 3rem;
+}
+
+/* Keep virtualized rows single-line so row heights stay uniform and the estimate stays accurate. */
+.dx_data_table_surface[data-virtualized="true"] .dx_data_table_cell {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.dx_data_table_head {
+    background: var(--surface-muted);
+}
+
+.dx_data_table_head_cell {
+    padding: 0.625rem 1rem;
+    border-bottom: 1px solid var(--surface-border);
+    color: var(--surface-muted-fg);
+    font-size: 0.75rem;
+    font-weight: 500;
+    letter-spacing: 0.05em;
+    text-align: left;
+    text-transform: uppercase;
+    white-space: nowrap;
+}
+
+.dx_data_table_head_cell[data-align="start"],
+.dx_data_table_cell[data-align="start"] {
+    text-align: left;
+}
+
+.dx_data_table_head_cell[data-align="center"],
+.dx_data_table_cell[data-align="center"] {
+    text-align: center;
+}
+
+.dx_data_table_head_cell[data-align="end"],
+.dx_data_table_cell[data-align="end"] {
+    text-align: right;
+}
+
+.dx_data_table_selection_head_cell,
+.dx_data_table_expansion_head_cell,
+.dx_data_table_selection_cell,
+.dx_data_table_expansion_cell {
+    width: 1%;
+    padding: calc(var(--space) * 2);
+    border-bottom: 1px solid var(--surface-border);
+    text-align: center;
+    white-space: nowrap;
+}
+
+.dx_data_table_selection_head_cell,
+.dx_data_table_expansion_head_cell {
+    background: var(--surface-muted);
+}
+
+.dx_data_table_head_label {
+    display: block;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.dx_data_table_sort_header {
+    display: inline-flex;
+    align-items: center;
+    gap: calc(var(--space) * 1.5);
+    max-width: 100%;
+}
+
+.dx_data_table_sort_button {
+    display: inline-flex;
+    width: var(--control-height-sm);
+    min-width: var(--control-height-sm);
+    height: var(--control-height-sm);
+    min-height: var(--control-height-sm);
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    color: inherit;
+    cursor: pointer;
+    font: inherit;
+    letter-spacing: inherit;
+    text-align: inherit;
+    text-transform: inherit;
+}
+
+.dx_data_table_sort_indicator {
+    display: inline-flex;
+    flex: 0 0 auto;
+    align-items: center;
+    justify-content: center;
+    color: var(--surface-muted-fg);
+    line-height: 0;
+}
+
+.dx_data_table_icon_button {
+    min-width: var(--control-height-md);
+    min-height: var(--control-height-md);
+    padding: var(--space) var(--control-padding-x-md);
+    border: 1px solid var(--input-border);
+    border-radius: var(--radius-control);
+    background: var(--surface);
+    color: var(--surface-fg);
+    cursor: pointer;
+    font: inherit;
+}
+
+.dx_data_table_icon_button:disabled {
+    cursor: not-allowed;
+    border-color: var(--input-disabled-border);
+    background: var(--input-disabled);
+    color: var(--input-disabled-fg);
+    opacity: 1;
+}
+
+.dx_data_table_row {
+    transition: background-color 120ms ease;
+}
+
+.dx_data_table_row[data-clickable="true"] {
+    cursor: pointer;
+}
+
+.dx_data_table_row:hover {
+    background: var(--surface-hover);
+}
+
+.dx_data_table_cell {
+    padding: 0.875rem 1rem;
+    border-bottom: 1px solid var(--surface-border);
+    color: var(--surface-fg);
+    font-size: 0.875rem;
+    vertical-align: middle;
+}
+
+.dx_data_table_expanded_row {
+    background: var(--surface);
+}
+
+.dx_data_table_expanded_cell {
+    padding: calc(var(--space) * 3) calc(var(--space) * 4) calc(var(--space) * 4);
+    border-bottom: 1px solid var(--surface-border);
+}
+
+.dx_data_table_state_cell {
+    padding: calc(var(--space) * 8) calc(var(--space) * 4);
+    border-bottom: 1px solid var(--surface-border);
+}
+
+.dx_data_table_empty,
+.dx_data_table_error,
+.dx_data_table_loading {
+    display: flex;
+    min-height: 7rem;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: calc(var(--space) * 2);
+    text-align: center;
+}
+
+.dx_data_table_empty_title {
+    margin: 0;
+    color: var(--surface-fg);
+    font-size: 0.875rem;
+    font-weight: 500;
+}
+
+.dx_data_table_empty_hint {
+    max-width: 28rem;
+    margin: 0;
+    color: var(--surface-muted-fg);
+    font-size: 0.875rem;
+}
+
+.dx_data_table_error {
+    color: var(--danger);
+    font-size: 0.875rem;
+}
+
+.dx_data_table_loading {
+    align-items: stretch;
+    color: var(--surface-muted-fg);
+    font-size: 0.875rem;
+    text-align: left;
+}
+
+.dx_data_table_pagination {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: calc(var(--space) * 4);
+}
+
+.dx_data_table_page_summary {
+    color: var(--surface-muted-fg);
+    font-size: 0.875rem;
+}
+
+.dx_data_table_page_actions {
+    display: flex;
+    align-items: center;
+    gap: calc(var(--space) * 2);
+}
+
+.dx_data_table_page_nav {
+    width: auto;
+    margin: 0;
+}
+
+@media (width <= 640px) {
+    .dx_data_table_toolbar,
+    .dx_data_table_pagination {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .dx_data_table_toolbar_main,
+    .dx_data_table_toolbar_aside {
+        justify-content: flex-start;
+    }
+
+    .dx_data_table_page_actions {
+        flex-wrap: wrap;
+        justify-content: flex-end;
+    }
+}

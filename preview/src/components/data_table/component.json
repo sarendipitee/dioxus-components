@@ -1,0 +1,22 @@
+{
+  "name": "data_table",
+  "description": "A canonical state-driven data table with typed columns, stable row identity, client-side controls, and manual/server-backed modes.",
+  "authors": [
+    "zhiyanzhaijie"
+  ],
+  "exclude": [
+    "variants",
+    "docs.md",
+    "component.json"
+  ],
+  "cargoDependencies": [
+    {
+      "name": "dioxus-primitives",
+      "git": "https://github.com/DioxusLabs/components"
+    }
+  ],
+  "componentDependencies": ["button", "skeleton"],
+  "globalAssets": [
+    "../../../../themes/default.css"
+  ]
+}
