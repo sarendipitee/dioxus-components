@@ -1,4 +1,6 @@
-use super::{ComponentDemoData, ComponentType, ComponentVariantDemoData, HighlightedCode};
+use super::{
+    ComponentDemoData, ComponentType, ComponentVariantDemoData, HighlightedCode, PropMetadata,
+};
 
 #[derive(Copy, Clone, PartialEq, Eq)]
 pub enum ComponentCategory {
@@ -100,6 +102,7 @@ macro_rules! examples {
                 "/description.txt"
             )),
             docs: include_str!(concat!(env!("OUT_DIR"), "/", stringify!($name), "/docs.html")),
+            props: include!(concat!(env!("OUT_DIR"), "/", stringify!($name), "/props.rs")),
             component: HighlightedCode {
                 html: include_str!(concat!(env!("OUT_DIR"), "/", stringify!($name), "/component.rs.html")),
             },
@@ -143,6 +146,7 @@ macro_rules! examples {
                 "/description.txt"
             )),
             docs: include_str!(concat!(env!("OUT_DIR"), "/", stringify!($name), "/docs.html")),
+            props: include!(concat!(env!("OUT_DIR"), "/", stringify!($name), "/props.rs")),
             component: HighlightedCode {
                 html: include_str!(concat!(env!("OUT_DIR"), "/", stringify!($name), "/component.rs.html")),
             },

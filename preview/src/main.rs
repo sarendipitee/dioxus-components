@@ -48,9 +48,24 @@ struct ComponentDemoData {
     r#type: ComponentType,
     description: &'static str,
     docs: &'static str,
+    props: &'static [PropMetadata],
     component: HighlightedCode,
     style: HighlightedCode,
     variants: &'static [ComponentVariantDemoData],
+}
+
+#[derive(Clone, PartialEq)]
+struct PropMetadata {
+    component: &'static str,
+    name: &'static str,
+    ty: &'static str,
+    value: &'static str,
+    docs: &'static str,
+}
+
+#[derive(Props, Clone, PartialEq)]
+struct ComponentPropsSectionProps {
+    props: &'static [PropMetadata],
 }
 
 #[allow(unpredictable_function_pointer_comparisons)]
@@ -823,6 +838,7 @@ fn ComponentHighlight(demo: ComponentDemoData) -> Element {
         name: raw_name,
         r#type,
         docs,
+        props,
         description,
         variants,
         component,
@@ -872,6 +888,9 @@ fn ComponentHighlight(demo: ComponentDemoData) -> Element {
                         ManualComponentInstallation { component, style }
                     }
                 }
+                if !props.is_empty() {
+                    ComponentPropsSection { props: props }
+                }
                 section { class: "dx-component-section dx-docs-prose",
                     div { class: "dx-component-section-heading",
                         h2 { "Usage notes" }
@@ -900,6 +919,56 @@ fn ComponentHighlight(demo: ComponentDemoData) -> Element {
                                             show_install: false,
                                         }
                                     },
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+#[allow(non_snake_case)]
+fn ComponentPropsSection(props: ComponentPropsSectionProps) -> Element {
+    let ComponentPropsSectionProps { props } = props;
+
+    rsx! {
+        section { class: "dx-component-section",
+            div { class: "dx-component-section-heading",
+                h2 { "Props" }
+                p { "Generated from the component source at build time." }
+            }
+            div { class: "dx-component-props-table-wrap",
+                table { class: "dx-component-props-table",
+                    thead {
+                        tr {
+                            for heading in ["Component", "Prop", "Type", "Value", "Docs"] {
+                                th { class: "dx-component-props-table-heading", "{heading}" }
+                            }
+                        }
+                    }
+                    tbody {
+                        for prop in props {
+                            tr {
+                                td { class: "dx-component-props-table-cell dx-component-props-table-cell-muted",
+                                    code { "{prop.component}" }
+                                }
+                                td { class: "dx-component-props-table-cell",
+                                    code { "{prop.name}" }
+                                }
+                                td { class: "dx-component-props-table-cell dx-component-props-table-cell-muted",
+                                    code { "{prop.ty}" }
+                                }
+                                td { class: "dx-component-props-table-cell dx-component-props-table-cell-muted",
+                                    code { "{prop.value}" }
+                                }
+                                td { class: "dx-component-props-table-cell dx-component-props-table-cell-docs",
+                                    if prop.docs.is_empty() {
+                                        span { "none" }
+                                    } else {
+                                        span { "{prop.docs}" }
+                                    }
                                 }
                             }
                         }

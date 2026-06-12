@@ -1,5 +1,5 @@
 use dioxus::prelude::*;
-
+use quote::ToTokens;
 fn main() {
     let out_dir = std::env::var("OUT_DIR").unwrap();
     let out_dir = std::path::PathBuf::from(out_dir);
@@ -79,6 +79,7 @@ fn walk_markdown_dir(dir: &std::path::Path, out_dir: &std::path::Path) -> std::i
         .is_some_and(|name| name == "components")
     {
         let crate_folder_name = crate_component_source_folder(&folder_name);
+        let mut wrote_props_metadata = false;
         let crate_component = std::path::Path::new("../dioxus-components/src/components")
             .join(crate_folder_name)
             .join("component.rs");
@@ -90,6 +91,8 @@ fn walk_markdown_dir(dir: &std::path::Path, out_dir: &std::path::Path) -> std::i
                 out_file_path,
                 render_source_html(dioxus_code::Language::Rust, &source),
             )?;
+            write_component_props_metadata(crate_folder_name, &source, &out_folder)?;
+            wrote_props_metadata = true;
         }
 
         let crate_style = std::path::Path::new("../dioxus-components/src/components")
@@ -103,10 +106,493 @@ fn walk_markdown_dir(dir: &std::path::Path, out_dir: &std::path::Path) -> std::i
                 out_file_path,
                 render_source_html(dioxus_code::Language::Css, &source),
             )?;
+        } else {
+            std::fs::write(
+                out_folder.join("style.css.html"),
+                render_plain_code_block(""),
+            )?;
+        }
+
+        if !wrote_props_metadata {
+            std::fs::write(out_folder.join("props.rs"), "&[]\n")?;
         }
     }
 
     Ok(())
+}
+
+#[derive(Debug)]
+struct PropMetadata {
+    component: String,
+    name: String,
+    ty: String,
+    value: String,
+    docs: String,
+}
+
+fn write_component_props_metadata(
+    component_name: &str,
+    source: &str,
+    out_folder: &std::path::Path,
+) -> std::io::Result<()> {
+    let mut props = extract_props_metadata(source);
+
+    for primitive_source in read_primitive_sources(component_name)? {
+        props.extend(extract_props_metadata(&primitive_source));
+    }
+
+    props.sort_by(|a, b| {
+        a.component
+            .cmp(&b.component)
+            .then_with(|| a.name.cmp(&b.name))
+    });
+
+    let mut output = String::from("&[\n");
+    for prop in props {
+        output.push_str("    PropMetadata {\n");
+        output.push_str(&format!(
+            "        component: {},\n",
+            rust_string(&prop.component)
+        ));
+        output.push_str(&format!("        name: {},\n", rust_string(&prop.name)));
+        output.push_str(&format!("        ty: {},\n", rust_string(&prop.ty)));
+        output.push_str(&format!("        value: {},\n", rust_string(&prop.value)));
+        output.push_str(&format!("        docs: {},\n", rust_string(&prop.docs)));
+        output.push_str("    },\n");
+    }
+    output.push_str("]\n");
+
+    std::fs::write(out_folder.join("props.rs"), output)
+}
+
+fn read_primitive_sources(component_name: &str) -> std::io::Result<Vec<String>> {
+    let mut sources = Vec::new();
+    let path = std::path::Path::new("../primitives/src").join(format!("{component_name}.rs"));
+    if path.exists() {
+        println!("cargo:rerun-if-changed={}", path.display());
+        sources.push(std::fs::read_to_string(path)?);
+    }
+
+    let folder = std::path::Path::new("../primitives/src").join(component_name);
+    if folder.exists() {
+        read_primitive_folder_sources(&folder, &mut sources)?;
+    }
+
+    Ok(sources)
+}
+
+fn read_primitive_folder_sources(
+    folder: &std::path::Path,
+    sources: &mut Vec<String>,
+) -> std::io::Result<()> {
+    for entry in std::fs::read_dir(folder)?.flatten() {
+        let path = entry.path();
+        if entry.file_type()?.is_dir() {
+            read_primitive_folder_sources(&path, sources)?;
+        } else if path.extension() == Some(std::ffi::OsStr::new("rs")) {
+            println!("cargo:rerun-if-changed={}", path.display());
+            sources.push(std::fs::read_to_string(path)?);
+        }
+    }
+    Ok(())
+}
+
+fn extract_props_metadata(source: &str) -> Vec<PropMetadata> {
+    let file = match syn::parse_file(source) {
+        Ok(file) => file,
+        Err(_) => return Vec::new(),
+    };
+
+    let mut props = Vec::new();
+
+    for item in file.items {
+        match item {
+            syn::Item::Struct(item) if has_props_derive(&item.attrs) => {
+                props.extend(extract_struct_props(&item));
+            }
+            syn::Item::Fn(item) if has_component_attr(&item.attrs) => {
+                props.extend(extract_function_props(&item));
+            }
+            _ => {}
+        }
+    }
+
+    props
+}
+
+fn has_props_derive(attrs: &[syn::Attribute]) -> bool {
+    attrs.iter().any(|attr| {
+        if !attr.path().is_ident("derive") {
+            return false;
+        }
+
+        let mut found = false;
+        let _ = attr.parse_nested_meta(|meta| {
+            if meta.path.is_ident("Props") {
+                found = true;
+            }
+            Ok(())
+        });
+        found
+    })
+}
+
+fn has_component_attr(attrs: &[syn::Attribute]) -> bool {
+    attrs.iter().any(|attr| attr.path().is_ident("component"))
+}
+
+fn extract_struct_props(item: &syn::ItemStruct) -> Vec<PropMetadata> {
+    let component = item
+        .ident
+        .to_string()
+        .strip_suffix("Props")
+        .unwrap_or(&item.ident.to_string())
+        .to_string();
+    let syn::Fields::Named(fields) = &item.fields else {
+        return Vec::new();
+    };
+
+    fields
+        .named
+        .iter()
+        .filter_map(|field| {
+            let name = field.ident.as_ref()?.to_string();
+            let ty = normalize_type(&field.ty.to_token_stream().to_string());
+            Some(PropMetadata {
+                component: component.clone(),
+                name,
+                value: prop_value(&field.attrs, &field.ty),
+                ty,
+                docs: doc_string(&field.attrs),
+            })
+        })
+        .collect()
+}
+
+fn extract_function_props(item: &syn::ItemFn) -> Vec<PropMetadata> {
+    let component = item.sig.ident.to_string();
+
+    item.sig
+        .inputs
+        .iter()
+        .filter_map(|input| {
+            let syn::FnArg::Typed(pat_ty) = input else {
+                return None;
+            };
+            let syn::Pat::Ident(pat_ident) = pat_ty.pat.as_ref() else {
+                return None;
+            };
+
+            let ty = normalize_type(&pat_ty.ty.to_token_stream().to_string());
+            Some(PropMetadata {
+                component: component.clone(),
+                name: pat_ident.ident.to_string(),
+                value: prop_value(&pat_ty.attrs, &pat_ty.ty),
+                ty,
+                docs: doc_string(&pat_ty.attrs),
+            })
+        })
+        .collect()
+}
+
+fn prop_value(attrs: &[syn::Attribute], ty: &syn::Type) -> String {
+    let mut has_default = false;
+    let mut has_extends = false;
+
+    for attr in attrs {
+        if !attr.path().is_ident("props") {
+            continue;
+        }
+
+        let _ = attr.parse_nested_meta(|meta| {
+            if meta.path.is_ident("default") {
+                has_default = true;
+            }
+            if meta.path.is_ident("extends") {
+                has_extends = true;
+            }
+            Ok(())
+        });
+
+        if let syn::Meta::List(list) = &attr.meta {
+            let tokens = list.tokens.to_string();
+            if let Some(value) = default_expr_from_props_tokens(&tokens) {
+                return value;
+            }
+        }
+    }
+
+    if has_default {
+        "Default::default()".to_string()
+    } else if has_extends {
+        "none".to_string()
+    } else if is_option_type(ty) {
+        "none".to_string()
+    } else {
+        "required".to_string()
+    }
+}
+
+fn default_expr_from_props_tokens(tokens: &str) -> Option<String> {
+    let default_idx = tokens.find("default")?;
+    let eq_idx = tokens[default_idx..].find('=')?;
+    let after_eq = tokens[default_idx + eq_idx + 1..].trim_start();
+
+    let mut depth_paren = 0usize;
+    let mut depth_bracket = 0usize;
+    let mut depth_brace = 0usize;
+    let mut in_string = false;
+    let mut prev_escape = false;
+
+    for (idx, ch) in after_eq.char_indices() {
+        match ch {
+            '"' if !prev_escape => in_string = !in_string,
+            '(' if !in_string => depth_paren += 1,
+            ')' if !in_string => depth_paren = depth_paren.saturating_sub(1),
+            '[' if !in_string => depth_bracket += 1,
+            ']' if !in_string => depth_bracket = depth_bracket.saturating_sub(1),
+            '{' if !in_string => depth_brace += 1,
+            '}' if !in_string => depth_brace = depth_brace.saturating_sub(1),
+            ',' if !in_string && depth_paren == 0 && depth_bracket == 0 && depth_brace == 0 => {
+                return Some(normalize_type(&after_eq[..idx]));
+            }
+            _ => {}
+        }
+        prev_escape = ch == '\\' && !prev_escape;
+        if ch != '\\' {
+            prev_escape = false;
+        }
+    }
+
+    Some(normalize_type(after_eq))
+}
+
+fn is_option_type(ty: &syn::Type) -> bool {
+    match ty {
+        syn::Type::Path(type_path) => type_path
+            .path
+            .segments
+            .last()
+            .is_some_and(|segment| segment.ident == "Option"),
+        _ => false,
+    }
+}
+
+fn doc_string(attrs: &[syn::Attribute]) -> String {
+    let mut docs = Vec::new();
+
+    for attr in attrs {
+        if !attr.path().is_ident("doc") {
+            continue;
+        }
+
+        if let syn::Meta::NameValue(name_value) = &attr.meta {
+            if let syn::Expr::Lit(expr_lit) = &name_value.value {
+                if let syn::Lit::Str(lit_str) = &expr_lit.lit {
+                    let value = lit_str.value();
+                    let trimmed = value.trim();
+                    if !trimmed.is_empty() {
+                        docs.push(trimmed.to_string());
+                    }
+                }
+            }
+        }
+    }
+
+    docs.join(" ")
+}
+
+fn normalize_type(ty: &str) -> String {
+    let mut normalized = ty.trim().trim_end_matches(',').trim().to_string();
+
+    let mut result = String::with_capacity(normalized.len());
+    let mut segment_start = 0usize;
+    let bytes = normalized.as_bytes();
+    let mut idx = 0usize;
+
+    while idx < bytes.len() {
+        let literal_len = rust_literal_len(&normalized[idx..]);
+        if literal_len == 0 {
+            idx += 1;
+            continue;
+        }
+
+        result.push_str(&compact_rust_spacing(&normalized[segment_start..idx]));
+        result.push_str(&normalized[idx..idx + literal_len]);
+        idx += literal_len;
+        segment_start = idx;
+    }
+
+    result.push_str(&compact_rust_spacing(&normalized[segment_start..]));
+    normalized = result;
+
+    normalized
+}
+
+fn compact_rust_spacing(source: &str) -> String {
+    let mut normalized = source.to_string();
+
+    for (from, to) in [
+        (" :: ", "::"),
+        (" ::", "::"),
+        (":: ", "::"),
+        (" < ", "<"),
+        (" <", "<"),
+        ("< ", "<"),
+        (" > ", ">"),
+        (" >", ">"),
+        ("> ", ">"),
+        (" ( ", "("),
+        (" (", "("),
+        ("( ", "("),
+        (" ) ", ")"),
+        (" )", ")"),
+        (") ", ")"),
+        (" [ ", "["),
+        (" [", "["),
+        ("[ ", "["),
+        (" ] ", "]"),
+        (" ]", "]"),
+        ("] ", "]"),
+        (" ! ", "!"),
+        (" !", "!"),
+        ("! ", "!"),
+        (" & ", "&"),
+        ("& ", "&"),
+    ] {
+        normalized = normalized.replace(from, to);
+    }
+
+    normalized
+}
+
+fn rust_literal_len(source: &str) -> usize {
+    if source.is_empty() {
+        return 0;
+    }
+
+    if let Some(len) = cooked_string_literal_len(source) {
+        return len;
+    }
+
+    if let Some(len) = raw_string_literal_len(source) {
+        return len;
+    }
+
+    cooked_char_literal_len(source).unwrap_or(0)
+}
+
+fn cooked_string_literal_len(source: &str) -> Option<usize> {
+    let mut chars = source.char_indices();
+    if chars.next()?.1 != '"' {
+        return None;
+    }
+
+    let mut escaped = false;
+    for (idx, ch) in chars {
+        if escaped {
+            escaped = false;
+            continue;
+        }
+
+        match ch {
+            '\\' => escaped = true,
+            '"' => return Some(idx + ch.len_utf8()),
+            _ => {}
+        }
+    }
+
+    Some(source.len())
+}
+
+fn raw_string_literal_len(source: &str) -> Option<usize> {
+    let rest = source.strip_prefix('r')?;
+    let hashes = rest.chars().take_while(|&ch| ch == '#').count();
+    let rest = &rest[hashes..];
+    if !rest.starts_with('"') {
+        return None;
+    }
+
+    let terminator = format!("\"{}", "#".repeat(hashes));
+    let body = &rest[1..];
+    let end = body.find(&terminator)?;
+    Some(1 + hashes + 1 + end + terminator.len())
+}
+
+fn cooked_char_literal_len(source: &str) -> Option<usize> {
+    let mut chars = source.char_indices();
+    if chars.next()?.1 != '\'' {
+        return None;
+    }
+
+    let (content_idx, content) = chars.next()?;
+    let closing_idx = if content == '\\' {
+        cooked_char_escape_len(&source[content_idx..]).and_then(|escape_len| {
+            source[content_idx + escape_len..]
+                .chars()
+                .next()
+                .filter(|&ch| ch == '\'')
+                .map(|ch| content_idx + escape_len + ch.len_utf8())
+        })?
+    } else {
+        if content == '\'' || content == '\n' || content == '\r' {
+            return None;
+        }
+
+        source[content_idx + content.len_utf8()..]
+            .chars()
+            .next()
+            .filter(|&ch| ch == '\'')
+            .map(|ch| content_idx + content.len_utf8() + ch.len_utf8())?
+    };
+
+    Some(closing_idx)
+}
+
+fn cooked_char_escape_len(source: &str) -> Option<usize> {
+    let mut chars = source.char_indices();
+    if chars.next()?.1 != '\\' {
+        return None;
+    }
+
+    let (_, escape) = chars.next()?;
+    match escape {
+        '\'' | '"' | '\\' | 'n' | 'r' | 't' | '0' => Some(1 + escape.len_utf8()),
+        'x' => {
+            let mut len = 1 + escape.len_utf8();
+            for _ in 0..2 {
+                let (idx, ch) = chars.next()?;
+                if !ch.is_ascii_hexdigit() {
+                    return None;
+                }
+                len = idx + ch.len_utf8();
+            }
+            Some(len)
+        }
+        'u' => {
+            let (_, ch) = chars.next()?;
+            if ch != '{' {
+                return None;
+            }
+
+            let mut digits = 0usize;
+            for (idx, ch) in chars {
+                if ch == '}' {
+                    return (digits > 0).then_some(idx + ch.len_utf8());
+                }
+                if !ch.is_ascii_hexdigit() || digits >= 6 {
+                    return None;
+                }
+                digits += 1;
+            }
+            None
+        }
+        _ => None,
+    }
+}
+
+fn rust_string(value: &str) -> String {
+    format!("{value:?}")
 }
 
 fn process_markdown_to_html(markdown_path: &std::path::Path) -> String {
@@ -247,5 +733,88 @@ fn language_from_slug(slug: &str) -> Option<dioxus_code::Language> {
         "rust" => Some(dioxus_code::Language::Rust),
         "css" => Some(dioxus_code::Language::Css),
         slug => dioxus_code::Language::from_slug(slug),
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::{default_expr_from_props_tokens, extract_props_metadata, normalize_type};
+
+    #[test]
+    fn default_expr_preserves_nested_default_expression_parens() {
+        assert_eq!(
+            default_expr_from_props_tokens("default = Some(Default::default())"),
+            Some("Some(Default::default())".to_string())
+        );
+        assert_eq!(
+            default_expr_from_props_tokens("default = vec![format!(\"x{}\", 1)]"),
+            Some("vec![format!(\"x{}\", 1)]".to_string())
+        );
+    }
+
+    #[test]
+    fn default_expr_keeps_simple_defaults_working() {
+        assert_eq!(
+            default_expr_from_props_tokens("default = true"),
+            Some("true".to_string())
+        );
+        assert_eq!(
+            default_expr_from_props_tokens("default = \"hello\""),
+            Some("\"hello\"".to_string())
+        );
+    }
+
+    #[test]
+    fn default_expr_preserves_raw_string_literals() {
+        assert_eq!(
+            default_expr_from_props_tokens("default = r#\"Vec < Attribute >\"#"),
+            Some("r#\"Vec < Attribute >\"#".to_string())
+        );
+    }
+
+    #[test]
+    fn normalize_type_compacts_generic_spacing_from_token_streams() {
+        assert_eq!(normalize_type("Vec < Attribute >"), "Vec<Attribute>");
+        assert_eq!(
+            normalize_type("Option < EventHandler < MouseEvent > >"),
+            "Option<EventHandler<MouseEvent>>"
+        );
+        assert_eq!(normalize_type("Option < &'a str >"), "Option<&'a str>");
+        assert_eq!(
+            normalize_type("Some ( Default :: default () )"),
+            "Some(Default::default())"
+        );
+    }
+
+    #[test]
+    fn normalize_type_preserves_string_and_char_literal_contents() {
+        assert_eq!(
+            normalize_type("format! ( \"a :: b\" , Some ( \"Vec < Attribute >\" ) , '<' )"),
+            "format!(\"a :: b\", Some(\"Vec < Attribute >\"), '<')"
+        );
+        assert_eq!(
+            default_expr_from_props_tokens("default = Some(\"Vec < Attribute >\")"),
+            Some("Some(\"Vec < Attribute >\")".to_string())
+        );
+    }
+
+    #[test]
+    fn extract_props_metadata_separates_docs_from_field_names() {
+        let source = r#"
+            #[derive(Props, Clone, PartialEq)]
+            pub struct TimeInputProps {
+                /// Accessibility labels for segments and clear affordances.
+                #[props(default)]
+                pub labels: TimePickerLabels,
+            }
+        "#;
+
+        let props = extract_props_metadata(source);
+        assert_eq!(props.len(), 1);
+        assert_eq!(props[0].name, "labels");
+        assert_eq!(
+            props[0].docs,
+            "Accessibility labels for segments and clear affordances."
+        );
     }
 }

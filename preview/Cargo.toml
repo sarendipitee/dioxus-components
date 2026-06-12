@@ -22,7 +22,9 @@ dioxus = { workspace = true }
 dioxus-code = { version = "0.1.0", default-features = false, features = ["runtime", "lang-css"] }
 dioxus-ssr = "0.7.0"
 pulldown-cmark = "0.13.0"
+quote = "1"
 serde_json = "1"
+syn = { version = "2", features = ["full"] }
 
 [dev-dependencies]
 dioxus-ssr = "0.7.0"
