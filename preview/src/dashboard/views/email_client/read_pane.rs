@@ -284,7 +284,7 @@ pub(super) fn ReadPane(
                             }
                             div { class: "ec-thread-compose-actions",
                                 Button {
-                                    variant: ButtonVariant::Primary,
+                                    variant: ButtonVariant::Default,
                                     r#type: "button",
                                     disabled: reply_draft.read().trim().is_empty(),
                                     onclick: send_reply,

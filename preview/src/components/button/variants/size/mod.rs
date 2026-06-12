@@ -12,19 +12,6 @@ pub fn Demo() -> Element {
                 display: "flex",
                 align_items: "flex-start",
                 gap: "0.5rem",
-                Button { size: ButtonSize::Xs, variant: ButtonVariant::Outline, "Extra Small" }
-                Button {
-                    size: ButtonSize::IconXs,
-                    variant: ButtonVariant::Outline,
-                    aria_label: "Submit",
-                    ArrowUpRightIcon {}
-                }
-            }
-
-            div {
-                display: "flex",
-                align_items: "flex-start",
-                gap: "0.5rem",
                 Button { size: ButtonSize::Sm, variant: ButtonVariant::Outline, "Small" }
                 Button {
                     size: ButtonSize::IconSm,

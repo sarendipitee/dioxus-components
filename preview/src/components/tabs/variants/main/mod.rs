@@ -37,7 +37,7 @@ pub fn Demo() -> Element {
                     for (value , label) in VARIANT_OPTIONS {
                         Button {
                             key: "variant-{label}",
-                            variant: if variant() == *value { ButtonVariant::Primary } else { ButtonVariant::Outline },
+                            variant: if variant() == *value { ButtonVariant::Default } else { ButtonVariant::Outline },
                             size: ButtonSize::Sm,
                             onclick: move |_| variant.set(*value),
                             "{label}"
@@ -55,7 +55,7 @@ pub fn Demo() -> Element {
                     for (value , label) in ORIENTATION_OPTIONS {
                         Button {
                             key: "orientation-{label}",
-                            variant: if orientation() == *value { ButtonVariant::Primary } else { ButtonVariant::Outline },
+                            variant: if orientation() == *value { ButtonVariant::Default } else { ButtonVariant::Outline },
                             size: ButtonSize::Sm,
                             onclick: move |_| orientation.set(*value),
                             "{label}"

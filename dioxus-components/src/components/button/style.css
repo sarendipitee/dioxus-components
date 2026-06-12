@@ -1,17 +1,17 @@
 .dx-button {
-  --button-height: var(--control-height-md, 2.5rem);
-  --button-padding-x: var(--control-padding-x-md, 0.75rem);
-  --button-radius: var(--radius-control, 0.5rem);
-  --button-gap: var(--control-gap, 0.5rem);
-  --button-bg: var(--accent);
-  --button-fg: var(--accent-fg);
-  --button-border: var(--accent-border);
-  --button-hover-bg: var(--accent-hover);
-  --button-hover-fg: var(--accent-hover-fg);
-  --button-hover-border: var(--accent-hover-border);
-  --button-active-bg: var(--accent-active);
-  --button-active-fg: var(--accent-active-fg);
-  --button-active-border: var(--accent-active-border);
+  --button-height: var(--control-height-md);
+  --button-padding-x: var(--control-padding-x-md);
+  --button-radius: var(--radius-control);
+  --button-gap: var(--control-gap, 1rem);
+  --button-bg: var(--fg);
+  --button-fg: var(--surface);
+  --button-border: var(--fg);
+  --button-hover-bg: var(--fg-muted);
+  --button-hover-fg: var(--surface);
+  --button-hover-border: var(--fg-muted);
+  --button-active-bg: var(--fg);
+  --button-active-fg: var(--surface);
+  --button-active-border: var(--fg);
   --button-focus-ring: var(--focus);
   --button-focus-shadow: var(--focus-ring);
 
@@ -47,54 +47,30 @@
   pointer-events: none;
 }
 
-.dx-button svg:not([class*="size-"]) {
-  width: 1rem;
-  height: 1rem;
-}
-
-.dx-button[data-size="xs"] {
-  --button-height: 1.5rem;
-  --button-padding-x: 0.5rem;
-  --button-gap: 0.25rem;
-
-  font-size: 0.75rem;
-  line-height: 1rem;
-}
-
-.dx-button[data-size="xs"]:has(> svg) {
-  padding-inline: 0.375rem;
-}
-
-.dx-button[data-size="xs"] svg:not([class*="size-"]) {
-  width: 0.75rem;
-  height: 0.75rem;
-}
-
 .dx-button[data-size="sm"] {
-  --button-height: var(--control-height-sm, 2rem);
-  --button-padding-x: var(--control-padding-x-sm, 0.625rem);
-  --button-gap: calc(var(--control-gap, 0.5rem) * 0.75);
+  --button-height: var(--control-height-sm);
+  --button-padding-x: var(--control-padding-x-sm);
 }
 
 .dx-button[data-size="sm"]:has(> svg) {
-  padding-inline: 0.625rem;
+  padding-inline: var(--button-padding-x);
 }
 
 .dx-button[data-size="default"]:has(> svg) {
-  padding-inline: 0.75rem;
+  padding-inline: var(--button-padding-x);
 }
 
 .dx-button[data-size="lg"] {
-  --button-height: var(--control-height-lg, 3rem);
-  --button-padding-x: var(--control-padding-x-lg, 1rem);
+  --button-height: var(--control-height-lg);
+  --button-padding-x: var(--control-padding-x-lg);
 }
 
 .dx-button[data-size="lg"]:has(> svg) {
-  padding-inline: 1rem;
+  padding-inline: var(--button-padding-x);
 }
 
 .dx-button[data-size="icon"] {
-  width: var(--control-height-md, 2.5rem);
+  width: var(--button-height);
   padding: 0;
 }
 
@@ -103,22 +79,10 @@
   height: 1rem;
 }
 
-.dx-button[data-size="icon-xs"] {
-  --button-height: 1.5rem;
-
-  width: 1.5rem;
-  padding: 0;
-}
-
-.dx-button[data-size="icon-xs"] svg:not([class*="size-"]) {
-  width: 0.75rem;
-  height: 0.75rem;
-}
-
 .dx-button[data-size="icon-sm"] {
-  --button-height: var(--control-height-sm, 2rem);
+  --button-height: var(--control-height-sm);
 
-  width: var(--control-height-sm, 2rem);
+  width: var(--button-height);
   padding: 0;
 }
 
@@ -128,9 +92,9 @@
 }
 
 .dx-button[data-size="icon-lg"] {
-  --button-height: var(--control-height-lg, 3rem);
+  --button-height: var(--control-height-lg);
 
-  width: var(--control-height-lg, 3rem);
+  width: var(--button-height);
   padding: 0;
 }
 
@@ -171,28 +135,28 @@
   border-color: var(--danger-border);
 }
 
-.dx-button[data-style="primary"] {
-  --button-bg: var(--accent);
-  --button-fg: var(--accent-fg);
-  --button-border: var(--accent-border);
-  --button-hover-bg: var(--accent-hover);
-  --button-hover-fg: var(--accent-hover-fg);
-  --button-hover-border: var(--accent-hover-border);
-  --button-active-bg: var(--accent-active);
-  --button-active-fg: var(--accent-active-fg);
-  --button-active-border: var(--accent-active-border);
+.dx-button[data-style="default"] {
+  --button-bg: var(--fg);
+  --button-fg: var(--surface);
+  --button-border: var(--fg);
+  --button-hover-bg: var(--fg-muted);
+  --button-hover-fg: var(--surface);
+  --button-hover-border: var(--fg-muted);
+  --button-active-bg: var(--fg);
+  --button-active-fg: var(--surface);
+  --button-active-border: var(--fg);
 }
 
 .dx-button[data-style="secondary"] {
-  --button-bg: var(--accent-subtle);
-  --button-fg: var(--accent-subtle-fg);
-  --button-border: var(--accent-subtle-border);
-  --button-hover-bg: var(--accent);
-  --button-hover-fg: var(--accent-fg);
-  --button-hover-border: var(--accent-border);
-  --button-active-bg: var(--accent-hover);
-  --button-active-fg: var(--accent-hover-fg);
-  --button-active-border: var(--accent-hover-border);
+  --button-bg: var(--surface-muted);
+  --button-fg: var(--surface-fg);
+  --button-border: var(--surface-muted-border);
+  --button-hover-bg: var(--surface-hover);
+  --button-hover-fg: var(--surface-hover-fg);
+  --button-hover-border: var(--surface-hover-border);
+  --button-active-bg: var(--surface-active);
+  --button-active-fg: var(--surface-active-fg);
+  --button-active-border: var(--surface-active-border);
 }
 
 .dx-button[data-style="destructive"] {
@@ -215,10 +179,10 @@
   --button-border: var(--input-border);
   --button-hover-bg: var(--surface-hover);
   --button-hover-fg: var(--surface-hover-fg);
-  --button-hover-border: var(--surface-hover-border);
+  --button-hover-border: var(--input-hover-border);
   --button-active-bg: var(--surface-active);
   --button-active-fg: var(--surface-active-fg);
-  --button-active-border: var(--surface-active-border);
+  --button-active-border: var(--input-border);
 
   box-shadow: 0 1px 2px 0 rgb(0 0 0 / 5%);
 }
@@ -239,13 +203,13 @@
 
 .dx-button[data-style="link"] {
   --button-bg: var(--surface);
-  --button-fg: var(--accent);
+  --button-fg: var(--fg);
   --button-border: 0% 0 0 / 0;
   --button-hover-bg: var(--surface);
-  --button-hover-fg: var(--accent-hover);
+  --button-hover-fg: var(--fg-muted);
   --button-hover-border: 0% 0 0 / 0;
   --button-active-bg: var(--surface);
-  --button-active-fg: var(--accent-active);
+  --button-active-fg: var(--fg);
   --button-active-border: 0% 0 0 / 0;
 
   background: transparent;

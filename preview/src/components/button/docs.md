@@ -6,7 +6,7 @@ The button element is used to trigger actions or events in a user interface.
 button {
     // Global html attributes
     class: "dx-button",
-    "data-style": "outline",
+    "data-style": "default",
     "data-size": "default",
     // Children
     {children}

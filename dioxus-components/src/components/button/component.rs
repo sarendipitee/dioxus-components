@@ -9,6 +9,8 @@ struct Styles;
 #[non_exhaustive]
 pub enum ButtonVariant {
     #[default]
+    Default,
+    #[deprecated(note = "Use ButtonVariant::Default instead.")]
     Primary,
     Secondary,
     Destructive,
@@ -18,9 +20,10 @@ pub enum ButtonVariant {
 }
 
 impl ButtonVariant {
+    #[allow(deprecated)]
     pub fn class(&self) -> &'static str {
         match self {
-            ButtonVariant::Primary => "primary",
+            ButtonVariant::Default | ButtonVariant::Primary => "default",
             ButtonVariant::Secondary => "secondary",
             ButtonVariant::Destructive => "destructive",
             ButtonVariant::Outline => "outline",
@@ -33,13 +36,11 @@ impl ButtonVariant {
 #[derive(Copy, Clone, PartialEq, Default)]
 #[non_exhaustive]
 pub enum ButtonSize {
-    Xs,
     Sm,
     #[default]
     Default,
     Lg,
     Icon,
-    IconXs,
     IconSm,
     IconLg,
 }
@@ -47,12 +48,10 @@ pub enum ButtonSize {
 impl ButtonSize {
     pub fn class(&self) -> &'static str {
         match self {
-            ButtonSize::Xs => "xs",
             ButtonSize::Sm => "sm",
             ButtonSize::Default => "default",
             ButtonSize::Lg => "lg",
             ButtonSize::Icon => "icon",
-            ButtonSize::IconXs => "icon-xs",
             ButtonSize::IconSm => "icon-sm",
             ButtonSize::IconLg => "icon-lg",
         }

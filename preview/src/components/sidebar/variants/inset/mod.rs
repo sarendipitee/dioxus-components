@@ -453,13 +453,13 @@ fn DemoSettingControls(
                 }
                 div { style: "display: inline-flex; gap: 0.5rem;",
                     Button {
-                        variant: if side() == SidebarSide::Left { ButtonVariant::Primary } else { ButtonVariant::Outline },
+                        variant: if side() == SidebarSide::Left { ButtonVariant::Default } else { ButtonVariant::Outline },
                         onclick: move |_| side.set(SidebarSide::Left),
                         style: "padding: 0.4rem 0.6rem; font-size: 0.75rem;",
                         "Left"
                     }
                     Button {
-                        variant: if side() == SidebarSide::Right { ButtonVariant::Primary } else { ButtonVariant::Outline },
+                        variant: if side() == SidebarSide::Right { ButtonVariant::Default } else { ButtonVariant::Outline },
                         onclick: move |_| side.set(SidebarSide::Right),
                         style: "padding: 0.4rem 0.6rem; font-size: 0.75rem;",
                         "Right"
@@ -472,19 +472,19 @@ fn DemoSettingControls(
                 }
                 div { style: "display: inline-flex; gap: 0.5rem; flex-wrap: wrap;",
                     Button {
-                        variant: if collapsible() == SidebarCollapsible::Offcanvas { ButtonVariant::Primary } else { ButtonVariant::Outline },
+                        variant: if collapsible() == SidebarCollapsible::Offcanvas { ButtonVariant::Default } else { ButtonVariant::Outline },
                         onclick: move |_| collapsible.set(SidebarCollapsible::Offcanvas),
                         style: "padding: 0.4rem 0.6rem; font-size: 0.75rem;",
                         "Offcanvas"
                     }
                     Button {
-                        variant: if collapsible() == SidebarCollapsible::Icon { ButtonVariant::Primary } else { ButtonVariant::Outline },
+                        variant: if collapsible() == SidebarCollapsible::Icon { ButtonVariant::Default } else { ButtonVariant::Outline },
                         onclick: move |_| collapsible.set(SidebarCollapsible::Icon),
                         style: "padding: 0.4rem 0.6rem; font-size: 0.75rem;",
                         "Icon"
                     }
                     Button {
-                        variant: if collapsible() == SidebarCollapsible::None { ButtonVariant::Primary } else { ButtonVariant::Outline },
+                        variant: if collapsible() == SidebarCollapsible::None { ButtonVariant::Default } else { ButtonVariant::Outline },
                         onclick: move |_| collapsible.set(SidebarCollapsible::None),
                         style: "padding: 0.4rem 0.6rem; font-size: 0.75rem;",
                         "None"

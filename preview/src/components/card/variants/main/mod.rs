@@ -1,8 +1,8 @@
-use dioxus_components::card::*;
-use dioxus_components::button::{Button, ButtonVariant};
-use dioxus_components::input::Input;
-use dioxus_components::label::Label;
 use dioxus::prelude::*;
+use dioxus_components::button::{Button, ButtonVariant};
+use dioxus_components::card::*;
+use dioxus_components::input::TextInput;
+use dioxus_components::label::Label;
 
 #[component]
 pub fn Demo() -> Element {

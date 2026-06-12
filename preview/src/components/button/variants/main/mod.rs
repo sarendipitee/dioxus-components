@@ -5,8 +5,8 @@ use dioxus::prelude::*;
 #[component]
 pub fn Demo() -> Element {
     rsx! {
-        div { display: "flex", flex_direction: "column", gap: "0.5rem",
-            Button { "Primary" }
+        div { display: "flex", gap: "1rem",
+            Button { "Default" }
 
             Button { variant: ButtonVariant::Secondary, "Secondary" }
 

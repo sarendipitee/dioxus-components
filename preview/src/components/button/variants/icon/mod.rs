@@ -12,9 +12,7 @@ pub fn Demo() -> Element {
             align_items: "flex-start",
             gap: "0.75rem",
 
-            Button {
-                variant: ButtonVariant::Outline,
-                size: ButtonSize::Icon,
+            Button { variant: ButtonVariant::Outline, size: ButtonSize::Icon,
                 ArrowUpRight { size: "16px" }
             }
 
@@ -25,9 +23,7 @@ pub fn Demo() -> Element {
                 ArrowUpRight { size: "16px" }
             }
 
-            Button {
-                variant: ButtonVariant::Outline,
-                size: ButtonSize::Sm,
+            Button { variant: ButtonVariant::Outline,
                 GitMerge { size: "16px" }
                 "Merge"
             }
