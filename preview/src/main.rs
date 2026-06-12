@@ -33,6 +33,7 @@ use unic_langid::{langid, LanguageIdentifier};
 mod components;
 mod dashboard;
 mod theme;
+mod theme_customizer;
 
 #[derive(Copy, Clone, PartialEq)]
 enum ComponentType {
@@ -156,6 +157,8 @@ pub enum Route {
     Docs { dark_mode: Option<bool> },
     #[route("/demos?:dark_mode")]
     Demos { dark_mode: Option<bool> },
+    #[route("/theme?:dark_mode")]
+    Theme { dark_mode: Option<bool> },
     #[route("/component/?:name&:iframe&:dark_mode")]
     ComponentDemo {
         name: String,
@@ -179,6 +182,7 @@ impl Route {
             Route::Home { iframe, .. } => *iframe,
             Route::Docs { .. } => None,
             Route::Demos { .. } => None,
+            Route::Theme { .. } => None,
             Route::ComponentDemo { iframe, .. } => *iframe,
             Route::ComponentBlockDemo { .. } => None,
             Route::EmailClientDashboard { .. } => None,
@@ -195,6 +199,7 @@ impl Route {
             Route::Home { dark_mode, .. } => *dark_mode,
             Route::Docs { dark_mode, .. } => *dark_mode,
             Route::Demos { dark_mode, .. } => *dark_mode,
+            Route::Theme { dark_mode, .. } => *dark_mode,
             Route::ComponentDemo { dark_mode, .. } => *dark_mode,
             Route::ComponentBlockDemo { dark_mode, .. } => *dark_mode,
             Route::EmailClientDashboard { dark_mode, .. } => *dark_mode,
@@ -222,6 +227,11 @@ impl Route {
         Self::Demos { dark_mode }
     }
 
+    pub fn theme() -> Self {
+        let dark_mode = Self::in_dark_mode();
+        Self::Theme { dark_mode }
+    }
+
     pub fn component(name: impl ToString) -> Self {
         let iframe = Self::in_iframe();
         let dark_mode = Self::in_dark_mode();
@@ -243,7 +253,7 @@ fn AppLayout() -> Element {
     });
 
     rsx! {
-        Outlet::<Route> {}
+        theme_customizer::ThemeCustomizerProvider { Outlet::<Route> {} }
     }
 }
 
@@ -319,6 +329,7 @@ fn Navbar() -> Element {
                     }
                     Link { to: Route::docs(), class: "dx-navbar-link", "Docs" }
                     Link { to: Route::demos(), class: "dx-navbar-link", "Demos" }
+                    Link { to: Route::theme(), class: "dx-navbar-link", "Theme" }
                 }
                 div { class: "dx-navbar-utilities",
                     // TODO: restore once the primitives crate is published
@@ -392,6 +403,7 @@ fn Footer() -> Element {
                         Link { to: Route::home(), class: "dx-footer-link", "Components" }
                         Link { to: Route::docs(), class: "dx-footer-link", "Docs" }
                         Link { to: Route::demos(), class: "dx-footer-link", "Demos" }
+                        Link { to: Route::theme(), class: "dx-footer-link", "Theme" }
                     }
                     div { class: "dx-footer-nav-group",
                         span { class: "dx-footer-nav-heading", "Project" }
@@ -812,6 +824,14 @@ fn Demos(dark_mode: Option<bool>) -> Element {
 }
 
 #[component]
+fn Theme(dark_mode: Option<bool>) -> Element {
+    let _ = dark_mode;
+    rsx! {
+        theme_customizer::ThemePage {}
+    }
+}
+
+#[component]
 fn ComponentDemo(iframe: Option<bool>, dark_mode: Option<bool>, name: String) -> Element {
     let route = router().current::<Route>();
     tracing::info!("route: {route}");
@@ -889,7 +909,7 @@ fn ComponentHighlight(demo: ComponentDemoData) -> Element {
                     }
                 }
                 if !props.is_empty() {
-                    ComponentPropsSection { props: props }
+                    ComponentPropsSection { props }
                 }
                 section { class: "dx-component-section dx-docs-prose",
                     div { class: "dx-component-section-heading",

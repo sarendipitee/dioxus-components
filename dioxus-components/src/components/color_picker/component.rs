@@ -10,6 +10,19 @@ fn format_color_hex(color: Color) -> String {
     format!("#{color:X}")
 }
 
+fn color_hex_from_hsv(color: Hsv<encoding::Srgb, f64>) -> String {
+    let rgb: Color = Srgb::<f64>::from_color(color).into_format();
+    format_color_hex(rgb)
+}
+
+fn is_zero_hue_alias(value: f64) -> bool {
+    value.rem_euclid(360.0) == 0.0
+}
+
+fn preserves_hue_alias(current: f64, next: f64) -> bool {
+    (current == 360.0 && is_zero_hue_alias(next)) || (next == 360.0 && is_zero_hue_alias(current))
+}
+
 /// The props for the [`ColorPickerRoot`] component.
 #[derive(Props, Clone, PartialEq)]
 pub struct ColorPickerRootProps {
@@ -168,6 +181,7 @@ pub struct ColorSliderProps {
 fn ColorSlider(props: ColorSliderProps) -> Element {
     let ctx = use_context::<ColorPickerContext>();
     let mut current_hue = use_signal(|| ctx.color().hue.into_positive_degrees());
+    let mut pending_color_hex = use_signal(|| None::<String>);
 
     let thumb_color = use_memo(move || {
         Srgb::<f64>::from_color(Hsv::<encoding::Srgb, f64>::new(
@@ -179,14 +193,20 @@ fn ColorSlider(props: ColorSliderProps) -> Element {
     });
 
     use_effect(move || {
-        let value = ctx.color().hue.into_positive_degrees();
-        let current = current_hue();
+        let color = ctx.color();
+        let parent_hex = color_hex_from_hsv(color);
 
-        let is_wrap_around = (value - current).abs() > 350.0;
+        if pending_color_hex.peek().as_deref() == Some(parent_hex.as_str()) {
+            pending_color_hex.set(None);
+            return;
+        }
+
+        let value = color.hue.into_positive_degrees();
+        let current = *current_hue.peek();
 
         // Update the signal only if this is an actual new position,
         // and not a "flip" of the circle by the palette library.
-        if !is_wrap_around && value != current {
+        if !preserves_hue_alias(current, value) && value != current {
             current_hue.set(value);
         }
     });
@@ -212,10 +232,17 @@ fn ColorSlider(props: ColorSliderProps) -> Element {
                 label: "Color Slider",
                 horizontal: true,
                 max: 360.0,
-                value: current_hue(),
+                value: Some(current_hue()),
                 on_value_change: move |h: f64| {
                     // Allow the value to be exactly 360.0
                     // The palette will understand that 360.0 == 0.0, but the signal will remain 360.0 for the UI.
+                    let current = ctx.color();
+                    let next = Hsv::<encoding::Srgb, f64>::new(
+                        RgbHue::new(h),
+                        current.saturation,
+                        current.value,
+                    );
+                    pending_color_hex.set(Some(color_hex_from_hsv(next)));
                     current_hue.set(h);
                     ctx.set_hue(h);
                 },
@@ -230,6 +257,31 @@ fn ColorSlider(props: ColorSliderProps) -> Element {
             }
             {props.children}
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::{color_hex_from_hsv, preserves_hue_alias};
+    use palette::{encoding, Hsv, RgbHue};
+
+    #[test]
+    fn hsv_hex_round_trip_matches_normalized_parent_color() {
+        let requested = Hsv::<encoding::Srgb, f64>::new(RgbHue::new(360.0), 1.0, 1.0);
+        let normalized = Hsv::<encoding::Srgb, f64>::new(RgbHue::new(0.0), 1.0, 1.0);
+
+        assert_eq!(
+            color_hex_from_hsv(requested),
+            color_hex_from_hsv(normalized)
+        );
+    }
+
+    #[test]
+    fn alias_detection_only_preserves_0_and_360_equivalence() {
+        assert!(preserves_hue_alias(360.0, 0.0));
+        assert!(preserves_hue_alias(0.0, 360.0));
+        assert!(!preserves_hue_alias(4.0, 355.0));
+        assert!(!preserves_hue_alias(120.0, 121.0));
     }
 }
 
@@ -264,8 +316,6 @@ pub struct ColorPickerSelectProps {
 
 #[component]
 pub fn ColorPickerSelect(props: ColorPickerSelectProps) -> Element {
-    let ctx = use_context::<ColorPickerContext>();
-
     rsx! {
         div {
             class: Styles::dx_color_picker_dialog.to_string(),
