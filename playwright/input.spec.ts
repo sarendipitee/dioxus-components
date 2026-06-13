@@ -1,7 +1,7 @@
 import { test, expect } from "@playwright/test";
 
 test("test", async ({ page }) => {
-  await page.goto("http://127.0.0.1:8080/component/?name=input&", {
+  await page.goto("/component/?name=input&", {
     timeout: 20 * 60 * 1000,
   }); // Increase timeout to 20 minutes
 
@@ -10,7 +10,7 @@ test("test", async ({ page }) => {
 });
 
 test("shared input shell wires descriptions and sections", async ({ page }) => {
-  await page.goto("http://127.0.0.1:8080/component/?name=input&", {
+  await page.goto("/component/?name=input&", {
     timeout: 20 * 60 * 1000,
   });
 
@@ -44,7 +44,7 @@ test("shared input shell wires descriptions and sections", async ({ page }) => {
 });
 
 test("picker inputs wire generated ids and descriptions to controls", async ({ page }) => {
-  await page.goto("http://127.0.0.1:8080/component/?name=color_input&", {
+  await page.goto("/component/?name=color_input&", {
     timeout: 20 * 60 * 1000,
   });
 
@@ -68,7 +68,7 @@ test("picker inputs wire generated ids and descriptions to controls", async ({ p
       .filter({ has: page.getByRole("textbox", { name: "Accent color" }) }),
   ).not.toContainText("Hue");
 
-  await page.goto("http://127.0.0.1:8080/component/?name=date_input&", {
+  await page.goto("/component/?name=date_input&", {
     timeout: 20 * 60 * 1000,
   });
 
@@ -83,18 +83,31 @@ test("picker inputs wire generated ids and descriptions to controls", async ({ p
   await expect(page.locator(`#${dueDateInputId}-description`)).toHaveText(
     "Single-date input composition.",
   );
+  const dueDateShell = page
+    .locator("[data-slot='input-wrapper']")
+    .filter({ has: page.locator(`#${dueDateInputId}`) });
+  const dueDateChevron = dueDateShell.getByRole("button", { name: "Show Calendar" });
+  await expect(dueDateChevron).toBeVisible();
+  await expect(dueDateShell.locator("[data-slot='input-right-section']")).toBeVisible();
+  await dueDateChevron.click();
+  const dateDialog = page.getByRole("dialog");
+  await expect(dateDialog).toContainText("Su");
   await dueDateInput.focus();
-  await expect(page.getByRole("dialog")).toContainText("Su");
+  await expect(dateDialog).toContainText("Su");
 
   const rangeLabel = page.getByText("Booking range", { exact: true });
   const rangeInputId = await rangeLabel.getAttribute("for");
   expect(rangeInputId).toBeTruthy();
   const rangeInput = page.locator(`#${rangeInputId}`);
   await expect(rangeInput).toBeVisible();
+  const rangeShell = page
+    .locator("[data-slot='input-wrapper']")
+    .filter({ has: page.locator(`#${rangeInputId}`) });
+  await expect(rangeShell.getByRole("button", { name: "Show Calendar" })).toBeVisible();
   await rangeInput.focus();
   await expect(page.getByRole("dialog")).toContainText("Su");
 
-  await page.goto("http://127.0.0.1:8080/component/?name=time_input&", {
+  await page.goto("/component/?name=time_input&", {
     timeout: 20 * 60 * 1000,
   });
 

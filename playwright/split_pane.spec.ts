@@ -1,9 +1,7 @@
 import { expect, test, type Page } from "@playwright/test";
 
-const BASE_URL = "http://127.0.0.1:8080";
-
 async function gotoSplitPane(page: Page, variant: string) {
-  await page.goto(`${BASE_URL}/component/block/?name=split_pane&variant=${variant}&`, {
+  await page.goto(`/component/block/?name=split_pane&variant=${variant}&`, {
     timeout: 20 * 60 * 1000,
     waitUntil: "load",
   });

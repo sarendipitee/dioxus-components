@@ -1,9 +1,8 @@
 import { test, expect } from "@playwright/test";
 import AxeBuilder from "@axe-core/playwright";
 
-const BASE = process.env.PLAYWRIGHT_BASE_URL ?? "http://127.0.0.1:8080";
-const URL = `${BASE}/component/?name=drag_and_drop_list&`;
-const REMOVABLE_URL = `${BASE}/component/block/?name=drag_and_drop_list&variant=removable&`;
+const URL = "/component/?name=drag_and_drop_list&";
+const REMOVABLE_URL = "/component/block/?name=drag_and_drop_list&variant=removable&";
 const LOAD_TIMEOUT = 20 * 60 * 1000;
 
 /** Navigate to the DnD page and return the first (main) variant list. */

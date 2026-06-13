@@ -1,7 +1,7 @@
 import { test, expect } from '@playwright/test';
 
 test('pointer navigation', async ({ page }) => {
-  await page.goto('http://127.0.0.1:8080/component/?name=context_menu&', { timeout: 20 * 60 * 1000 }); // Increase timeout to 20 minutes
+  await page.goto('/component/?name=context_menu&', { timeout: 20 * 60 * 1000 }); // Increase timeout to 20 minutes
   await page.getByRole('button', { name: 'right click here' }).click({
     button: 'right'
   });
@@ -16,7 +16,7 @@ test('pointer navigation', async ({ page }) => {
 });
 
 test('menu lands at the tap coordinates on touch long-press', async ({ page }) => {
-  await page.goto('http://127.0.0.1:8080/component/?name=context_menu&', { timeout: 20 * 60 * 1000 });
+  await page.goto('/component/?name=context_menu&', { timeout: 20 * 60 * 1000 });
   // Push the trigger down so the tap point isn't at viewport (0, 0) — any
   // misalignment will then have a non-zero direction to detect.
   await page.evaluate(() => {
@@ -61,7 +61,7 @@ test('menu lands at the tap coordinates on touch long-press', async ({ page }) =
 test('touch long-press opens the context menu', async ({ page }) => {
   // iOS Safari does not fire `contextmenu` on long press, so the menu must
   // open from a held touch instead. Reproduces issue #262.
-  await page.goto('http://127.0.0.1:8080/component/?name=context_menu&', { timeout: 20 * 60 * 1000 });
+  await page.goto('/component/?name=context_menu&', { timeout: 20 * 60 * 1000 });
   const trigger = page.getByRole('button', { name: 'right click here' });
   const contextMenu = page.getByRole('menu');
 
@@ -103,7 +103,7 @@ test('touch long-press opens the context menu', async ({ page }) => {
 });
 
 test('pen long-press opens the context menu', async ({ page }) => {
-  await page.goto('http://127.0.0.1:8080/component/?name=context_menu&', { timeout: 20 * 60 * 1000 });
+  await page.goto('/component/?name=context_menu&', { timeout: 20 * 60 * 1000 });
   const trigger = page.getByRole('button', { name: 'right click here' });
   const contextMenu = page.getByRole('menu');
 
@@ -131,7 +131,7 @@ test('pen long-press opens the context menu', async ({ page }) => {
 });
 
 test('mouse pointerdown does not arm the long-press timer', async ({ page }) => {
-  await page.goto('http://127.0.0.1:8080/component/?name=context_menu&', { timeout: 20 * 60 * 1000 });
+  await page.goto('/component/?name=context_menu&', { timeout: 20 * 60 * 1000 });
   const trigger = page.getByRole('button', { name: 'right click here' });
 
   const box = await trigger.boundingBox();
@@ -161,7 +161,7 @@ test('mouse pointerdown does not arm the long-press timer', async ({ page }) => 
 });
 
 test('touch tap outside closes the open menu', async ({ page }) => {
-  await page.goto('http://127.0.0.1:8080/component/?name=context_menu&', { timeout: 20 * 60 * 1000 });
+  await page.goto('/component/?name=context_menu&', { timeout: 20 * 60 * 1000 });
   const trigger = page.getByRole('button', { name: 'right click here' });
   const contextMenu = page.getByRole('menu');
 
@@ -198,7 +198,7 @@ test('pointerdown at the trigger location does not dismiss an open menu', async 
   // menu opened (either from a topology-change re-dispatch under the active
   // touch, or from compat-mouse promotion). The dismiss listener must treat
   // the trigger as "inside" the menu's root and ignore it.
-  await page.goto('http://127.0.0.1:8080/component/?name=context_menu&', { timeout: 20 * 60 * 1000 });
+  await page.goto('/component/?name=context_menu&', { timeout: 20 * 60 * 1000 });
   const trigger = page.getByRole('button', { name: 'right click here' });
   const contextMenu = page.getByRole('menu');
 
@@ -247,7 +247,7 @@ test('pointerdown at the trigger location does not dismiss an open menu', async 
 });
 
 test('touch released before long-press threshold does not open the menu', async ({ page }) => {
-  await page.goto('http://127.0.0.1:8080/component/?name=context_menu&', { timeout: 20 * 60 * 1000 });
+  await page.goto('/component/?name=context_menu&', { timeout: 20 * 60 * 1000 });
   const trigger = page.getByRole('button', { name: 'right click here' });
 
   const box = await trigger.boundingBox();
@@ -289,7 +289,7 @@ test('touch released before long-press threshold does not open the menu', async 
 });
 
 test('keyboard navigation', async ({ page }) => {
-  await page.goto('http://127.0.0.1:8080/component/?name=context_menu&', { timeout: 20 * 60 * 1000 }); // Increase timeout to 20 minutes
+  await page.goto('/component/?name=context_menu&', { timeout: 20 * 60 * 1000 }); // Increase timeout to 20 minutes
   await page.getByRole('button', { name: 'right click here' }).click({
     button: 'right'
   });

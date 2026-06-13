@@ -1,10 +1,9 @@
 import { test, expect, type Page } from "@playwright/test";
 
-const BASE_URL = "http://127.0.0.1:8080";
 const SIDEBAR_RENDER_TIMEOUT = 30 * 1000;
 
 async function gotoSidebarBlock(page: Page) {
-  await page.goto(`${BASE_URL}/component/block/?name=sidebar&variant=main&`, {
+  await page.goto("/component/block/?name=sidebar&variant=main&", {
     timeout: 20 * 60 * 1000,
     waitUntil: 'load'
   });
@@ -15,7 +14,7 @@ async function gotoSidebarBlock(page: Page) {
 }
 
 test("sidebar: preview page renders block", async ({ page }) => {
-  await page.goto(`${BASE_URL}/component/?name=sidebar&`, {
+  await page.goto("/component/?name=sidebar&", {
     timeout: 20 * 60 * 1000,
     waitUntil: 'load'
   });

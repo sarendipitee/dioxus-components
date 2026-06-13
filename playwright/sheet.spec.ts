@@ -1,7 +1,7 @@
 import { test, expect } from '@playwright/test';
 
 test('sheet basic interactions', async ({ page }) => {
-  await page.goto('http://127.0.0.1:8080/component/?name=sheet&', { timeout: 20 * 60 * 1000 });
+  await page.goto('/component/?name=sheet&', { timeout: 20 * 60 * 1000 });
 
   // Open sheet from Right button
   await page.getByRole('button', { name: 'Right' }).click();
@@ -50,7 +50,7 @@ test('sheet basic interactions', async ({ page }) => {
 });
 
 test('sheet opens from different sides', async ({ page }) => {
-  await page.goto('http://127.0.0.1:8080/component/?name=sheet&', { timeout: 20 * 60 * 1000 });
+  await page.goto('/component/?name=sheet&', { timeout: 20 * 60 * 1000 });
 
   const sheet = page.locator('[data-slot="sheet-root"]');
   const sheetContent = page.locator('[data-slot="sheet-content"]');

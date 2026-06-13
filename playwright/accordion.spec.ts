@@ -1,6 +1,6 @@
 import { test, expect, type Locator, type Page } from "@playwright/test";
 
-const URL = "http://127.0.0.1:8080/component/?name=accordion&";
+const URL = "/component/?name=accordion&";
 const LOAD_TIMEOUT = 20 * 60 * 1000;
 
 async function loadAccordion(page: Page) {

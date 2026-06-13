@@ -1,7 +1,7 @@
 import { test, expect } from "@playwright/test";
 
 test("test", async ({ page }) => {
-  await page.goto("http://127.0.0.1:8080/component/?name=tabs&");
+  await page.goto("/component/?name=tabs&");
   let activeTab = page.locator('[role="tabpanel"][data-state="active"]:not(#component-preview-frame)')
     .filter({ hasText: /^Tab \d Content$/ });
   let tab1Button = page.getByRole("tab", { name: "Tab 1" });

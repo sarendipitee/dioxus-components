@@ -1,7 +1,7 @@
 import { test, expect } from '@playwright/test';
 
 test('hover navigation', async ({ page }) => {
-  await page.goto('http://127.0.0.1:8080/component/?name=navbar&', { timeout: 20 * 60 * 1000 }); // Increase timeout to 20 minutes
+  await page.goto('/component/?name=navbar&', { timeout: 20 * 60 * 1000 }); // Increase timeout to 20 minutes
   // wait for the styles to load
   await expect(page.getByRole('menuitem', { name: 'Inputs' })).toHaveCSS('border-width', '0px');
   const inputsNav = page.getByRole('menu').filter({ has: page.getByRole('menuitem', { name: 'Inputs' }) }).first();
@@ -17,7 +17,7 @@ test('hover navigation', async ({ page }) => {
 });
 
 test('mobile navigation', async ({ page }) => {
-  await page.goto('http://127.0.0.1:8080/component/?name=navbar&', { timeout: 20 * 60 * 1000 }); // Increase timeout to 20 minutes
+  await page.goto('/component/?name=navbar&', { timeout: 20 * 60 * 1000 }); // Increase timeout to 20 minutes
   await page.getByRole('menuitem', { name: 'Inputs' }).tap();
   await page.getByRole('menuitem', { name: 'Calendar' }).tap();
   // Assert the url changed to the calendar component
@@ -25,7 +25,7 @@ test('mobile navigation', async ({ page }) => {
 });
 
 test('keyboard navigation', async ({ page }) => {
-  await page.goto('http://127.0.0.1:8080/component/?name=navbar&', { timeout: 20 * 60 * 1000 }); // Increase timeout to 20 minutes
+  await page.goto('/component/?name=navbar&', { timeout: 20 * 60 * 1000 }); // Increase timeout to 20 minutes
   await page.getByRole('menubar').focus();
   // Go right with the keyboard
   await page.keyboard.press('ArrowRight');

@@ -1,6 +1,6 @@
 import { test, expect, type Page } from '@playwright/test';
 
-const PAGE_URL = 'http://127.0.0.1:8080/component/?name=color_picker&';
+const PAGE_URL = '/component/?name=color_picker&';
 const PAGE_TIMEOUT = 20 * 60 * 1000;
 
 async function openPicker(page: Page) {

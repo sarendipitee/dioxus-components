@@ -1,7 +1,7 @@
 import { test, expect } from '@playwright/test';
 
 test('test', async ({ page }) => {
-  await page.goto('http://127.0.0.1:8080/component/?name=toast&');
+  await page.goto('/component/?name=toast&');
   // Create a toast
   await page.getByRole('button', { name: 'Info (60s)' }).click();
   // Create another toast

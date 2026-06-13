@@ -1,7 +1,7 @@
 import { test, expect } from '@playwright/test';
 
 test('test', async ({ page }) => {
-  await page.goto('http://127.0.0.1:8080/component/?name=dropdown_menu&');
+  await page.goto('/component/?name=dropdown_menu&');
   let menuElement = page.getByRole('button', { name: 'Open Menu' });
   // The menu should not be open initially
   await expect(menuElement).toHaveAttribute('data-state', 'closed');

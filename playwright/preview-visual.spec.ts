@@ -17,7 +17,6 @@ const repoRoot =
     : process.cwd();
 const previewRoot = path.join(repoRoot, "preview/src/components");
 const workspaceManifestPath = path.join(repoRoot, "component.json");
-const BASE = process.env.PLAYWRIGHT_BASE_URL ?? "http://127.0.0.1:8080";
 
 const skippedPreviewCases = new Map<string, string>([
   [
@@ -107,7 +106,7 @@ async function gotoPreviewCase(
     params.set("dark_mode", String(theme === "dark"));
   }
 
-  await page.goto(`${BASE}/component/block/?${params}`, {
+  await page.goto(`/component/block/?${params}`, {
     waitUntil: "domcontentloaded",
   });
   await stabilizeVisualPage(page);

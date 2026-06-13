@@ -1,6 +1,5 @@
 import { test, expect, type Locator, type Page } from "@playwright/test";
 
-const BASE = process.env.PLAYWRIGHT_BASE_URL ?? "http://127.0.0.1:8080";
 const TEST_TIMEOUT = 90 * 1000;
 const NAVIGATION_TIMEOUT = 15 * 1000;
 const ROOT_TIMEOUT = 10 * 1000;
@@ -10,9 +9,9 @@ const ROOT_SELECTOR = "[data-schedule-root]:visible";
 test.describe.configure({ mode: "serial" });
 test.setTimeout(TEST_TIMEOUT);
 
-const mainUrl = `${BASE}/component/?name=schedule&`;
+const mainUrl = "/component/?name=schedule&";
 const variantUrl = (variant: string) =>
-  `${BASE}/component/block/?name=schedule&variant=${variant}&`;
+  `/component/block/?name=schedule&variant=${variant}&`;
 
 async function loadMain(page: Page) {
   return await loadSchedulePage(page, mainUrl);
