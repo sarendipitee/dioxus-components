@@ -1,5 +1,7 @@
 use dioxus::prelude::*;
 use dioxus_icons::lucide::BadgeCheck;
+use dioxus_primitives::dioxus_attributes::attributes;
+use dioxus_primitives::merge_attributes;
 
 #[css_module("/src/components/badge/style.css")]
 struct Styles;
@@ -25,50 +27,52 @@ impl BadgeVariant {
     }
 }
 
-/// The props for the [`Badge`] component.
-#[derive(Props, Clone, PartialEq)]
-pub struct BadgeProps {
-    #[props(default)]
-    pub variant: BadgeVariant,
-
-    /// Additional attributes to extend the badge element
-    #[props(extends = GlobalAttributes)]
-    pub attributes: Vec<Attribute>,
-
-    /// The children of the badge element
-    pub children: Element,
-}
-
 #[component]
-pub fn Badge(props: BadgeProps) -> Element {
+pub fn Badge(
+    #[props(default = BadgeVariant::Primary)] variant: BadgeVariant,
+    #[props(extends = GlobalAttributes)] attributes: Vec<Attribute>,
+    children: Element,
+) -> Element {
+    let base = attributes!(span {
+        class: Styles::dx_badge,
+        "data-variant": variant.class(),
+    });
+    let attributes = merge_attributes(vec![base, attributes]);
     rsx! {
-        BadgeElement {
-            "padding": true,
-            variant: props.variant,
-            attributes: props.attributes,
-            {props.children}
-        }
+        span { ..attributes,{children} }
     }
 }
 
 #[component]
-fn BadgeElement(props: BadgeProps) -> Element {
-    rsx! {
-        span {
-            class: Styles::dx_badge.to_string(),
-            "data-style": props.variant.class(),
-            ..props.attributes,
-            {props.children}
-        }
-    }
-}
-
-#[component]
+/// Renders the verified badge icon using the surrounding foreground color.
 pub fn VerifiedIcon() -> Element {
     rsx! {
-        BadgeCheck {
-            size: "12px",
-            stroke: "var(--secondary-color-4)",
+        BadgeCheck { size: "12px", stroke: "currentColor" }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[component]
+    fn BadgeWithStyleProperties() -> Element {
+        rsx! {
+            Badge {
+                background: "var(--success);",
+                color: "var(--success-fg)",
+                "Verified"
+            }
         }
+    }
+
+    #[test]
+    fn badge_preserves_multiple_style_properties() {
+        let mut dom = VirtualDom::new(BadgeWithStyleProperties);
+        dom.rebuild_in_place();
+        let html = dioxus_ssr::render(&dom);
+
+        assert!(html.contains("background:var(--success);"), "{html}");
+        assert!(html.contains("color:var(--success-fg);"), "{html}");
     }
 }

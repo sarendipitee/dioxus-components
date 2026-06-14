@@ -378,7 +378,7 @@ pub fn merge_attributes(mut lists: Vec<Vec<Attribute>>) -> Vec<Attribute> {
 
         for iter in &mut iters {
             while iter.peek().map(|a| a.name) == Some(min_name) {
-                let attr = iter.next().unwrap();
+                let attr = normalize_style_attribute(iter.next().unwrap());
                 if let Some(existing) = by_namespace
                     .iter_mut()
                     .find(|a| a.namespace == attr.namespace)
@@ -409,6 +409,20 @@ pub fn merge_attributes(mut lists: Vec<Vec<Attribute>>) -> Vec<Attribute> {
     merged
 }
 
+fn normalize_style_attribute(mut attr: Attribute) -> Attribute {
+    if attr.namespace == Some("style") {
+        if let Text(value) = &mut attr.value {
+            let trimmed = value.trim_end();
+            let trimmed = trimmed.trim_end_matches(';').trim_end();
+            if trimmed.len() != value.len() {
+                value.truncate(trimmed.len());
+            }
+        }
+    }
+
+    attr
+}
+
 fn join_class(a: &str, b: &str) -> String {
     let (a, b) = (a.trim(), b.trim());
     if !a.is_empty() && !b.is_empty() {
@@ -436,6 +450,17 @@ mod tests {
             Text(s) => s,
             _ => panic!("expected Text"),
         }
+    }
+
+    fn find_value<'a>(
+        attributes: &'a [Attribute],
+        name: &str,
+        namespace: Option<&str>,
+    ) -> Option<&'a str> {
+        attributes
+            .iter()
+            .find(|attr| attr.name == name && attr.namespace == namespace)
+            .map(get_value)
     }
 
     #[test]
@@ -477,6 +502,23 @@ mod tests {
         let result = merge_attributes(vec![vec![attr("class", "foo")], vec![attr("class", "bar")]]);
         assert_eq!(result.len(), 1);
         assert_eq!(get_value(&result[0]), "foo bar");
+    }
+
+    #[test]
+    fn style_property_attributes_are_preserved() {
+        let result = merge_attributes(vec![dioxus_attributes::attributes!(div {
+            background: "var(--success);",
+            color: "var(--success-fg)",
+        })]);
+
+        assert_eq!(
+            find_value(&result, "background", Some("style")),
+            Some("var(--success)")
+        );
+        assert_eq!(
+            find_value(&result, "color", Some("style")),
+            Some("var(--success-fg)")
+        );
     }
 
     #[test]
