@@ -214,7 +214,7 @@ examples!(
     menubar,
     multi_select,
     navbar,
-    pagination,
+    pagination[controlled],
     pills_input,
     popover,
     progress,
