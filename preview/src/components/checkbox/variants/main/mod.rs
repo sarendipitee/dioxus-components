@@ -1,9 +1,16 @@
-use dioxus_components::checkbox::*;
 use dioxus::prelude::*;
+use dioxus_components::checkbox::*;
 
 #[component]
 pub fn Demo() -> Element {
     rsx! {
-        Checkbox { name: "tos-check", aria_label: "Demo Checkbox" }
+        div {
+            style: "display: grid; gap: 1rem; max-width: 24rem;",
+            Checkbox {
+                name: "tos-check",
+                label: "Accept terms and conditions",
+                aria_label: "Accept terms and conditions",
+            }
+        }
     }
 }

@@ -194,7 +194,7 @@ examples!(
     button[size, icon],
     calendar[simple, internationalized, range, multi_month, unavailable_dates],
     card,
-    checkbox,
+    checkbox[label_description, element_label, disabled, indeterminate],
     collapsible,
     color_input,
     color_picker,

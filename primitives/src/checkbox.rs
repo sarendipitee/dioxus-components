@@ -144,7 +144,7 @@ pub fn Checkbox(props: CheckboxProps) -> Element {
 
     rsx! {
         button {
-            type: "button",
+            r#type: "button",
             value: props.value,
             role: "checkbox",
             aria_checked: checked().to_aria_checked(),
@@ -170,14 +170,12 @@ pub fn Checkbox(props: CheckboxProps) -> Element {
                     e.prevent_default();
                 }
             },
-
             ..props.attributes,
             {props.children}
         }
         BubbleInput {
-            checked: checked,
+            checked,
             default_checked: props.default_checked,
-
             required: props.required,
             name: props.name,
             value: props.value,
@@ -219,19 +217,25 @@ pub fn Checkbox(props: CheckboxProps) -> Element {
 /// - `data-disabled`: Indicates if the checkbox is disabled. values are `true` or `false`.
 #[component]
 pub fn CheckboxIndicator(
+    /// Only render the indicator for a specific checkbox state.
+    #[props(default)]
+    state: Option<CheckboxState>,
     #[props(extends = GlobalAttributes)] attributes: Vec<Attribute>,
     children: Element,
 ) -> Element {
     let ctx: CheckboxCtx = use_context();
     let checked = (ctx.checked)();
+    let is_visible = match state {
+        Some(state) => checked == state,
+        None => checked.into(),
+    };
 
     rsx! {
-        span {
-            "data-state": checked.to_data_state(),
-            "data-disabled": ctx.disabled,
-            ..attributes,
-
-            if checked.into() {
+        if is_visible {
+            span {
+                "data-state": checked.to_data_state(),
+                "data-disabled": ctx.disabled,
+                ..attributes,
                 {children}
             }
         }
@@ -279,7 +283,7 @@ fn BubbleInput(
     rsx! {
         input {
             id,
-            type: "checkbox",
+            r#type: "checkbox",
             aria_hidden: "true",
             tabindex: "-1",
             position: "absolute",
@@ -290,7 +294,6 @@ fn BubbleInput(
 
             // Default checked
             checked: default_checked != CheckboxState::Unchecked,
-
             ..attributes,
         }
     }
