@@ -233,6 +233,7 @@ pub fn MultiSelect<T: Clone + PartialEq + 'static>(props: MultiSelectProps<T>) -
         div {
             "data-state": if open() { "open" } else { "closed" },
             "data-disabled": (props.disabled)(),
+            "data-empty": values_state().is_empty(),
             ..props.attributes,
             ComboboxTarget {
                 "data-pills-input": true,

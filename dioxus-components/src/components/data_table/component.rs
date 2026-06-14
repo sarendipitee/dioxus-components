@@ -2749,7 +2749,7 @@ fn render_filter_control<T: Clone + PartialEq + 'static>(
             rsx! {
                 ComboboxMultiSelect::<String> {
                     values: ReadSignal::new(Signal::new(Some(values))),
-                    placeholder: "All",
+                    placeholder: "(All)",
                     render_value: move |value: String| {
                         let label = option_labels
                             .iter()

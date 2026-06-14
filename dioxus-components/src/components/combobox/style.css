@@ -221,6 +221,10 @@
   color: transparent;
 }
 
+.dx-combobox-pills-root[data-empty="true"] [data-combobox-search]::placeholder {
+  color: var(--input-fg-muted);
+}
+
 .dx-combobox-pills-root [data-combobox-dropdown-target] {
   position: absolute;
   z-index: 50;
