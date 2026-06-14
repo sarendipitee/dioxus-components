@@ -752,7 +752,7 @@ fn DocsSidebar(active_component: Option<&'static str>) -> Element {
                                 Link {
                                     to: Route::component(component.name),
                                     class: if active_component == Some(component.name) { "dx-docs-sidebar-link dx-docs-sidebar-link-active" } else { "dx-docs-sidebar-link" },
-                                    {component.name.replace("_", " ")}
+                                    {components::label_of(component.name)}
                                 }
                             }
                         }
@@ -864,7 +864,7 @@ fn ComponentHighlight(demo: ComponentDemoData) -> Element {
         component,
         style,
     } = demo;
-    let name = raw_name.replace("_", " ");
+    let name = components::label_of(raw_name);
     let [main, variants @ ..] = variants else {
         unreachable!("Expected at least one variant for component: {}", name);
     };
@@ -877,7 +877,7 @@ fn ComponentHighlight(demo: ComponentDemoData) -> Element {
                     p { class: "dx-docs-eyebrow", "Component" }
                     div { class: "dx-component-page-title-row",
                         h1 { "{name}" }
-                        ComponentInstallCommand { name: raw_name }
+                        ComponentInstallCommand { name: components::install_name(raw_name) }
                     }
                     p { "{description}" }
                 }
@@ -896,16 +896,18 @@ fn ComponentHighlight(demo: ComponentDemoData) -> Element {
                         },
                     }
                 }
-                section { class: "dx-component-section",
-                    div { class: "dx-component-section-heading",
-                        h2 { "Installation" }
-                        p {
-                            "Use the CLI command for the common path, or copy the component files manually."
+                if components::install_name(raw_name) == raw_name {
+                    section { class: "dx-component-section",
+                        div { class: "dx-component-section-heading",
+                            h2 { "Installation" }
+                            p {
+                                "Use the CLI command for the common path, or copy the component files manually."
+                            }
                         }
-                    }
-                    details { class: "dx-component-manual-install dx-component-manual-install-code",
-                        summary { "Manual installation files" }
-                        ManualComponentInstallation { component, style }
+                        details { class: "dx-component-manual-install dx-component-manual-install-code",
+                            summary { "Manual installation files" }
+                            ManualComponentInstallation { component, style }
+                        }
                     }
                 }
                 if !props.is_empty() {
@@ -2093,7 +2095,7 @@ fn BlockComposer() -> Element {
 fn ComponentGallery() -> Element {
     rsx! {
         div { class: "dx-component-gallery",
-            for component in components::DEMOS.iter().cloned() {
+            for component in components::DEMOS.iter().filter(|c| components::in_catalog(c.name)).cloned() {
                 ComponentGalleryPreview { component }
             }
         }
@@ -2112,8 +2114,8 @@ fn ComponentGalleryPreview(component: ComponentDemoData) -> Element {
 
     let first_variant = &variants[0];
     let Comp = first_variant.component;
-    let display_name = name.replace("_", " ");
-    let install_command = format!("dx components add {name}");
+    let display_name = components::label_of(name);
+    let install_command = format!("dx components add {}", components::install_name(name));
 
     let preview = match r#type {
         ComponentType::Normal => rsx! {

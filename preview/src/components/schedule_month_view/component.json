@@ -1,0 +1,4 @@
+{
+  "name": "schedule_month_view",
+  "description": "Month grid showing each day's events, with an optional header and a selectable first day of the week."
+}

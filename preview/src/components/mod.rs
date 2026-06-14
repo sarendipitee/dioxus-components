@@ -5,6 +5,7 @@ use super::{
 #[derive(Copy, Clone, PartialEq, Eq)]
 pub enum ComponentCategory {
     Forms,
+    Schedule,
     Combobox,
     Navigation,
     Overlays,
@@ -16,6 +17,7 @@ pub enum ComponentCategory {
 impl ComponentCategory {
     pub const ALL: &'static [Self] = &[
         Self::Forms,
+        Self::Schedule,
         Self::Combobox,
         Self::Navigation,
         Self::Overlays,
@@ -27,6 +29,7 @@ impl ComponentCategory {
     pub const fn label(self) -> &'static str {
         match self {
             Self::Forms => "Forms",
+            Self::Schedule => "Schedule",
             Self::Combobox => "Combobox",
             Self::Navigation => "Navigation",
             Self::Overlays => "Overlays",
@@ -41,8 +44,16 @@ pub fn category_of(name: &str) -> ComponentCategory {
     match name {
         "button" | "input" | "text_input" | "textarea" | "label" | "checkbox" | "switch"
         | "radio_group" | "toggle" | "toggle_group" | "select" | "slider" | "calendar"
-        | "date_picker" | "date_input" | "schedule" | "color_picker" | "color_input"
-        | "time_picker" | "time_input" => ComponentCategory::Forms,
+        | "date_picker" | "date_input" | "color_picker" | "color_input" | "time_picker"
+        | "time_input" => ComponentCategory::Forms,
+        "schedule"
+        | "schedule_day_view"
+        | "schedule_week_view"
+        | "schedule_month_view"
+        | "schedule_year_view"
+        | "schedule_mobile_month_view"
+        | "schedule_recurring"
+        | "schedule_events" => ComponentCategory::Schedule,
         "combobox" | "autocomplete" | "multi_select" | "pills_input" | "tags_input" => {
             ComponentCategory::Combobox
         }
@@ -59,6 +70,53 @@ pub fn category_of(name: &str) -> ComponentCategory {
         }
         _ => ComponentCategory::DataDisplay,
     }
+}
+
+/// Display label for a component in the sidebar and on its page header.
+///
+/// Schedule sub-pages use curated labels (e.g. `DayView`); everything else falls back to the
+/// underscore-to-space form of its registry name.
+pub fn label_of(name: &str) -> String {
+    match name {
+        "schedule" => "Schedule".to_string(),
+        "schedule_day_view" => "DayView".to_string(),
+        "schedule_week_view" => "WeekView".to_string(),
+        "schedule_month_view" => "MonthView".to_string(),
+        "schedule_year_view" => "YearView".to_string(),
+        "schedule_mobile_month_view" => "MobileMonthView".to_string(),
+        "schedule_recurring" => "Recurring events".to_string(),
+        "schedule_events" => "Events data".to_string(),
+        _ => name.replace('_', " "),
+    }
+}
+
+/// The installable registry name for a component page.
+///
+/// Schedule sub-pages are documentation views of the single installable `schedule` component,
+/// so they all resolve to `schedule` for the `dx components add` command.
+pub fn install_name(name: &str) -> &str {
+    if name.starts_with("schedule") {
+        "schedule"
+    } else {
+        name
+    }
+}
+
+/// Whether a component appears as a card in the home catalog gallery.
+///
+/// Schedule sub-pages live only under the Schedule sidebar grouping, so they are excluded from
+/// the catalog (which keeps a single `schedule` card).
+pub fn in_catalog(name: &str) -> bool {
+    !matches!(
+        name,
+        "schedule_day_view"
+            | "schedule_week_view"
+            | "schedule_month_view"
+            | "schedule_year_view"
+            | "schedule_mobile_month_view"
+            | "schedule_recurring"
+            | "schedule_events"
+    )
 }
 
 macro_rules! examples {
@@ -222,22 +280,23 @@ examples!(
     scroll_area,
     schedule[
         controlled,
-        week,
-        responsive,
         r#static,
         internationalized,
-        day,
-        month,
-        year,
+        custom_header,
+        custom_event,
+        multi_view,
         drag_and_drop,
         external_drop,
         resize,
-        slot_selection,
-        custom_header,
-        custom_event,
-        recurring,
-        multi_view
+        slot_selection
     ],
+    schedule_day_view,
+    schedule_month_view,
+    schedule_week_view,
+    schedule_year_view,
+    schedule_mobile_month_view,
+    schedule_recurring,
+    schedule_events,
     select[multi],
     separator,
     sheet,

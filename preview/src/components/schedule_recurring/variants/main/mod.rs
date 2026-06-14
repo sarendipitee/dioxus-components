@@ -1,6 +1,6 @@
-use crate::components::schedule::*;
+use crate::components::schedule_recurring::*;
 use dioxus::prelude::*;
-#[path = "../demo_support.rs"]
+#[path = "../../../schedule/variants/demo_support.rs"]
 mod demo_support;
 use demo_support::*;
 

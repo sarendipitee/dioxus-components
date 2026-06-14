@@ -1,0 +1,4 @@
+{
+  "name": "schedule_events",
+  "description": "The event data model: timed, all-day, multi-day, colored, and recurring events."
+}

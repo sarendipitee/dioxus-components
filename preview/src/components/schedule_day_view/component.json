@@ -1,0 +1,4 @@
+{
+  "name": "schedule_day_view",
+  "description": "Single-day timeline with a configurable time grid for the visible hour range and slot size."
+}

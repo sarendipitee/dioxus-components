@@ -2,6 +2,8 @@
 
 The schedule component renders day, week, month, and year calendar views with timed events, all-day events, recurrence expansion, responsive mobile layout, and scheduling interactions.
 
+Each view and the event and recurrence data model have dedicated pages in the Schedule section of the sidebar; this page documents the shared `Schedule` API.
+
 ## Usage
 
 ```rust
@@ -62,7 +64,7 @@ Use `date` and `on_date_change` to control the visible date. Use `view` and `on_
 
 ## Events And Recurrence
 
-Events use stable ids, titles, start and end date-times, all-day state, optional colors, descriptions, and optional recurrence rules. `recurrence_expansion_limit` bounds repeated events. The preview data includes timed, all-day, overlapping, colored, daily recurring, and weekly recurring events.
+Events are `ScheduleEvent` values passed to the `events` prop, and `recurrence_expansion_limit` bounds repeated events. See the Events data and Recurring events pages for the full data model and recurrence rules.
 
 ## Interactions
 
@@ -72,7 +74,7 @@ Use `on_event_create` for built-in event creation. Timed slot clicks emit a `Sch
 
 ## Responsive Layout
 
-Set `layout: ScheduleLayout::Responsive` to render both desktop and mobile containers. CSS switches to the mobile month presentation at small widths while keeping the year view available.
+Set `layout: ScheduleLayout::Responsive` to render both desktop and mobile containers. CSS switches to the mobile month presentation at small widths while keeping the year view available. See the MobileMonthView page for details.
 
 ## Custom Rendering And Header
 

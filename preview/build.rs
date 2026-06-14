@@ -19,8 +19,34 @@ fn crate_component_source_folder(folder_name: &str) -> &str {
     match folder_name {
         "autocomplete" | "multi_select" | "pills_input" | "tags_input" => "combobox",
         "text_input" => "input",
+        "schedule_day_view"
+        | "schedule_week_view"
+        | "schedule_month_view"
+        | "schedule_year_view"
+        | "schedule_mobile_month_view"
+        | "schedule_recurring"
+        | "schedule_events" => "schedule",
         _ => folder_name,
     }
+}
+
+/// Returns the named plain structs a preview folder should document as its props table.
+///
+/// Schedule sub-pages document a focused subset of the shared `Schedule` API (view config or
+/// data-model structs) rather than the full `ScheduleProps` table. These types are plain
+/// structs, not `#[derive(Props)]`, so they are extracted by name (see `extract_named_structs`).
+fn curated_prop_types(folder_name: &str) -> Option<&'static [&'static str]> {
+    let types: &'static [&'static str] = match folder_name {
+        "schedule_day_view" => &["ScheduleDayViewConfig", "ScheduleTimeGridConfig"],
+        "schedule_week_view" => &["ScheduleWeekViewConfig", "ScheduleTimeGridConfig"],
+        "schedule_month_view" => &["ScheduleMonthViewConfig"],
+        "schedule_year_view" => &["ScheduleYearViewConfig"],
+        "schedule_mobile_month_view" => &["ScheduleMobileMonthViewConfig"],
+        "schedule_recurring" => &["ScheduleRecurrence", "ScheduleRecurrenceExpansionLimit"],
+        "schedule_events" => &["ScheduleEvent"],
+        _ => return None,
+    };
+    Some(types)
 }
 
 fn walk_markdown_dir(dir: &std::path::Path, out_dir: &std::path::Path) -> std::io::Result<()> {
@@ -91,7 +117,11 @@ fn walk_markdown_dir(dir: &std::path::Path, out_dir: &std::path::Path) -> std::i
                 out_file_path,
                 render_source_html(dioxus_code::Language::Rust, &source),
             )?;
-            write_component_props_metadata(crate_folder_name, &source, &out_folder)?;
+            if let Some(types) = curated_prop_types(&folder_name) {
+                write_curated_props_metadata(crate_folder_name, types, &out_folder)?;
+            } else {
+                write_component_props_metadata(crate_folder_name, &source, &out_folder)?;
+            }
             wrote_props_metadata = true;
         }
 
@@ -147,6 +177,44 @@ fn write_component_props_metadata(
             .then_with(|| a.name.cmp(&b.name))
     });
 
+    write_props_rs(&props, out_folder)
+}
+
+/// Writes a curated props table built from a named allowlist of plain structs.
+///
+/// Used by schedule sub-pages so each documents only the structs relevant to it (e.g.
+/// `ScheduleDayViewConfig`), pulling field names, types, and doc-comments from the same
+/// primitive/crate sources as the full props extraction.
+fn write_curated_props_metadata(
+    component_name: &str,
+    types: &[&str],
+    out_folder: &std::path::Path,
+) -> std::io::Result<()> {
+    let mut sources = Vec::new();
+    let crate_component = std::path::Path::new("../dioxus-components/src/components")
+        .join(component_name)
+        .join("component.rs");
+    if crate_component.exists() {
+        sources.push(std::fs::read_to_string(crate_component)?);
+    }
+    sources.extend(read_primitive_sources(component_name)?);
+
+    let mut props = Vec::new();
+    for source in &sources {
+        props.extend(extract_named_structs(source, types));
+    }
+
+    props.sort_by(|a, b| {
+        a.component
+            .cmp(&b.component)
+            .then_with(|| a.name.cmp(&b.name))
+    });
+    props.dedup_by(|a, b| a.component == b.component && a.name == b.name);
+
+    write_props_rs(&props, out_folder)
+}
+
+fn write_props_rs(props: &[PropMetadata], out_folder: &std::path::Path) -> std::io::Result<()> {
     let mut output = String::from("&[\n");
     for prop in props {
         output.push_str("    PropMetadata {\n");
@@ -163,6 +231,27 @@ fn write_component_props_metadata(
     output.push_str("]\n");
 
     std::fs::write(out_folder.join("props.rs"), output)
+}
+
+/// Extracts props from plain structs whose identifier is in `types`.
+///
+/// Unlike `extract_props_metadata`, this does not require a `#[derive(Props)]` gate, so it can
+/// document config and data-model structs (which are not Dioxus props) by name.
+fn extract_named_structs(source: &str, types: &[&str]) -> Vec<PropMetadata> {
+    let file = match syn::parse_file(source) {
+        Ok(file) => file,
+        Err(_) => return Vec::new(),
+    };
+
+    let mut props = Vec::new();
+    for item in file.items {
+        if let syn::Item::Struct(item) = item {
+            if types.contains(&item.ident.to_string().as_str()) {
+                props.extend(extract_struct_props(&item));
+            }
+        }
+    }
+    props
 }
 
 fn read_primitive_sources(component_name: &str) -> std::io::Result<Vec<String>> {

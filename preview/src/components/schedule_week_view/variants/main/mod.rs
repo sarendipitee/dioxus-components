@@ -1,6 +1,6 @@
-use crate::components::schedule::*;
+use crate::components::schedule_week_view::*;
 use dioxus::prelude::*;
-#[path = "../demo_support.rs"]
+#[path = "../../../schedule/variants/demo_support.rs"]
 mod demo_support;
 use demo_support::*;
 
@@ -10,14 +10,16 @@ pub fn Demo() -> Element {
         div { style: "padding: 20px;",
             Schedule {
                 default_date: sample_date(),
-                default_view: ScheduleView::Day,
-                day_view: ScheduleDayViewConfig {
+                default_view: ScheduleView::Week,
+                events: sample_events(),
+                week_view: ScheduleWeekViewConfig {
                     time_grid: ScheduleTimeGridConfig {
-                        start_hour: 8,
+                        start_hour: 7,
                         end_hour: 18,
                         slot_minutes: 30,
                         with_default_header: true,
                     },
+                    ..ScheduleWeekViewConfig::default()
                 },
             }
         }
