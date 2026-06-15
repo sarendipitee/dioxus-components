@@ -3,7 +3,7 @@ use std::sync::atomic::{AtomicUsize, Ordering};
 use dioxus::core::AttributeValue;
 use dioxus::prelude::*;
 use crate::component_styles;
-use dioxus_primitives::{dioxus_attributes::attributes, merge_attributes};
+use dioxus_primitives::{dioxus_attributes::attributes, merge_attributes, TextOrElement};
 
 use crate::components::label::Label;
 
@@ -151,22 +151,12 @@ pub fn use_input_control_context() -> Option<InputControlContext> {
 /// Optional field content accepted by input wrapper APIs.
 #[derive(Clone, Default, PartialEq)]
 pub struct InputContent {
-    content: Option<InputContentValue>,
-}
-
-#[derive(Clone, PartialEq)]
-enum InputContentValue {
-    /// Plain text content.
-    Text(String),
-    /// Custom rendered content.
-    Element(Element),
+    content: Option<TextOrElement<()>>,
 }
 
 impl From<String> for InputContent {
     fn from(value: String) -> Self {
-        Self {
-            content: Some(InputContentValue::Text(value)),
-        }
+        Self { content: Some(TextOrElement::Text(value)) }
     }
 }
 
@@ -178,30 +168,37 @@ impl From<&str> for InputContent {
 
 impl From<Element> for InputContent {
     fn from(value: Element) -> Self {
-        Self {
-            content: Some(InputContentValue::Element(value)),
-        }
+        Self { content: Some(TextOrElement::Element(value)) }
     }
 }
 
 impl From<Option<Element>> for InputContent {
     fn from(value: Option<Element>) -> Self {
-        value.map(Self::from).unwrap_or_default()
+        Self { content: value.map(TextOrElement::Element) }
     }
 }
 
 impl From<Option<String>> for InputContent {
     fn from(value: Option<String>) -> Self {
-        value.map(Self::from).unwrap_or_default()
+        Self { content: value.map(TextOrElement::Text) }
+    }
+}
+
+impl From<TextOrElement<()>> for InputContent {
+    fn from(value: TextOrElement<()>) -> Self {
+        Self { content: Some(value) }
+    }
+}
+
+impl From<Callback<(), Element>> for InputContent {
+    fn from(value: Callback<(), Element>) -> Self {
+        Self { content: Some(TextOrElement::Render(value)) }
     }
 }
 
 impl InputContent {
     pub(crate) fn into_element(self) -> Option<Element> {
-        self.content.map(|label| match label {
-            InputContentValue::Text(text) => rsx! { "{text}" },
-            InputContentValue::Element(content) => content,
-        })
+        self.content.map(TextOrElement::into_element)
     }
 
     pub(crate) fn is_some(&self) -> bool {

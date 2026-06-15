@@ -1,4 +1,3 @@
-use std::borrow::Cow;
 use std::cmp::Ordering;
 use std::collections::HashSet;
 use std::rc::Rc;
@@ -8,6 +7,7 @@ use dioxus::prelude::*;
 use crate::component_styles;
 use dioxus_icons::lucide::{ArrowDown, ArrowUp, ArrowUpDown, Plus, Search, SlidersHorizontal, X};
 use dioxus_primitives::checkbox::CheckboxState;
+use dioxus_primitives::TextOrElement;
 use dioxus_primitives::r#virtual::types::VirtualItem;
 use dioxus_primitives::r#virtual::{
     compute_measurements, get_total_size, get_virtual_items, resize_item, set_scroll_offset,
@@ -335,13 +335,11 @@ pub enum DataTableColumnWidth {
 }
 
 /// Header renderer for a column.
-#[derive(Clone, PartialEq)]
-pub enum DataTableColumnHeader {
-    /// Plain text label.
-    Label(Cow<'static, str>),
-    /// Custom header renderer.
-    Custom(Callback<DataTableColumnHeaderContext, Element>),
-}
+///
+/// This is an alias for [`TextOrElement`] parameterised with [`DataTableColumnHeaderContext`].
+/// Use `TextOrElement::Text(label)` for plain text headers and `TextOrElement::Render(cb)` for
+/// custom renderers.
+pub type DataTableColumnHeader = TextOrElement<DataTableColumnHeaderContext>;
 
 /// Sorting support for a column.
 #[derive(Clone, PartialEq)]
@@ -480,7 +478,7 @@ impl<T: Clone + PartialEq + 'static> DataTableColumn<T> {
         let label = label.into();
         Self {
             id: id.into(),
-            header: DataTableColumnHeader::Label(label.into()),
+            header: TextOrElement::Text(label),
             accessor: DataTableColumnAccessor::DisplayOnly,
             width: None,
             min_width: None,
@@ -518,7 +516,7 @@ impl<T: Clone + PartialEq + 'static> DataTableColumn<T> {
         let label = label.into();
         Self {
             id: id.into(),
-            header: DataTableColumnHeader::Label(label.into()),
+            header: TextOrElement::Text(label),
             accessor: DataTableColumnAccessor::Accessor(accessor.into()),
             width: None,
             min_width: None,
@@ -627,18 +625,6 @@ impl<T: Clone + PartialEq + 'static> DataTableColumn<T> {
     }
 }
 
-impl From<String> for DataTableColumnHeader {
-    fn from(value: String) -> Self {
-        Self::Label(value.into())
-    }
-}
-
-impl From<&'static str> for DataTableColumnHeader {
-    fn from(value: &'static str) -> Self {
-        Self::Label(Cow::Borrowed(value))
-    }
-}
-
 /// Helper for concise typed `DataTableColumn` construction.
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
 pub struct DataTableColumnHelper<T: Clone + PartialEq + 'static = String> {
@@ -668,7 +654,7 @@ impl<T: Clone + PartialEq + 'static> DataTableColumnHelper<T> {
         let id = id.into();
         DataTableColumn {
             id: id.clone(),
-            header: DataTableColumnHeader::Label(id.into()),
+            header: TextOrElement::Text(id.clone()),
             accessor: DataTableColumnAccessor::DisplayOnly,
             width: None,
             min_width: None,
@@ -2323,10 +2309,11 @@ fn render_header<T: Clone + PartialEq + 'static>(
         .find(|sort| sort.column == column.id)
         .map(|sort| sort.direction);
     match &column.header {
-        DataTableColumnHeader::Label(label) => rsx! {
+        TextOrElement::Text(label) => rsx! {
             {render_label_header(column, label, sorting, state, actions)}
         },
-        DataTableColumnHeader::Custom(header) => header.call(DataTableColumnHeaderContext {
+        TextOrElement::Element(el) => el.clone(),
+        TextOrElement::Render(cb) => cb.call(DataTableColumnHeaderContext {
             column_id: column.id.clone(),
             state: state.clone(),
             sorting,
@@ -2972,8 +2959,8 @@ fn aria_sort<T: Clone + PartialEq + 'static>(
 
 fn column_label<T: Clone + PartialEq + 'static>(column: &DataTableColumn<T>) -> String {
     match &column.header {
-        DataTableColumnHeader::Label(label) => label.to_string(),
-        DataTableColumnHeader::Custom(_) => column.id.clone(),
+        TextOrElement::Text(label) => label.clone(),
+        TextOrElement::Element(_) | TextOrElement::Render(_) => column.id.clone(),
     }
 }
 
