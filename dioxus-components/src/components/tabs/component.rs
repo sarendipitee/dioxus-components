@@ -36,10 +36,6 @@ impl TabsVariant {
 /// The props for the [`Tabs`] component.
 #[derive(Props, Clone, PartialEq)]
 pub struct TabsProps {
-    /// Extra class names for the root element.
-    #[props(default)]
-    pub class: String,
-
     /// The controlled value of the active tab. `None` means no tab is active.
     #[props(default)]
     pub value: Option<ReadSignal<Option<String>>>,
@@ -111,7 +107,7 @@ pub struct TabsProps {
 #[component]
 pub fn Tabs(props: TabsProps) -> Element {
     let base = attributes!(div {
-        class: format!("{} {}", props.class, Styles::dx_tabs),
+        class: Styles::dx_tabs,
         "data-variant": props.variant.as_str(),
         "data-slot": "tabs-root",
     });
@@ -155,18 +151,13 @@ pub fn TabList(props: TabListProps) -> Element {
 #[component]
 pub fn TabTrigger(props: TabTriggerProps) -> Element {
     let base = attributes!(button {
-        class: format!(
-            "{} {}",
-            Styles::dx_tabs_trigger,
-            props.class.clone().unwrap_or_default()
-        ),
+        class: Styles::dx_tabs_trigger,
         "data-slot": "tabs-tab",
     });
     let merged = merge_attributes(vec![base, props.attributes]);
 
     rsx! {
         tabs::TabTrigger {
-            class: None,
             id: props.id,
             value: props.value,
             index: props.index,
@@ -180,18 +171,13 @@ pub fn TabTrigger(props: TabTriggerProps) -> Element {
 #[component]
 pub fn TabContent(props: TabContentProps) -> Element {
     let base = attributes!(div {
-        class: format!(
-            "{} {} {}",
-            props.class.clone().unwrap_or_default(),
-            Styles::dx_tabs_content,
-        ),
+        class: Styles::dx_tabs_content,
         "data-slot": "tabs-panel",
     });
     let merged = merge_attributes(vec![base, props.attributes]);
 
     rsx! {
         tabs::TabContent {
-            class: None,
             value: props.value,
             id: props.id,
             index: props.index,

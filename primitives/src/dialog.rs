@@ -2,10 +2,11 @@
 
 use dioxus::document;
 use dioxus::prelude::*;
+use dioxus_attributes::attributes;
 
 use crate::{
-    use_animated_open, use_controlled, use_global_escape_listener, use_id_or, use_outside_dismiss,
-    use_unique_id, FOCUS_TRAP_JS,
+    merge_attributes, use_animated_open, use_controlled, use_global_escape_listener, use_id_or,
+    use_outside_dismiss, use_unique_id, FOCUS_TRAP_JS,
 };
 
 /// Context for the [`DialogRoot`] component
@@ -154,10 +155,6 @@ pub struct DialogContentProps {
     /// The ID of the dialog content element.
     pub id: ReadSignal<Option<String>>,
 
-    /// The class to apply to the dialog content element.
-    #[props(default)]
-    pub class: Option<String>,
-
     /// Additional attributes to apply to the dialog content element.
     #[props(extends = GlobalAttributes)]
     pub attributes: Vec<Attribute>,
@@ -227,6 +224,8 @@ pub fn DialogContent(props: DialogContentProps) -> Element {
 
     let gen_id = use_unique_id();
     let id = use_id_or(gen_id, props.id);
+    let base = attributes!(div { class: "dx-dialog" });
+    let attributes = merge_attributes(vec![base, props.attributes]);
 
     use_outside_dismiss(id, move || set_open.call(false));
     use_effect(move || {
@@ -260,8 +259,7 @@ pub fn DialogContent(props: DialogContentProps) -> Element {
             aria_modal: "true",
             aria_labelledby: ctx.dialog_labelledby,
             aria_describedby: ctx.dialog_describedby,
-            class: props.class.clone().unwrap_or_else(|| "dx-dialog".to_string()),
-            ..props.attributes,
+            ..attributes,
             {props.children}
         }
     }

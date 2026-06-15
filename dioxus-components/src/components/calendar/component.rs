@@ -312,8 +312,13 @@ fn CalendarNavigation(props: CalendarNavigationProps) -> Element {
 fn CalendarPreviousMonthButton(
     #[props(extends = GlobalAttributes)] attributes: Vec<Attribute>,
 ) -> Element {
+    let base = attributes!(button {
+        class: Styles::dx_calendar_nav_prev,
+    });
+    let attributes = merge_attributes(vec![base, attributes]);
+
     rsx! {
-        calendar::CalendarPreviousMonthButton { class: Styles::dx_calendar_nav_prev.to_string(), attributes,
+        calendar::CalendarPreviousMonthButton { attributes,
             ChevronLeft { size: "20px" }
         }
     }
@@ -323,8 +328,13 @@ fn CalendarPreviousMonthButton(
 fn CalendarNextMonthButton(
     #[props(extends = GlobalAttributes)] attributes: Vec<Attribute>,
 ) -> Element {
+    let base = attributes!(button {
+        class: Styles::dx_calendar_nav_next,
+    });
+    let attributes = merge_attributes(vec![base, attributes]);
+
     rsx! {
-        calendar::CalendarNextMonthButton { class: Styles::dx_calendar_nav_next.to_string(), attributes,
+        calendar::CalendarNextMonthButton { attributes,
             ChevronRight { size: "20px" }
         }
     }

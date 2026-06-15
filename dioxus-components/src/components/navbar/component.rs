@@ -3,6 +3,7 @@ use dioxus_icons::lucide::ChevronDown;
 use dioxus_primitives::navbar::{
     self, NavbarContentProps, NavbarItemProps, NavbarNavProps, NavbarProps, NavbarTriggerProps,
 };
+use dioxus_primitives::{dioxus_attributes::attributes, merge_attributes};
 #[css_module("/src/components/navbar/style.css")]
 struct Styles;
 
@@ -34,12 +35,17 @@ pub fn NavbarNav(props: NavbarNavProps) -> Element {
 
 #[component]
 pub fn NavbarTrigger(props: NavbarTriggerProps) -> Element {
+    let base = attributes!(button {
+        class: Styles::dx_navbar_trigger,
+    });
+    let attributes = merge_attributes(vec![base, props.attributes]);
+
     rsx! {
-        navbar::NavbarTrigger { class: Styles::dx_navbar_trigger.to_string(), attributes: props.attributes,
+        navbar::NavbarTrigger { attributes,
             {props.children}
             ChevronDown {
                 class: Styles::dx_navbar_expand_icon.to_string(),
-                size: "20px",
+                size: "14px",
                 stroke: "var(--secondary-color-4)",
             }
         }
@@ -60,16 +66,20 @@ pub fn NavbarContent(props: NavbarContentProps) -> Element {
 
 #[component]
 pub fn NavbarItem(props: NavbarItemProps) -> Element {
+    let base = attributes!(a {
+        class: Styles::dx_navbar_item,
+    });
+    let attributes = merge_attributes(vec![base, props.attributes]);
+
     rsx! {
         navbar::NavbarItem {
-            class: Styles::dx_navbar_item.to_string(),
             index: props.index,
             value: props.value,
             disabled: props.disabled,
             new_tab: props.new_tab,
             to: props.to,
             active_class: props.active_class,
-            attributes: props.attributes,
+            attributes,
             on_select: props.on_select,
             onclick: props.onclick,
             onmounted: props.onmounted,

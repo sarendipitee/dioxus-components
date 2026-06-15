@@ -595,9 +595,6 @@ pub struct NavbarItemProps {
     #[props(default)]
     pub on_select: Callback<String>,
 
-    /// The class attribute for the `a` tag.
-    pub class: Option<String>,
-
     /// A class to apply to the generate HTML anchor tag if the `target` route is active.
     pub active_class: Option<String>,
 
@@ -777,7 +774,6 @@ pub fn NavbarItem(mut props: NavbarItemProps) -> Element {
 
     rsx! {
         Link {
-            class: props.class,
             active_class: props.active_class,
             new_tab: props.new_tab,
             onclick_only: props.onclick_only,

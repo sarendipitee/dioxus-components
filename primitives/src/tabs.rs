@@ -565,9 +565,6 @@ pub struct TabTriggerProps {
     /// The ID of the tab trigger element.
     pub id: Option<String>,
 
-    /// The class of the tab trigger element.
-    pub class: Option<String>,
-
     /// Additional attributes to apply to the tab trigger element.
     #[props(extends = GlobalAttributes)]
     #[props(extends = button)]
@@ -647,7 +644,6 @@ pub fn TabTrigger(props: TabTriggerProps) -> Element {
         button {
             role: "tab",
             id: trigger_id,
-            class: props.class,
             tabindex: tab_index,
             type: "button",
 
@@ -741,9 +737,6 @@ pub struct TabContentProps {
     /// The ID of the tab content element.
     pub id: ReadSignal<Option<String>>,
 
-    /// The class of the tab content element.
-    pub class: Option<String>,
-
     /// The index of the tab content.
     pub index: ReadSignal<usize>,
 
@@ -786,7 +779,6 @@ pub fn TabContent(props: TabContentProps) -> Element {
         div {
             role: "tabpanel",
             id,
-            class: props.class,
             tabindex: "0",
             aria_labelledby: labelled_by,
             "data-state": if selected() { "active" } else { "inactive" },

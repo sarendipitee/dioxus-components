@@ -1,5 +1,6 @@
 use dioxus::prelude::*;
 use dioxus_primitives::radio_group::{self, RadioGroupProps, RadioItemProps};
+use dioxus_primitives::{dioxus_attributes::attributes, merge_attributes};
 
 #[css_module("/src/components/radio_group/style.css")]
 struct Styles;
@@ -25,13 +26,17 @@ pub fn RadioGroup(props: RadioGroupProps) -> Element {
 
 #[component]
 pub fn RadioItem(props: RadioItemProps) -> Element {
+    let base = attributes!(button {
+        class: Styles::dx_radio_item,
+    });
+    let attributes = merge_attributes(vec![base, props.attributes]);
+
     rsx! {
         radio_group::RadioItem {
-            class: Styles::dx_radio_item.to_string(),
             value: props.value,
             index: props.index,
             disabled: props.disabled,
-            attributes: props.attributes,
+            attributes,
             {props.children}
         }
     }

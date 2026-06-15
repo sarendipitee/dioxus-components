@@ -120,10 +120,6 @@ pub struct AlertDialogContentProps {
     /// The id of the alert dialog content element. If not provided, a unique id will be generated.
     pub id: ReadSignal<Option<String>>,
 
-    /// The class to apply to the alert dialog content element.
-    #[props(default)]
-    pub class: Option<String>,
-
     /// Additional attributes to extend the content element.
     #[props(extends = GlobalAttributes)]
     pub attributes: Vec<Attribute>,
@@ -185,6 +181,11 @@ pub fn AlertDialogContent(props: AlertDialogContentProps) -> Element {
 
     let gen_id = use_unique_id();
     let id = use_id_or(gen_id, props.id);
+    let base = attributes!(div {
+        class: "dx-alert-dialog"
+    });
+    let attributes = merge_attributes(vec![base, props.attributes]);
+
     use_effect(move || {
         let eval = document::eval(
             r#"let id = await dioxus.recv();
@@ -210,8 +211,7 @@ pub fn AlertDialogContent(props: AlertDialogContentProps) -> Element {
             aria_modal: "true",
             aria_labelledby: ctx.labelledby.clone(),
             aria_describedby: ctx.describedby.clone(),
-            class: props.class.clone().unwrap_or_else(|| "dx-alert-dialog".to_string()),
-            ..props.attributes,
+            ..attributes,
             {props.children}
         }
     }

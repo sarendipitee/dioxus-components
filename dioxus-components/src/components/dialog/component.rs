@@ -21,7 +21,6 @@ pub fn Dialog(props: DialogRootProps) -> Element {
             default_open: props.default_open,
             on_open_change: props.on_open_change,
             dialog::DialogContent {
-                class: None,
                 attributes: merged,
                 {props.children}
             }

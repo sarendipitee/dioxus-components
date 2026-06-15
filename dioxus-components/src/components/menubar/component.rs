@@ -3,6 +3,7 @@ use dioxus_primitives::menubar::{
     self, MenubarContentProps, MenubarItemProps, MenubarMenuProps, MenubarProps,
     MenubarTriggerProps,
 };
+use dioxus_primitives::{dioxus_attributes::attributes, merge_attributes};
 #[css_module("/src/components/menubar/style.css")]
 struct Styles;
 
@@ -34,8 +35,13 @@ pub fn MenubarMenu(props: MenubarMenuProps) -> Element {
 
 #[component]
 pub fn MenubarTrigger(props: MenubarTriggerProps) -> Element {
+    let base = attributes!(button {
+        class: Styles::dx_menubar_trigger,
+    });
+    let attributes = merge_attributes(vec![base, props.attributes]);
+
     rsx! {
-        menubar::MenubarTrigger { class: Styles::dx_menubar_trigger.to_string(), attributes: props.attributes, {props.children} }
+        menubar::MenubarTrigger { attributes, {props.children} }
     }
 }
 

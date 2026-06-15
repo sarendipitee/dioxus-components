@@ -28,7 +28,7 @@ pub fn PopoverRoot(props: PopoverRootProps) -> Element {
 
 #[component]
 pub fn PopoverTrigger(props: PopoverTriggerProps) -> Element {
-    let base = attributes!(button {
+    let base = attributes!(div {
         class: Styles::dx_popover_trigger.to_string()
     });
     let merged = merge_attributes(vec![base, props.attributes]);
@@ -41,7 +41,7 @@ pub fn PopoverTrigger(props: PopoverTriggerProps) -> Element {
 /// Styled popover trigger that opens the popover without toggling it closed.
 #[component]
 pub fn PopoverOpenTrigger(props: PopoverTriggerProps) -> Element {
-    let base = attributes!(button {
+    let base = attributes!(div {
         class: Styles::dx_popover_trigger.to_string()
     });
     let merged = merge_attributes(vec![base, props.attributes]);
@@ -53,19 +53,17 @@ pub fn PopoverOpenTrigger(props: PopoverTriggerProps) -> Element {
 
 #[component]
 pub fn PopoverContent(props: PopoverContentProps) -> Element {
-    let class = if let Some(class) = props.class {
-        format!("{} {}", Styles::dx_popover_content.to_string(), class)
-    } else {
-        Styles::dx_popover_content.to_string()
-    };
+    let base = attributes!(div {
+        class: Styles::dx_popover_content.to_string()
+    });
+    let attributes = merge_attributes(vec![base, props.attributes]);
 
     rsx! {
         popover::PopoverContent {
-            class,
             id: props.id,
             side: props.side,
             align: props.align,
-            attributes: props.attributes,
+            attributes,
             {props.children}
         }
     }

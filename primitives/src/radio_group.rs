@@ -197,8 +197,6 @@ pub struct RadioItemProps {
 
     /// Optional ID for the radio item element.
     pub id: Option<String>,
-    /// Optional class for the radio item element.
-    pub class: Option<String>,
 
     /// Additional attributes to apply to the radio item element.
     #[props(extends = GlobalAttributes)]
@@ -297,7 +295,6 @@ pub fn RadioItem(props: RadioItemProps) -> Element {
         button {
             role: "radio",
             id: props.id,
-            class: props.class,
             tabindex: tab_index,
             type: "button",
 

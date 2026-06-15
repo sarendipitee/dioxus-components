@@ -2,10 +2,11 @@
 
 use dioxus::document;
 use dioxus::prelude::*;
+use dioxus_attributes::attributes;
 
 use crate::{
-    use_animated_open, use_controlled, use_global_escape_listener, use_id_or, use_outside_dismiss,
-    use_unique_id, ContentAlign, ContentSide, FOCUS_TRAP_JS,
+    merge_attributes, use_animated_open, use_controlled, use_global_escape_listener, use_id_or,
+    use_outside_dismiss, use_unique_id, ContentAlign, ContentSide, FOCUS_TRAP_JS,
 };
 
 #[derive(Clone, Copy)]
@@ -132,10 +133,6 @@ pub struct PopoverContentProps {
     /// The id of the popover content element.
     pub id: ReadSignal<Option<String>>,
 
-    /// CSS class for the popover content.
-    #[props(default)]
-    pub class: Option<String>,
-
     /// Side of the trigger to place the popover.
     #[props(default = ContentSide::Bottom)]
     pub side: ContentSide,
@@ -209,6 +206,10 @@ pub fn PopoverContent(props: PopoverContentProps) -> Element {
     let ctx: PopoverCtx = use_context();
     let open = ctx.open;
     let is_modal = ctx.is_modal;
+    let base = attributes!(div {
+        class: "dx-popover-content"
+    });
+    let attributes = merge_attributes(vec![base, props.attributes]);
 
     let gen_id = use_unique_id();
     let id = use_id_or(gen_id, props.id);
@@ -243,18 +244,14 @@ pub fn PopoverContent(props: PopoverContentProps) -> Element {
     });
 
     rsx! {
-        document::Script {
-            src: FOCUS_TRAP_JS,
-            defer: true
-        }
+        document::Script { src: FOCUS_TRAP_JS, defer: true }
         if render() {
             PopoverContentRendered {
                 id,
-                class: props.class,
                 side: props.side,
                 align: props.align,
-                attributes: props.attributes,
-                children: props.children
+                attributes,
+                children: props.children,
             }
         }
     }
@@ -265,7 +262,6 @@ pub fn PopoverContent(props: PopoverContentProps) -> Element {
 #[component]
 pub fn PopoverContentRendered(
     id: String,
-    class: Option<String>,
     side: ContentSide,
     align: ContentAlign,
     attributes: Vec<Attribute>,
@@ -290,7 +286,6 @@ pub fn PopoverContentRendered(
             aria_modal: (ctx.is_modal)().then_some("true"),
             aria_labelledby: ctx.labelledby,
             aria_hidden: (!is_open).then_some("true"),
-            class: class.unwrap_or_else(|| "dx-popover-content".to_string()),
             "data-state": if is_open { "open" } else { "closed" },
             "data-side": side.as_str(),
             "data-align": align.as_str(),
