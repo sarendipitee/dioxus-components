@@ -2,7 +2,7 @@ import { test, expect } from "@playwright/test";
 
 test("test", async ({ page }) => {
   await page.goto("/component/?name=popover&");
-  const popoverButton = page.getByRole("button", { name: "Show Popover" });
+  const popoverButton = page.locator("#component-preview-frame").getByText("Show Popover");
   await expect(popoverButton).toBeVisible();
   await popoverButton.click();
   // pressing the first input should be focused
@@ -30,7 +30,7 @@ test("test", async ({ page }) => {
 
 test("popover dismisses when clicking outside", async ({ page }) => {
   await page.goto("/component/?name=popover&");
-  const popoverButton = page.getByRole("button", { name: "Show Popover" });
+  const popoverButton = page.locator("#component-preview-frame").getByText("Show Popover");
   await popoverButton.click();
   const dialog = page.getByRole("dialog");
   await expect(dialog).toBeVisible();

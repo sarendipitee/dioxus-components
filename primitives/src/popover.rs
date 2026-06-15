@@ -300,16 +300,35 @@ pub fn PopoverContentRendered(
 pub struct PopoverTriggerProps {
     /// Additional attributes to apply to the trigger element.
     #[props(extends = GlobalAttributes)]
-    #[props(extends = button)]
+    #[props(extends = div)]
     pub attributes: Vec<Attribute>,
 
     /// The children of the trigger component.
     pub children: Element,
 }
 
+fn use_popover_trigger_labelledby(
+    mut labelledby: Signal<String>,
+    attributes: &[Attribute],
+) -> Signal<String> {
+    let id_attribute = attributes.iter().find(|attr| attr.name == "id").cloned();
+    use_effect(use_reactive!(|id_attribute| {
+        if let Some(id_attribute) = id_attribute {
+            match &id_attribute.value {
+                dioxus_core::AttributeValue::Text(val) => labelledby.set(val.to_string()),
+                dioxus_core::AttributeValue::Float(val) => labelledby.set(val.to_string()),
+                dioxus_core::AttributeValue::Int(val) => labelledby.set(val.to_string()),
+                dioxus_core::AttributeValue::Bool(val) => labelledby.set(val.to_string()),
+                _ => {}
+            }
+        }
+    }));
+    labelledby
+}
+
 /// # PopoverTrigger
 ///
-/// The `PopoverTrigger` is a button that toggles the visibility of the [`PopoverContent`].
+/// The `PopoverTrigger` toggles the visibility of the [`PopoverContent`].
 ///
 /// This must be used inside a [`PopoverRoot`] component.
 ///
@@ -354,31 +373,38 @@ pub struct PopoverTriggerProps {
 #[component]
 pub fn PopoverTrigger(props: PopoverTriggerProps) -> Element {
     let ctx: PopoverCtx = use_context();
-    let mut id = ctx.labelledby;
-    let id_attribute = props
-        .attributes
-        .iter()
-        .find(|attr| attr.name == "id")
-        .cloned();
-    use_effect(use_reactive!(|id_attribute| {
-        if let Some(id_attribute) = id_attribute {
-            match &id_attribute.value {
-                dioxus_core::AttributeValue::Text(val) => id.set(val.to_string()),
-                dioxus_core::AttributeValue::Float(val) => id.set(val.to_string()),
-                dioxus_core::AttributeValue::Int(val) => id.set(val.to_string()),
-                dioxus_core::AttributeValue::Bool(val) => id.set(val.to_string()),
-                _ => {}
-            }
-        }
-    }));
+    let id = use_popover_trigger_labelledby(ctx.labelledby, &props.attributes);
 
     rsx! {
-        button {
+        div {
             id,
-            type: "button",
             onclick: move |e| {
                 e.stop_propagation();
                 ctx.set_open.call(!(ctx.open)());
+            },
+            ..props.attributes,
+            {props.children}
+        }
+    }
+}
+
+/// # PopoverOpenTrigger
+///
+/// Trigger that opens the [`PopoverContent`] without toggling it closed.
+///
+/// This is useful for input adornments where the associated field can also open the popover
+/// and clicking the adornment should be an idempotent open action.
+#[component]
+pub fn PopoverOpenTrigger(props: PopoverTriggerProps) -> Element {
+    let ctx: PopoverCtx = use_context();
+    let id = use_popover_trigger_labelledby(ctx.labelledby, &props.attributes);
+
+    rsx! {
+        div {
+            id,
+            onclick: move |e| {
+                e.stop_propagation();
+                ctx.set_open.call(true);
             },
             ..props.attributes,
             {props.children}

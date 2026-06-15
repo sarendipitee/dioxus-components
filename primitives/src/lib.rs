@@ -224,15 +224,27 @@ fn use_outside_dismiss(
     use_effect_with_cleanup(move || {
         let mut eval = document::eval(
             "const id = await dioxus.recv();
-            const f = e => {
+            // A pointer press outside the root is always a dismiss, even when it
+            // lands on an ancestor element that wraps the popover (e.g. a scroll
+            // container around it).
+            const onPointer = e => {
                 const root = document.getElementById(id);
                 if (root && !root.contains(e.target)) dioxus.send(true);
             };
-            document.addEventListener('pointerdown', f, true);
-            document.addEventListener('focusin', f, true);
+            // Focus moving outside the root dismisses too (e.g. tabbing away), but
+            // ignore focus that lands on an *ancestor* of the root. Clicking the
+            // popover's own non-focusable background blurs the focused control and
+            // the browser moves focus to the nearest focusable ancestor, which
+            // still contains the popover — that is not a real focus-out.
+            const onFocus = e => {
+                const root = document.getElementById(id);
+                if (root && !root.contains(e.target) && !e.target.contains(root)) dioxus.send(true);
+            };
+            document.addEventListener('pointerdown', onPointer, true);
+            document.addEventListener('focusin', onFocus, true);
             await dioxus.recv();
-            document.removeEventListener('pointerdown', f, true);
-            document.removeEventListener('focusin', f, true);",
+            document.removeEventListener('pointerdown', onPointer, true);
+            document.removeEventListener('focusin', onFocus, true);",
         );
         let _ = eval.send(id.cloned());
         let mut on_dismiss = on_dismiss.clone();
