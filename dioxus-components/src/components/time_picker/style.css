@@ -6,7 +6,7 @@
 
 .dx_time_picker_columns {
     display: flex;
-    gap: calc(var(--space) * 1);
+    gap: calc(var(--space) * 0.5);
 }
 
 .dx_time_picker_col {
@@ -30,7 +30,7 @@
 }
 
 .dx_time_picker_col_item {
-    min-width: 3rem;
+    min-width: 2.25rem;
     height: 2.5rem;
     display: flex;
     align-items: center;

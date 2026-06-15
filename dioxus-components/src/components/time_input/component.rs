@@ -3,6 +3,7 @@ use std::sync::atomic::{AtomicUsize, Ordering};
 use dioxus::prelude::*;
 use crate::component_styles;
 use dioxus_primitives::dioxus_attributes::attributes;
+use dioxus_primitives::ContentAlign;
 use dioxus_primitives::time_picker::{
     TimePicker, TimePickerAmPmSegment, TimePickerFormat, TimePickerHourSegment, TimePickerInput,
     TimePickerInputValue, TimePickerLabels, TimePickerMinuteSegment, TimePickerSecondSegment,
@@ -376,6 +377,7 @@ fn TimeInputPopoverContent(#[props(default)] id: Option<String>, children: Eleme
     rsx! {
         PopoverContent {
             id,
+            align: ContentAlign::Start,
             class: Styles::dx_time_input_popover_content.to_string(),
             {children}
         }
