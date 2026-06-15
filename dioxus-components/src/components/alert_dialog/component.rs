@@ -1,4 +1,5 @@
 use dioxus::prelude::*;
+use crate::component_styles;
 use dioxus_primitives::alert_dialog::{
     self, AlertDialogActionProps, AlertDialogActionsProps, AlertDialogCancelProps,
     AlertDialogContentProps, AlertDialogDescriptionProps, AlertDialogRootProps,
@@ -6,7 +7,7 @@ use dioxus_primitives::alert_dialog::{
 };
 use dioxus_primitives::{dioxus_attributes::attributes, merge_attributes};
 
-#[css_module("/src/components/alert_dialog/style.css")]
+#[component_styles("./style.css")]
 struct Styles;
 
 /// The root alert dialog component — a context provider that manages open state.

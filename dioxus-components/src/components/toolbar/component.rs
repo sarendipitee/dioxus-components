@@ -1,8 +1,9 @@
 use dioxus::prelude::*;
+use crate::component_styles;
 use dioxus_primitives::toolbar::{self, ToolbarButtonProps, ToolbarProps, ToolbarSeparatorProps};
 use dioxus_primitives::{dioxus_attributes::attributes, merge_attributes};
 
-#[css_module("/src/components/toolbar/style.css")]
+#[component_styles("./style.css")]
 struct Styles;
 
 #[component]

@@ -1,9 +1,10 @@
 use dioxus::prelude::*;
+use crate::component_styles;
 use dioxus_primitives::dioxus_attributes::attributes;
 use dioxus_primitives::merge_attributes;
 use dioxus_primitives::tooltip::{self, TooltipContentProps, TooltipProps, TooltipTriggerProps};
 
-#[css_module("/src/components/tooltip/style.css")]
+#[component_styles("./style.css")]
 struct Styles;
 
 #[component]

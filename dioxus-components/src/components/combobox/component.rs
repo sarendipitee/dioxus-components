@@ -1,6 +1,7 @@
 use std::sync::atomic::{AtomicUsize, Ordering};
 
 use dioxus::prelude::*;
+use crate::component_styles;
 use dioxus_icons::lucide::{Check, ChevronsUpDown};
 use dioxus_primitives::combobox::{
     self, default_combobox_filter, AutocompleteProps, ComboboxEmptyProps, ComboboxOptionProps,
@@ -9,7 +10,7 @@ use dioxus_primitives::{dioxus_attributes::attributes, merge_attributes};
 
 use crate::input::{element_label, Input, InputBase, InputRadius, InputSize, InputVariant};
 
-#[css_module("/src/components/combobox/style.css")]
+#[component_styles("./style.css")]
 struct Styles;
 
 fn use_combobox_input_id() -> String {

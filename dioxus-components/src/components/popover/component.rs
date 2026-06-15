@@ -1,10 +1,11 @@
 use dioxus::prelude::*;
+use crate::component_styles;
 use dioxus_primitives::popover::{
     self, PopoverContentProps, PopoverRootProps, PopoverTriggerProps,
 };
 use dioxus_primitives::{dioxus_attributes::attributes, merge_attributes};
 
-#[css_module("/src/components/popover/style.css")]
+#[component_styles("./style.css")]
 struct Styles;
 
 #[component]

@@ -1,8 +1,9 @@
 use dioxus::prelude::*;
+use crate::component_styles;
 use dioxus_primitives::hover_card::{
     self, HoverCardContentProps, HoverCardProps, HoverCardTriggerProps,
 };
-#[css_module("/src/components/hover_card/style.css")]
+#[component_styles("./style.css")]
 struct Styles;
 
 #[component]

@@ -1,11 +1,12 @@
 use dioxus::prelude::*;
+use crate::component_styles;
 use dioxus_primitives::toast::{
     self, Toast, ToastCloseButtonProps, ToastContentProps, ToastDescriptionProps, ToastProps,
     ToastTitleProps,
 };
 use std::time::Duration;
 
-#[css_module("/src/components/toast/style.css")]
+#[component_styles("./style.css")]
 struct Styles;
 
 #[component]

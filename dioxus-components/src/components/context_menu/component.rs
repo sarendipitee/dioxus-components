@@ -1,9 +1,10 @@
 use dioxus::prelude::*;
+use crate::component_styles;
 use dioxus_primitives::context_menu::{
     self, ContextMenuContentProps, ContextMenuItemProps, ContextMenuProps, ContextMenuTriggerProps,
 };
 
-#[css_module("/src/components/context_menu/style.css")]
+#[component_styles("./style.css")]
 struct Styles;
 
 #[component]

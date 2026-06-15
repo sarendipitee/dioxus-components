@@ -1,6 +1,7 @@
 use std::sync::atomic::{AtomicUsize, Ordering};
 
 use dioxus::prelude::*;
+use crate::component_styles;
 use dioxus_primitives::color_picker::Color;
 use dioxus_primitives::use_controlled;
 use dioxus_primitives::{dioxus_attributes::attributes, merge_attributes};
@@ -13,7 +14,7 @@ use crate::components::input::{
 };
 use crate::components::popover::{PopoverContent, PopoverRoot};
 
-#[css_module("/src/components/color_input/style.css")]
+#[component_styles("./style.css")]
 struct Styles;
 
 #[derive(Clone, Copy)]

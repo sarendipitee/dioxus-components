@@ -1,7 +1,8 @@
 use dioxus::prelude::*;
+use crate::component_styles;
 use dioxus_primitives::progress::{self, ProgressProps};
 
-#[css_module("/src/components/progress/style.css")]
+#[component_styles("./style.css")]
 struct Styles;
 
 #[component]

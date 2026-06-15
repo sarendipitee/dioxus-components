@@ -1,8 +1,9 @@
 use dioxus::prelude::*;
+use crate::component_styles;
 pub use dioxus_primitives::virtual_list::VirtualListProps;
 use dioxus_primitives::{dioxus_attributes::attributes, merge_attributes};
 
-#[css_module("/src/components/virtual_list/style.css")]
+#[component_styles("./style.css")]
 struct Styles;
 
 /// Styled wrapper around the primitive `VirtualList`.

@@ -1,7 +1,8 @@
 use dioxus::prelude::*;
+use crate::component_styles;
 use dioxus_primitives::slider::{self, RangeSliderProps, SliderProps};
 
-#[css_module("/src/components/slider/style.css")]
+#[component_styles("./style.css")]
 struct Styles;
 
 #[component]

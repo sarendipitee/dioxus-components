@@ -1,4 +1,5 @@
 use dioxus::prelude::*;
+use crate::component_styles;
 use dioxus_icons::lucide::ChevronDown;
 use dioxus_primitives::popover::PopoverRootProps;
 use dioxus_primitives::{
@@ -16,7 +17,7 @@ use crate::components::input::{
 };
 use crate::components::popover::{PopoverContent, PopoverOpenTrigger, PopoverRoot};
 
-#[css_module("/src/components/date_input/style.css")]
+#[component_styles("./style.css")]
 struct Styles;
 
 fn fixed_date(year: i32, month: Month, day: u8) -> Date {

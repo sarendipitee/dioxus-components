@@ -1,6 +1,7 @@
 use dioxus::prelude::*;
+use crate::component_styles;
 use dioxus_primitives::label::{self, LabelProps};
-#[css_module("/src/components/label/style.css")]
+#[component_styles("./style.css")]
 struct Styles;
 
 #[component]

@@ -1,9 +1,10 @@
 use dioxus::prelude::*;
+use crate::component_styles;
 use dioxus_icons::lucide::BadgeCheck;
 use dioxus_primitives::dioxus_attributes::attributes;
 use dioxus_primitives::merge_attributes;
 
-#[css_module("/src/components/badge/style.css")]
+#[component_styles("./style.css")]
 struct Styles;
 
 #[derive(Copy, Clone, PartialEq, Default)]

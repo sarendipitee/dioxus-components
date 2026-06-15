@@ -1,4 +1,5 @@
 use dioxus::prelude::*;
+use crate::component_styles;
 use dioxus_icons::lucide::{Check, Minus};
 use dioxus_primitives::checkbox::{self, CheckboxState};
 use dioxus_primitives::{dioxus_attributes::attributes, merge_attributes};
@@ -8,7 +9,7 @@ use crate::components::input::{
     InputFieldTextClasses, InputLabel,
 };
 
-#[css_module("/src/components/checkbox/style.css")]
+#[component_styles("./style.css")]
 struct Styles;
 
 /// Styled checkbox wrapper with optional field text content.

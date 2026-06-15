@@ -2,6 +2,7 @@ use std::sync::atomic::{AtomicUsize, Ordering};
 use std::time::Duration;
 
 use dioxus::prelude::*;
+use crate::component_styles;
 use dioxus_icons::lucide::{Check, ChevronDown};
 use dioxus_primitives::select::{self, SelectGroupLabelProps, SelectOptionProps};
 use dioxus_primitives::{dioxus_attributes::attributes, merge_attributes};
@@ -10,7 +11,7 @@ use crate::input::{element_label, Input, InputRadius, InputSize, InputVariant, I
 
 pub use dioxus_primitives::select::SelectGroup;
 
-#[css_module("/src/components/select/style.css")]
+#[component_styles("./style.css")]
 struct Styles;
 
 fn use_select_input_id() -> String {

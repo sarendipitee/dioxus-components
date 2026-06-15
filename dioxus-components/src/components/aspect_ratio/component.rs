@@ -1,9 +1,10 @@
 use dioxus::prelude::*;
+use crate::component_styles;
 use dioxus_primitives::{
     aspect_ratio::AspectRatioProps, dioxus_attributes::attributes, merge_attributes,
 };
 
-#[css_module("/src/components/aspect_ratio/style.css")]
+#[component_styles("./style.css")]
 struct Styles;
 
 #[component]

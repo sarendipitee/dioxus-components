@@ -1,6 +1,7 @@
 use std::sync::atomic::{AtomicUsize, Ordering};
 
 use dioxus::prelude::*;
+use crate::component_styles;
 use dioxus_primitives::dioxus_attributes::attributes;
 use dioxus_primitives::time_picker::{
     TimePicker, TimePickerAmPmSegment, TimePickerFormat, TimePickerHourSegment, TimePickerInput,
@@ -15,7 +16,7 @@ use crate::components::input::{
 };
 use crate::components::popover::{PopoverContent, PopoverRoot};
 
-#[css_module("/src/components/time_input/style.css")]
+#[component_styles("./style.css")]
 struct Styles;
 
 /// Controls how `TimeInput` combines its clear button and custom right section.

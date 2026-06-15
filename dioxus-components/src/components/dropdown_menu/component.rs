@@ -1,4 +1,5 @@
 use dioxus::prelude::*;
+use crate::component_styles;
 use dioxus_primitives::dioxus_attributes::attributes;
 use dioxus_primitives::dropdown_menu::{
     self, DropdownMenuContentProps, DropdownMenuItemProps, DropdownMenuProps,
@@ -6,7 +7,7 @@ use dioxus_primitives::dropdown_menu::{
 };
 use dioxus_primitives::merge_attributes;
 
-#[css_module("/src/components/dropdown_menu/style.css")]
+#[component_styles("./style.css")]
 struct Styles;
 
 #[component]

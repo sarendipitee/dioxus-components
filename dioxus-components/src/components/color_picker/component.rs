@@ -1,9 +1,10 @@
 use dioxus::prelude::*;
+use crate::component_styles;
 use dioxus_primitives::color_picker::{self, Color, ColorAreaProps, ColorPickerContext};
 use dioxus_primitives::slider::*;
 use palette::{encoding, FromColor, Hsv, RgbHue, Srgb};
 
-#[css_module("/src/components/color_picker/style.css")]
+#[component_styles("./style.css")]
 struct Styles;
 
 fn format_color_hex(color: Color) -> String {

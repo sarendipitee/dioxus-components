@@ -2,11 +2,12 @@ use std::sync::atomic::{AtomicUsize, Ordering};
 
 use dioxus::core::AttributeValue;
 use dioxus::prelude::*;
+use crate::component_styles;
 use dioxus_primitives::{dioxus_attributes::attributes, merge_attributes};
 
 use crate::components::label::Label;
 
-#[css_module("/src/components/input/style.css")]
+#[component_styles("./style.css")]
 struct Styles;
 
 /// Visual variants supported by the shared input shell.

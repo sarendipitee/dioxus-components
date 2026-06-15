@@ -1,10 +1,11 @@
 use dioxus::prelude::*;
+use crate::component_styles;
 use dioxus_primitives::menubar::{
     self, MenubarContentProps, MenubarItemProps, MenubarMenuProps, MenubarProps,
     MenubarTriggerProps,
 };
 use dioxus_primitives::{dioxus_attributes::attributes, merge_attributes};
-#[css_module("/src/components/menubar/style.css")]
+#[component_styles("./style.css")]
 struct Styles;
 
 #[component]

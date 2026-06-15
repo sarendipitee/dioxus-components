@@ -1,4 +1,5 @@
 use dioxus::prelude::*;
+use crate::component_styles;
 use dioxus_icons::lucide::{ChevronLeft, ChevronRight};
 use dioxus_primitives::schedule::{self, ScheduleClassNames as PrimitiveScheduleClassNames};
 use dioxus_primitives::{dioxus_attributes::attributes, merge_attributes};
@@ -19,7 +20,7 @@ pub use dioxus_primitives::schedule::{
     ScheduleWeekViewConfig, ScheduleYearViewConfig, UseScheduleConfig,
 };
 
-#[css_module("/src/components/schedule/style.css")]
+#[component_styles("./style.css")]
 struct Styles;
 
 fn append_class(existing: String, class_name: &str) -> String {

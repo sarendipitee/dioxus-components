@@ -1,4 +1,5 @@
 use dioxus::prelude::*;
+use crate::component_styles;
 use dioxus_primitives::time_picker as prim;
 use time::{macros::time, Time};
 
@@ -9,7 +10,7 @@ pub use prim::{
     TimePickerSeparator, TimePickerSteps, TimePickerType, TimePickerValue,
 };
 
-#[css_module("/src/components/time_picker/style.css")]
+#[component_styles("./style.css")]
 struct Styles;
 
 /// Generate evenly spaced clock-time presets between `start` and `end` at the given `interval`.

@@ -7,12 +7,13 @@ use crate::components::skeleton::Skeleton;
 use crate::components::tooltip::{Tooltip, TooltipContent, TooltipTrigger};
 use dioxus::core::use_drop;
 use dioxus::prelude::*;
+use crate::component_styles;
 use dioxus_icons::lucide::PanelLeft;
 use dioxus_primitives::dioxus_attributes::attributes;
 use dioxus_primitives::merge_attributes;
 use dioxus_primitives::use_controlled;
 
-#[css_module("/src/components/sidebar/style.css")]
+#[component_styles("./style.css")]
 struct Styles;
 
 // constants

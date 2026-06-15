@@ -1,11 +1,12 @@
 use dioxus::prelude::*;
+use crate::component_styles;
 use dioxus_primitives::{
     dioxus_attributes::attributes,
     merge_attributes,
     scroll_area::{self, ScrollAreaProps},
 };
 
-#[css_module("/src/components/scroll_area/style.css")]
+#[component_styles("./style.css")]
 struct Styles;
 
 #[component]

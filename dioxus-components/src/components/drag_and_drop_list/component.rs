@@ -1,11 +1,12 @@
 use dioxus::prelude::*;
+use crate::component_styles;
 use dioxus_icons::lucide::{GripVertical, X};
 use dioxus_primitives::drag_and_drop_list::{
     self, DragAndDropContext, DragAndDropDropIndicatorProps, DragAndDropItemContext,
     DragAndDropListItemProps, DragAndDropListItemsProps,
 };
 
-#[css_module("/src/components/drag_and_drop_list/style.css")]
+#[component_styles("./style.css")]
 struct Styles;
 
 #[derive(Props, Clone, PartialEq)]

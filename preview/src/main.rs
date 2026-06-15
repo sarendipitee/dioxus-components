@@ -21,6 +21,7 @@ use crate::components::{
 };
 use core::panic;
 use dioxus::prelude::{dioxus_router::LinkProps, *};
+use dioxus_components::DioxusComponentsStyles;
 use dioxus_i18n::prelude::{use_init_i18n, I18nConfig};
 use dioxus_icons::lucide::{
     ArrowRight, ArrowUpRight, Check, ChevronDown, ChevronLeft, Copy, ExternalLink, Mail, Menu,
@@ -140,6 +141,7 @@ pub fn App() -> Element {
     });
 
     rsx! {
+        DioxusComponentsStyles {}
         Router::<Route> {}
     }
 }

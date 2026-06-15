@@ -1,11 +1,12 @@
 use dioxus::prelude::*;
+use crate::component_styles;
 use dioxus_primitives::dialog::{
     self, DialogCloseProps, DialogContentProps, DialogDescriptionProps, DialogRootProps,
     DialogTitleProps, DialogTriggerProps,
 };
 use dioxus_primitives::{dioxus_attributes::attributes, merge_attributes};
 
-#[css_module("/src/components/dialog/style.css")]
+#[component_styles("./style.css")]
 struct Styles;
 
 /// The root dialog component — a context provider that manages open state.

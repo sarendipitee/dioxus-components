@@ -1,4 +1,5 @@
 use dioxus::prelude::*;
+use crate::component_styles;
 use dioxus_icons::lucide::ChevronsUpDown;
 use dioxus_primitives::collapsible::{
     self, CollapsibleContentProps, CollapsibleProps, CollapsibleTriggerProps,
@@ -6,7 +7,7 @@ use dioxus_primitives::collapsible::{
 use dioxus_primitives::dioxus_attributes::attributes;
 use dioxus_primitives::merge_attributes;
 
-#[css_module("/src/components/collapsible/style.css")]
+#[component_styles("./style.css")]
 struct Styles;
 
 #[component]

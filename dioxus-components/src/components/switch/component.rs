@@ -1,7 +1,8 @@
 use dioxus::prelude::*;
+use crate::component_styles;
 use dioxus_primitives::switch::{self, SwitchProps};
 
-#[css_module("/src/components/switch/style.css")]
+#[component_styles("./style.css")]
 struct Styles;
 
 #[component]

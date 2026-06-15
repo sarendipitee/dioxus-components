@@ -1,11 +1,12 @@
 use dioxus::prelude::*;
+use crate::component_styles;
 use dioxus_primitives::{
     dioxus_attributes::attributes,
     merge_attributes,
     textarea::{self, TextareaProps as PrimitiveTextareaProps},
 };
 
-#[css_module("/src/components/textarea/style.css")]
+#[component_styles("./style.css")]
 struct Styles;
 
 #[derive(Copy, Clone, PartialEq, Default)]

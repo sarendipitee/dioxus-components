@@ -1,10 +1,11 @@
 use dioxus::prelude::*;
+use crate::component_styles;
 use dioxus_icons::lucide::ChevronDown;
 use dioxus_primitives::accordion::{
     self, AccordionContentProps, AccordionItemProps, AccordionProps, AccordionTriggerProps,
 };
 
-#[css_module("/src/components/accordion/style.css")]
+#[component_styles("./style.css")]
 struct Styles;
 
 #[component]

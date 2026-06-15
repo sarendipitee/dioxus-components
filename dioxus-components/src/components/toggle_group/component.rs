@@ -1,7 +1,8 @@
 use dioxus::prelude::*;
+use crate::component_styles;
 use dioxus_primitives::toggle_group::{self, ToggleGroupProps, ToggleItemProps};
 
-#[css_module("/src/components/toggle_group/style.css")]
+#[component_styles("./style.css")]
 struct Styles;
 
 #[component]

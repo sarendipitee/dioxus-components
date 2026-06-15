@@ -1,4 +1,5 @@
 use dioxus::prelude::*;
+use crate::component_styles;
 
 use dioxus_primitives::{
     calendar::DateRange,
@@ -13,7 +14,7 @@ use time::{Date, Month};
 
 use super::super::calendar::*;
 
-#[css_module("/src/components/date_picker/style.css")]
+#[component_styles("./style.css")]
 pub(crate) struct Styles;
 
 fn fixed_date(year: i32, month: Month, day: u8) -> Date {

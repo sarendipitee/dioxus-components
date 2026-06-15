@@ -5,6 +5,7 @@ use std::rc::Rc;
 use std::sync::atomic::{AtomicUsize, Ordering as AtomicOrdering};
 
 use dioxus::prelude::*;
+use crate::component_styles;
 use dioxus_icons::lucide::{ArrowDown, ArrowUp, ArrowUpDown, Plus, Search, SlidersHorizontal, X};
 use dioxus_primitives::checkbox::CheckboxState;
 use dioxus_primitives::r#virtual::types::VirtualItem;
@@ -22,7 +23,7 @@ use crate::components::{
 };
 use crate::input::InputWrapper;
 
-#[css_module("/src/components/data_table/style.css")]
+#[component_styles("./style.css")]
 struct Styles;
 
 /// Stable row identifier used by table state.

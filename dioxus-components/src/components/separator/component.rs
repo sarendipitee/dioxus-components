@@ -1,8 +1,9 @@
 use dioxus::prelude::*;
+use crate::component_styles;
 use dioxus_primitives::separator::{self, SeparatorProps};
 use dioxus_primitives::{dioxus_attributes::attributes, merge_attributes};
 
-#[css_module("/src/components/separator/style.css")]
+#[component_styles("./style.css")]
 struct Styles;
 
 #[component]

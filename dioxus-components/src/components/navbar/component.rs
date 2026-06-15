@@ -1,10 +1,11 @@
 use dioxus::prelude::*;
+use crate::component_styles;
 use dioxus_icons::lucide::ChevronDown;
 use dioxus_primitives::navbar::{
     self, NavbarContentProps, NavbarItemProps, NavbarNavProps, NavbarProps, NavbarTriggerProps,
 };
 use dioxus_primitives::{dioxus_attributes::attributes, merge_attributes};
-#[css_module("/src/components/navbar/style.css")]
+#[component_styles("./style.css")]
 struct Styles;
 
 #[component]

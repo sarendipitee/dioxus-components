@@ -1,4 +1,5 @@
 use dioxus::prelude::*;
+use crate::component_styles;
 use dioxus_icons::lucide::{ChevronDown, ChevronLeft, ChevronRight};
 use dioxus_primitives::calendar::{
     self, CalendarDayProps, CalendarGridBodyProps, CalendarGridCellProps,
@@ -11,7 +12,7 @@ use dioxus_primitives::calendar::{
 use dioxus_primitives::{dioxus_attributes::attributes, merge_attributes};
 use time::{Date, Month, UtcDateTime, Weekday};
 
-#[css_module("/src/components/calendar/style.css")]
+#[component_styles("./style.css")]
 struct Styles;
 
 fn fixed_date(year: i32, month: Month, day: u8) -> Date {

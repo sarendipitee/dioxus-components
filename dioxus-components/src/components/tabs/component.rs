@@ -1,11 +1,12 @@
 use dioxus::prelude::*;
+use crate::component_styles;
 use dioxus_primitives::tabs::{
     self, TabContentProps, TabListProps, TabTriggerProps, TabsActivationMode, TabsJustify,
     TabsOrientation, TabsPlacement,
 };
 use dioxus_primitives::{dioxus_attributes::attributes, merge_attributes};
 
-#[css_module("/src/components/tabs/style.css")]
+#[component_styles("./style.css")]
 struct Styles;
 
 /// Visual variants for the styled Tabs wrapper.

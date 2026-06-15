@@ -1,6 +1,7 @@
 use dioxus::prelude::*;
+use crate::component_styles;
 
-#[css_module("/src/components/card/style.css")]
+#[component_styles("./style.css")]
 struct Styles;
 
 #[component]
