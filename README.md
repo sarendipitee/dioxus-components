@@ -45,6 +45,54 @@ dx components add button
 
 This will create a `components` folder in your project (if it doesn't already exist) and add the `Button` component files to it. If this is your first time adding a component, it will also prompt you to add a link to `/assets/dx-components.css` at the root of your app to provide the theme for your app.
 
+## Using dioxus-components as a Cargo dependency
+
+Instead of copying individual components, you can depend on the entire styled component library directly from Git. This gives you access to all components and injects a single combined stylesheet automatically.
+
+Add to your `Cargo.toml`:
+
+```toml
+[dependencies]
+dioxus-components = { git = "https://github.com/DioxusLabs/components" }
+```
+
+Then inject the stylesheet once near the root of your app:
+
+```rust
+use dioxus::prelude::*;
+use dioxus_components::DioxusComponentsStyles;
+
+fn App() -> Element {
+    rsx! {
+        DioxusComponentsStyles {}
+        // ... rest of your app
+    }
+}
+```
+
+`DioxusComponentsStyles` inserts the combined stylesheet for all components via `document::Style`. No separate CSS asset is needed.
+
+## Authoring components with `#[component_styles]`
+
+If you are building your own components that follow the same pattern, use the `component_styles` proc-macro attribute to generate compile-time class name constants from a CSS file:
+
+```rust
+use dioxus_components::component_styles;
+
+#[component_styles("./style.css")]
+struct Styles;
+
+// Generated: `Styles::dx_button`, `Styles::dx_button__icon`, etc.
+```
+
+**Path resolution** (requires Rust 1.88 or later):
+
+| Path form | Resolved relative to |
+|---|---|
+| `"./style.css"` or `"../shared.css"` | The source file that contains `#[component_styles]` |
+| `"src/components/button/style.css"` | The crate root (`Cargo.toml` directory) |
+| `"/src/components/button/style.css"` | Same as above (leading `/` is stripped) |
+
 ## Contributing
 
 ### Project structure
