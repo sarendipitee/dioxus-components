@@ -521,7 +521,8 @@ pub struct ContextMenuItemProps {
     pub disabled: ReadSignal<bool>,
 
     /// The value of the menu item
-    pub value: ReadSignal<String>,
+    #[props(into)]
+    pub value: String,
 
     /// The index of the item in the menu
     pub index: ReadSignal<usize>,
@@ -606,17 +607,18 @@ pub fn ContextMenuItem(props: ContextMenuItemProps) -> Element {
     // item is ignored — exactly the long-press-then-lift case.
     let down_pos: Signal<Option<(f64, f64)>> = use_signal(|| None);
     let value = props.value;
-    let mut select = move || {
+    let mut select = move |val: String| {
         if !disabled() {
-            props.on_select.call((value)());
+            props.on_select.call(val);
             ctx.focus.blur();
             ctx.set_open.call(false);
         }
     };
 
+    let keydown_value = value.clone();
     let handle_keydown = move |event: Event<KeyboardData>| {
         if event.key() == Key::Enter || event.key() == Key::Character(" ".to_string()) {
-            select();
+            select(keydown_value.clone());
             event.prevent_default();
             event.stop_propagation();
         }
@@ -631,7 +633,7 @@ pub fn ContextMenuItem(props: ContextMenuItemProps) -> Element {
             },
             onpointerup: move |event| {
                 if pointer_select_commit(&event, disabled(), down_pos) {
-                    select();
+                    select(value.clone());
                     event.prevent_default();
                     event.stop_propagation();
                 }

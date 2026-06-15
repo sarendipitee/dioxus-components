@@ -20,7 +20,7 @@ pub struct TableOfContentsProps {
     pub min_depth_to_offset: u8,
 
     /// CSS length multiplied by each heading depth level.
-    #[props(default = "20px".to_string())]
+    #[props(default = "20px".to_string(), into)]
     pub depth_offset: String,
 
     /// Additional attributes to apply to the table-of-contents root element.

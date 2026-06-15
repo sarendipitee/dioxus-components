@@ -364,7 +364,8 @@ pub fn DropdownMenuContent(props: DropdownMenuContentProps) -> Element {
 #[derive(Props, Clone, PartialEq)]
 pub struct DropdownMenuItemProps<T: Clone + PartialEq + 'static> {
     /// The value of the item, which will be passed to the `on_select` callback when clicked.
-    pub value: ReadSignal<T>,
+    #[props(into)]
+    pub value: T,
     /// The index of the item within the [`DropdownMenuContent`]. This is used to order the items for keyboard navigation.
     pub index: ReadSignal<usize>,
 
@@ -439,6 +440,7 @@ pub fn DropdownMenuItem<T: Clone + PartialEq + 'static>(
     let focused = move || ctx.focus.is_focused((props.index)());
 
     let onmounted = use_focus_controlled_item_disabled(props.index, disabled);
+    let click_value = props.value.clone();
 
     rsx! {
         div {
@@ -449,7 +451,7 @@ pub fn DropdownMenuItem<T: Clone + PartialEq + 'static>(
             onclick: move |e: Event<MouseData>| {
                 e.stop_propagation();
                 if !disabled() {
-                    props.on_select.call((props.value)());
+                    props.on_select.call(click_value.clone());
                     ctx.set_open.call(false);
                 }
             },
@@ -457,7 +459,7 @@ pub fn DropdownMenuItem<T: Clone + PartialEq + 'static>(
             onkeydown: move |event: Event<KeyboardData>| {
                 if event.key() == Key::Enter || event.key() == Key::Character(" ".to_string()) {
                     if !disabled() {
-                        props.on_select.call((props.value)());
+                        props.on_select.call(props.value.clone());
                         ctx.set_open.call(false);
                     }
                     event.prevent_default();

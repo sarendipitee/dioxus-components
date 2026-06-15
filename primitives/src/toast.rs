@@ -327,6 +327,7 @@ pub struct ToastProps {
     /// The index of the toast in the list.
     pub index: usize,
     /// The title of the toast.
+    #[props(into)]
     pub title: String,
     /// An optional description for the toast.
     pub description: Option<String>,

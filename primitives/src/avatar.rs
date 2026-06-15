@@ -223,6 +223,7 @@ pub struct AvatarImageProps {
     pub id: ReadSignal<Option<String>>,
 
     /// The image source URL
+    #[props(into)]
     pub src: String,
 
     /// Alt text for the image

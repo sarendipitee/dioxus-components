@@ -96,9 +96,10 @@ pub struct AvatarImageProps {
     #[props(default)]
     pub id: ReadSignal<Option<String>>,
 
+    #[props(into)]
     pub src: String,
 
-    #[props(default)]
+    #[props(default, into)]
     pub alt: String,
 
     #[props(extends = GlobalAttributes)]
@@ -150,10 +151,11 @@ pub fn AvatarFallback(props: AvatarFallbackProps) -> Element {
 #[derive(Props, Clone, PartialEq)]
 pub struct ImageAvatarProps {
     /// The image source URL.
+    #[props(default, into)]
     pub src: String,
 
     /// The image alt text.
-    #[props(default)]
+    #[props(default, into)]
     pub alt: String,
 
     /// Callback when image loads successfully.

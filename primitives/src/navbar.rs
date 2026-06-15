@@ -585,6 +585,7 @@ pub struct NavbarItemProps {
     pub index: ReadSignal<usize>,
 
     /// The value associated with this nav item. This will be passed to the [`Self::on_select`] callback when the item is selected.
+    #[props(into)]
     pub value: String,
 
     /// Whether this nav item is disabled.

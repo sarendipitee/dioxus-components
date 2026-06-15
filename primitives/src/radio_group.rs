@@ -76,7 +76,7 @@ pub struct RadioGroupProps {
     pub value: ReadSignal<Option<String>>,
 
     /// The default selected value when uncontrolled.
-    #[props(default)]
+    #[props(default, into)]
     pub default_value: String,
 
     /// Callback fired when the selected value changes.

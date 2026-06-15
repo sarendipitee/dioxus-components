@@ -541,6 +541,7 @@ pub struct MenubarItemProps {
     pub index: ReadSignal<usize>,
 
     /// The value associated with this menu item. This value will be passed to the [`Self::on_select`] callback when the item is selected.
+    #[props(into)]
     pub value: String,
 
     /// Whether this menu item is disabled.

@@ -277,6 +277,7 @@ pub struct DragAndDropListProps {
 #[derive(Props, Clone, PartialEq)]
 pub struct DragAndDropListItemsProps {
     /// Accessible label for the list.
+    #[props(into)]
     pub aria_label: String,
 
     /// Additional attributes to apply to the inner list element.
