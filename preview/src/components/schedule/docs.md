@@ -5,6 +5,46 @@ The schedule component renders day, week, month, and year calendar views with ti
 ## Usage
 
 ```rust
+let schedule = use_schedule(UseScheduleConfig {
+    default_date: sample_date(),
+    default_view: ScheduleView::Week,
+    ..UseScheduleConfig::default()
+});
+
+rsx! {
+    ScheduleViewSwitcher {
+        state: schedule,
+    }
+
+    Schedule {
+        state: schedule,
+        events: sample_events(),
+    }
+}
+```
+
+`use_schedule` returns shared date and view state that can be passed to `Schedule` and reused by controls anywhere in your layout. Use `ScheduleViewSwitcher` for the default styled Day, Week, Month, and Year buttons, or build your own buttons, tabs, dropdowns, or responsive controls from the same state.
+
+```rust
+let schedule = use_schedule(UseScheduleConfig {
+    default_view: ScheduleView::Week,
+    ..UseScheduleConfig::default()
+});
+
+rsx! {
+    button { onclick: move |_| schedule.set_view.call(ScheduleView::Day), "Day" }
+    button { onclick: move |_| schedule.set_view.call(ScheduleView::Week), "Week" }
+
+    Schedule {
+        state: schedule,
+        events: sample_events(),
+    }
+}
+```
+
+The legacy prop-based API remains available:
+
+```rust
 Schedule {
     default_date: sample_date(),
     default_view: ScheduleView::Week,
@@ -14,7 +54,7 @@ Schedule {
 
 ## Views
 
-Use `default_view` for uncontrolled view state or `view` with `on_view_change` for controlled state. Supported views are `ScheduleView::Day`, `ScheduleView::Week`, `ScheduleView::Month`, and `ScheduleView::Year`. The header exposes navigation and view controls, and selecting a month in the year view moves to month view.
+Use `use_schedule` for shared view state when controls live outside the schedule body. Use `default_view` for legacy uncontrolled view state or `view` with `on_view_change` for legacy controlled state. Supported views are `ScheduleView::Day`, `ScheduleView::Week`, `ScheduleView::Month`, and `ScheduleView::Year`. Selecting a month in the year view moves to month view. See the DayView, WeekView, MonthView, YearView, and MobileMonthView pages for per-view configuration.
 
 ## Controlled State
 
@@ -36,7 +76,7 @@ Set `layout: ScheduleLayout::Responsive` to render both desktop and mobile conta
 
 ## Custom Rendering And Header
 
-Use `render_event_body` to replace the default event body. Use `with_default_header: false` to suppress the top-level schedule header or pass `header` to replace it with custom content. Per-view config structs expose `with_default_header` toggles for the day, week, month, year, and mobile month view headers.
+Use `render_event_body` to replace the default event body. The top-level default schedule header contains date navigation only; place `ScheduleViewSwitcher` or your own controls wherever they belong in the surrounding layout. Use `with_default_header: false` to suppress the top-level schedule header or pass `header` to replace it with custom content. Per-view config structs expose `with_default_header` toggles for the day, week, month, year, and mobile month view headers.
 
 ## Styling
 
@@ -52,7 +92,7 @@ Set `mode: ScheduleMode::Static` to keep navigation and selection available whil
 
 ## Accessibility
 
-The primitive renders buttons for navigation, view controls, dates, months, and slots. Provide meaningful event titles and descriptions, keep custom event bodies readable, and retain visible focus states when extending the styles.
+The primitive renders buttons for navigation, dates, months, and slots. `ScheduleViewSwitcher` renders accessible view buttons with active state. If you build custom view controls, preserve clear labels, focus states, and selected state. Provide meaningful event titles and descriptions, and keep custom event bodies readable.
 
 ## Component Structure
 

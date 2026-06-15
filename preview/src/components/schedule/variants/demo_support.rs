@@ -47,18 +47,6 @@ pub(super) fn sample_events() -> Vec<ScheduleEvent> {
             resize_disabled: false,
         },
         ScheduleEvent {
-            id: "conference".to_string(),
-            title: "Spring summit".to_string(),
-            start: sample_date_time(2026, 5, 14, 10, 0),
-            end: sample_date_time(2026, 5, 16, 12, 0),
-            all_day: false,
-            color: Some("orange".to_string()),
-            description: Some("Multi-day customer summit across the week view.".to_string()),
-            recurrence: None,
-            drag_disabled: false,
-            resize_disabled: false,
-        },
-        ScheduleEvent {
             id: "offsite".to_string(),
             title: "Leadership offsite".to_string(),
             start: sample_date_time(2026, 5, 15, 0, 0),
@@ -138,10 +126,6 @@ pub(super) fn apply_demo_event_drop(
     payload: &ScheduleEventDrop,
     _limit: ScheduleRecurrenceExpansionLimit,
 ) {
-    if is_recurring_preview_event(events, &payload.event) {
-        return;
-    }
-
     let mut updated = payload.event.clone();
     updated.start = payload.new_start;
     updated.end = payload.new_end;
@@ -156,33 +140,11 @@ pub(super) fn apply_demo_event_resize(
     payload: &ScheduleEventResize,
     _limit: ScheduleRecurrenceExpansionLimit,
 ) {
-    if is_recurring_preview_event(events, &payload.event) {
-        return;
-    }
-
     let mut updated = payload.event.clone();
     updated.start = payload.new_start;
     updated.end = payload.new_end;
     updated.recurrence = None;
     replace_demo_event(events, &payload.event, updated);
-}
-
-fn is_recurring_preview_event(events: &[ScheduleEvent], event: &ScheduleEvent) -> bool {
-    if event.recurrence.is_some() {
-        return true;
-    }
-
-    let Some((base_id, occurrence_index)) = event.id.rsplit_once(':') else {
-        return false;
-    };
-
-    if occurrence_index.parse::<usize>().is_err() {
-        return false;
-    }
-
-    events
-        .iter()
-        .any(|candidate| candidate.id == base_id && candidate.recurrence.is_some())
 }
 
 fn replace_demo_event(
@@ -205,7 +167,7 @@ fn replace_demo_event(
     events.push(updated);
 }
 
-fn sample_date_time(year: i32, month: u8, day: u8, hour: u8, minute: u8) -> PrimitiveDateTime {
+pub(super) fn sample_date_time(year: i32, month: u8, day: u8, hour: u8, minute: u8) -> PrimitiveDateTime {
     PrimitiveDateTime::new(
         Date::from_calendar_date(
             year,

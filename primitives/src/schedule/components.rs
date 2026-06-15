@@ -14,6 +14,55 @@ use super::utils::{
     year_month_transition,
 };
 
+/// Create reusable schedule date/view state for [`Schedule`].
+pub fn use_schedule(config: UseScheduleConfig) -> ScheduleState {
+    let (date, raw_set_date) =
+        use_controlled(config.date, config.default_date, Callback::new(|_| {}));
+    let (view, raw_set_view) =
+        use_controlled(config.view, config.default_view, Callback::new(|_| {}));
+
+    let set_date = Callback::new(move |next: Date| {
+        let previous = date();
+        raw_set_date.call(next);
+        config.on_date_change.call(ScheduleDateChange {
+            previous,
+            next,
+            view: view(),
+        });
+    });
+
+    let set_view = Callback::new(move |next: ScheduleView| {
+        let previous = view();
+        raw_set_view.call(next);
+        config.on_view_change.call(ScheduleViewChange {
+            previous,
+            next,
+            date: date(),
+        });
+    });
+
+    ScheduleState {
+        date,
+        view,
+        set_date,
+        set_view,
+        previous: Callback::new(move |()| {
+            set_date.call(shift_date(date(), view(), -1));
+        }),
+        next: Callback::new(move |()| {
+            set_date.call(shift_date(date(), view(), 1));
+        }),
+        today: Callback::new(move |()| {
+            set_date.call(today());
+        }),
+    }
+}
+
+/// Read the nearest schedule context provided by [`Schedule`].
+pub fn use_schedule_context() -> ScheduleContext {
+    use_context::<ScheduleContext>()
+}
+
 /// # Schedule
 ///
 /// The `Schedule` component provides primitive scheduling behavior for day, week,
@@ -21,15 +70,19 @@ use super::utils::{
 /// [`ScheduleProps::render_event_body`], which receives a [`ScheduleEventRenderContext`].
 #[component]
 pub fn Schedule(props: ScheduleProps) -> Element {
-    let date_change = props.on_date_change;
-    let view_change = props.on_view_change;
-    let initial_date = props.default_date;
-    let initial_view = props.default_view;
-    let (date, raw_set_date) = use_controlled(props.date, initial_date, Callback::new(|_| {}));
-    let (view, raw_set_view) = use_controlled(props.view, initial_view, Callback::new(|_| {}));
+    let legacy_state = use_schedule(UseScheduleConfig {
+        date: props.date,
+        default_date: props.default_date,
+        on_date_change: props.on_date_change,
+        view: props.view,
+        default_view: props.default_view,
+        on_view_change: props.on_view_change,
+    });
+    let state = props.state.unwrap_or(legacy_state);
+    use_context_provider(|| ScheduleContext { state });
     let expanded_events = expand_events(&props.events, props.recurrence_expansion_limit);
-    let current_date = date();
-    let current_view = view();
+    let current_date = (state.date)();
+    let current_view = (state.view)();
     let dragging_event = use_signal(|| None::<ScheduleEvent>);
     let drop_target = use_signal(|| None::<String>);
     let slot_selection = use_signal(|| None::<ScheduleSlotSelectionState>);
@@ -42,25 +95,6 @@ pub fn Schedule(props: ScheduleProps) -> Element {
         props.with_drag_slot_select,
         props.with_event_resize,
     );
-
-    let set_date = move |next: Date| {
-        let previous = date();
-        raw_set_date.call(next);
-        date_change.call(ScheduleDateChange {
-            previous,
-            next,
-            view: view(),
-        });
-    };
-    let set_view = move |next: ScheduleView| {
-        let previous = view();
-        raw_set_view.call(next);
-        view_change.call(ScheduleViewChange {
-            previous,
-            next,
-            date: date(),
-        });
-    };
 
     rsx! {
         div {
@@ -82,15 +116,33 @@ pub fn Schedule(props: ScheduleProps) -> Element {
 
             if let Some(header) = props.header {
                 {header}
+            } else if let Some(render) = props.render_header {
+                {render.call(ScheduleHeaderContext {
+                    date: state.date.into(),
+                    view: state.view.into(),
+                    labels: props.labels.clone(),
+                    on_previous: Callback::new(move |_: MouseEvent| {
+                        state.previous.call(());
+                    }),
+                    on_next: Callback::new(move |_: MouseEvent| {
+                        state.next.call(());
+                    }),
+                    on_today: Callback::new(move |_: MouseEvent| {
+                        state.today.call(());
+                    }),
+                    on_view: Callback::new(move |v: ScheduleView| {
+                        state.set_view.call(v);
+                    }),
+                })}
             } else if props.with_default_header {
                 ScheduleHeader {
                     date: current_date,
                     view: current_view,
                     labels: props.labels.clone(),
-                    on_previous: move |_| set_date(shift_date(current_date, current_view, -1)),
-                    on_next: move |_| set_date(shift_date(current_date, current_view, 1)),
-                    on_today: move |_| set_date(today()),
-                    on_view: set_view,
+                    on_previous: move |_| state.previous.call(()),
+                    on_next: move |_| state.next.call(()),
+                    on_today: move |_| state.today.call(()),
+                    on_view: move |view| state.set_view.call(view),
                 }
             }
 
@@ -119,8 +171,8 @@ pub fn Schedule(props: ScheduleProps) -> Element {
                     can_drag_event: props.can_drag_event,
                     can_resize_event: props.can_resize_event,
                     render_event_body: props.render_event_body,
-                    on_date: Callback::new(set_date),
-                    on_view: Callback::new(set_view),
+                    on_date: state.set_date,
+                    on_view: state.set_view,
                     on_time_slot_click: props.on_time_slot_click,
                     on_all_day_slot_click: props.on_all_day_slot_click,
                     on_day_click: props.on_day_click,
@@ -162,8 +214,8 @@ pub fn Schedule(props: ScheduleProps) -> Element {
                         can_drag_event: props.can_drag_event,
                         can_resize_event: props.can_resize_event,
                         render_event_body: props.render_event_body,
-                        on_date: Callback::new(set_date),
-                        on_view: Callback::new(set_view),
+                        on_date: state.set_date,
+                        on_view: state.set_view,
                         on_time_slot_click: props.on_time_slot_click,
                         on_all_day_slot_click: props.on_all_day_slot_click,
                         on_day_click: props.on_day_click,
@@ -201,7 +253,7 @@ pub struct ScheduleHeaderProps {
     pub on_view: Callback<ScheduleView>,
 }
 
-/// Default schedule header with navigation and view controls.
+/// Default schedule header with date navigation controls.
 #[component]
 pub fn ScheduleHeader(props: ScheduleHeaderProps) -> Element {
     let title = format!("{:?} {}", props.date.month(), props.date.year());
@@ -226,33 +278,51 @@ pub fn ScheduleHeader(props: ScheduleHeaderProps) -> Element {
                 {props.labels.next.clone()}
             }
             div { "data-schedule-title": true, "{title}" }
-            nav {
-                "aria-label": "Schedule views",
-                "data-schedule-view-controls": true,
-                ScheduleViewButton {
-                    target: ScheduleView::Day,
-                    current: props.view,
-                    label: props.labels.day,
-                    on_view: props.on_view,
-                }
-                ScheduleViewButton {
-                    target: ScheduleView::Week,
-                    current: props.view,
-                    label: props.labels.week,
-                    on_view: props.on_view,
-                }
-                ScheduleViewButton {
-                    target: ScheduleView::Month,
-                    current: props.view,
-                    label: props.labels.month,
-                    on_view: props.on_view,
-                }
-                ScheduleViewButton {
-                    target: ScheduleView::Year,
-                    current: props.view,
-                    label: props.labels.year,
-                    on_view: props.on_view,
-                }
+        }
+    }
+}
+
+/// Props for [`ScheduleViewSwitcher`].
+#[derive(Props, Clone, PartialEq)]
+pub struct ScheduleViewSwitcherProps {
+    /// Currently active view.
+    pub current: ScheduleView,
+    /// Labels used by the view buttons.
+    pub labels: ScheduleLabels,
+    /// Called when a view button is selected.
+    pub on_view: Callback<ScheduleView>,
+}
+
+/// Default schedule view switcher.
+#[component]
+pub fn ScheduleViewSwitcher(props: ScheduleViewSwitcherProps) -> Element {
+    rsx! {
+        nav {
+            "aria-label": "Schedule views",
+            "data-schedule-view-controls": true,
+            ScheduleViewButton {
+                target: ScheduleView::Day,
+                current: props.current,
+                label: props.labels.day,
+                on_view: props.on_view,
+            }
+            ScheduleViewButton {
+                target: ScheduleView::Week,
+                current: props.current,
+                label: props.labels.week,
+                on_view: props.on_view,
+            }
+            ScheduleViewButton {
+                target: ScheduleView::Month,
+                current: props.current,
+                label: props.labels.month,
+                on_view: props.on_view,
+            }
+            ScheduleViewButton {
+                target: ScheduleView::Year,
+                current: props.current,
+                label: props.labels.year,
+                on_view: props.on_view,
             }
         }
     }
@@ -367,7 +437,11 @@ struct TimeGridViewProps {
 fn TimeGridView(mut props: TimeGridViewProps) -> Element {
     let view = props.body.view;
     let slots = time_slots(props.config);
-    let column_template = format!("repeat({}, minmax(0, 1fr))", props.days.len().max(1));
+    // Day columns use a pure day-coordinate template; the three outer row grids
+    // additionally carry a leading gutter track for the time axis. Day-area
+    // layers stay in the gutter-free `day_column_template` space.
+    let day_column_template = format!("repeat({}, minmax(0, 1fr))", props.days.len().max(1));
+    let column_template = format!("var(--schedule-time-gutter) {day_column_template}");
     let current_date_time = now();
     let current_time_line_offset = current_time_line_offset(current_date_time, props.config);
     let current_day_index = props
@@ -404,6 +478,7 @@ fn TimeGridView(mut props: TimeGridViewProps) -> Element {
             div {
                 "data-schedule-day-header-row": true,
                 style: "grid-template-columns: {column_template};",
+                div { "data-schedule-time-gutter-corner": true }
                 for day in props.days.iter().copied() {
                     button {
                         "type": "button",
@@ -424,7 +499,10 @@ fn TimeGridView(mut props: TimeGridViewProps) -> Element {
             div {
                 "data-schedule-all-day-row": true,
                 style: "grid-template-columns: {column_template};",
-                for (day_index, day) in props.days.iter().copied().enumerate() {
+                div { "data-schedule-time-gutter-spacer": true,
+                    span { "data-schedule-all-day-label": true, {props.body.labels.all_day.clone()} }
+                }
+                for day in props.days.iter().copied() {
                     {
                         let target_id = format!("all-day-{day}");
                         let all_day_label =
@@ -547,9 +625,6 @@ fn TimeGridView(mut props: TimeGridViewProps) -> Element {
                                             }
                                         }
                                     },
-                                    if day_index == 0 {
-                                        {props.body.labels.all_day.clone()}
-                                    }
                                 }
                             }
                         }
@@ -557,7 +632,7 @@ fn TimeGridView(mut props: TimeGridViewProps) -> Element {
                 }
                 div {
                     "data-schedule-all-day-events": true,
-                    style: "grid-column: 1 / -1; grid-template-columns: {column_template};",
+                    style: "grid-column: 2 / -1; grid-template-columns: {day_column_template};",
                     for segment in month_event_segments_for_week(&all_day_events, &props.days) {
                         ScheduleEventNode {
                             event: segment.event,
@@ -576,9 +651,10 @@ fn TimeGridView(mut props: TimeGridViewProps) -> Element {
                             on_event_resize: props.body.on_event_resize,
                             class_name: props.body.class_names.event.clone(),
                             layout_style: format!(
-                                "grid-column: {} / span {};",
+                                "grid-column: {} / span {}; grid-row: {};",
                                 segment.start_column + 1,
                                 segment.column_span,
+                                segment.lane + 1,
                             ),
                         }
                     }
@@ -587,48 +663,11 @@ fn TimeGridView(mut props: TimeGridViewProps) -> Element {
             div {
                 "data-schedule-time-grid": true,
                 style: "grid-template-columns: {column_template}; position: relative;",
-                if let (Some(offset), Some(day_index)) = (current_time_line_offset, current_day_index) {
-                    {
-                        let day_width = 100.0 / current_day_count;
-                        let day_left = day_index as f32 * day_width;
-                        rsx! {
-                            div {
-                                "data-schedule-current-time-line": true,
-                                "aria-label": "Current time {current_time_label}",
-                                style: format!(
-                                    "position: absolute; left: 0; right: 0; top: calc({offset:.4}% - 1px); height: 2px; background: color-mix(in srgb, #ef4444 36%, transparent); pointer-events: none; z-index: 2;",
-                                ),
-                                span {
-                                    "data-schedule-current-time-label": true,
-                                    style: "position: absolute; left: 0; top: 50%; transform: translateY(-50%); border-radius: 999px; background: #ef4444; color: white; padding: 2px 8px; font-size: 0.75rem; font-weight: 700; line-height: 1.2; box-shadow: 0 1px 2px rgba(0, 0, 0, 0.22);",
-                                    "{current_time_label}"
-                                }
-                                span {
-                                    "data-schedule-current-time-segment": true,
-                                    style: format!(
-                                        "position: absolute; left: {day_left:.4}%; width: {day_width:.4}%; top: 0; height: 2px; background: #ef4444;",
-                                    ),
-                                }
-                                span {
-                                    "data-schedule-current-time-marker": true,
-                                    style: format!(
-                                        "position: absolute; left: {day_left:.4}%; top: 50%; width: 10px; height: 10px; border-radius: 999px; background: #ef4444; transform: translate(-50%, -50%);",
-                                    ),
-                                }
-                            }
+                div { "data-schedule-time-gutter": true,
+                    for slot in slots.iter().copied() {
+                        div { "data-schedule-time-gutter-cell": true,
+                            span { "data-schedule-time-gutter-label": true, {format_time(slot)} }
                         }
-                    }
-                }
-                if let Some(style) = timed_drop_preview_style(
-                    (props.body.drop_target)(),
-                    &props.days,
-                    props.config,
-                    (props.body.dragging_event)().as_ref(),
-                ) {
-                    div {
-                        "data-schedule-drop-preview": true,
-                        "data-drop-active": true,
-                        style,
                     }
                 }
                 for day in props.days.iter().copied() {
@@ -707,33 +746,79 @@ fn TimeGridView(mut props: TimeGridViewProps) -> Element {
                         }
                     }
                 }
-                div {
-                    "data-schedule-timed-spanning-events": true,
-                    style: "grid-column: 1 / -1; position: absolute; inset: 0; pointer-events: none;",
-                    for (event, geometry) in timed_multi_day_events
-                        .iter()
-                        .filter_map(|event| {
-                            timed_spanning_event_geometry(event, &props.days, props.config)
-                                .map(|geometry| (event.clone(), geometry))
-                        }) {
-                        ScheduleEventNode {
-                            event,
-                            view: props.body.view,
-                            date: geometry.start_date,
-                            slot_minutes: props.config.slot_minutes,
-                            layout_style: timed_spanning_event_style(geometry),
-                            capabilities: props.body.capabilities,
-                            dragging_event: props.body.dragging_event,
-                            resizing_event: props.body.resizing_event,
-                            resize_target: props.body.resize_target,
-                            can_drag_event: props.body.can_drag_event,
-                            can_resize_event: props.body.can_resize_event,
-                            render_event_body: props.body.render_event_body,
-                            on_event_click: props.body.on_event_click,
-                            on_event_drag_start: props.body.on_event_drag_start,
-                            on_event_drag_end: props.body.on_event_drag_end,
-                            on_event_resize: props.body.on_event_resize,
-                            class_name: props.body.class_names.event.clone(),
+                div { "data-schedule-day-overlay": true,
+                    if let (Some(offset), Some(day_index)) = (current_time_line_offset, current_day_index) {
+                        {
+                            let day_width = 100.0 / current_day_count;
+                            let day_left = day_index as f32 * day_width;
+                            rsx! {
+                                div {
+                                    "data-schedule-current-time-line": true,
+                                    "aria-label": "Current time {current_time_label}",
+                                    style: format!(
+                                        "position: absolute; left: 0; right: 0; top: calc({offset:.4}% - 1px); height: 2px; background: color-mix(in srgb, #ef4444 36%, transparent); pointer-events: none; z-index: 2;",
+                                    ),
+                                    span {
+                                        "data-schedule-current-time-label": true,
+                                        style: "position: absolute; left: 0; top: 50%; transform: translateY(-50%); border-radius: 999px; background: #ef4444; color: white; padding: 2px 8px; font-size: 0.75rem; font-weight: 700; line-height: 1.2; box-shadow: 0 1px 2px rgba(0, 0, 0, 0.22);",
+                                        "{current_time_label}"
+                                    }
+                                    span {
+                                        "data-schedule-current-time-segment": true,
+                                        style: format!(
+                                            "position: absolute; left: {day_left:.4}%; width: {day_width:.4}%; top: 0; height: 2px; background: #ef4444;",
+                                        ),
+                                    }
+                                    span {
+                                        "data-schedule-current-time-marker": true,
+                                        style: format!(
+                                            "position: absolute; left: {day_left:.4}%; top: 50%; width: 10px; height: 10px; border-radius: 999px; background: #ef4444; transform: translate(-50%, -50%);",
+                                        ),
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    if let Some(style) = timed_drop_preview_style(
+                        (props.body.drop_target)(),
+                        &props.days,
+                        props.config,
+                        (props.body.dragging_event)().as_ref(),
+                    ) {
+                        div {
+                            "data-schedule-drop-preview": true,
+                            "data-drop-active": true,
+                            style,
+                        }
+                    }
+                    div {
+                        "data-schedule-timed-spanning-events": true,
+                        style: "position: absolute; inset: 0; pointer-events: none;",
+                        for (event, geometry) in timed_multi_day_events
+                            .iter()
+                            .filter_map(|event| {
+                                timed_spanning_event_geometry(event, &props.days, props.config)
+                                    .map(|geometry| (event.clone(), geometry))
+                            }) {
+                            ScheduleEventNode {
+                                event,
+                                view: props.body.view,
+                                date: geometry.start_date,
+                                slot_minutes: props.config.slot_minutes,
+                                layout_style: timed_spanning_event_style(geometry),
+                                capabilities: props.body.capabilities,
+                                dragging_event: props.body.dragging_event,
+                                resizing_event: props.body.resizing_event,
+                                resize_target: props.body.resize_target,
+                                can_drag_event: props.body.can_drag_event,
+                                can_resize_event: props.body.can_resize_event,
+                                render_event_body: props.body.render_event_body,
+                                on_event_click: props.body.on_event_click,
+                                on_event_drag_start: props.body.on_event_drag_start,
+                                on_event_drag_end: props.body.on_event_drag_end,
+                                on_event_resize: props.body.on_event_resize,
+                                class_name: props.body.class_names.event.clone(),
+                            }
                         }
                     }
                 }
@@ -775,7 +860,6 @@ struct TimeSlotProps {
 fn TimeSlot(props: TimeSlotProps) -> Element {
     let start = PrimitiveDateTime::new(props.date, props.slot);
     let end = start + Duration::minutes(props.slot_minutes.max(1) as i64);
-    let slot_label = format_time(props.slot);
     let dragging_event = props.dragging_event;
     let mut drop_target = props.drop_target;
     let mut slot_selection = props.slot_selection;
@@ -787,7 +871,7 @@ fn TimeSlot(props: TimeSlotProps) -> Element {
     let drop_interaction_active = dragging_event().is_some() || resizing_event().is_some();
     let target_id = format!("time-{start}");
     let active_target_id = target_id.clone();
-    let drop_active = resizing_event().is_some() && drop_target() == Some(target_id.clone());
+    let drop_active = drop_interaction_active && drop_target() == Some(target_id.clone());
     let selection = slot_selection();
     let selection_range = selection.and_then(|selection| {
         if selection_contains(selection, start) {
@@ -1028,7 +1112,6 @@ fn TimeSlot(props: TimeSlotProps) -> Element {
                         });
                 }
             },
-            span { "data-schedule-time-slot-label": true, "{slot_label}" }
             if let Some(preview) = resize_preview {
                 article {
                     "data-schedule-event": preview.id.clone(),
@@ -1193,9 +1276,10 @@ fn MonthView(mut props: ScheduleViewBodyProps) -> Element {
                                 on_event_resize: props.on_event_resize,
                                 class_name: props.class_names.event.clone(),
                                 layout_style: format!(
-                                    "grid-column: {} / span {};",
+                                    "grid-column: {} / span {}; grid-row: {};",
                                     segment.start_column + 1,
                                     segment.column_span,
+                                    segment.lane + 1,
                                 ),
                             }
                         }
@@ -1593,6 +1677,9 @@ fn ScheduleEventNode(props: ScheduleEventNodeProps) -> Element {
     let is_resize_source = (props.resizing_event)()
         .as_ref()
         .is_some_and(|resize| resize.event.id == event_id.as_str());
+    let is_drag_source = (props.dragging_event)()
+        .as_ref()
+        .is_some_and(|dragged| dragged.id == event_id.as_str());
     let event_draggable = draggable && !is_resize_source;
     rsx! {
         article {
@@ -1603,6 +1690,7 @@ fn ScheduleEventNode(props: ScheduleEventNodeProps) -> Element {
             "data-resizable": resizable,
             "data-drag-disabled": !draggable,
             "data-resize-disabled": !resizable,
+            "data-drag-source": is_drag_source,
             "data-resize-source": is_resize_source,
             "data-disabled": !draggable && !resizable,
             "data-layout-column": props.layout_column,
@@ -1668,6 +1756,7 @@ fn ScheduleEventNode(props: ScheduleEventNodeProps) -> Element {
                 button {
                     "type": "button",
                     "data-schedule-resize-handle": "start",
+                    "aria-label": "Resize event start",
                     draggable: false,
                     onmousedown: move |event| {
                         event.stop_propagation();
@@ -1698,11 +1787,11 @@ fn ScheduleEventNode(props: ScheduleEventNodeProps) -> Element {
                         resize_start_signal.set(None);
                         resize_start_target.set(None);
                     },
-                    "Resize start"
                 }
                 button {
                     "type": "button",
                     "data-schedule-resize-handle": "end",
+                    "aria-label": "Resize event end",
                     draggable: false,
                     onmousedown: move |event| {
                         event.stop_propagation();
@@ -1735,7 +1824,6 @@ fn ScheduleEventNode(props: ScheduleEventNodeProps) -> Element {
                         resize_end_signal.set(None);
                         resize_end_target.set(None);
                     },
-                    "Resize end"
                 }
             }
         }
@@ -1963,14 +2051,17 @@ pub(crate) fn timed_drop_preview_style(
     preview.end = target_start + duration;
     preview.all_day = false;
     if let Some(geometry) = timed_spanning_event_geometry(&preview, days, config) {
-        return Some(timed_spanning_event_style(geometry));
+        return Some(format!(
+            "{};position:absolute;pointer-events:none;",
+            timed_spanning_event_style(geometry)
+        ));
     }
     let geometry = timed_event_geometry(&preview, target_start.date(), config)?;
     let day_count = days.len().max(1) as f32;
     let width = 100.0 / day_count;
     let left = day_index as f32 * width;
     Some(format!(
-        "top: calc(var(--schedule-time-slot-size) * {:.4} + 2px); height: calc(var(--schedule-time-slot-size) * {:.4} - 2px); left: calc({:.4}% + 4px); width: calc({:.4}% - 8px);",
+        "top: calc(var(--schedule-time-slot-size) * {:.4} + 2px); height: calc(var(--schedule-time-slot-size) * {:.4} - 2px); left: calc({:.4}% + 4px); width: calc({:.4}% - 8px); position: absolute; pointer-events: none;",
         geometry.top_slots, geometry.height_slots, left, width,
     ))
 }

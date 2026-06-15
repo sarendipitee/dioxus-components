@@ -8,13 +8,18 @@ use demo_support::*;
 pub fn Demo() -> Element {
     let mut status = use_signal(|| "Interact with the schedule".to_string());
     let mut events = use_signal(sample_events);
+    let schedule = use_schedule(UseScheduleConfig {
+        default_date: sample_date(),
+        default_view: ScheduleView::Week,
+        ..UseScheduleConfig::default()
+    });
 
     rsx! {
-        div { style: "display: grid; gap: 12px; padding: 20px;",
+        div { style: "display: grid; gap: 12px;",
             div { "data-schedule-main-status": true, style: "font-size: 0.875rem;", "{status}" }
+            ScheduleViewSwitcher { state: schedule }
             Schedule {
-                default_date: sample_date(),
-                default_view: ScheduleView::Week,
+                state: schedule,
                 events: events(),
                 with_events_drag_and_drop: true,
                 with_drag_slot_select: true,

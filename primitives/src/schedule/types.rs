@@ -288,6 +288,81 @@ pub struct ScheduleViewChange {
     pub date: Date,
 }
 
+/// Context passed to [`ScheduleProps::render_header`].
+#[derive(Clone, PartialEq)]
+pub struct ScheduleHeaderContext {
+    /// Reactive current date sourced from the primitive's internal memo.
+    pub date: ReadSignal<Date>,
+    /// Reactive current view sourced from the primitive's internal memo.
+    pub view: ReadSignal<ScheduleView>,
+    /// Localised labels for navigation and view controls.
+    pub labels: ScheduleLabels,
+    /// Navigate to the previous date range.
+    pub on_previous: Callback<MouseEvent>,
+    /// Navigate to the next date range.
+    pub on_next: Callback<MouseEvent>,
+    /// Navigate to today.
+    pub on_today: Callback<MouseEvent>,
+    /// Change the active view.
+    pub on_view: Callback<ScheduleView>,
+}
+
+/// Configuration for [`use_schedule`](crate::schedule::use_schedule).
+#[derive(Clone, Copy)]
+pub struct UseScheduleConfig {
+    /// Controlled active date.
+    pub date: ReadSignal<Option<Date>>,
+    /// Default active date for uncontrolled usage.
+    pub default_date: Date,
+    /// Callback fired after the active date changes.
+    pub on_date_change: Callback<ScheduleDateChange>,
+    /// Controlled active view.
+    pub view: ReadSignal<Option<ScheduleView>>,
+    /// Default active view for uncontrolled usage.
+    pub default_view: ScheduleView,
+    /// Callback fired after the active view changes.
+    pub on_view_change: Callback<ScheduleViewChange>,
+}
+
+impl Default for UseScheduleConfig {
+    fn default() -> Self {
+        Self {
+            date: ReadSignal::new(Signal::new(None)),
+            default_date: today(),
+            on_date_change: Callback::new(|_| {}),
+            view: ReadSignal::new(Signal::new(None)),
+            default_view: ScheduleView::default(),
+            on_view_change: Callback::new(|_| {}),
+        }
+    }
+}
+
+/// Shared state returned by [`use_schedule`](crate::schedule::use_schedule).
+#[derive(Clone, Copy, PartialEq)]
+pub struct ScheduleState {
+    /// Current active date.
+    pub date: Memo<Date>,
+    /// Current active view.
+    pub view: Memo<ScheduleView>,
+    /// Set the active date.
+    pub set_date: Callback<Date>,
+    /// Set the active view.
+    pub set_view: Callback<ScheduleView>,
+    /// Navigate to the previous range for the active view.
+    pub previous: Callback<()>,
+    /// Navigate to the next range for the active view.
+    pub next: Callback<()>,
+    /// Navigate to today.
+    pub today: Callback<()>,
+}
+
+/// Context exposed to schedule subcomponents.
+#[derive(Clone, Copy, PartialEq)]
+pub struct ScheduleContext {
+    /// Shared schedule date and view state.
+    pub state: ScheduleState,
+}
+
 /// Time slot click callback payload.
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub struct ScheduleTimeSlotClick {
@@ -489,6 +564,12 @@ pub struct ScheduleClassNames {
 /// The props for the [`Schedule`](crate::schedule::components::Schedule) component.
 #[derive(Props, Clone, PartialEq)]
 pub struct ScheduleProps {
+    /// Shared state from [`use_schedule`](crate::schedule::use_schedule).
+    ///
+    /// When supplied, this takes precedence over the legacy controlled and
+    /// uncontrolled date/view props on [`ScheduleProps`].
+    #[props(default)]
+    pub state: Option<ScheduleState>,
     /// Controlled active date.
     #[props(default)]
     pub date: ReadSignal<Option<Date>>,
@@ -547,6 +628,12 @@ pub struct ScheduleProps {
     /// schedule header regardless of [`ScheduleProps::with_default_header`].
     #[props(default)]
     pub header: Option<Element>,
+    /// Custom header factory. Receives live reactive state and action callbacks from the
+    /// primitive. Evaluated after [`ScheduleProps::header`] — if both are set, `header`
+    /// wins. When neither is set and [`ScheduleProps::with_default_header`] is true, the
+    /// primitive renders its built-in header.
+    #[props(default)]
+    pub render_header: Option<Callback<ScheduleHeaderContext, Element>>,
     /// Runtime radius value exposed through `--schedule-prop-radius` for style layers.
     #[props(default)]
     pub radius: Option<String>,

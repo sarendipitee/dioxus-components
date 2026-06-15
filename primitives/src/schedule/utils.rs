@@ -311,6 +311,9 @@ pub(crate) struct MonthEventSegment {
     pub(crate) start_column: usize,
     pub(crate) column_span: usize,
     pub(crate) start_date: Date,
+    /// Zero-based vertical lane within the week. Segments that do not overlap in
+    /// columns share a lane so events stack compactly instead of cascading.
+    pub(crate) lane: usize,
 }
 
 pub(crate) fn month_event_segments_for_week(
@@ -326,7 +329,7 @@ pub(crate) fn month_event_segments_for_week(
     let week_start_time = PrimitiveDateTime::new(week_start, Time::MIDNIGHT);
     let week_end_time = PrimitiveDateTime::new(week_end_day + Duration::days(1), Time::MIDNIGHT);
 
-    events
+    let mut segments: Vec<MonthEventSegment> = events
         .iter()
         .filter_map(|event| {
             if !event_intersects_range(event, week_start_time, week_end_time) {
@@ -354,9 +357,41 @@ pub(crate) fn month_event_segments_for_week(
                 start_column,
                 column_span: end_column.saturating_sub(start_column) + 1,
                 start_date: clipped_start.date(),
+                lane: 0,
             })
         })
-        .collect()
+        .collect();
+
+    // Greedy interval-graph coloring: place each segment in the first lane whose
+    // last occupied column ends before this segment begins. Wider/earlier
+    // segments are placed first so multi-day bars settle into the top lanes.
+    segments.sort_by(|a, b| {
+        a.start_column
+            .cmp(&b.start_column)
+            .then(b.column_span.cmp(&a.column_span))
+            .then(a.event.start.cmp(&b.event.start))
+            .then(a.event.id.cmp(&b.event.id))
+    });
+
+    let mut lane_next_free_column: Vec<usize> = Vec::new();
+    for segment in &mut segments {
+        let segment_end = segment.start_column + segment.column_span;
+        let lane = lane_next_free_column
+            .iter()
+            .position(|next_free| *next_free <= segment.start_column);
+        match lane {
+            Some(lane) => {
+                lane_next_free_column[lane] = segment_end;
+                segment.lane = lane;
+            }
+            None => {
+                segment.lane = lane_next_free_column.len();
+                lane_next_free_column.push(segment_end);
+            }
+        }
+    }
+
+    segments
 }
 
 pub(crate) fn expand_events(

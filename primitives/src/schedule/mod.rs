@@ -8,17 +8,19 @@ mod types;
 mod utils;
 
 pub use components::{
-    Schedule, ScheduleHeader, ScheduleHeaderProps, ScheduleViewButton, ScheduleViewButtonProps,
+    use_schedule, use_schedule_context, Schedule, ScheduleHeader, ScheduleViewButton,
+    ScheduleViewSwitcher,
 };
 pub use types::{
-    ScheduleAllDaySlotClick, ScheduleClassNames, ScheduleDateChange, ScheduleDayClick,
-    ScheduleDayViewConfig, ScheduleDropDestination, ScheduleEvent, ScheduleEventClick,
-    ScheduleEventCreate, ScheduleEventCreateSource, ScheduleEventDrag, ScheduleEventDrop,
-    ScheduleEventRenderContext, ScheduleEventResize, ScheduleExternalDrop, ScheduleLabels,
-    ScheduleLayout, ScheduleMobileMonthViewConfig, ScheduleMode, ScheduleMonthViewConfig,
-    ScheduleProps, ScheduleRecurrence, ScheduleRecurrenceExpansionLimit,
-    ScheduleRecurrenceFrequency, ScheduleResizeEdge, ScheduleSlotRangeSelection,
-    ScheduleTimeGridConfig, ScheduleTimeSlotClick, ScheduleView, ScheduleViewChange,
-    ScheduleWeekViewConfig, ScheduleYearViewConfig,
+    ScheduleAllDaySlotClick, ScheduleClassNames, ScheduleContext, ScheduleDateChange,
+    ScheduleDayClick, ScheduleDayViewConfig, ScheduleDropDestination, ScheduleEvent,
+    ScheduleEventClick, ScheduleEventCreate, ScheduleEventCreateSource, ScheduleEventDrag,
+    ScheduleEventDrop, ScheduleEventRenderContext, ScheduleEventResize, ScheduleExternalDrop,
+    ScheduleHeaderContext, ScheduleLabels, ScheduleLayout, ScheduleMobileMonthViewConfig,
+    ScheduleMode, ScheduleMonthViewConfig, ScheduleProps, ScheduleRecurrence,
+    ScheduleRecurrenceExpansionLimit, ScheduleRecurrenceFrequency, ScheduleResizeEdge,
+    ScheduleSlotRangeSelection, ScheduleState, ScheduleTimeGridConfig, ScheduleTimeSlotClick,
+    ScheduleView, ScheduleViewChange, ScheduleWeekViewConfig, ScheduleYearViewConfig,
+    UseScheduleConfig,
 };
 pub use utils::{add_months, shift_date, today};
