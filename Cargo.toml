@@ -4,6 +4,7 @@ members = ["primitives", "preview", "test-harness", "dioxus-attributes", "dioxus
 
 [workspace.dependencies]
 dioxus-components = { path = "dioxus-components" }
+dioxus-attributes = { path = "dioxus-attributes" }
 dioxus-primitives = { path = "primitives" }
 tracing = { version = "0.1", features = ["std"] }
 

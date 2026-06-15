@@ -1990,6 +1990,7 @@ name = "dioxus-components"
 version = "0.1.0"
 dependencies = [
  "dioxus",
+ "dioxus-attributes",
  "dioxus-icons",
  "dioxus-primitives",
  "dioxus-ssr",
