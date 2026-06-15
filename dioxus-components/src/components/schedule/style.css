@@ -1,4 +1,4 @@
-.dx-schedule {
+.dx_schedule {
     --schedule-radius: var(--schedule-prop-radius, var(--radius-surface));
     --schedule-time-slot-size: 3rem;
     --schedule-time-gutter: 3.5rem;
@@ -20,17 +20,17 @@
         sans-serif;
 }
 
-.dx-schedule *,
-.dx-schedule *::before,
-.dx-schedule *::after {
+.dx_schedule *,
+.dx_schedule *::before,
+.dx_schedule *::after {
     box-sizing: border-box;
 }
 
-.dx-schedule button {
+.dx_schedule button {
     font: inherit;
 }
 
-.dx-schedule [data-schedule-header] {
+.dx_schedule [data-schedule-header] {
     display: flex;
     flex-direction: column;
     border-bottom: 1px solid var(--schedule-border);
@@ -39,61 +39,61 @@
     gap: calc(var(--spcae) * 8);
 }
 
-.dx-schedule-view-switcher {
+.dx_schedule_view_switcher {
     display: inline-flex;
     align-items: center;
     gap: calc(var(--space) * 1);
 }
 
-.dx-schedule [data-schedule-nav] {
+.dx_schedule [data-schedule-nav] {
     display: flex;
     align-items: center;
 }
 
-.dx-schedule [data-schedule-title] {
+.dx_schedule [data-schedule-title] {
     flex: auto;
     color: var(--surface-fg);
     font-size: 1.25rem;
 }
 
-.dx-schedule [data-schedule-title] span:first-child {
+.dx_schedule [data-schedule-title] span:first-child {
     font-weight: 650;
     margin-right: 0.25em;
 }
 
-.dx-schedule-time-slot:focus-visible,
-.dx-schedule-all-day-slot:focus-visible,
-.dx-schedule-month-day button:focus-visible,
-.dx-schedule-year-view button:focus-visible {
+.dx_schedule_time_slot:focus-visible,
+.dx_schedule_all_day_slot:focus-visible,
+.dx_schedule_month_day button:focus-visible,
+.dx_schedule_year_view button:focus-visible {
     outline: 2px solid var(--focus);
     outline-offset: 2px;
 }
 
-.dx-schedule-desktop,
-.dx-schedule-mobile {
+.dx_schedule_desktop,
+.dx_schedule_mobile {
     min-width: 0;
 }
 
-.dx-schedule[data-layout="responsive"] .dx-schedule-mobile {
+.dx_schedule[data-layout="responsive"] .dx_schedule_mobile {
     display: none;
 }
 
-.dx-schedule-time-view {
+.dx_schedule_time_view {
     overflow: auto;
     min-width: 44rem;
 }
 
-.dx-schedule-time-view[data-mobile="true"] {
+.dx_schedule_time_view[data-mobile="true"] {
     min-width: 0;
 }
 
-.dx-schedule-time-view [data-schedule-day-header-row],
-.dx-schedule-time-view [data-schedule-all-day-row],
-.dx-schedule-time-view [data-schedule-time-grid] {
+.dx_schedule_time_view [data-schedule-day-header-row],
+.dx_schedule_time_view [data-schedule-all-day-row],
+.dx_schedule_time_view [data-schedule-time-grid] {
     display: grid;
 }
 
-.dx-schedule-time-view [data-schedule-day-header-row] {
+.dx_schedule_time_view [data-schedule-day-header-row] {
     position: sticky;
     z-index: 3;
     top: 0;
@@ -101,7 +101,7 @@
     background: var(--surface);
 }
 
-.dx-schedule-time-view [data-schedule-day-header] {
+.dx_schedule_time_view [data-schedule-day-header] {
     padding: calc(var(--space) * 2);
     border: 0;
     border-right: 1px solid var(--schedule-border);
@@ -111,23 +111,23 @@
     font-weight: 600;
 }
 
-.dx-schedule-time-view [data-schedule-all-day-row] {
+.dx_schedule_time_view [data-schedule-all-day-row] {
     position: relative;
     min-height: 2.75rem;
     border-bottom: 1px solid var(--schedule-border);
 }
 
-.dx-schedule-time-view [data-schedule-all-day-column],
-.dx-schedule-time-view [data-schedule-day-column] {
+.dx_schedule_time_view [data-schedule-all-day-column],
+.dx_schedule_time_view [data-schedule-day-column] {
     min-width: 0;
     border-right: 1px solid var(--schedule-border);
 }
 
-.dx-schedule-time-view [data-schedule-day-column] {
+.dx_schedule_time_view [data-schedule-day-column] {
     position: relative;
 }
 
-.dx-schedule-all-day-slot {
+.dx_schedule_all_day_slot {
     width: 100%;
     min-height: 2.75rem;
     padding: var(--space);
@@ -139,7 +139,7 @@
     text-align: left;
 }
 
-.dx-schedule-time-view [data-schedule-all-day-events] {
+.dx_schedule_time_view [data-schedule-all-day-events] {
     display: grid;
     position: absolute;
     align-content: start;
@@ -147,28 +147,28 @@
     pointer-events: none;
 }
 
-.dx-schedule-time-view [data-schedule-timed-events] {
+.dx_schedule_time_view [data-schedule-timed-events] {
     position: absolute;
     inset: 0;
     pointer-events: none;
 }
 
-.dx-schedule-time-view [data-schedule-timed-events] .dx-schedule-event,
-.dx-schedule-time-view [data-schedule-timed-spanning-events] .dx-schedule-event {
+.dx_schedule_time_view [data-schedule-timed-events] .dx_schedule_event,
+.dx_schedule_time_view [data-schedule-timed-spanning-events] .dx_schedule_event {
     position: absolute;
 }
 
-.dx-schedule-time-view [data-schedule-time-grid] {
+.dx_schedule_time_view [data-schedule-time-grid] {
     min-height: 24rem;
 }
 
-.dx-schedule-time-view [data-schedule-day-slots] {
+.dx_schedule_time_view [data-schedule-day-slots] {
     display: flex;
     min-height: 100%;
     flex-direction: column;
 }
 
-.dx-schedule-time-slot {
+.dx_schedule_time_slot {
     position: relative;
     min-height: var(--schedule-time-slot-size);
     padding: var(--space);
@@ -179,20 +179,20 @@
     font-size: 0.75rem;
 }
 
-.dx-schedule-time-slot:hover,
-.dx-schedule-time-slot[data-selected-range="true"],
-.dx-schedule-all-day-slot:hover,
-.dx-schedule-all-day-slot[data-drop-active="true"],
-.dx-schedule-month-day:hover {
+.dx_schedule_time_slot:hover,
+.dx_schedule_time_slot[data-selected-range="true"],
+.dx_schedule_all_day_slot:hover,
+.dx_schedule_all_day_slot[data-drop-active="true"],
+.dx_schedule_month_day:hover {
     background: var(--schedule-accent-soft);
 }
 
-/* .dx-schedule-time-slot[data-drop-active="true"],
-.dx-schedule-month-day[data-drop-active="true"] {
+/* .dx_schedule_time_slot[data-drop-active="true"],
+.dx_schedule_month_day[data-drop-active="true"] {
     box-shadow: inset 0 0 0 2px var(--schedule-accent-border);
 } */
 
-.dx-schedule-time-view [data-schedule-drop-preview] {
+.dx_schedule_time_view [data-schedule-drop-preview] {
     z-index: 2;
     border-radius: calc(var(--schedule-radius) * 0.65);
     background: color-mix(in srgb, var(--accent) 15%, transparent);
@@ -205,12 +205,12 @@
  * all-day rows get matching empty gutter tracks so their day columns stay
  * aligned with the time grid below.
  */
-.dx-schedule-time-view [data-schedule-time-gutter-corner],
-.dx-schedule-time-view [data-schedule-time-gutter-spacer] {
+.dx_schedule_time_view [data-schedule-time-gutter-corner],
+.dx_schedule_time_view [data-schedule-time-gutter-spacer] {
     border-right: 1px solid var(--schedule-border);
 }
 
-.dx-schedule-time-view [data-schedule-time-gutter-spacer] {
+.dx_schedule_time_view [data-schedule-time-gutter-spacer] {
     display: flex;
     align-items: center;
     justify-content: flex-end;
@@ -218,26 +218,26 @@
     background: var(--surface-subtle);
 }
 
-.dx-schedule-time-view [data-schedule-all-day-label] {
+.dx_schedule_time_view [data-schedule-all-day-label] {
     color: var(--surface-muted-fg);
     font-size: 0.6875rem;
     line-height: 1;
     text-align: right;
 }
 
-.dx-schedule-time-view [data-schedule-time-gutter] {
+.dx_schedule_time_view [data-schedule-time-gutter] {
     position: relative;
     border-right: 1px solid var(--schedule-border);
     background: var(--surface);
 }
 
-.dx-schedule-time-view [data-schedule-time-gutter-cell] {
+.dx_schedule_time_view [data-schedule-time-gutter-cell] {
     position: relative;
     min-height: var(--schedule-time-slot-size);
     border-bottom: 1px solid transparent;
 }
 
-.dx-schedule-time-view [data-schedule-time-gutter-label] {
+.dx_schedule_time_view [data-schedule-time-gutter-label] {
     position: absolute;
     top: 0;
     right: 0.5rem;
@@ -249,7 +249,7 @@
 }
 
 /* The first label would clip against the top scroll edge, so anchor it below the line. */
-.dx-schedule-time-view [data-schedule-time-gutter-cell]:first-child [data-schedule-time-gutter-label] {
+.dx_schedule_time_view [data-schedule-time-gutter-cell]:first-child [data-schedule-time-gutter-label] {
     top: 0.25rem;
     transform: none;
 }
@@ -259,7 +259,7 @@
  * day-relative percentages (current-time line, drop preview, multi-day spanning
  * events). It starts after the gutter so those percentages stay gutter-free.
  */
-.dx-schedule-time-view [data-schedule-day-overlay] {
+.dx_schedule_time_view [data-schedule-day-overlay] {
     position: absolute;
     top: 0;
     right: 0;
@@ -268,7 +268,7 @@
     pointer-events: none;
 }
 
-.dx-schedule-event {
+.dx_schedule_event {
     position: relative;
     z-index: 1;
     display: flex;
@@ -286,14 +286,14 @@
     pointer-events: auto;
 }
 
-.dx-schedule-event strong {
+.dx_schedule_event strong {
     overflow: hidden;
     font-weight: 650;
     text-overflow: ellipsis;
     white-space: nowrap;
 }
 
-.dx-schedule-event [data-schedule-event-time] {
+.dx_schedule_event [data-schedule-event-time] {
     color: var(--surface-muted-fg);
 }
 
@@ -303,8 +303,8 @@
  * height (the slot size is consumer-overridable, so this can only be measured
  * in CSS). Month and all-day chips keep the single-line body above.
  */
-.dx-schedule-time-view [data-schedule-timed-events] .dx-schedule-event,
-.dx-schedule-time-view [data-schedule-timed-spanning-events] .dx-schedule-event {
+.dx_schedule_time_view [data-schedule-timed-events] .dx_schedule_event,
+.dx_schedule_time_view [data-schedule-timed-spanning-events] .dx_schedule_event {
     container: schedule-event / size;
     justify-content: flex-start;
     padding: 0.15rem 0.4rem;
@@ -314,8 +314,8 @@
 }
 
 /* The title fills the available rows and clamps; it is never dropped for the time. */
-.dx-schedule-time-view [data-schedule-timed-events] .dx-schedule-event strong,
-.dx-schedule-time-view [data-schedule-timed-spanning-events] .dx-schedule-event strong {
+.dx_schedule_time_view [data-schedule-timed-events] .dx_schedule_event strong,
+.dx_schedule_time_view [data-schedule-timed-spanning-events] .dx_schedule_event strong {
     display: -webkit-box;
     overflow: hidden;
     flex: 0 1 auto;
@@ -326,8 +326,8 @@
 }
 
 /* The time line only appears once the event is tall enough to hold it. */
-.dx-schedule-time-view [data-schedule-timed-events] .dx-schedule-event [data-schedule-event-time],
-.dx-schedule-time-view [data-schedule-timed-spanning-events] .dx-schedule-event [data-schedule-event-time] {
+.dx_schedule_time_view [data-schedule-timed-events] .dx_schedule_event [data-schedule-event-time],
+.dx_schedule_time_view [data-schedule-timed-spanning-events] .dx_schedule_event [data-schedule-event-time] {
     display: none;
     flex: 0 0 auto;
     overflow: hidden;
@@ -336,35 +336,35 @@
 }
 
 @container schedule-event (min-height: 2rem) {
-    .dx-schedule-time-view [data-schedule-timed-events] .dx-schedule-event [data-schedule-event-time],
-    .dx-schedule-time-view [data-schedule-timed-spanning-events] .dx-schedule-event [data-schedule-event-time] {
+    .dx_schedule_time_view [data-schedule-timed-events] .dx_schedule_event [data-schedule-event-time],
+    .dx_schedule_time_view [data-schedule-timed-spanning-events] .dx_schedule_event [data-schedule-event-time] {
         display: block;
     }
 }
 
 @container schedule-event (min-height: 3.5rem) {
-    .dx-schedule-time-view [data-schedule-timed-events] .dx-schedule-event strong,
-    .dx-schedule-time-view [data-schedule-timed-spanning-events] .dx-schedule-event strong {
+    .dx_schedule_time_view [data-schedule-timed-events] .dx_schedule_event strong,
+    .dx_schedule_time_view [data-schedule-timed-spanning-events] .dx_schedule_event strong {
         -webkit-line-clamp: 2;
     }
 }
 
 @container schedule-event (min-height: 5.5rem) {
-    .dx-schedule-time-view [data-schedule-timed-events] .dx-schedule-event strong,
-    .dx-schedule-time-view [data-schedule-timed-spanning-events] .dx-schedule-event strong {
+    .dx_schedule_time_view [data-schedule-timed-events] .dx_schedule_event strong,
+    .dx_schedule_time_view [data-schedule-timed-spanning-events] .dx_schedule_event strong {
         -webkit-line-clamp: 3;
     }
 }
 
-.dx-schedule-event[data-draggable="true"] {
+.dx_schedule_event[data-draggable="true"] {
     cursor: grab;
 }
 
-.dx-schedule-event[data-drag-source="true"] {
+.dx_schedule_event[data-drag-source="true"] {
     opacity: 0.1;
 }
 
-.dx-schedule-event[data-resize-source="true"] {
+.dx_schedule_event[data-resize-source="true"] {
     opacity: 0.65;
 }
 
@@ -374,7 +374,7 @@
  * absolutely from the slot's top edge and spans --schedule-resize-preview-slots
  * slot heights. The slot element already has position:relative.
  */
-.dx-schedule-time-slot [data-schedule-resize-preview] {
+.dx_schedule_time_slot [data-schedule-resize-preview] {
     position: absolute;
     top: 0;
     left: 4px;
@@ -396,21 +396,21 @@
     pointer-events: none;
 }
 
-.dx-schedule-time-slot [data-schedule-resize-preview] strong {
+.dx_schedule_time_slot [data-schedule-resize-preview] strong {
     overflow: hidden;
     font-weight: 650;
     text-overflow: ellipsis;
     white-space: nowrap;
 }
 
-.dx-schedule-time-slot [data-schedule-resize-preview] [data-schedule-event-time] {
+.dx_schedule_time_slot [data-schedule-resize-preview] [data-schedule-event-time] {
     color: var(--surface-muted-fg);
     overflow: hidden;
     white-space: nowrap;
     text-overflow: ellipsis;
 }
 
-.dx-schedule-event [data-schedule-resize-handle] {
+.dx_schedule_event [data-schedule-resize-handle] {
     position: absolute;
     right: 0;
     left: 0;
@@ -429,34 +429,34 @@
     pointer-events: none;
 }
 
-.dx-schedule-event:hover [data-schedule-resize-handle],
-.dx-schedule-event:focus-within [data-schedule-resize-handle] {
+.dx_schedule_event:hover [data-schedule-resize-handle],
+.dx_schedule_event:focus-within [data-schedule-resize-handle] {
     pointer-events: auto;
 }
 
-.dx-schedule-event [data-schedule-resize-handle="start"] {
+.dx_schedule_event [data-schedule-resize-handle="start"] {
     top: 0;
 }
 
-.dx-schedule-event [data-schedule-resize-handle="end"] {
+.dx_schedule_event [data-schedule-resize-handle="end"] {
     bottom: 0;
 }
 
-.dx-schedule-month-view,
-.dx-schedule-mobile-month-view {
+.dx_schedule_month_view,
+.dx_schedule_mobile_month_view {
     display: flex;
     min-width: 0;
     flex-direction: column;
 }
 
-.dx-schedule-month-view [data-schedule-month-weekdays] {
+.dx_schedule_month_view [data-schedule-month-weekdays] {
     display: grid;
     border-bottom: 1px solid var(--schedule-border);
     background: var(--surface-subtle);
     grid-template-columns: repeat(7, minmax(0, 1fr));
 }
 
-.dx-schedule-month-view [data-schedule-month-weekday] {
+.dx_schedule_month_view [data-schedule-month-weekday] {
     padding: calc(var(--space) * 2);
     color: var(--surface-muted-fg);
     font-size: 0.75rem;
@@ -464,7 +464,7 @@
     text-align: center;
 }
 
-.dx-schedule-month-view [data-schedule-month-week] {
+.dx_schedule_month_view [data-schedule-month-week] {
     position: relative;
     display: flex;
     min-height: 7rem;
@@ -472,8 +472,8 @@
     border-bottom: 1px solid var(--schedule-border);
 }
 
-.dx-schedule-month-view [data-schedule-month-week-days],
-.dx-schedule-month-view [data-schedule-month-week-events] {
+.dx_schedule_month_view [data-schedule-month-week-days],
+.dx_schedule_month_view [data-schedule-month-week-events] {
     display: grid;
     grid-template-columns: repeat(7, minmax(0, 1fr));
 }
@@ -483,7 +483,7 @@
  * separators) instead of stacking in a detached band below them. They begin just
  * under the day number so each bar sits inside its own day cell.
  */
-.dx-schedule-month-view [data-schedule-month-week-events] {
+.dx_schedule_month_view [data-schedule-month-week-events] {
     position: absolute;
     top: 2rem;
     right: 0;
@@ -501,7 +501,7 @@
  * the time trails it, so several events stack cleanly inside one day cell
  * instead of each growing to a multi-line block.
  */
-.dx-schedule-month-view [data-schedule-month-week-events] .dx-schedule-event {
+.dx_schedule_month_view [data-schedule-month-week-events] .dx_schedule_event {
     display: flex;
     min-width: 0;
     flex-direction: row;
@@ -512,7 +512,7 @@
     pointer-events: auto;
 }
 
-.dx-schedule-month-view [data-schedule-month-week-events] .dx-schedule-event strong {
+.dx_schedule_month_view [data-schedule-month-week-events] .dx_schedule_event strong {
     overflow: hidden;
     flex: 1 1 auto;
     text-overflow: ellipsis;
@@ -521,28 +521,28 @@
 
 /* Month cells are narrow; the title carries the information and the time would
  * only steal width. The full time range stays visible in the day/week views. */
-.dx-schedule-month-view [data-schedule-month-week-events] .dx-schedule-event [data-schedule-event-time] {
+.dx_schedule_month_view [data-schedule-month-week-events] .dx_schedule_event [data-schedule-event-time] {
     display: none;
 }
 
-.dx-schedule-month-day {
+.dx_schedule_month_day {
     min-height: 7rem;
     padding: var(--space);
     border-right: 1px solid var(--schedule-border);
     background: var(--surface);
 }
 
-.dx-schedule-month-day[data-outside-month="true"] {
+.dx_schedule_month_day[data-outside-month="true"] {
     background: var(--surface-subtle);
     color: var(--surface-muted-fg);
 }
 
-.dx-schedule-month-day[data-current-day="true"] {
+.dx_schedule_month_day[data-current-day="true"] {
     box-shadow: inset 0 0 0 2px var(--accent);
 }
 
-.dx-schedule-month-day button,
-.dx-schedule-mobile-month-view [data-schedule-mobile-month-day-button] {
+.dx_schedule_month_day button,
+.dx_schedule_mobile_month_view [data-schedule-mobile-month-day-button] {
     padding: var(--space);
     border: 0;
     border-radius: var(--radius-control);
@@ -551,23 +551,23 @@
     cursor: pointer;
 }
 
-.dx-schedule-mobile-month-view {
+.dx_schedule_mobile_month_view {
     padding: calc(var(--space) * 2);
 }
 
-.dx-schedule-mobile-month-view [data-schedule-mobile-month-day] {
+.dx_schedule_mobile_month_view [data-schedule-mobile-month-day] {
     padding: calc(var(--space) * 2) 0;
     border-bottom: 1px solid var(--schedule-border);
 }
 
-.dx-schedule-year-view {
+.dx_schedule_year_view {
     display: grid;
     padding: calc(var(--space) * 3);
     gap: calc(var(--space) * 3);
     grid-template-columns: repeat(auto-fit, minmax(13rem, 1fr));
 }
 
-.dx-schedule-year-view [data-schedule-year-month] {
+.dx_schedule_year_view [data-schedule-year-month] {
     display: flex;
     min-width: 0;
     flex-direction: column;
@@ -580,11 +580,11 @@
     text-align: left;
 }
 
-.dx-schedule-year-view [data-schedule-year-month][data-current-month="true"] {
+.dx_schedule_year_view [data-schedule-year-month][data-current-month="true"] {
     border-color: var(--accent);
 }
 
-.dx-schedule-year-view [data-schedule-year-month-header] {
+.dx_schedule_year_view [data-schedule-year-month-header] {
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -592,24 +592,24 @@
     gap: var(--space);
 }
 
-.dx-schedule-year-view [data-schedule-year-month-label] {
+.dx_schedule_year_view [data-schedule-year-month-label] {
     font-weight: 650;
 }
 
-.dx-schedule-year-view [data-schedule-year-month-meta],
-.dx-schedule-year-view [data-schedule-year-weekday] {
+.dx_schedule_year_view [data-schedule-year-month-meta],
+.dx_schedule_year_view [data-schedule-year-weekday] {
     color: var(--surface-muted-fg);
     font-size: 0.75rem;
 }
 
-.dx-schedule-year-view [data-schedule-year-weekdays],
-.dx-schedule-year-view [data-schedule-year-days] {
+.dx_schedule_year_view [data-schedule-year-weekdays],
+.dx_schedule_year_view [data-schedule-year-days] {
     display: grid;
     gap: 0.125rem;
     grid-template-columns: repeat(7, minmax(0, 1fr));
 }
 
-.dx-schedule-year-view [data-schedule-year-day] {
+.dx_schedule_year_view [data-schedule-year-day] {
     display: flex;
     min-height: 1.75rem;
     flex-direction: column;
@@ -620,43 +620,43 @@
     font-size: 0.75rem;
 }
 
-.dx-schedule-year-view [data-schedule-year-day][data-outside-month="true"] {
+.dx_schedule_year_view [data-schedule-year-day][data-outside-month="true"] {
     color: var(--surface-disabled-fg);
 }
 
-.dx-schedule-year-view [data-schedule-year-day][data-current-day="true"],
-.dx-schedule-year-view [data-schedule-year-day][data-selected-day="true"] {
+.dx_schedule_year_view [data-schedule-year-day][data-current-day="true"],
+.dx_schedule_year_view [data-schedule-year-day][data-selected-day="true"] {
     background: var(--accent-subtle);
 }
 
-.dx-schedule-year-view [data-schedule-year-day-dots] {
+.dx_schedule_year_view [data-schedule-year-day-dots] {
     display: flex;
     max-width: 100%;
     gap: 0.125rem;
 }
 
-.dx-schedule-year-view [data-schedule-event-dot] {
+.dx_schedule_year_view [data-schedule-event-dot] {
     width: 0.25rem;
     height: 0.25rem;
     border-radius: 999px;
     background: var(--accent);
 }
 
-.dx-schedule-year-view [data-schedule-year-day-overflow] {
+.dx_schedule_year_view [data-schedule-year-day-overflow] {
     color: var(--surface-muted-fg);
     font-size: 0.625rem;
 }
 
 @media (width <= 640px) {
-    .dx-schedule[data-layout="responsive"] .dx-schedule-desktop {
+    .dx_schedule[data-layout="responsive"] .dx_schedule_desktop {
         display: none;
     }
 
-    .dx-schedule[data-layout="responsive"] .dx-schedule-mobile {
+    .dx_schedule[data-layout="responsive"] .dx_schedule_mobile {
         display: block;
     }
 
-    .dx-schedule [data-schedule-nav] {
+    .dx_schedule [data-schedule-nav] {
         padding: calc(var(--space) * 2);
     }
 }

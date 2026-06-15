@@ -1,10 +1,10 @@
-.dx-dnd-list {
+.dx_dnd_list {
   --dx-item-gap: calc(var(--space) * 1.5);
 
   width: 100%;
 }
 
-.dx-dnd-list-ul {
+.dx_dnd_list_ul {
   display: flex;
   flex-direction: column;
   padding-left: 0;
@@ -13,7 +13,7 @@
   perspective: 1200px;
 }
 
-.dx-dnd-list-item {
+.dx_dnd_list_item {
   --gap-shift: 0px;
   --tilt: 0deg;
 
@@ -42,7 +42,7 @@
 }
 
 @media (hover: hover) and (pointer: fine) {
-  .dx-dnd-list-item:hover {
+  .dx_dnd_list_item:hover {
     --gap-shift: -1px;
 
     border-color: var(--surface-hover-border);
@@ -52,20 +52,20 @@
       0 3px 8px rgb(0 0 0 / 4%);
   }
 
-  .dx-dnd-list-item:active {
+  .dx_dnd_list_item:active {
     --gap-shift: 0px;
 
     transition-duration: 80ms;
   }
 }
 
-.dx-dnd-list-item:focus-visible {
+.dx_dnd_list_item:focus-visible {
   border-color: var(--focus);
   box-shadow: 0 0 0 3px
     color-mix(in srgb, var(--focus) 24%, transparent);
 }
 
-.dx-dnd-list-item[data-is-grabbing="true"] {
+.dx_dnd_list_item[data-is-grabbing="true"] {
   --gap-shift: 0px;
   --tilt: 0deg;
 
@@ -78,7 +78,7 @@
   transition-duration: 80ms;
 }
 
-.dx-dnd-list-item[data-is-grabbing="true"][data-drop-at-origin="true"] {
+.dx_dnd_list_item[data-is-grabbing="true"][data-drop-at-origin="true"] {
   border-style: solid;
   border-color: var(--focus);
   box-shadow: 0 0 0 3px
@@ -86,7 +86,7 @@
   opacity: 0.75;
 }
 
-.dx-item-icon {
+.dx_item_icon {
   flex-shrink: 0;
   margin-right: calc(var(--space) * 1.5);
   color: var(--fg-faint);
@@ -94,12 +94,12 @@
 }
 
 @media (hover: hover) and (pointer: fine) {
-  .dx-dnd-list-item:hover .dx-item-icon {
+  .dx_dnd_list_item:hover .dx_item_icon {
     color: var(--accent-subtle-fg);
   }
 }
 
-.dx-item-body-div {
+.dx_item_body_div {
   min-width: 0;
   flex-grow: 1;
   font-size: 14px;
@@ -107,7 +107,7 @@
   line-height: 20px;
 }
 
-.dx-remove-button {
+.dx_remove_button {
   display: flex;
   overflow: visible;
   width: 26px;
@@ -128,26 +128,26 @@
     transform 80ms ease;
 }
 
-.dx-remove-button:hover {
+.dx_remove_button:hover {
   background: var(--surface-hover);
   color: var(--accent-subtle-fg);
 }
 
-.dx-remove-button:active {
+.dx_remove_button:active {
   transform: scale(0.92);
 }
 
-.dx-remove-button:focus-visible {
+.dx_remove_button:focus-visible {
   outline: 2px solid var(--focus);
   outline-offset: 2px;
 }
 
-.dx-drop-indicator {
+.dx_drop_indicator {
   display: none;
 }
 
-.dx-dnd-list-item::before,
-.dx-dnd-list-item::after {
+.dx_dnd_list_item::before,
+.dx_dnd_list_item::after {
   position: absolute;
   right: 10px;
   left: 10px;
@@ -166,18 +166,18 @@
     transform 220ms cubic-bezier(0.2, 0.8, 0.2, 1);
 }
 
-.dx-dnd-list-item::before {
+.dx_dnd_list_item::before {
   top: calc(-1 * (var(--dx-item-gap) / 2 + 2.5px));
   transform-origin: center bottom;
 }
 
-.dx-dnd-list-item::after {
+.dx_dnd_list_item::after {
   bottom: calc(-1 * (var(--dx-item-gap) / 2 + 2.5px));
   transform-origin: center top;
 }
 
-.dx-drop-indicator[data-position="before"] + .dx-dnd-list-item::before,
-.dx-dnd-list-item:has(+ .dx-drop-indicator[data-position="after"])::after {
+.dx_drop_indicator[data-position="before"] + .dx_dnd_list_item::before,
+.dx_dnd_list_item:has(+ .dx_drop_indicator[data-position="after"])::after {
   opacity: 0.9;
   transform:
     rotateX(calc(-1 * var(--tilt)))
@@ -185,14 +185,14 @@
     scaleX(1);
 }
 
-.dx-dnd-list-item:has(+ .dx-drop-indicator) {
+.dx_dnd_list_item:has(+ .dx_drop_indicator) {
   --gap-shift: -1px;
   --tilt: -3deg;
 
   transform-origin: center bottom;
 }
 
-.dx-drop-indicator + .dx-dnd-list-item {
+.dx_drop_indicator + .dx_dnd_list_item {
   --gap-shift: 1px;
   --tilt: 3deg;
 

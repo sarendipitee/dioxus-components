@@ -1,4 +1,4 @@
-.dx-alert {
+.dx_alert {
   display: grid;
   align-items: start;
   padding: calc(var(--space) * 4);
@@ -11,35 +11,35 @@
   box-shadow: 0 1px 2px rgb(0 0 0 / 6%);
 }
 
-.dx-alert[data-variant="default"] {
+.dx_alert[data-variant="default"] {
   border-color: var(--surface-border);
   background: var(--surface);
   color: var(--surface-fg);
 }
 
-.dx-alert[data-variant="destructive"] {
+.dx_alert[data-variant="destructive"] {
   border-color: var(--danger-subtle-border);
   background: var(--danger-subtle);
   color: var(--danger-subtle-fg);
 }
 
-.dx-alert[data-variant="info"] {
+.dx_alert[data-variant="info"] {
   border-color: var(--info-subtle-border);
   background: var(--info-subtle);
   color: var(--info-subtle-fg);
 }
 
-.dx-alert[data-variant="success"] {
+.dx_alert[data-variant="success"] {
   border-color: var(--success-subtle-border);
   background: var(--success-subtle);
   color: var(--success-subtle-fg);
 }
 
-.dx-alert:has([data-slot="alert-action"]) {
+.dx_alert:has([data-slot="alert-action"]) {
   grid-template-columns: auto minmax(0, 1fr) auto;
 }
 
-.dx-alert-icon {
+.dx_alert_icon {
   display: inline-flex;
   grid-row: 1 / span 2;
   align-items: center;
@@ -51,29 +51,29 @@
   line-height: 1;
 }
 
-.dx-alert-title {
+.dx_alert_title {
   margin: 0;
   font-size: 0.9375rem;
   font-weight: 600;
   line-height: 1.4;
 }
 
-.dx-alert-description {
+.dx_alert_description {
   grid-column: 2;
   color: color-mix(in srgb, currentColor 78%, transparent);
   font-size: 0.875rem;
   line-height: 1.5;
 }
 
-.dx-alert-description > :first-child {
+.dx_alert_description > :first-child {
   margin-top: 0;
 }
 
-.dx-alert-description > :last-child {
+.dx_alert_description > :last-child {
   margin-bottom: 0;
 }
 
-.dx-alert-action {
+.dx_alert_action {
   display: inline-flex;
   grid-column: 3;
   grid-row: 1 / span 2;
@@ -81,16 +81,16 @@
   gap: calc(var(--space) * 2);
 }
 
-.dx-alert-action:empty {
+.dx_alert_action:empty {
   display: none;
 }
 
-.dx-alert:not(:has([data-slot="alert-icon"])) .dx-alert-title,
-.dx-alert:not(:has([data-slot="alert-icon"])) .dx-alert-description {
+.dx_alert:not(:has([data-slot="alert-icon"])) .dx_alert_title,
+.dx_alert:not(:has([data-slot="alert-icon"])) .dx_alert_description {
   grid-column: 1;
 }
 
-.dx-alert:not(:has([data-slot="alert-icon"])):has([data-slot="alert-action"]) .dx-alert-title,
-.dx-alert:not(:has([data-slot="alert-icon"])):has([data-slot="alert-action"]) .dx-alert-description {
+.dx_alert:not(:has([data-slot="alert-icon"])):has([data-slot="alert-action"]) .dx_alert_title,
+.dx_alert:not(:has([data-slot="alert-icon"])):has([data-slot="alert-action"]) .dx_alert_description {
   grid-column: 1 / span 1;
 }

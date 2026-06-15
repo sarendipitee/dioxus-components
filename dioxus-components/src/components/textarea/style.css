@@ -1,5 +1,5 @@
 /* Base */
-.dx-textarea {
+.dx_textarea {
   width: 100%;
   min-height: 4rem;
   box-sizing: border-box;
@@ -17,67 +17,67 @@
   transition: background-color 100ms ease-out, border-color 100ms ease-out, box-shadow 100ms ease-out;
 }
 
-.dx-textarea:disabled {
+.dx_textarea:disabled {
   color: var(--input-disabled-fg);
   cursor: not-allowed;
 }
 
-.dx-textarea::placeholder {
+.dx_textarea::placeholder {
   color: var(--input-fg-muted);
 }
 
 /* Default Variant */
-.dx-textarea[data-style="default"] {
+.dx_textarea[data-style="default"] {
   background: var(--input);
   box-shadow: inset 0 0 0 1px var(--input-border);
 }
 
-.dx-textarea[data-style="default"]:hover:not(:disabled),
-.dx-textarea[data-style="default"]:focus {
+.dx_textarea[data-style="default"]:hover:not(:disabled),
+.dx_textarea[data-style="default"]:focus {
   background: var(--input-hover);
   color: var(--input-hover-fg);
 }
 
 /* Fade Variant */
-.dx-textarea[data-style="fade"] {
+.dx_textarea[data-style="fade"] {
   background: var(--input);
 }
 
-.dx-textarea[data-style="fade"]:hover:not(:disabled),
-.dx-textarea[data-style="fade"]:focus {
+.dx_textarea[data-style="fade"]:hover:not(:disabled),
+.dx_textarea[data-style="fade"]:focus {
   background: var(--input-hover);
   color: var(--input-hover-fg);
 }
 
 /* Outline Variant */
-.dx-textarea[data-style="outline"] {
+.dx_textarea[data-style="outline"] {
   border: 1px solid var(--input-border);
   background: var(--input);
 }
 
-.dx-textarea[data-style="outline"]:hover:not(:disabled, :focus) {
+.dx_textarea[data-style="outline"]:hover:not(:disabled, :focus) {
   border-color: var(--input-hover-border);
 }
 
-.dx-textarea[data-style="outline"]:focus {
+.dx_textarea[data-style="outline"]:focus {
   border-color: var(--input-focus-border);
 }
 
-.dx-textarea[data-style="outline"]:invalid,
-.dx-textarea[data-style="outline"][aria-invalid="true"] {
+.dx_textarea[data-style="outline"]:invalid,
+.dx_textarea[data-style="outline"][aria-invalid="true"] {
   border-color: var(--danger-border);
 }
 
 /* Ghost Variant */
-.dx-textarea[data-style="ghost"] {
+.dx_textarea[data-style="ghost"] {
   background: transparent;
 }
 
-.dx-textarea[data-style="ghost"]:hover:not(:disabled) {
+.dx_textarea[data-style="ghost"]:hover:not(:disabled) {
   background: var(--surface-hover);
   color: var(--surface-hover-fg);
 }
 
-.dx-textarea[data-style="ghost"]:focus {
+.dx_textarea[data-style="ghost"]:focus {
   border-color: var(--input-focus-border);
 }

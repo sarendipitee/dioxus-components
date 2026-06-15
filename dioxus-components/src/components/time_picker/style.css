@@ -1,24 +1,24 @@
-.dx-time-picker {
+.dx_time_picker {
     display: inline-flex;
     flex-direction: column;
     gap: calc(var(--space) * 2);
 }
 
-.dx-time-picker-columns {
+.dx_time_picker_columns {
     display: flex;
     gap: calc(var(--space) * 1);
 }
 
-.dx-time-picker-col {
+.dx_time_picker_col {
     display: flex;
     flex-direction: column;
     overflow-y: auto;
     max-height: 12rem;
     scrollbar-width: none;
 }
-.dx-time-picker-col::-webkit-scrollbar { display: none; }
+.dx_time_picker_col::-webkit-scrollbar { display: none; }
 
-.dx-time-picker-col-label {
+.dx_time_picker_col_label {
     font-size: var(--text-xs);
     color: var(--input-fg-muted);
     text-align: center;
@@ -29,7 +29,7 @@
     z-index: 1;
 }
 
-.dx-time-picker-col-item {
+.dx_time_picker_col_item {
     min-width: 3rem;
     height: 2.5rem;
     display: flex;
@@ -43,20 +43,20 @@
     color: var(--input-fg);
     padding: 0;
 }
-.dx-time-picker-col-item:hover:not([disabled]) {
+.dx_time_picker_col_item:hover:not([disabled]) {
     background: var(--item-hover-bg);
 }
-.dx-time-picker-col-item[data-selected="true"] {
+.dx_time_picker_col_item[data-selected="true"] {
     background: var(--input-focus);
     color: var(--input-focus-fg);
     font-weight: var(--font-medium);
 }
-.dx-time-picker-col-item[disabled] {
+.dx_time_picker_col_item[disabled] {
     cursor: not-allowed;
     opacity: 0.4;
 }
 
-.dx-time-picker-presets {
+.dx_time_picker_presets {
     display: flex;
     flex-wrap: wrap;
     gap: calc(var(--space) / 2);
@@ -64,7 +64,7 @@
     padding-block-start: calc(var(--space) * 2);
 }
 
-.dx-time-picker-preset-btn {
+.dx_time_picker_preset_btn {
     background: none;
     border: 1px solid var(--border);
     border-radius: var(--radius-sm);
@@ -73,11 +73,11 @@
     cursor: pointer;
     color: var(--input-fg);
 }
-.dx-time-picker-preset-btn:hover:not([disabled]) {
+.dx_time_picker_preset_btn:hover:not([disabled]) {
     background: var(--item-hover-bg);
 }
-[data-disabled="true"] .dx-time-picker-col-item,
-[data-disabled="true"] .dx-time-picker-preset-btn {
+[data-disabled="true"] .dx_time_picker_col_item,
+[data-disabled="true"] .dx_time_picker_preset_btn {
     cursor: not-allowed;
     pointer-events: none;
 }

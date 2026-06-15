@@ -1,4 +1,4 @@
-.dx-toolbar {
+.dx_toolbar {
     display: flex;
     flex-flow: row wrap;
     align-items: center;
@@ -10,7 +10,7 @@
     gap: var(--space);
 }
 
-.dx-toolbar-demo {
+.dx_toolbar_demo {
     display: flex;
     max-width: 30rem;
     flex-direction: column;
@@ -18,7 +18,7 @@
     gap: calc(var(--space) * 4);
 }
 
-.dx-toolbar button {
+.dx_toolbar button {
     display: inline-flex;
     align-items: center;
     justify-content: center;
@@ -31,36 +31,36 @@
     gap: var(--space);
 }
 
-.dx-toolbar button:hover:not([disabled]),
-.dx-toolbar button:focus-visible {
+.dx_toolbar button:hover:not([disabled]),
+.dx_toolbar button:focus-visible {
     background: var(--surface-hover);
     color: var(--surface-hover-fg);
 }
 
-.dx-toolbar button:disabled {
+.dx_toolbar button:disabled {
     color: var(--surface-disabled-fg);
     cursor: not-allowed;
 }
 
-.dx-toolbar-group {
+.dx_toolbar_group {
     display: flex;
     flex-direction: row;
     gap: 5px;
 }
 
-.dx-toolbar-separator {
+.dx_toolbar_separator {
     width: 1px;
     height: 24px;
     margin: 0 5px;
     background: var(--surface-border);
 }
 
-.dx-toolbar-content p {
+.dx_toolbar_content p {
     padding: 0;
     margin: 0;
 }
 
-.dx-toolbar-demo p {
+.dx_toolbar_demo p {
     padding: 0;
     margin: 0;
 }

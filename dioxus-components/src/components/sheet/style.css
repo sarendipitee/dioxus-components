@@ -1,5 +1,5 @@
 /* Sheet Root */
-.dx-sheet-root {
+.dx_sheet_root {
   position: fixed;
   z-index: 1000;
   background: rgb(0 0 0 / 50%);
@@ -8,12 +8,12 @@
   will-change: opacity;
 }
 
-.dx-sheet-root[data-state="closed"] {
+.dx_sheet_root[data-state="closed"] {
   animation: dx-sheet-root-out 150ms ease-in forwards;
   pointer-events: none;
 }
 
-.dx-sheet-root[data-state="open"] {
+.dx_sheet_root[data-state="open"] {
   animation: dx-sheet-root-in 200ms ease-out forwards;
 }
 
@@ -37,7 +37,7 @@
   }
 }
 
-.dx-sheet {
+.dx_sheet {
   position: fixed;
   z-index: 1001;
   display: flex;
@@ -52,73 +52,73 @@
   will-change: transform;
 }
 
-.dx-sheet[data-side="right"],
-.dx-sheet[data-side="left"] {
+.dx_sheet[data-side="right"],
+.dx_sheet[data-side="left"] {
   top: 0;
   bottom: 0;
   width: 75%;
   max-width: 24rem;
 }
 
-.dx-sheet[data-side="right"] {
+.dx_sheet[data-side="right"] {
   right: 0;
   border-left: 1px solid var(--overlay-border);
   transform: translateX(100%);
 }
 
-.dx-sheet[data-side="left"] {
+.dx_sheet[data-side="left"] {
   left: 0;
   border-right: 1px solid var(--overlay-border);
   transform: translateX(-100%);
 }
 
-.dx-sheet[data-side="top"],
-.dx-sheet[data-side="bottom"] {
+.dx_sheet[data-side="top"],
+.dx_sheet[data-side="bottom"] {
   right: 0;
   left: 0;
 }
 
-.dx-sheet[data-side="top"] {
+.dx_sheet[data-side="top"] {
   top: 0;
   border-bottom: 1px solid var(--overlay-border);
   transform: translateY(-100%);
 }
 
-.dx-sheet[data-side="bottom"] {
+.dx_sheet[data-side="bottom"] {
   bottom: 0;
   border-top: 1px solid var(--overlay-border);
   transform: translateY(100%);
 }
 
-.dx-sheet-root[data-state="open"] .dx-sheet[data-side="right"] {
+.dx_sheet_root[data-state="open"] .dx_sheet[data-side="right"] {
   animation: dx-slide-in-right 200ms ease-out forwards;
 }
 
-.dx-sheet-root[data-state="open"] .dx-sheet[data-side="left"] {
+.dx_sheet_root[data-state="open"] .dx_sheet[data-side="left"] {
   animation: dx-slide-in-left 200ms ease-out forwards;
 }
 
-.dx-sheet-root[data-state="open"] .dx-sheet[data-side="top"] {
+.dx_sheet_root[data-state="open"] .dx_sheet[data-side="top"] {
   animation: dx-slide-in-top 200ms ease-out forwards;
 }
 
-.dx-sheet-root[data-state="open"] .dx-sheet[data-side="bottom"] {
+.dx_sheet_root[data-state="open"] .dx_sheet[data-side="bottom"] {
   animation: dx-slide-in-bottom 200ms ease-out forwards;
 }
 
-.dx-sheet-root[data-state="closed"] .dx-sheet[data-side="right"] {
+.dx_sheet_root[data-state="closed"] .dx_sheet[data-side="right"] {
   animation: dx-slide-out-right 150ms ease-in forwards;
 }
 
-.dx-sheet-root[data-state="closed"] .dx-sheet[data-side="left"] {
+.dx_sheet_root[data-state="closed"] .dx_sheet[data-side="left"] {
   animation: dx-slide-out-left 150ms ease-in forwards;
 }
 
-.dx-sheet-root[data-state="closed"] .dx-sheet[data-side="top"] {
+.dx_sheet_root[data-state="closed"] .dx_sheet[data-side="top"] {
   animation: dx-slide-out-top 150ms ease-in forwards;
 }
 
-.dx-sheet-root[data-state="closed"] .dx-sheet[data-side="bottom"] {
+.dx_sheet_root[data-state="closed"] .dx_sheet[data-side="bottom"] {
   animation: dx-slide-out-bottom 150ms ease-in forwards;
 }
 
@@ -202,14 +202,14 @@
   }
 }
 
-.dx-sheet-header {
+.dx_sheet_header {
   display: flex;
   flex-direction: column;
   padding: var(--surface-padding);
   gap: calc(var(--space) * 1.5);
 }
 
-.dx-sheet-footer {
+.dx_sheet_footer {
   display: flex;
   flex-direction: column;
   padding: var(--surface-padding);
@@ -217,20 +217,20 @@
   gap: calc(var(--space) * 2);
 }
 
-.dx-sheet-title {
+.dx_sheet_title {
   margin: 0;
   color: var(--overlay-fg);
   font-size: 1.125rem;
   font-weight: 600;
 }
 
-.dx-sheet-description {
+.dx_sheet_description {
   margin: 0;
   color: var(--fg-muted);
   font-size: 0.875rem;
 }
 
-.dx-sheet-close {
+.dx_sheet_close {
   position: absolute;
   top: calc(var(--space) * 4);
   right: calc(var(--space) * 4);
@@ -248,6 +248,6 @@
   transition: color 150ms ease, background-color 150ms ease;
 }
 
-.dx-sheet-close:hover {
+.dx_sheet_close:hover {
   color: var(--overlay-fg);
 }

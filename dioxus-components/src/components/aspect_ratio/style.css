@@ -1,11 +1,11 @@
-.dx-aspect-ratio-container {
+.dx_aspect_ratio_container {
   overflow: hidden;
   box-sizing: border-box;
   padding: calc(var(--space) * 4);
   border-radius: var(--radius-surface);
 }
 
-.dx-aspect-ratio-image {
+.dx_aspect_ratio_image {
   width: 100%;
   height: 100%;
   object-fit: cover;

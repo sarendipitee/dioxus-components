@@ -1,11 +1,11 @@
-.dx-pagination {
+.dx_pagination {
   display: flex;
   width: 100%;
   justify-content: center;
   margin: 0 auto;
 }
 
-.dx-pagination-content {
+.dx_pagination_content {
   display: flex;
   align-items: center;
   padding: 0;
@@ -14,7 +14,7 @@
   list-style: none;
 }
 
-.dx-pagination-link {
+.dx_pagination_link {
   display: inline-flex;
   box-sizing: border-box;
   align-items: center;
@@ -29,69 +29,69 @@
   transition: background-color 0.2s ease, color 0.2s ease;
 }
 
-.dx-pagination-link:focus-visible {
+.dx_pagination_link:focus-visible {
   box-shadow: 0 0 0 2px var(--focus);
 }
 
-.dx-pagination-link[data-size="icon"] {
+.dx_pagination_link[data-size="icon"] {
   width: var(--control-height-md);
   height: var(--control-height-md);
   padding: 0;
 }
 
-.dx-pagination-ellipsis {
+.dx_pagination_ellipsis {
   display: flex;
   align-items: center;
   justify-content: center;
   color: var(--surface-fg);
 }
 
-.dx-pagination-link[data-size="icon"],
-.dx-pagination-ellipsis {
+.dx_pagination_link[data-size="icon"],
+.dx_pagination_ellipsis {
   width: var(--control-height-md);
   height: var(--control-height-md);
 }
 
-.dx-pagination-link[data-size="default"] {
+.dx_pagination_link[data-size="default"] {
   height: var(--control-height-md);
   padding: calc(var(--space) * 2) calc(var(--space) * 4);
 }
 
-.dx-pagination-link[data-active="true"] {
+.dx_pagination_link[data-active="true"] {
   border: 1px solid var(--input-border);
   background: var(--surface);
 }
 
-.dx-pagination-link[data-active="true"]:hover {
+.dx_pagination_link[data-active="true"]:hover {
   background: var(--surface-hover);
 }
 
-.dx-pagination-link[data-active="false"]:hover {
+.dx_pagination_link[data-active="false"]:hover {
   background: var(--surface-hover);
   color: var(--surface-hover-fg);
 }
 
-.dx-pagination-link[data-disabled="true"] {
+.dx_pagination_link[data-disabled="true"] {
   color: var(--surface-disabled-fg);
   cursor: not-allowed;
   opacity: 0.55;
   pointer-events: none;
 }
 
-.dx-pagination-link[data-kind="previous"],
-.dx-pagination-link[data-kind="next"] {
+.dx_pagination_link[data-kind="previous"],
+.dx_pagination_link[data-kind="next"] {
   padding-right: 0.625rem;
   padding-left: 0.625rem;
   gap: var(--space);
 }
 
-.dx-pagination-label {
+.dx_pagination_label {
   display: none;
   user-select: none;
 }
 
 @media (width >= 640px) {
-  .dx-pagination-label {
+  .dx_pagination_label {
     display: inline;
   }
 }
@@ -99,7 +99,7 @@
 /* TODO: move to shared css */
 
 /* Screen-reader only text */
-.dx-sr-only {
+.dx_sr_only {
   position: absolute;
   overflow: hidden;
   width: 1px;

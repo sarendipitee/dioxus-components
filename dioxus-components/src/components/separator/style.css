@@ -1,13 +1,13 @@
-.dx-separator {
+.dx_separator {
   background: var(--surface-border);
 }
 
-.dx-separator[data-orientation="horizontal"] {
+.dx_separator[data-orientation="horizontal"] {
   width: 100%;
   height: 1px;
 }
 
-.dx-separator[data-orientation="vertical"] {
+.dx_separator[data-orientation="vertical"] {
   width: 1px;
   height: 100%;
 }

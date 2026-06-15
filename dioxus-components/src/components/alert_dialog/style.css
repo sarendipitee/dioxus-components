@@ -1,5 +1,5 @@
 /* Alert Dialog Backdrop */
-.dx-alert-dialog-backdrop {
+.dx_alert_dialog_backdrop {
   position: fixed;
   z-index: 1000;
   background: rgb(0 0 0 / 30%);
@@ -9,7 +9,7 @@
   will-change: opacity, backdrop-filter;
 }
 
-.dx-alert-dialog-backdrop[data-state="closed"] {
+.dx_alert_dialog_backdrop[data-state="closed"] {
   animation: dx-alert-animate-out 150ms ease-in forwards;
 }
 
@@ -25,7 +25,7 @@
   }
 }
 
-.dx-alert-dialog-backdrop[data-state="open"] {
+.dx_alert_dialog_backdrop[data-state="open"] {
   animation: dx-alert-animate-in 550ms ease-out forwards;
 }
 
@@ -42,7 +42,7 @@
 }
 
 /* Alert Dialog Container - improved for theme consistency */
-.dx-alert-dialog {
+.dx_alert_dialog {
   position: fixed;
   z-index: 1001;
   top: 50%;
@@ -65,49 +65,49 @@
   text-align: center;
 }
 
-.dx-alert-dialog-header {
+.dx_alert_dialog_header {
   display: flex;
   flex-direction: column;
   gap: calc(var(--space) * 1.5);
 }
 
-.dx-alert-dialog-body {
+.dx_alert_dialog_body {
   flex: 1 1 auto;
   overflow-y: auto;
 }
 
-.dx-alert-dialog-title {
+.dx_alert_dialog_title {
   margin: 0;
   color: var(--overlay-fg);
   font-size: 1.25rem;
   font-weight: 700;
 }
 
-.dx-alert-dialog-description {
+.dx_alert_dialog_description {
   margin: 0;
   color: var(--fg-muted);
   font-size: 1rem;
 }
 
-.dx-alert-dialog-actions {
+.dx_alert_dialog_actions {
   display: flex;
   flex-direction: column-reverse;
   gap: calc(var(--space) * 3);
 }
 
 @media (width >= 40rem) {
-  .dx-alert-dialog-actions {
+  .dx_alert_dialog_actions {
     flex-direction: row;
     justify-content: flex-end;
   }
 
-  .dx-alert-dialog {
+  .dx_alert_dialog {
     max-width: 32rem;
     text-align: left;
   }
 }
 
-.dx-alert-dialog-cancel {
+.dx_alert_dialog_cancel {
   padding: 8px 18px;
   border: 1px solid var(--overlay-border);
   border-radius: var(--radius-control);
@@ -118,15 +118,15 @@
   transition: background-color 0.2s ease;
 }
 
-.dx-alert-dialog-cancel:hover {
+.dx_alert_dialog_cancel:hover {
   background: var(--surface-hover);
 }
 
-.dx-alert-dialog-cancel:focus-visible {
+.dx_alert_dialog_cancel:focus-visible {
   box-shadow: 0 0 0 2px var(--focus);
 }
 
-.dx-alert-dialog-action {
+.dx_alert_dialog_action {
   padding: 8px 18px;
   border: 1px solid var(--danger-border);
   border-radius: var(--radius-control);
@@ -137,10 +137,10 @@
   transition: background-color 0.2s ease;
 }
 
-.dx-alert-dialog-action:hover {
+.dx_alert_dialog_action:hover {
   background: var(--danger-hover);
 }
 
-.dx-alert-dialog-action:focus-visible {
+.dx_alert_dialog_action:focus-visible {
   box-shadow: 0 0 0 2px var(--focus);
 }

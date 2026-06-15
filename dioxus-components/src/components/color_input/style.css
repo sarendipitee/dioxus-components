@@ -1,4 +1,4 @@
-.dx-color-input {
+.dx_color_input {
     display: flex;
     width: 100%;
     min-width: 0;
@@ -17,16 +17,16 @@
     text-align: start;
 }
 
-.dx-color-input-field:disabled {
+.dx_color_input_field:disabled {
     color: var(--input-disabled-fg);
     cursor: not-allowed;
 }
 
-.dx-color-input-popover-root {
+.dx_color_input_popover_root {
     width: 100%;
 }
 
-.dx-color-input-color-swatch {
+.dx_color_input_color_swatch {
     background: var(--swatch-color);
     border-radius: var(--radius-control);
     width: calc(var(--input-height) - var(--space) * 4);

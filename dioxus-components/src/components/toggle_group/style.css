@@ -1,8 +1,8 @@
-.dx-toggle-group {
+.dx_toggle_group {
   width: fit-content;
 }
 
-.dx-toggle-item {
+.dx_toggle_item {
   min-width: 35px;
   padding: 10px;
   border: none;
@@ -14,53 +14,53 @@
   transition: background-color 200ms ease, border 200ms ease, outline-color 150ms;
 }
 
-.dx-toggle-group[data-allow-multiple-pressed="true"]
-  .dx-toggle-item {
+.dx_toggle_group[data-allow-multiple-pressed="true"]
+  .dx_toggle_item {
   border-top: 1px solid var(--surface-border);
   border-right: 1px solid var(--surface-border);
   border-bottom: 1px solid var(--surface-border);
 }
 
-.dx-toggle-item:hover,
-.dx-toggle-item:focus-visible {
+.dx_toggle_item:hover,
+.dx_toggle_item:focus-visible {
   background: var(--surface-hover);
   cursor: pointer;
 }
 
-.dx-toggle-item[data-state="on"] {
+.dx_toggle_item[data-state="on"] {
   background: var(--accent);
   color: var(--accent-fg);
 }
 
-.dx-toggle-item:focus-visible {
+.dx_toggle_item:focus-visible {
   position: relative;
   z-index: 1;
   outline: 2px solid var(--focus);
   outline-offset: 2px;
 }
 
-.dx-toggle-group[data-allow-multiple-pressed="true"]
-  .dx-toggle-item[data-state="on"] {
+.dx_toggle_group[data-allow-multiple-pressed="true"]
+  .dx_toggle_item[data-state="on"] {
   border-top: 1px solid var(--accent-border);
   border-right: 1px solid var(--accent-border);
   border-bottom: 1px solid var(--accent-border);
 }
 
-.dx-toggle-group[data-allow-multiple-pressed="true"]
-  .dx-toggle-item:first-child[data-state="on"] {
+.dx_toggle_group[data-allow-multiple-pressed="true"]
+  .dx_toggle_item:first-child[data-state="on"] {
   border: 1px solid var(--accent-border);
 }
 
-.dx-toggle-item:first-child {
+.dx_toggle_item:first-child {
   border-bottom-left-radius: var(--radius-control);
   border-top-left-radius: var(--radius-control);
 }
 
-.dx-toggle-group[data-allow-multiple-pressed="true"] .dx-toggle-item:first-child {
+.dx_toggle_group[data-allow-multiple-pressed="true"] .dx_toggle_item:first-child {
   border: 1px solid var(--surface-border);
 }
 
-.dx-toggle-item:last-child {
+.dx_toggle_item:last-child {
   border-bottom-right-radius: var(--radius-control);
   border-top-right-radius: var(--radius-control);
 }

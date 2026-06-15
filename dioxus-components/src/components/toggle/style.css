@@ -1,4 +1,4 @@
-.dx-toggle {
+.dx_toggle {
   display: inline-flex;
   width: fit-content;
   min-width: 2rem;
@@ -16,17 +16,17 @@
   transition: background-color 150ms, color 150ms, outline-color 150ms;
 }
 
-.dx-toggle:hover, .dx-toggle:focus-visible {
+.dx_toggle:hover, .dx_toggle:focus-visible {
   background: var(--surface-hover);
   cursor: pointer;
 }
 
-.dx-toggle:focus-visible {
+.dx_toggle:focus-visible {
   outline: 2px solid var(--focus);
   outline-offset: 2px;
 }
 
-.dx-toggle[data-state="on"] {
+.dx_toggle[data-state="on"] {
   background: var(--accent);
   color: var(--accent-fg);
 }

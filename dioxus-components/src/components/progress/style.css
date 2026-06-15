@@ -1,4 +1,4 @@
-.dx-progress {
+.dx_progress {
     position: relative;
     overflow: hidden;
     min-width: 200px;
@@ -8,12 +8,12 @@
     background: var(--surface-muted);
 }
 
-.dx-progress[data-state='indeterminate'] .dx-progress-indicator {
+.dx_progress[data-state='indeterminate'] .dx_progress_indicator {
     width: 50%;
     animation: dx-indeterminate 1s infinite linear;
 }
 
-.dx-progress-indicator {
+.dx_progress_indicator {
     width: var(--progress-value, 0%);
     height: 100%;
     background: var(--accent);

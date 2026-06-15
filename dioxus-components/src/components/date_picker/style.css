@@ -1,34 +1,34 @@
-.dx-date-picker {
+.dx_date_picker {
     position: relative;
     display: inline-flex;
     align-items: center;
 }
 
-.dx-date-picker[data-disabled="true"],
-.dx-date-picker [data-disabled="true"] {
+.dx_date_picker[data-disabled="true"],
+.dx_date_picker [data-disabled="true"] {
     cursor: not-allowed;
     opacity: 0.5;
 }
 
-.dx-date-segment {
+.dx_date_segment {
     caret-color: transparent;
 }
 
-.dx-date-segment[no-date="true"] {
+.dx_date_segment[no-date="true"] {
     color: var(--input-fg-muted);
 }
 
-.dx-date-segment[is-separator="true"] {
+.dx_date_segment[is-separator="true"] {
     padding: 0;
 }
 
-.dx-date-segment:focus-visible {
+.dx_date_segment:focus-visible {
     border-radius: var(--radius-input);
     background: var(--input-focus);
     color: var(--input-focus-fg);
     outline: none;
 }
 
-.dx-date-picker-surface {
+.dx_date_picker_surface {
     display: inline-flex;
 }

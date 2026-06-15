@@ -1,10 +1,10 @@
-.dx-radio-group {
+.dx_radio_group {
   display: flex;
   flex-direction: column;
   gap: calc(var(--space) * 3);
 }
 
-.dx-radio-item {
+.dx_radio_item {
   display: flex;
   flex-direction: row;
   align-items: center;
@@ -16,7 +16,7 @@
   gap: calc(var(--space) * 3);
 }
 
-.dx-radio-item::before {
+.dx_radio_item::before {
   display: block;
   width: 1rem;
   height: 1rem;
@@ -28,25 +28,25 @@
   cursor: pointer;
 }
 
-.dx-radio-item:focus-visible {
+.dx_radio_item:focus-visible {
   outline: none;
 }
 
-.dx-radio-item:focus-visible::before {
+.dx_radio_item:focus-visible::before {
   box-shadow: 0 0 0 2px var(--focus);
 }
 
-.dx-radio-item[data-state="checked"]::before {
+.dx_radio_item[data-state="checked"]::before {
   border: 0.25rem solid var(--input);
   background: var(--accent);
 }
 
-.dx-radio-item:disabled {
+.dx_radio_item:disabled {
   color: var(--input-disabled-fg);
   cursor: not-allowed;
   opacity: 0.5;
 }
 
-.dx-radio-item:disabled::before {
+.dx_radio_item:disabled::before {
   cursor: not-allowed;
 }

@@ -1,5 +1,5 @@
 /* Dialog Backdrop */
-.dx-dialog-backdrop {
+.dx_dialog_backdrop {
   will-change: opacity, backdrop-filter;
   background: rgba(0, 0, 0, .3);
   position: fixed;
@@ -8,7 +8,7 @@
   transition: opacity, backdrop-filter;
 }
 
-.dx-dialog-backdrop[data-state="closed"] {
+.dx_dialog_backdrop[data-state="closed"] {
   animation: dx-dialog-backdrop-animate-out 150ms ease-in forwards;
   pointer-events: none;
 }
@@ -25,7 +25,7 @@
   }
 }
 
-.dx-dialog-backdrop[data-state="open"] {
+.dx_dialog_backdrop[data-state="open"] {
   animation: dx-dialog-backdrop-animate-in 150ms ease-out forwards;
 }
 
@@ -42,7 +42,7 @@
 }
 
 /* Dialog Container - improved for theme consistency */
-.dx-dialog {
+.dx_dialog {
   position: fixed;
   z-index: 1001;
   top: 50%;
@@ -66,51 +66,51 @@
   transform: translate(-50%, -50%);
 }
 
-.dx-dialog-header {
+.dx_dialog_header {
   display: flex;
   flex-direction: column;
   gap: calc(var(--space) * 1.5);
 }
 
-.dx-dialog-body {
+.dx_dialog_body {
   flex: 1 1 auto;
   overflow-y: auto;
 }
 
-.dx-dialog-footer {
+.dx_dialog_footer {
   display: flex;
   flex-direction: column-reverse;
   gap: calc(var(--space) * 2);
 }
 
 @media (width >= 40rem) {
-  .dx-dialog-footer {
+  .dx_dialog_footer {
     flex-direction: row;
     justify-content: flex-end;
   }
 }
 
-.dx-dialog-title {
+.dx_dialog_title {
   margin: 0;
   color: var(--overlay-fg);
   font-size: 1.25rem;
   font-weight: 700;
 }
 
-.dx-dialog-description {
+.dx_dialog_description {
   margin: 0;
   color: var(--fg-muted);
   font-size: 1rem;
 }
 
 @media (width >= 40rem) {
-  .dx-dialog {
+  .dx_dialog {
     max-width: 32rem;
     text-align: left;
   }
 }
 
-.dx-dialog-close {
+.dx_dialog_close {
   position: absolute;
   top: calc(var(--space) * 4);
   right: calc(var(--space) * 4);
@@ -125,6 +125,6 @@
   line-height: 1;
 }
 
-.dx-dialog-close:hover {
+.dx_dialog_close:hover {
   color: var(--overlay-fg);
 }

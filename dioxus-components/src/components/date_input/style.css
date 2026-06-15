@@ -1,4 +1,4 @@
-.dx-date-input-group {
+.dx_date_input_group {
     display: flex;
     width: 100%;
     min-width: 150px;
@@ -11,7 +11,7 @@
     gap: var(--space);
 }
 
-.dx-date-input-popover-trigger.dx-date-input-popover-trigger {
+.dx_date_input_popover_trigger.dx_date_input_popover_trigger {
     display: inline-flex;
     flex: 0 0 auto;
     width: 1.5rem;
@@ -29,25 +29,25 @@
     transition: rotate 150ms cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-.dx-date-input-trigger {
+.dx_date_input_trigger {
     display: block;
     stroke: currentColor;
 }
 
-.dx-date-input-popover-root[data-state="open"] .dx-date-input-trigger {
+.dx_date_input_popover_root[data-state="open"] .dx_date_input_trigger {
     rotate: 180deg;
 }
 
-.dx-date-input-popover-content {
+.dx_date_input_popover_content {
     max-width: unset;
     padding: 0;
 }
 
-.dx-date-input-popover-content[data-state="open"] {
+.dx_date_input_popover_content[data-state="open"] {
     animation: dx-date-input-popover-fade-in .15s ease-out;
 }
 
-.dx-date-input-popover-content[data-state="closed"] {
+.dx_date_input_popover_content[data-state="closed"] {
     animation: dx-date-input-popover-fade-out .15s ease-out forwards;
     pointer-events: none;
 }
