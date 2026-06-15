@@ -361,6 +361,21 @@ impl TimePickerContext {
         })
     }
 
+    /// Reactively reads the controlled value so effects re-run when the
+    /// `selected_value`/`selected_time` props change externally.
+    ///
+    /// Unlike [`current_value`], this subscribes to the underlying signals; use
+    /// it inside effects that must resync internal segment state with external
+    /// updates (e.g. selecting a value from a column picker).
+    fn reactive_current_value(&self) -> Option<TimePickerValue> {
+        self.selected_value.read().clone().or_else(|| {
+            self.selected_time
+                .read()
+                .clone()
+                .map(|time| TimePickerValue::from_time(time, self.precision))
+        })
+    }
+
     fn set_value(&mut self, value: Option<TimePickerValue>) {
         if !value_precision_eq(self.current_value(), value, self.precision) {
             self.on_picker_value_change.call(value);
@@ -1194,37 +1209,63 @@ pub fn TimePickerInputValue(props: TimePickerInputValueProps) -> Element {
     let mut second_value = use_signal(move || second);
     let mut period_value = use_signal(move || period);
 
-    use_effect(move || match ctx.current_value() {
-        Some(TimePickerValue::Time(time)) => {
-            let hour = if ctx.format == TimePickerFormat::TwelveHour {
-                twelve_hour_display(time.hour())
-            } else {
-                time.hour() as u32
-            };
-            hour_value.set(Some(hour));
-            minute_value.set(Some(time.minute() as u32));
-            second_value.set(Some(time.second() as u32));
-            period_value.set(Some(AmPm::from_hour(time.hour()).index()));
+    // Tracks the last value the segments were synced to so the resync effect
+    // can distinguish a genuine external change (e.g. selecting a value from a
+    // column picker) from an echo of this component's own emit or a mid-edit
+    // partial state. Without this, a reactive resync would clobber segments the
+    // user is editing or feed its own emits back in a loop.
+    let mut last_synced = use_signal(move || ctx.current_value());
+
+    // Resync the internal segment signals when the controlled value changes
+    // externally. This reads the props reactively so updates that bypass the
+    // segments (column pickers, programmatic changes) are reflected in the
+    // display. Echoes of our own emits and partial-edit states are suppressed
+    // by comparing against `last_synced`.
+    use_effect(move || {
+        let incoming = ctx.reactive_current_value();
+        if value_precision_eq(incoming, last_synced.peek().clone(), ctx.precision) {
+            return;
         }
-        Some(TimePickerValue::Duration {
-            hours,
-            minutes,
-            seconds,
-        }) => {
-            hour_value.set(Some(hours));
-            minute_value.set(Some(minutes as u32));
-            second_value.set(Some(seconds as u32));
-            period_value.set(None);
-        }
-        None => {
-            hour_value.set(None);
-            minute_value.set(None);
-            second_value.set(None);
-            period_value.set(None);
+        last_synced.set(incoming);
+        match incoming {
+            Some(TimePickerValue::Time(time)) => {
+                let hour = if ctx.format == TimePickerFormat::TwelveHour {
+                    twelve_hour_display(time.hour())
+                } else {
+                    time.hour() as u32
+                };
+                hour_value.set(Some(hour));
+                minute_value.set(Some(time.minute() as u32));
+                second_value.set(Some(time.second() as u32));
+                period_value.set(Some(AmPm::from_hour(time.hour()).index()));
+            }
+            Some(TimePickerValue::Duration {
+                hours,
+                minutes,
+                seconds,
+            }) => {
+                hour_value.set(Some(hours));
+                minute_value.set(Some(minutes as u32));
+                second_value.set(Some(seconds as u32));
+                period_value.set(None);
+            }
+            None => {
+                hour_value.set(None);
+                minute_value.set(None);
+                second_value.set(None);
+                period_value.set(None);
+            }
         }
     });
 
     use_effect(move || {
+        // Emit the segment-derived value and record it as the last synced value
+        // so the resync effect treats the resulting prop change as an echo
+        // rather than an external update that would overwrite in-progress edits.
+        let mut emit = move |value: Option<TimePickerValue>| {
+            last_synced.set(value);
+            ctx.set_value(value);
+        };
         if let (Some(hour), Some(minute)) = (hour_value(), minute_value()) {
             let second = if ctx.precision == TimePrecision::Second {
                 second_value()
@@ -1234,7 +1275,7 @@ pub fn TimePickerInputValue(props: TimePickerInputValueProps) -> Element {
             if let Some(second) = second {
                 if ctx.picker_type == TimePickerType::Duration {
                     if minute <= 59 && second <= 59 {
-                        ctx.set_value(Some(TimePickerValue::Duration {
+                        emit(Some(TimePickerValue::Duration {
                             hours: hour,
                             minutes: minute as u8,
                             seconds: second as u8,
@@ -1248,13 +1289,13 @@ pub fn TimePickerInputValue(props: TimePickerInputValueProps) -> Element {
                     };
                     if let Ok(time) = Time::from_hms(hour, minute as u8, second as u8) {
                         if time >= bounds.min_time && time <= bounds.max_time {
-                            ctx.set_value(Some(TimePickerValue::from_time(time, ctx.precision)));
+                            emit(Some(TimePickerValue::from_time(time, ctx.precision)));
                         }
                     }
                 }
             }
         } else {
-            ctx.set_value(None);
+            emit(None);
         }
     });
 

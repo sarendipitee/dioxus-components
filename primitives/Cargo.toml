@@ -22,7 +22,7 @@ serde = { version = "1.0", features = ["derive"] }
 palette = "0.7.6"
 gpui-pretext = "0.6.2"
 wasm-bindgen = "0.2.105"
-web-sys = { version = "0.3.82", features = ["CanvasRenderingContext2d", "CssStyleDeclaration", "Document", "Element", "HtmlCanvasElement", "HtmlTextAreaElement", "TextMetrics", "Window"] }
+web-sys = { version = "0.3.82", features = ["CanvasRenderingContext2d", "CssStyleDeclaration", "DataTransfer", "DataTransferItem", "DataTransferItemList", "Document", "DragEvent", "Element", "Event", "EventTarget", "File", "FileList", "HtmlCanvasElement", "HtmlInputElement", "HtmlTextAreaElement", "TextMetrics", "Window"] }
 
 [build-dependencies]
 lazy-js-bundle = "0.7.9"
@@ -33,4 +33,4 @@ dioxus-ssr = "0.7.0"
 [features]
 default = ["router"]
 router = ["dioxus/router"]
-web = ["time/wasm-bindgen"]
+web = ["time/wasm-bindgen", "dioxus/web"]

@@ -28,6 +28,7 @@ pub mod dialog;
 pub mod disclosure;
 pub mod drag_and_drop_list;
 pub mod dropdown_menu;
+pub mod file_drop_zone;
 mod focus;
 pub mod hover_card;
 pub mod label;
@@ -338,6 +339,55 @@ impl ContentAlign {
             Self::Start => "start",
             Self::Center => "center",
             Self::End => "end",
+        }
+    }
+}
+
+/// Content that can be supplied as plain text, a rendered element, or a callback
+/// that renders an element from context.
+///
+/// `Ctx` defaults to `()` for the common case where no render context is needed.
+#[derive(Clone, PartialEq)]
+pub enum TextOrElement<Ctx: 'static = ()> {
+    /// Plain text content.
+    Text(String),
+    /// A pre-rendered element.
+    Element(Element),
+    /// A renderer invoked with context to produce an element.
+    Render(Callback<Ctx, Element>),
+}
+
+impl<Ctx: 'static> From<String> for TextOrElement<Ctx> {
+    fn from(value: String) -> Self {
+        Self::Text(value)
+    }
+}
+
+impl<Ctx: 'static> From<&str> for TextOrElement<Ctx> {
+    fn from(value: &str) -> Self {
+        Self::Text(value.to_string())
+    }
+}
+
+impl<Ctx: 'static> From<Element> for TextOrElement<Ctx> {
+    fn from(value: Element) -> Self {
+        Self::Element(value)
+    }
+}
+
+impl<Ctx: 'static> From<Callback<Ctx, Element>> for TextOrElement<Ctx> {
+    fn from(value: Callback<Ctx, Element>) -> Self {
+        Self::Render(value)
+    }
+}
+
+impl TextOrElement<()> {
+    /// Render to an element, invoking `Render` callbacks with `()`.
+    pub fn into_element(self) -> Element {
+        match self {
+            TextOrElement::Text(text) => rsx! { "{text}" },
+            TextOrElement::Element(el) => el,
+            TextOrElement::Render(cb) => cb.call(()),
         }
     }
 }
