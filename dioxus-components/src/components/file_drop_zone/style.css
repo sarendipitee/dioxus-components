@@ -1,0 +1,116 @@
+.dx_file_drop_zone {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: calc(var(--space) * 2);
+  padding: calc(var(--space) * 6);
+  border: 2px dashed var(--surface-border);
+  border-radius: var(--radius-surface);
+  background: var(--surface);
+  color: var(--surface-fg);
+  text-align: center;
+  cursor: pointer;
+  transition:
+    border-color 0.15s ease,
+    background-color 0.15s ease,
+    color 0.15s ease,
+    opacity 0.15s ease;
+}
+
+.dx_file_drop_zone:hover {
+  border-color: var(--surface-muted-border);
+  background: var(--surface-hover);
+}
+
+.dx_file_drop_zone:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 2px;
+}
+
+.dx_file_drop_zone[data-drag-active] {
+  border-color: var(--accent);
+  background: var(--surface-hover);
+}
+
+.dx_file_drop_zone[data-accept] {
+  border-color: var(--success-subtle-border);
+  background: var(--success-subtle);
+  color: var(--success-subtle-fg);
+}
+
+.dx_file_drop_zone[data-reject] {
+  border-color: var(--danger-subtle-border);
+  background: var(--danger-subtle);
+  color: var(--danger-subtle-fg);
+}
+
+.dx_file_drop_zone[data-disabled] {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.dx_file_drop_zone[data-disabled]:hover {
+  border-color: var(--surface-border);
+  background: var(--surface);
+}
+
+.dx_file_drop_zone[data-loading] {
+  cursor: progress;
+  animation: dx-file-drop-zone-pulse 1.4s ease-in-out infinite;
+}
+
+@keyframes dx-file-drop-zone-pulse {
+  0%,
+  100% {
+    opacity: 0.6;
+  }
+
+  50% {
+    opacity: 0.85;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .dx_file_drop_zone {
+    transition: none;
+  }
+
+  .dx_file_drop_zone[data-loading] {
+    animation: none;
+  }
+}
+
+/* State-aware display helpers. Idle content shows by default; accept/reject
+   content is revealed only when the zone enters the matching drag state. */
+.dx_file_drop_zone_idle {
+  display: block;
+}
+
+.dx_file_drop_zone_accept_display,
+.dx_file_drop_zone_reject_display {
+  display: none;
+}
+
+.dx_file_drop_zone[data-accept] .dx_file_drop_zone_idle,
+.dx_file_drop_zone[data-reject] .dx_file_drop_zone_idle {
+  display: none;
+}
+
+.dx_file_drop_zone[data-accept] .dx_file_drop_zone_accept_display {
+  display: block;
+}
+
+.dx_file_drop_zone[data-reject] .dx_file_drop_zone_reject_display {
+  display: block;
+}
+
+/* Suppress pointer events on direct children so root drag/click reliably fires.
+   Interactive elements inside the zone must opt in via the interactive_children prop. */
+.dx_file_drop_zone > * {
+  pointer-events: none;
+}
+
+.dx_file_drop_zone[data-interactive-children] > * {
+  pointer-events: auto;
+}
