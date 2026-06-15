@@ -15,14 +15,6 @@ pub fn Demo() -> Element {
             "Show Dialog"
         }
         Dialog { open: open(), on_open_change: move |v| open.set(v),
-            button {
-                class: "dx-dialog-close",
-                r#type: "button",
-                aria_label: "Close",
-                tabindex: if open() { "0" } else { "-1" },
-                onclick: move |_| open.set(false),
-                "×"
-            }
             DialogTitle { "Item information" }
             DialogDescription { "Here is some additional information about the item." }
         }

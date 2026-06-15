@@ -62,7 +62,7 @@ pub fn category_of(name: &str) -> ComponentCategory {
         "dialog" | "alert_dialog" | "sheet" | "popover" | "tooltip" | "hover_card" => {
             ComponentCategory::Overlays
         }
-        "toast" | "progress" | "skeleton" | "badge" => ComponentCategory::Feedback,
+        "toast" | "progress" | "skeleton" | "badge" | "alert" => ComponentCategory::Feedback,
         "accordion" | "collapsible" => ComponentCategory::Disclosure,
         "avatar" | "card" | "separator" | "aspect_ratio" | "item" | "drag_and_drop_list"
         | "virtual_list" | "scroll_area" | "split_pane" | "data_table" => {
@@ -245,6 +245,7 @@ macro_rules! examples {
 
 examples!(
     accordion,
+    alert,
     alert_dialog,
     aspect_ratio,
     avatar,
@@ -285,6 +286,7 @@ examples!(
         custom_header,
         custom_event,
         multi_view,
+        multi_day,
         drag_and_drop,
         external_drop,
         resize,
@@ -314,7 +316,7 @@ examples!(
     ],
     slider[dynamic_range, range],
     switch,
-    tabs[manual, vertical, controlled],
+    tabs[manual, vertical, controlled, pills],
     table_of_contents,
     text_input[description, error, size, sections],
     textarea[outline, fade, ghost, bottom_section, autosize, resize],

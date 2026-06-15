@@ -370,7 +370,7 @@ fn NavUser() -> Element {
                                 ImageAvatar {
                                     size: AvatarImageSize::Small,
                                     style: "border-radius:0.5rem;",
-                                    src: asset!("/assets/dioxus-logo.png", ImageAssetOptions::new().with_avif()).to_string(),
+                                    src: asset!("/assets/dioxus-logo.png").to_string(),
                                     alt: "dioxus avatar",
                                     "DX"
                                 }
@@ -386,7 +386,7 @@ fn NavUser() -> Element {
                             ImageAvatar {
                                 size: AvatarImageSize::Small,
                                 style: "border-radius:0.5rem;",
-                                src: asset!("/assets/dioxus-logo.png", ImageAssetOptions::new().with_avif()).to_string(),
+                                src: asset!("/assets/dioxus-logo.png").to_string(),
                                 alt: "dioxus avatar",
                                 "DX"
                             }

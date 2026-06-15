@@ -208,8 +208,13 @@ fn TeamSwitcher(teams: &'static [Team]) -> Element {
     rsx! {
         SidebarMenu {
             SidebarMenuItem {
-                DropdownMenu {                    DropdownMenuTrigger {                        as: move |attributes: Vec<Attribute>| rsx! {
-                            SidebarMenuButton { class: DemoStyles::dx_sidebar_menu_disclosure_button, size: SidebarMenuButtonSize::Lg, attributes,
+                DropdownMenu {
+                    DropdownMenuTrigger {
+                        r#as: move |attributes: Vec<Attribute>| rsx! {
+                            SidebarMenuButton {
+                                class: DemoStyles::dx_sidebar_menu_disclosure_button,
+                                size: SidebarMenuButtonSize::Lg,
+                                attributes,
                                 div { style: "display:flex; flex-shrink:0; align-items:center; justify-content:center; width:2rem; height:2rem; aspect-ratio:1; border-radius:0.5rem; background:var(--accent); color:var(--accent-fg);",
                                     DemoIcon {}
                                 }
@@ -221,7 +226,8 @@ fn TeamSwitcher(teams: &'static [Team]) -> Element {
                             }
                         },
                     }
-                    DropdownMenuContent {                        div { style: "padding:0.5rem; font-size:0.75rem; opacity:0.7;",
+                    DropdownMenuContent {
+                        div { style: "padding:0.5rem; font-size:0.75rem; opacity:0.7;",
                             "Teams"
                         }
                         for (idx , team) in teams.iter().enumerate() {
@@ -260,9 +266,10 @@ fn NavMain(items: &'static [NavMainItem]) -> Element {
                 for item in items.iter() {
                     Collapsible {
                         default_open: item.is_active,
-                        as: move |attributes: Vec<Attribute>| rsx! {
+                        r#as: move |attributes: Vec<Attribute>| rsx! {
                             SidebarMenuItem { key: "{item.title}", attributes,
-                                CollapsibleTrigger {                                    as: move |attributes: Vec<Attribute>| rsx! {
+                                CollapsibleTrigger {
+                                    r#as: move |attributes: Vec<Attribute>| rsx! {
                                         SidebarMenuButton {
                                             class: DemoStyles::dx_sidebar_menu_disclosure_button,
                                             tooltip: rsx! {
@@ -280,7 +287,7 @@ fn NavMain(items: &'static [NavMainItem]) -> Element {
                                         for sub_item in item.items {
                                             SidebarMenuSubItem { key: "{sub_item.title}",
                                                 SidebarMenuSubButton {
-                                                    as: move |attributes: Vec<Attribute>| rsx! {
+                                                    r#as: move |attributes: Vec<Attribute>| rsx! {
                                                         a { href: sub_item.url, ..attributes,
                                                             span { {sub_item.title} }
                                                         }
@@ -308,21 +315,26 @@ fn NavProjects(projects: &'static [Project]) -> Element {
                 for project in projects.iter() {
                     SidebarMenuItem { key: "{project.name}",
                         SidebarMenuButton {
-                            as: move |attributes: Vec<Attribute>| rsx! {
+                            r#as: move |attributes: Vec<Attribute>| rsx! {
                                 a { href: project.url, ..attributes,
                                     DemoIcon {}
                                     span { {project.name} }
                                 }
                             },
                         }
-                        DropdownMenu {                            DropdownMenuTrigger {                                as: move |attributes: Vec<Attribute>| rsx! {
+                        DropdownMenu {
+                            DropdownMenuTrigger {
+                                r#as: move |attributes: Vec<Attribute>| rsx! {
                                     SidebarMenuAction { show_on_hover: true, attributes,
                                         DemoIcon {}
-                                        span { style: "position:absolute;overflow:hidden;width:1px;height:1px;padding:0;border:0;margin:-1px;clip-path:inset(50%);white-space:nowrap;", "More" }
+                                        span { style: "position:absolute;overflow:hidden;width:1px;height:1px;padding:0;border:0;margin:-1px;clip-path:inset(50%);white-space:nowrap;",
+                                            "More"
+                                        }
                                     }
                                 },
                             }
-                            DropdownMenuContent {                                DropdownMenuItem {
+                            DropdownMenuContent {
+                                DropdownMenuItem {
                                     index: 0usize,
                                     value: "view".to_string(),
                                     on_select: move |_: String| {},
@@ -365,12 +377,17 @@ fn NavUser() -> Element {
     rsx! {
         SidebarMenu {
             SidebarMenuItem {
-                DropdownMenu {                    DropdownMenuTrigger {                        as: move |attributes: Vec<Attribute>| rsx! {
-                            SidebarMenuButton { class: DemoStyles::dx_sidebar_menu_disclosure_button, size: SidebarMenuButtonSize::Lg, attributes,
+                DropdownMenu {
+                    DropdownMenuTrigger {
+                        r#as: move |attributes: Vec<Attribute>| rsx! {
+                            SidebarMenuButton {
+                                class: DemoStyles::dx_sidebar_menu_disclosure_button,
+                                size: SidebarMenuButtonSize::Lg,
+                                attributes,
                                 ImageAvatar {
                                     size: AvatarImageSize::Small,
                                     style: "border-radius:0.5rem;",
-                                    src: asset!("/assets/dioxus-logo.png", ImageAssetOptions::new().with_avif()).to_string(),
+                                    src: asset!("/assets/dioxus-logo.png").to_string(),
                                     alt: "dioxus avatar",
                                     "DX"
                                 }
@@ -382,11 +399,12 @@ fn NavUser() -> Element {
                             }
                         },
                     }
-                    DropdownMenuContent {                        div { style: "display:flex; align-items:center; gap:0.5rem; padding:0.375rem 0.25rem; text-align:left; font-size:0.875rem;",
+                    DropdownMenuContent {
+                        div { style: "display:flex; align-items:center; gap:0.5rem; padding:0.375rem 0.25rem; text-align:left; font-size:0.875rem;",
                             ImageAvatar {
                                 size: AvatarImageSize::Small,
                                 style: "border-radius:0.5rem;",
-                                src: asset!("/assets/dioxus-logo.png", ImageAssetOptions::new().with_avif()).to_string(),
+                                src: asset!("/assets/dioxus-logo.png").to_string(),
                                 alt: "dioxus avatar",
                                 "DX"
                             }
@@ -498,10 +516,7 @@ fn DemoSettingControls(
 #[component]
 fn DemoIcon() -> Element {
     rsx! {
-        Circle {
-            class: DemoStyles::dx_sidebar_icon,
-            size: "24px",
-        }
+        Circle { class: DemoStyles::dx_sidebar_icon, size: "24px" }
     }
 }
 

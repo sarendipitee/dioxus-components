@@ -1,4 +1,5 @@
 pub mod accordion;
+pub mod alert;
 pub mod alert_dialog;
 pub mod aspect_ratio;
 pub mod avatar;
@@ -52,6 +53,7 @@ pub mod tooltip;
 pub mod virtual_list;
 
 pub use accordion::*;
+pub use alert::*;
 pub use alert_dialog::*;
 pub use aspect_ratio::*;
 pub use avatar::*;
