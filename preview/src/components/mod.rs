@@ -45,7 +45,7 @@ pub fn category_of(name: &str) -> ComponentCategory {
         "button" | "input" | "text_input" | "textarea" | "label" | "checkbox" | "switch"
         | "radio_group" | "toggle" | "toggle_group" | "select" | "slider" | "calendar"
         | "date_picker" | "date_input" | "color_picker" | "color_input" | "time_picker"
-        | "time_input" => ComponentCategory::Forms,
+        | "time_input" | "file_drop_zone" => ComponentCategory::Forms,
         "schedule"
         | "schedule_day_view"
         | "schedule_week_view"
@@ -266,6 +266,17 @@ examples!(
     dialog[scrollable, form],
     drag_and_drop_list[removable],
     dropdown_menu,
+    file_drop_zone[
+        images_only,
+        max_size,
+        max_count,
+        single_file,
+        disabled,
+        loading,
+        open_button,
+        rejected,
+        custom_content
+    ],
     hover_card,
     input[sections, composition],
     item[variant, size, image, group],

@@ -1,0 +1,17 @@
+{
+  "name": "file_drop_zone",
+  "description": "A file selection and drag-and-drop zone. Supports click, keyboard, and drag/drop file selection with validation.",
+  "authors": ["Saren"],
+  "exclude": ["variants", "docs.md", "component.json"],
+  "cargoDependencies": [
+    {
+      "name": "dioxus-components",
+      "git": "https://github.com/DioxusLabs/components"
+    },
+    {
+      "name": "dioxus-primitives",
+      "git": "https://github.com/DioxusLabs/components"
+    }
+  ],
+  "globalAssets": ["../../../../themes/default.css"]
+}
