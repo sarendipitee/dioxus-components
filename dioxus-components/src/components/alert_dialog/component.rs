@@ -1,77 +1,133 @@
 use dioxus::prelude::*;
 use dioxus_primitives::alert_dialog::{
     self, AlertDialogActionProps, AlertDialogActionsProps, AlertDialogCancelProps,
-    AlertDialogDescriptionProps, AlertDialogRootProps, AlertDialogTitleProps,
+    AlertDialogContentProps, AlertDialogDescriptionProps, AlertDialogRootProps,
+    AlertDialogTitleProps, AlertDialogTriggerProps,
 };
 use dioxus_primitives::{dioxus_attributes::attributes, merge_attributes};
 
 #[css_module("/src/components/alert_dialog/style.css")]
 struct Styles;
 
+/// The root alert dialog component — a context provider that manages open state.
+/// Place [`AlertDialogContent`] as a child.
 #[component]
 pub fn AlertDialog(props: AlertDialogRootProps) -> Element {
-    let content_base = attributes!(div {
-        class: Styles::dx_alert_dialog,
+    rsx! {
+        alert_dialog::AlertDialogRoot { ..props }
+    }
+}
+
+/// A button that opens the alert dialog. Must be a child of [`AlertDialog`].
+#[component]
+pub fn AlertDialogTrigger(props: AlertDialogTriggerProps) -> Element {
+    rsx! {
+        alert_dialog::AlertDialogTrigger { ..props }
+    }
+}
+
+/// The styled alert dialog panel with animated backdrop. Must be a child of [`AlertDialog`].
+#[component]
+pub fn AlertDialogContent(props: AlertDialogContentProps) -> Element {
+    let base = attributes!(div {
+        class: Styles::dx_alert_dialog.to_string()
     });
-    let content_attributes = merge_attributes(vec![content_base]);
+    let merged = merge_attributes(vec![base, props.attributes]);
 
     rsx! {
-        alert_dialog::AlertDialogRoot {
-            class: Styles::dx_alert_dialog_backdrop.to_string(),
+        alert_dialog::AlertDialogContent {
             id: props.id,
-            default_open: props.default_open,
-            open: props.open,
-            on_open_change: props.on_open_change,
-            attributes: props.attributes,
-            alert_dialog::AlertDialogContent {
-                attributes: content_attributes,
-                {props.children}
-            }
+            backdrop_class: Styles::dx_alert_dialog_backdrop.to_string(),
+            attributes: merged,
+            {props.children}
+        }
+    }
+}
+
+/// Props for layout container components ([`AlertDialogHeader`], [`AlertDialogBody`]).
+#[derive(Props, Clone, PartialEq)]
+pub struct AlertDialogLayoutProps {
+    /// Additional attributes to apply to the container element.
+    #[props(extends = GlobalAttributes)]
+    pub attributes: Vec<Attribute>,
+    pub children: Element,
+}
+
+/// Groups title and description at the top of an alert dialog.
+#[component]
+pub fn AlertDialogHeader(props: AlertDialogLayoutProps) -> Element {
+    rsx! {
+        div {
+            ..merge_attributes(vec![
+                attributes!(div { class: Styles::dx_alert_dialog_header.to_string() }),
+                props.attributes,
+            ]),
+            {props.children}
+        }
+    }
+}
+
+/// The scrollable content area of an alert dialog.
+#[component]
+pub fn AlertDialogBody(props: AlertDialogLayoutProps) -> Element {
+    rsx! {
+        div {
+            ..merge_attributes(vec![
+                attributes!(div { class: Styles::dx_alert_dialog_body.to_string() }),
+                props.attributes,
+            ]),
+            {props.children}
         }
     }
 }
 
 #[component]
 pub fn AlertDialogTitle(props: AlertDialogTitleProps) -> Element {
+    let base = attributes!(div {
+        class: Styles::dx_alert_dialog_title.to_string()
+    });
+    let merged = merge_attributes(vec![base, props.attributes]);
     rsx! {
-        alert_dialog::AlertDialogTitle {
-            class: Styles::dx_alert_dialog_title.to_string(),
-            attributes: props.attributes,
-            {props.children}
-        }
+        alert_dialog::AlertDialogTitle { attributes: merged, {props.children} }
     }
 }
 
 #[component]
 pub fn AlertDialogDescription(props: AlertDialogDescriptionProps) -> Element {
+    let base = attributes!(div {
+        class: Styles::dx_alert_dialog_description.to_string()
+    });
+    let merged = merge_attributes(vec![base, props.attributes]);
     rsx! {
-        alert_dialog::AlertDialogDescription {
-            class: Styles::dx_alert_dialog_description.to_string(),
-            attributes: props.attributes,
-            {props.children}
-        }
+        alert_dialog::AlertDialogDescription { attributes: merged, {props.children} }
     }
 }
 
 #[component]
 pub fn AlertDialogActions(props: AlertDialogActionsProps) -> Element {
-    let base = attributes!(div {
-        class: Styles::dx_alert_dialog_actions,
-    });
-    let attributes = merge_attributes(vec![base, props.attributes]);
-
+    let merged = merge_attributes(vec![
+        attributes!(div {
+            class: Styles::dx_alert_dialog_actions.to_string()
+        }),
+        props.attributes,
+    ]);
     rsx! {
-        alert_dialog::AlertDialogActions { attributes, {props.children} }
+        alert_dialog::AlertDialogActions { attributes: merged, {props.children} }
     }
 }
 
 #[component]
 pub fn AlertDialogCancel(props: AlertDialogCancelProps) -> Element {
+    let merged = merge_attributes(vec![
+        attributes!(div {
+            class: Styles::dx_alert_dialog_cancel.to_string()
+        }),
+        props.attributes,
+    ]);
     rsx! {
         alert_dialog::AlertDialogCancel {
             on_click: props.on_click,
-            class: Styles::dx_alert_dialog_cancel.to_string(),
-            attributes: props.attributes,
+            attributes: merged,
             {props.children}
         }
     }
@@ -79,11 +135,16 @@ pub fn AlertDialogCancel(props: AlertDialogCancelProps) -> Element {
 
 #[component]
 pub fn AlertDialogAction(props: AlertDialogActionProps) -> Element {
+    let merged = merge_attributes(vec![
+        attributes!(div {
+            class: Styles::dx_alert_dialog_action.to_string()
+        }),
+        props.attributes,
+    ]);
     rsx! {
         alert_dialog::AlertDialogAction {
-            class: Styles::dx_alert_dialog_action.to_string(),
             on_click: props.on_click,
-            attributes: props.attributes,
+            attributes: merged,
             {props.children}
         }
     }

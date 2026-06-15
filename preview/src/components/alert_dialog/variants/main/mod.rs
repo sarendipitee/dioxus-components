@@ -1,32 +1,39 @@
-use dioxus_components::button::Button;
-
-use dioxus_components::alert_dialog::*;
+use crate::components::alert_dialog::*;
 use dioxus::prelude::*;
+use dioxus_components::button::{Button, ButtonVariant};
 
 #[component]
 pub fn Demo() -> Element {
     let mut open = use_signal(|| false);
-    let mut confirmed = use_signal(|| false);
+    let mut navigated = use_signal(|| false);
 
     rsx! {
         Button {
-            r#type: "button",
-            "data-style": "outline",
-            style: "margin-bottom: 1.5rem;",
-            onclick: move |_| open.set(true),
-            "Show Alert Dialog"
+            variant: ButtonVariant::Outline,
+            onclick: move |_| { open.set(true); navigated.set(false); },
+            "Leave page"
         }
-        AlertDialog { open: open(), on_open_change: move |v| open.set(v),
-            AlertDialogTitle { "Delete item" }
-            AlertDialogDescription { "Are you sure you want to delete this item? This action cannot be undone." }
-            AlertDialogActions {
-                AlertDialogCancel { "Cancel" }
-                AlertDialogAction { on_click: move |_| confirmed.set(true), "Delete" }
+        AlertDialog {
+            open: open(),
+            on_open_change: move |v| open.set(v),
+            AlertDialogContent {
+                AlertDialogTitle { "Unsaved changes" }
+                AlertDialogDescription {
+                    "You have unsaved changes that will be lost. Are you sure you want to leave this page?"
+                }
+                AlertDialogActions {
+                    AlertDialogCancel { "Stay" }
+                    AlertDialogAction {
+                        on_click: move |_| navigated.set(true),
+                        "Leave"
+                    }
+                }
             }
         }
-        if confirmed() {
-            p { style: "color: var(--danger-subtle-fg); margin-top: 16px; font-weight: 600;",
-                "Item deleted!"
+        if navigated() {
+            p {
+                style: "margin-top: 1rem; color: var(--fg-muted);",
+                "You left the page."
             }
         }
     }

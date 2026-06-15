@@ -5,8 +5,8 @@ use dioxus::prelude::*;
 use dioxus_attributes::attributes;
 
 use crate::{
-    merge_attributes, use_animated_open, use_controlled, use_global_escape_listener, use_id_or,
-    use_outside_dismiss, use_unique_id, FOCUS_TRAP_JS,
+    merge_attributes, use_animated_open, use_controlled, use_effect_with_cleanup,
+    use_global_escape_listener, use_id_or, use_outside_dismiss, use_unique_id, FOCUS_TRAP_JS,
 };
 
 /// Context for the [`DialogRoot`] component
@@ -29,6 +29,11 @@ impl DialogCtx {
     /// Returns whether the dialog is open.
     pub fn is_open(&self) -> bool {
         self.open.cloned()
+    }
+
+    /// Returns a reactive memo of the open state.
+    pub fn open_memo(&self) -> Memo<bool> {
+        self.open
     }
 
     /// Sets the open state of the dialog.
@@ -119,41 +124,126 @@ pub fn DialogRoot(props: DialogRootProps) -> Element {
 
     let (open, set_open) = use_controlled(props.open, props.default_open, props.on_open_change);
 
-    let unique_id = use_unique_id();
-    let id = use_id_or(unique_id, props.id);
+    let is_modal = props.is_modal;
 
     use_context_provider(|| DialogCtx {
         open,
         set_open,
-        is_modal: props.is_modal,
+        is_modal,
         dialog_labelledby,
         dialog_describedby,
     });
 
-    let render = use_animated_open(id, open);
+    // Lock body scroll while a modal dialog is open. The cleanup restores the original
+    // overflow when the effect re-runs (on close) and when the root unmounts.
+    use_effect_with_cleanup(move || {
+        let lock = open() && is_modal();
+        let eval = document::eval(
+            "const lock = await dioxus.recv();
+            document.body.style.overflow = lock ? 'hidden' : '';",
+        );
+        let _ = eval.send(lock);
+        move || {
+            let _ = document::eval("document.body.style.overflow = '';");
+        }
+    });
 
     rsx! {
         document::Script {
             src: FOCUS_TRAP_JS,
             defer: true
         }
-        if render() {
-            div {
-                id,
-                aria_hidden: (!open()).then_some("true"),
-                "data-state": if open() { "open" } else { "closed" },
-                ..props.attributes,
-                {props.children}
-            }
+        {props.children}
+    }
+}
+
+/// The props for the [`DialogTrigger`] component
+#[derive(Props, Clone, PartialEq)]
+pub struct DialogTriggerProps {
+    /// Additional attributes to apply to the trigger button element.
+    #[props(extends = GlobalAttributes)]
+    pub attributes: Vec<Attribute>,
+    /// The children of the dialog trigger.
+    pub children: Element,
+}
+
+/// # DialogTrigger
+///
+/// A button that opens the dialog when clicked. It reads the dialog open state from the
+/// surrounding [`DialogRoot`] context.
+///
+/// This must be used inside an [`DialogRoot`] component.
+#[component]
+pub fn DialogTrigger(props: DialogTriggerProps) -> Element {
+    let ctx: DialogCtx = use_context();
+    let set_open = ctx.set_open;
+
+    rsx! {
+        button {
+            r#type: "button",
+            onclick: move |_| set_open.call(true),
+            ..props.attributes,
+            {props.children}
         }
     }
 }
 
-/// The props for the [`DialogRoot`] component
+/// The props for the [`DialogClose`] component
+#[derive(Props, Clone, PartialEq)]
+pub struct DialogCloseProps {
+    /// Additional attributes to apply to the close button element.
+    #[props(extends = GlobalAttributes)]
+    pub attributes: Vec<Attribute>,
+    /// The children of the dialog close button.
+    pub children: Element,
+}
+
+/// # DialogClose
+///
+/// A button that closes the dialog when clicked. It reads the dialog open state from the
+/// surrounding [`DialogRoot`] context.
+///
+/// This must be used inside an [`DialogRoot`] component and should be placed inside an
+/// [`DialogContent`] component.
+#[component]
+pub fn DialogClose(props: DialogCloseProps) -> Element {
+    let ctx: DialogCtx = use_context();
+    let set_open = ctx.set_open;
+
+    rsx! {
+        button {
+            r#type: "button",
+            onclick: move |_| set_open.call(false),
+            ..props.attributes,
+            {props.children}
+        }
+    }
+}
+
+/// The props for the [`DialogContent`] component
 #[derive(Props, Clone, PartialEq)]
 pub struct DialogContentProps {
     /// The ID of the dialog content element.
     pub id: ReadSignal<Option<String>>,
+
+    /// CSS class name to apply to the backdrop overlay element.
+    /// When using the styled component layer, pass the hashed class from the CSS module
+    /// so that scoped CSS rules match.
+    #[props(default)]
+    pub backdrop_class: Option<String>,
+
+    /// Whether clicking outside the dialog (on the backdrop) closes it. Defaults to `true`.
+    #[props(default = true)]
+    pub close_on_backdrop_click: bool,
+
+    /// Whether pressing Escape closes the dialog. Defaults to `true`.
+    #[props(default = true)]
+    pub close_on_escape: bool,
+
+    /// The ARIA role for the inner dialog element. Defaults to `"dialog"`.
+    /// Pass `"alertdialog"` when building an alert dialog.
+    #[props(default = "dialog".to_string())]
+    pub dialog_role: String,
 
     /// Additional attributes to apply to the dialog content element.
     #[props(extends = GlobalAttributes)]
@@ -217,17 +307,31 @@ pub fn DialogContent(props: DialogContentProps) -> Element {
     let is_modal = ctx.is_modal;
     let set_open = ctx.set_open;
 
-    // Add a escape key listener to the document when the dialog is open. We can't
-    // just add this to the dialog itself because it might not be focused if the user
-    // is highlighting text or interacting with another element.
-    use_global_escape_listener(move || set_open.call(false));
+    let close_on_backdrop_click = props.close_on_backdrop_click;
+    let close_on_escape = props.close_on_escape;
+
+    // Always call these hooks unconditionally (hook rules); the callbacks guard internally.
+    use_global_escape_listener(move || {
+        if close_on_escape {
+            set_open.call(false);
+        }
+    });
 
     let gen_id = use_unique_id();
     let id = use_id_or(gen_id, props.id);
     let base = attributes!(div { class: "dx-dialog" });
     let attributes = merge_attributes(vec![base, props.attributes]);
 
-    use_outside_dismiss(id, move || set_open.call(false));
+    // The backdrop is the element that carries the open/close CSS animation, so it owns
+    // a dedicated id that drives `use_animated_open`. The inner dialog box keeps `id`,
+    // which the focus trap and outside-dismiss eval look up.
+    let backdrop_id = use_unique_id();
+
+    use_outside_dismiss(id, move || {
+        if close_on_backdrop_click {
+            set_open.call(false);
+        }
+    });
     use_effect(move || {
         let is_modal = is_modal();
         if !is_modal {
@@ -252,15 +356,40 @@ pub fn DialogContent(props: DialogContentProps) -> Element {
         let _ = eval.send(open.cloned());
     });
 
+    let render = use_animated_open(backdrop_id, open);
+
+    let backdrop_class = props
+        .backdrop_class
+        .as_deref()
+        .unwrap_or("dx-dialog-backdrop");
+
+    let dialog_role = props.dialog_role.clone();
+
     rsx! {
-        div {
-            id,
-            role: "dialog",
-            aria_modal: "true",
-            aria_labelledby: ctx.dialog_labelledby,
-            aria_describedby: ctx.dialog_describedby,
-            ..attributes,
-            {props.children}
+        if render() {
+            div {
+                id: backdrop_id,
+                class: backdrop_class,
+                aria_hidden: (!open()).then_some("true"),
+                "data-state": if open() { "open" } else { "closed" },
+                onclick: move |_| {
+                    if close_on_backdrop_click {
+                        set_open.call(false);
+                    }
+                },
+                div {
+                    id,
+                    role: dialog_role.clone(),
+                    aria_modal: "true",
+                    aria_labelledby: ctx.dialog_labelledby,
+                    aria_describedby: ctx.dialog_describedby,
+                    tabindex: "-1",
+                    "data-state": if open() { "open" } else { "closed" },
+                    onclick: move |e| e.stop_propagation(),
+                    ..attributes,
+                    {props.children}
+                }
+            }
         }
     }
 }
@@ -268,7 +397,8 @@ pub fn DialogContent(props: DialogContentProps) -> Element {
 /// The props for the [`DialogTitle`] component
 #[derive(Props, Clone, PartialEq)]
 pub struct DialogTitleProps {
-    /// The ID of the dialog title element.
+    /// The ID of the dialog title element. If not provided, uses the auto-generated aria ID.
+    #[props(default)]
     pub id: ReadSignal<Option<String>>,
     /// Additional attributes for the dialog title element.
     #[props(extends = GlobalAttributes)]
@@ -336,7 +466,8 @@ pub fn DialogTitle(props: DialogTitleProps) -> Element {
 /// The props for the [`DialogDescription`] component
 #[derive(Props, Clone, PartialEq)]
 pub struct DialogDescriptionProps {
-    /// The ID of the dialog description element.
+    /// The ID of the dialog description element. If not provided, uses the auto-generated aria ID.
+    #[props(default)]
     pub id: ReadSignal<Option<String>>,
     /// Additional attributes for the dialog description element.
     #[props(extends = GlobalAttributes)]
