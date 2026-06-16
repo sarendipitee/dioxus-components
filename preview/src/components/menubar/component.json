@@ -2,7 +2,7 @@
   "name": "menubar",
   "description": "A menubar component for a collection of menu items.",
   "authors": ["Evan Almloff"],
-  "exclude": ["variants", "docs.md", "component.json"],
+  "exclude": ["demos", "docs.md", "component.json"],
   "cargoDependencies": [
     {
       "name": "dioxus-primitives",

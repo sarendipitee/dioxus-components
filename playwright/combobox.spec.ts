@@ -1,10 +1,8 @@
 import { test, expect, devices, type Page } from "@playwright/test";
 
 const URL = "/component/?name=combobox&";
-const variantUrl = (variant: string) =>
-    `/component/?name=combobox&variant=${variant}&`;
-const blockVariantUrl = (variant: string) =>
-    `/component/block/?name=combobox&variant=${variant}&`;
+const demoUrl = (demo: string) =>
+    `/component/block/?name=combobox&demo=${demo}&`;
 
 const input = (page: Page) =>
     page.getByRole("combobox", { name: "Select framework" });
@@ -177,7 +175,7 @@ test("tabbing away closes the list", async ({ page }) => {
 });
 
 test("disabled options are exposed but skipped by keyboard selection", async ({ page }) => {
-    await page.goto(variantUrl("disabled"), { timeout: 20 * 60 * 1000 });
+    await page.goto(demoUrl("disabled"), { timeout: 20 * 60 * 1000 });
     await page.waitForLoadState('networkidle');
 
     await expect(page.getByRole("combobox", { name: "Disabled combobox" })).toBeDisabled();
@@ -206,7 +204,7 @@ test("disabled options are exposed but skipped by keyboard selection", async ({ 
 });
 
 test("controlled value and controlled open stay in sync", async ({ page }) => {
-    await page.goto(variantUrl("controlled"), { timeout: 20 * 60 * 1000 });
+    await page.goto(demoUrl("controlled"), { timeout: 20 * 60 * 1000 });
     await page.waitForLoadState('networkidle');
 
     const trigger = page.getByRole("combobox", { name: "Controlled framework" });
@@ -229,7 +227,7 @@ test("controlled value and controlled open stay in sync", async ({ page }) => {
 });
 
 test("dynamic option removal updates filtering and keyboard selection", async ({ page }) => {
-    await page.goto(variantUrl("dynamic"), { timeout: 20 * 60 * 1000 });
+    await page.goto(demoUrl("dynamic"), { timeout: 20 * 60 * 1000 });
     await page.waitForLoadState('networkidle');
 
     const trigger = page.getByRole("combobox", { name: "Dynamic framework" });
@@ -266,8 +264,8 @@ test("dynamic option removal updates filtering and keyboard selection", async ({
     await expect(trigger).toHaveValue("Next.js");
 });
 
-test("virtualized variant shows visible options when opened", async ({ page }) => {
-    await page.goto(blockVariantUrl("virtualized"), { timeout: 20 * 60 * 1000 });
+test("virtualized demo shows visible options when opened", async ({ page }) => {
+    await page.goto(demoUrl("virtualized"), { timeout: 20 * 60 * 1000 });
     await page.waitForLoadState('networkidle');
 
     const trigger = page.getByRole("combobox", { name: "Virtualized option picker" });
@@ -281,8 +279,8 @@ test("virtualized variant shows visible options when opened", async ({ page }) =
     await expect(menu.getByRole("option", { name: "Option 1", exact: true })).toBeVisible();
 });
 
-test("virtualized variant keeps scrollHeight stable while scrolling", async ({ page }) => {
-    await page.goto(blockVariantUrl("virtualized"), { timeout: 20 * 60 * 1000 });
+test("virtualized demo keeps scrollHeight stable while scrolling", async ({ page }) => {
+    await page.goto(demoUrl("virtualized"), { timeout: 20 * 60 * 1000 });
     await page.waitForLoadState('networkidle');
 
     const trigger = page.getByRole("combobox", { name: "Virtualized option picker" });

@@ -2,10 +2,10 @@ import { test, expect } from "@playwright/test";
 import AxeBuilder from "@axe-core/playwright";
 
 const URL = "/component/?name=drag_and_drop_list&";
-const REMOVABLE_URL = "/component/block/?name=drag_and_drop_list&variant=removable&";
+const REMOVABLE_URL = "/component/block/?name=drag_and_drop_list&demo=removable&";
 const LOAD_TIMEOUT = 20 * 60 * 1000;
 
-/** Navigate to the DnD page and return the first (main) variant list. */
+/** Navigate to the DnD page and return the first main demo list. */
 async function loadMainList(page: import("@playwright/test").Page) {
   await page.goto(URL, { timeout: LOAD_TIMEOUT });
   const list = page.getByRole("list", { name: "Sortable list" }).first();
@@ -13,7 +13,7 @@ async function loadMainList(page: import("@playwright/test").Page) {
   return list;
 }
 
-/** Navigate to the DnD page and return the second (removable) variant list. */
+/** Navigate to the DnD page and return the removable demo list. */
 async function loadRemovableList(page: import("@playwright/test").Page) {
   await page.goto(REMOVABLE_URL, { timeout: LOAD_TIMEOUT });
   const list = page.getByRole("list", { name: "Sortable list" }).first();

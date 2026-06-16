@@ -1,6 +1,6 @@
 import { test, expect, type Page } from "@playwright/test";
 
-const controlledUrl = "/component/?name=pagination&variant=controlled&";
+const controlledDemoUrl = "/component/block/?name=pagination&demo=controlled&";
 
 // The component page renders every pagination demo, so scope to the controlled one.
 const root = (page: Page) => page.getByTestId("pagination-controlled-demo");
@@ -21,7 +21,7 @@ const control = (page: Page, name: string) =>
 test("renders the data-backed range and reflects the active page", async ({
     page,
 }) => {
-    await page.goto(controlledUrl, { timeout: 20 * 60 * 1000 });
+    await page.goto(controlledDemoUrl, { timeout: 20 * 60 * 1000 });
     await page.waitForLoadState("networkidle");
 
     await expect(caption(page)).toHaveText("Page 3 of 10");
@@ -38,7 +38,7 @@ test("renders the data-backed range and reflects the active page", async ({
 test("clicking a page and the next control updates the controlled state", async ({
     page,
 }) => {
-    await page.goto(controlledUrl, { timeout: 20 * 60 * 1000 });
+    await page.goto(controlledDemoUrl, { timeout: 20 * 60 * 1000 });
     await page.waitForLoadState("networkidle");
 
     await pageLink(page, 5).click();
@@ -53,7 +53,7 @@ test("clicking a page and the next control updates the controlled state", async 
 test("edge controls jump to the boundaries and disable there", async ({
     page,
 }) => {
-    await page.goto(controlledUrl, { timeout: 20 * 60 * 1000 });
+    await page.goto(controlledDemoUrl, { timeout: 20 * 60 * 1000 });
     await page.waitForLoadState("networkidle");
 
     await control(page, "Go to last page").click();

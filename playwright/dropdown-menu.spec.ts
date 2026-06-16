@@ -6,10 +6,10 @@ test('dropdown menu shared wrappers', async ({ page }) => {
   const menuButton = mainDemo.getByRole('button', { name: 'Open Menu' });
   const menuElement = menuButton.locator('xpath=..');
   const mainMenuContent = page.getByRole('menu').filter({ has: page.locator('.dx_dropdown_menu_label', { hasText: 'Actions' }) }).first();
-  const nestedVariant = page
-    .locator('.dx-component-variant')
-    .filter({ has: page.locator('.dx-component-variant-title', { hasText: 'nested_submenus' }) });
-  const nestedMenuButton = nestedVariant.getByRole('button', { name: 'Move item' });
+  const nestedDemo = page
+    .locator('.dx-component-demo')
+    .filter({ has: page.locator('.dx-component-demo-title', { hasText: 'nested_submenus' }) });
+  const nestedMenuButton = nestedDemo.getByRole('button', { name: 'Move item' });
   const nestedMenuElement = nestedMenuButton.locator('xpath=..');
 
   // The menu should not be open initially
@@ -80,7 +80,7 @@ test('dropdown menu shared wrappers', async ({ page }) => {
   await menuButton.click();
   await expect(menuElement).toHaveAttribute('data-state', 'open');
   // Clicking outside the menu should close it
-  await nestedVariant.locator('.dx-component-variant-title').click();
+  await nestedDemo.locator('.dx-component-demo-title').click();
   await expect(menuElement).toHaveAttribute('data-state', 'closed');
 
   // Reopen the menu
@@ -91,7 +91,7 @@ test('dropdown menu shared wrappers', async ({ page }) => {
   await expect(menuElement).toHaveAttribute('data-state', 'open');
   await expect(mainDemo.getByText('Toolbar visible: false')).toBeVisible();
 
-  // Nested submenu variant should support a depth-3 path
+  // Nested submenu demo should support a depth-3 path
   await nestedMenuButton.evaluate((element) => {
     const root = element.closest('.dx_dropdown_menu') as HTMLElement | null;
     if (!root) throw new Error('nested dropdown root unavailable');
@@ -117,5 +117,5 @@ test('dropdown menu shared wrappers', async ({ page }) => {
   await page.locator('.dx_dropdown_menu_sub_trigger').filter({ hasText: /^Workspace Alpha \/ Projects$/ }).press('ArrowRight');
   await page.locator('.dx_dropdown_menu_sub_trigger').filter({ hasText: /^Workspace Alpha \/ Projects \/ Q3$/ }).press('ArrowRight');
   await page.getByRole('menuitem', { name: 'Workspace Alpha / Projects / Q3 / Launch' }).press('Enter');
-  await expect(nestedVariant.getByText('Selected destination: Workspace Alpha / Projects / Q3 / Launch')).toBeVisible();
+  await expect(nestedDemo.getByText('Selected destination: Workspace Alpha / Projects / Q3 / Launch')).toBeVisible();
 });

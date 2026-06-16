@@ -2,7 +2,7 @@
   "name": "item",
   "description": "A component for displaying content.",
   "authors": ["oscar370"],
-  "exclude": ["variants", "docs.md", "component.json"],
+  "exclude": ["demos", "docs.md", "component.json"],
   "cargoDependencies": [
     {
       "name": "dioxus-primitives",

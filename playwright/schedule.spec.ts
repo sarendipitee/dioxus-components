@@ -10,15 +10,15 @@ test.describe.configure({ mode: "serial" });
 test.setTimeout(TEST_TIMEOUT);
 
 const mainUrl = "/component/?name=schedule&";
-const variantUrl = (variant: string) =>
-  `/component/block/?name=schedule&variant=${variant}&`;
+const demoUrl = (demo: string) =>
+  `/component/block/?name=schedule&demo=${demo}&`;
 
 async function loadMain(page: Page) {
   return await loadSchedulePage(page, mainUrl);
 }
 
-async function loadVariant(page: Page, variant: string) {
-  return await loadSchedulePage(page, variantUrl(variant));
+async function loadDemo(page: Page, demo: string) {
+  return await loadSchedulePage(page, demoUrl(demo));
 }
 
 async function loadSchedulePage(page: Page, url: string) {
@@ -245,7 +245,7 @@ test("view switching, date navigation, and year-to-month transition work", async
 test("time slots, all-day slots, and drag-selection signals are visible", async ({
   page,
 }) => {
-  const root = await loadVariant(page, "slot_selection");
+  const root = await loadDemo(page, "slot_selection");
   const selected = root.locator("xpath=preceding-sibling::div[1]");
   const firstSlot = root.locator("[data-schedule-time-slot]").nth(0);
   const allDaySlot = root.locator("[data-schedule-all-day-slot]").first();
@@ -264,7 +264,7 @@ test("time slots, all-day slots, and drag-selection signals are visible", async 
 test("event drag/drop and resize callbacks are reflected in the preview", async ({
   page,
 }) => {
-  const dragRoot = await loadVariant(page, "drag_and_drop");
+  const dragRoot = await loadDemo(page, "drag_and_drop");
   const draggableEvent = visibleEvent(dragRoot, "Planning sync");
   const dropTarget = dragRoot.locator("[data-schedule-time-slot]").first();
   const allDayTarget = dragRoot.locator("[data-schedule-all-day-slot]").first();
@@ -309,7 +309,7 @@ test("event drag/drop and resize callbacks are reflected in the preview", async 
   await expect(timedEvents).toContainText("Planning sync");
   await expect(allDayEvents).not.toContainText("Planning sync");
 
-  const resizeRoot = await loadVariant(page, "resize");
+  const resizeRoot = await loadDemo(page, "resize");
   const resizeHandle = resizeRoot
     .locator("[data-schedule-resize-handle='end']")
     .first();
@@ -335,7 +335,7 @@ test("event drag/drop and resize callbacks are reflected in the preview", async 
 });
 
 test("external drops expose external data in the preview", async ({ page }) => {
-  const root = await loadVariant(page, "external_drop");
+  const root = await loadDemo(page, "external_drop");
   const source = page.locator("[data-schedule-external-source]");
   const target = root.locator("[data-schedule-time-slot]").first();
   const message = page.locator("[data-schedule-external-drop-status]");
@@ -347,13 +347,13 @@ test("external drops expose external data in the preview", async ({ page }) => {
 });
 
 test("controlled state and recurrence are observable", async ({ page }) => {
-  const controlledRoot = await loadVariant(page, "controlled");
+  const controlledRoot = await loadDemo(page, "controlled");
   await controlledRoot.getByRole("tab", { name: /^month$/i }).first().click();
   await expect(page.locator("[data-schedule-controlled-status]")).toContainText(
     "View changed to Month",
   );
 
-  const recurringRoot = await loadVariant(page, "drag_and_drop");
+  const recurringRoot = await loadDemo(page, "drag_and_drop");
   await expect
     .poll(async () =>
       recurringRoot
@@ -367,7 +367,7 @@ test("controlled state and recurrence are observable", async ({ page }) => {
 test("static mode keeps navigation but disables drag and resize affordances", async ({
   page,
 }) => {
-  const root = await loadVariant(page, "static");
+  const root = await loadDemo(page, "static");
 
   await expect(root).toHaveAttribute("data-mode", "static");
   await expect(root.getByRole("button", { name: "Previous" })).toBeVisible();
@@ -379,7 +379,7 @@ test("responsive layout renders the mobile container and swaps to mobile month a
   page,
 }) => {
   await page.setViewportSize({ width: 390, height: 844 });
-  const root = await loadVariant(page, "responsive");
+  const root = await loadDemo(page, "responsive");
 
   await expect(root).toHaveAttribute("data-layout", "responsive");
   await expect(root.locator("[data-schedule-desktop]")).not.toBeVisible();
@@ -399,7 +399,7 @@ test("mobile month and year views remain reachable in responsive mode", async ({
   page,
 }) => {
   await page.setViewportSize({ width: 390, height: 844 });
-  const root = await loadVariant(page, "responsive");
+  const root = await loadDemo(page, "responsive");
 
   await viewButton(root, "year").click();
   await expect(root).toHaveAttribute("data-view", "year");

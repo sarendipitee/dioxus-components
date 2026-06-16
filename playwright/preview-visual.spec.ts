@@ -4,7 +4,7 @@ import path from "path";
 
 type PreviewCase = {
   component: string;
-  variant: string;
+  demo: string;
 };
 
 type WorkspaceManifest = {
@@ -39,38 +39,38 @@ function previewComponents(): string[] {
     .map((member) => path.basename(member))
     .filter((component) => {
       const metadataPath = path.join(previewRoot, component, "component.json");
-      const variantsDir = path.join(previewRoot, component, "variants");
+      const demosDir = path.join(previewRoot, component, "demos");
 
-      return fs.existsSync(metadataPath) && fs.existsSync(variantsDir);
+      return fs.existsSync(metadataPath) && fs.existsSync(demosDir);
     })
     .sort((a, b) => a.localeCompare(b));
 }
 
-function variantsFor(component: string): string[] {
-  const variantsDir = path.join(previewRoot, component, "variants");
+function demosFor(component: string): string[] {
+  const demosDir = path.join(previewRoot, component, "demos");
 
   return fs
-    .readdirSync(variantsDir, { withFileTypes: true })
+    .readdirSync(demosDir, { withFileTypes: true })
     .filter((entry) => entry.isDirectory())
     .map((entry) => entry.name)
     .sort((a, b) => a.localeCompare(b));
 }
 
 const previewCases: PreviewCase[] = previewComponents().flatMap((component) =>
-  variantsFor(component)
-    .map((variant) => ({ component, variant }))
+  demosFor(component)
+    .map((demo) => ({ component, demo }))
     .filter(
       (previewCase) =>
         !skippedPreviewCases.has(
-          `${previewCase.component}/${previewCase.variant}`,
+          `${previewCase.component}/${previewCase.demo}`,
         ),
     ),
 );
 
 const systemDarkCases: PreviewCase[] = [
-  { component: "button", variant: "main" },
-  { component: "textarea", variant: "autosize" },
-  { component: "time_picker", variant: "main" },
+  { component: "button", demo: "main" },
+  { component: "textarea", demo: "autosize" },
+  { component: "time_picker", demo: "main" },
 ];
 
 async function prepareVisualPage(page: Page) {
@@ -103,7 +103,7 @@ async function gotoPreviewCase(
 ) {
   const params = new URLSearchParams({
     name: previewCase.component,
-    variant: previewCase.variant,
+    demo: previewCase.demo,
   });
 
   if (theme) {
@@ -124,7 +124,7 @@ async function snapshotPreviewCase(
   themeName: string,
 ) {
   await expect(page.locator("body")).toHaveScreenshot(
-    `${previewCase.component}-${previewCase.variant}-${themeName}.png`,
+    `${previewCase.component}-${previewCase.demo}-${themeName}.png`,
     {
       animations: "disabled",
       caret: "hide",
@@ -138,7 +138,7 @@ test.describe("preview visual baselines", () => {
 
   for (const previewCase of previewCases) {
     for (const theme of ["light", "dark"] as const) {
-      test(`${previewCase.component}/${previewCase.variant} ${theme}`, async ({
+      test(`${previewCase.component}/${previewCase.demo} ${theme}`, async ({
         page,
       }) => {
         await prepareVisualPage(page);
@@ -149,7 +149,7 @@ test.describe("preview visual baselines", () => {
   }
 
   for (const previewCase of systemDarkCases) {
-    test(`${previewCase.component}/${previewCase.variant} system dark`, async ({
+    test(`${previewCase.component}/${previewCase.demo} system dark`, async ({
       page,
     }) => {
       await page.emulateMedia({ colorScheme: "dark" });

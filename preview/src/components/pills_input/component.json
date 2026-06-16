@@ -2,7 +2,7 @@
   "name": "pills_input",
   "description": "A shared input shell for pill-based entry surfaces built on the combobox family.",
   "authors": ["Evan Almloff"],
-  "exclude": ["variants", "docs.md", "component.json"],
+  "exclude": ["demos", "docs.md", "component.json"],
   "cargoDependencies": [
     {
       "name": "dioxus-primitives",

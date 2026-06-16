@@ -5,7 +5,7 @@
     "zhiyanzhaijie"
   ],
   "exclude": [
-    "variants",
+    "demos",
     "docs.md",
     "component.json"
   ],

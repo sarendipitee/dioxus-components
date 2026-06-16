@@ -1,9 +1,9 @@
 import { test, expect, type Page } from "@playwright/test";
 
 const VIRTUALIZED_URL =
-  "/component/block/?name=data_table&variant=virtualized";
+  "/component/block/?name=data_table&demo=virtualized";
 
-// The virtualized variant renders 5,000 rows but should only mount a small
+// The virtualized demo renders 5,000 rows but should only mount a small
 // window of them at a time.
 test("virtualized table mounts only a small window of rows", async ({
   page,

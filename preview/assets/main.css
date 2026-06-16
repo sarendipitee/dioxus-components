@@ -796,11 +796,11 @@ body {
   line-height: 1.45;
 }
 
-.dx-component-variant + .dx-component-variant {
+.dx-component-demo + .dx-component-demo {
   margin-top: 2rem;
 }
 
-.dx-component-variant-title {
+.dx-component-demo-title {
   margin: 0 0 0.75rem;
   color: var(--fg);
   font-size: 1rem;

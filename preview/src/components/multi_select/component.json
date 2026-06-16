@@ -2,7 +2,7 @@
   "name": "multi_select",
   "description": "A combobox-backed input for selecting multiple values with removable pills.",
   "authors": ["Evan Almloff"],
-  "exclude": ["variants", "docs.md", "component.json"],
+  "exclude": ["demos", "docs.md", "component.json"],
   "cargoDependencies": [
     {
       "name": "dioxus-primitives",

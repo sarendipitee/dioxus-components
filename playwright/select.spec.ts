@@ -85,7 +85,7 @@ test("tabbing out of menu closes the select menu", async ({ page }) => {
 });
 
 test("multi-select toggles options and stays open", async ({ page }) => {
-    await page.goto("/component/?name=select&variant=multi&", {
+    await page.goto("/component/block/?name=select&demo=multi&", {
         timeout: 20 * 60 * 1000,
     });
     const selectTrigger = multiSelectTrigger(page);
@@ -123,7 +123,7 @@ test("multi-select toggles options and stays open", async ({ page }) => {
 });
 
 test("mobile: multi-select tapping options keeps the dropdown open", async ({ page }) => {
-    await page.goto("/component/?name=select&variant=multi&", {
+    await page.goto("/component/block/?name=select&demo=multi&", {
         timeout: 20 * 60 * 1000,
     });
     const selectTrigger = multiSelectTrigger(page);
@@ -148,7 +148,7 @@ test("mobile: multi-select tapping options keeps the dropdown open", async ({ pa
 });
 
 test("multi-select keyboard toggles and exposes aria-multiselectable", async ({ page }) => {
-    await page.goto("/component/?name=select&variant=multi&", {
+    await page.goto("/component/block/?name=select&demo=multi&", {
         timeout: 20 * 60 * 1000,
     });
     const selectTrigger = multiSelectTrigger(page);

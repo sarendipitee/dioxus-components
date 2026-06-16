@@ -3,7 +3,7 @@ import { test, expect, type Page } from "@playwright/test";
 const SIDEBAR_RENDER_TIMEOUT = 30 * 1000;
 
 async function gotoSidebarBlock(page: Page) {
-  await page.goto("/component/block/?name=sidebar&variant=main&", {
+  await page.goto("/component/block/?name=sidebar&demo=main&", {
     timeout: 20 * 60 * 1000,
     waitUntil: 'load'
   });
@@ -22,7 +22,7 @@ test("sidebar: preview page renders block", async ({ page }) => {
   await expect(iframe).toBeVisible({ timeout: SIDEBAR_RENDER_TIMEOUT });
   await expect(iframe).toHaveAttribute(
     "src",
-    /component\/block\/\?name=sidebar&variant=main/,
+    /component\/block\/\?name=sidebar&demo=main/,
     { timeout: SIDEBAR_RENDER_TIMEOUT },
   );
 

@@ -1,5 +1,5 @@
 use super::{
-    ComponentDemoData, ComponentType, ComponentVariantDemoData, HighlightedCode, PropMetadata,
+    ComponentDemoData, ComponentDemoEntryData, ComponentType, HighlightedCode, PropMetadata,
 };
 
 #[derive(Copy, Clone, PartialEq, Eq)]
@@ -120,16 +120,16 @@ pub fn in_catalog(name: &str) -> bool {
 }
 
 macro_rules! examples {
-    ($($name:ident $(($kind:ident))? $([$($variant:ident),*])?),* $(,)?) => {
+    ($($name:ident $(($kind:ident))? $([$($demo:ident),*])?),* $(,)?) => {
         $(
             pub(crate) mod $name {
                 #[allow(unused)]
                 pub use dioxus_components::*;
-                pub(crate) mod variants {
+                pub(crate) mod demos {
                     pub(crate) mod main;
                     $(
                         $(
-                            pub(crate) mod $variant;
+                            pub(crate) mod $demo;
                         )*
                     )?
                 }
@@ -137,7 +137,7 @@ macro_rules! examples {
         )*
         pub(crate) static DEMOS: &[ComponentDemoData] = &[
             $(
-                examples!(@demo $name $( $kind )? $([$($variant),*])?),
+                examples!(@demo $name $( $kind )? $([$($demo),*])?),
             )*
         ];
     };
@@ -145,13 +145,13 @@ macro_rules! examples {
     (@kind) => { ComponentType::Normal };
     (@kind normal) => { ComponentType::Normal };
     (@kind block) => { ComponentType::Block };
-    (@variant_name r#static) => { "static" };
-    (@variant_name $variant:ident) => { stringify!($variant) };
-    (@variant_path r#static) => { "static" };
-    (@variant_path $variant:ident) => { stringify!($variant) };
+    (@demo_name r#static) => { "static" };
+    (@demo_name $demo:ident) => { stringify!($demo) };
+    (@demo_path r#static) => { "static" };
+    (@demo_path $demo:ident) => { stringify!($demo) };
 
-    // Normal components: no variant-level css_highlighted
-    (@demo $name:ident $([$($variant:ident),*])?) => {
+    // Normal components: no demo-level css_highlighted
+    (@demo $name:ident $([$($demo:ident),*])?) => {
         ComponentDemoData {
             name: stringify!($name),
             r#type: ComponentType::Normal,
@@ -169,24 +169,24 @@ macro_rules! examples {
             style: HighlightedCode {
                 html: include_str!(concat!(env!("OUT_DIR"), "/", stringify!($name), "/style.css.html")),
             },
-            variants: &[
-                ComponentVariantDemoData {
+            demos: &[
+                ComponentDemoEntryData {
                     name: "main",
                     rs_highlighted: HighlightedCode {
-                        html: include_str!(concat!(env!("OUT_DIR"), "/", stringify!($name), "/variants/main/mod.rs.html")),
+                        html: include_str!(concat!(env!("OUT_DIR"), "/", stringify!($name), "/demos/main/mod.rs.html")),
                     },
                     css_highlighted: None,
-                    component: $name::variants::main::Demo,
+                    component: $name::demos::main::Demo,
                 },
                 $(
                     $(
-                        ComponentVariantDemoData {
-                            name: examples!(@variant_name $variant),
+                        ComponentDemoEntryData {
+                            name: examples!(@demo_name $demo),
                             rs_highlighted: HighlightedCode {
-                                html: include_str!(concat!(env!("OUT_DIR"), "/", stringify!($name), "/variants/", examples!(@variant_path $variant), "/mod.rs.html")),
+                                html: include_str!(concat!(env!("OUT_DIR"), "/", stringify!($name), "/demos/", examples!(@demo_path $demo), "/mod.rs.html")),
                             },
                             css_highlighted: None,
-                            component: $name::variants::$variant::Demo,
+                            component: $name::demos::$demo::Demo,
                         },
                     )*
                 )?
@@ -195,7 +195,7 @@ macro_rules! examples {
     };
 
     // Block components: rendered in iframe, with shared demo.css
-    (@demo $name:ident block $([$($variant:ident),*])?) => {
+    (@demo $name:ident block $([$($demo:ident),*])?) => {
         ComponentDemoData {
             name: stringify!($name),
             r#type: ComponentType::Block,
@@ -213,28 +213,28 @@ macro_rules! examples {
             style: HighlightedCode {
                 html: include_str!(concat!(env!("OUT_DIR"), "/", stringify!($name), "/style.css.html")),
             },
-            variants: &[
-                ComponentVariantDemoData {
+            demos: &[
+                ComponentDemoEntryData {
                     name: "main",
                     rs_highlighted: HighlightedCode {
-                        html: include_str!(concat!(env!("OUT_DIR"), "/", stringify!($name), "/variants/main/mod.rs.html")),
+                        html: include_str!(concat!(env!("OUT_DIR"), "/", stringify!($name), "/demos/main/mod.rs.html")),
                     },
                     css_highlighted: Some(HighlightedCode {
-                        html: include_str!(concat!(env!("OUT_DIR"), "/", stringify!($name), "/variants/demo.css.html")),
+                        html: include_str!(concat!(env!("OUT_DIR"), "/", stringify!($name), "/demos/demo.css.html")),
                     }),
-                    component: $name::variants::main::Demo,
+                    component: $name::demos::main::Demo,
                 },
                 $(
                     $(
-                        ComponentVariantDemoData {
-                            name: examples!(@variant_name $variant),
+                        ComponentDemoEntryData {
+                            name: examples!(@demo_name $demo),
                             rs_highlighted: HighlightedCode {
-                                html: include_str!(concat!(env!("OUT_DIR"), "/", stringify!($name), "/variants/", examples!(@variant_path $variant), "/mod.rs.html")),
+                                html: include_str!(concat!(env!("OUT_DIR"), "/", stringify!($name), "/demos/", examples!(@demo_path $demo), "/mod.rs.html")),
                             },
                             css_highlighted: Some(HighlightedCode {
-                                html: include_str!(concat!(env!("OUT_DIR"), "/", stringify!($name), "/variants/demo.css.html")),
+                                html: include_str!(concat!(env!("OUT_DIR"), "/", stringify!($name), "/demos/demo.css.html")),
                             }),
-                            component: $name::variants::$variant::Demo,
+                            component: $name::demos::$demo::Demo,
                         },
                     )*
                 )?

@@ -2,7 +2,7 @@
   "name": "input",
   "description": "Shared low-level input shell and wrapper primitives used by higher-level field components.",
   "authors": ["Evan Almloff"],
-  "exclude": ["variants", "docs.md", "component.json"],
+  "exclude": ["demos", "docs.md", "component.json"],
   "cargoDependencies": [
     {
       "name": "dioxus-primitives",

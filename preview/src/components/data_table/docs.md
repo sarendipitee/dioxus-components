@@ -52,7 +52,7 @@ DataTable {
 }
 ```
 
-## Preview Variants
+## Preview Demos
 
 - `main` shows the default uncontrolled client-side table.
 - `controlled` shows a parent-owned `DataTableState` with a reset control.

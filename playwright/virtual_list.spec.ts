@@ -91,22 +91,22 @@ test("scrollHeight remains stable during continuous scroll", async ({ page }) =>
   await testScrollHeightStability(page, 100);
 });
 
-// Test with random_heights variant which has highly variable item sizes
+// Test with the random_heights demo, which has highly variable item sizes.
 // This reproduces production failure where adaptive estimation struggles
-test("scrollHeight stable with random heights variant", async ({ page }) => {
-  await page.goto("/component/block/?name=virtual_list&variant=random_heights", {
+test("scrollHeight stable with random heights demo", async ({ page }) => {
+  await page.goto("/component/block/?name=virtual_list&demo=random_heights", {
     timeout: 20 * 60 * 1000,
   });
 
   const container = page.getByRole("list").first();
   await expect(container).toBeVisible({ timeout: 30000 });
 
-  // Verify variant is loaded by checking for variant-specific content
+  // Verify the demo loaded by checking for demo-specific content.
   const firstCard = page.getByRole("heading", { level: 3 }).first();
   const cardText = await firstCard.textContent();
   console.log("First card text:", cardText);
-  // Random heights variant shows "X repeats" in the heading
-  expect(cardText, "Variant should show 'repeats' count").toContain("repeats");
+  // The random heights demo shows "X repeats" in the heading.
+  expect(cardText, "Demo should show 'repeats' count").toContain("repeats");
 
   // Start scrolling immediately - don't wait for measurements
   const initialState = await container.evaluate((el) => ({

@@ -2,7 +2,7 @@
   "name": "split_pane",
   "description": "A resizable split-pane layout component.",
   "authors": ["Dioxus Labs"],
-  "exclude": ["variants", "docs.md", "component.json"],
+  "exclude": ["demos", "docs.md", "component.json"],
   "cargoDependencies": [
     {
       "name": "dioxus-primitives",

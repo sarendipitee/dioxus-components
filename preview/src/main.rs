@@ -53,7 +53,7 @@ struct ComponentDemoData {
     props: &'static [PropMetadata],
     component: HighlightedCode,
     style: HighlightedCode,
-    variants: &'static [ComponentVariantDemoData],
+    demos: &'static [ComponentDemoEntryData],
 }
 
 #[derive(Clone, PartialEq)]
@@ -72,7 +72,7 @@ struct ComponentPropsSectionProps {
 
 #[allow(unpredictable_function_pointer_comparisons)]
 #[derive(Clone, PartialEq)]
-struct ComponentVariantDemoData {
+struct ComponentDemoEntryData {
     name: &'static str,
     rs_highlighted: HighlightedCode,
     css_highlighted: Option<HighlightedCode>,
@@ -168,9 +168,10 @@ pub enum Route {
         dark_mode: Option<bool>,
     },
     #[end_layout]
-    #[route("/component/block/?:name&:variant&:dark_mode")]
+    #[route("/component/block/?:name&:demo&:variant&:dark_mode")]
     ComponentBlockDemo {
         name: String,
+        demo: Option<String>,
         variant: Option<String>,
         dark_mode: Option<bool>,
     },
@@ -696,7 +697,7 @@ fn Docs(dark_mode: Option<bool>) -> Element {
                     h2 { "Recommended workflow" }
                     ol {
                         li { "Pick a component from the sidebar or catalog." }
-                        li { "Preview the default example and variants." }
+                        li { "Preview the default example and demos." }
                         li { "Run the CLI command shown on the component page." }
                         li { "Customize the generated Rust and CSS to fit your app." }
                     }
@@ -898,13 +899,13 @@ fn ComponentHighlight(demo: ComponentDemoData) -> Element {
         docs,
         props,
         description,
-        variants,
+        demos,
         component,
         style,
     } = demo;
     let name = components::label_of(raw_name);
-    let [main, variants @ ..] = variants else {
-        unreachable!("Expected at least one variant for component: {}", name);
+    let [main, demos @ ..] = demos else {
+        unreachable!("Expected at least one demo for component: {}", name);
     };
 
     rsx! {
@@ -922,12 +923,12 @@ fn ComponentHighlight(demo: ComponentDemoData) -> Element {
                 section { class: "dx-component-section",
                     match r#type {
                         ComponentType::Normal => rsx! {
-                            ComponentVariantHighlight { variant: main.clone(), main_variant: true, component_name: None }
+                            ComponentDemoHighlight { demo: main.clone(), main_demo: true, component_name: None }
                         },
                         ComponentType::Block => rsx! {
-                            BlockComponentVariantHighlight {
-                                variant: main.clone(),
-                                main_variant: true,
+                            BlockComponentDemoHighlight {
+                                demo: main.clone(),
+                                main_demo: true,
                                 component_name: raw_name,
                                 show_install: false,
                             }
@@ -959,22 +960,22 @@ fn ComponentHighlight(demo: ComponentDemoData) -> Element {
                         div { dangerous_inner_html: docs }
                     }
                 }
-                if !variants.is_empty() {
+                if !demos.is_empty() {
                     section { class: "dx-component-section",
                         div { class: "dx-component-section-heading",
-                            h2 { "Variants" }
+                            h2 { "Demos" }
                             p { "Alternative examples for common configurations." }
                         }
-                        for variant in variants {
-                            div { class: "dx-component-variant",
+                        for demo in demos {
+                            div { class: "dx-component-demo",
                                 match r#type {
                                     ComponentType::Normal => rsx! {
-                                        ComponentVariantHighlight { variant: variant.clone(), main_variant: false, component_name: None }
+                                        ComponentDemoHighlight { demo: demo.clone(), main_demo: false, component_name: None }
                                     },
                                     ComponentType::Block => rsx! {
-                                        BlockComponentVariantHighlight {
-                                            variant: variant.clone(),
-                                            main_variant: false,
+                                        BlockComponentDemoHighlight {
+                                            demo: demo.clone(),
+                                            main_demo: false,
                                             component_name: raw_name,
                                             show_install: false,
                                         }
@@ -1070,20 +1071,20 @@ fn ManualComponentInstallation(component: HighlightedCode, style: HighlightedCod
 }
 
 #[component]
-fn ComponentVariantHighlight(
-    variant: ComponentVariantDemoData,
-    main_variant: bool,
+fn ComponentDemoHighlight(
+    demo: ComponentDemoEntryData,
+    main_demo: bool,
     component_name: Option<&'static str>,
 ) -> Element {
-    let ComponentVariantDemoData {
+    let ComponentDemoEntryData {
         name,
         rs_highlighted: highlighted,
         css_highlighted: _,
         component: Comp,
-    } = variant;
+    } = demo;
     rsx! {
-        if !main_variant {
-            h3 { class: "dx-component-variant-title", "{name}" }
+        if !main_demo {
+            h3 { class: "dx-component-demo-title", "{name}" }
         }
         Tabs {
             default_value: "Demo",
@@ -1131,22 +1132,23 @@ fn ComponentVariantHighlight(
 }
 
 #[component]
-fn BlockComponentVariantHighlight(
+fn BlockComponentDemoHighlight(
     component_name: &'static str,
-    variant: ComponentVariantDemoData,
-    main_variant: bool,
+    demo: ComponentDemoEntryData,
+    main_demo: bool,
     show_install: bool,
 ) -> Element {
-    let ComponentVariantDemoData {
+    let ComponentDemoEntryData {
         name,
         rs_highlighted: highlighted,
         css_highlighted,
         component: _,
-    } = variant;
+    } = demo;
 
     let route_path = Route::ComponentBlockDemo {
         name: component_name.to_string(),
-        variant: Some(name.to_string()),
+        demo: Some(name.to_string()),
+        variant: None,
         dark_mode: Route::in_dark_mode(),
     }
     .to_string();
@@ -1157,8 +1159,8 @@ fn BlockComponentVariantHighlight(
     };
 
     rsx! {
-        if !main_variant {
-            h3 { class: "dx-component-variant-title", "{name}" }
+        if !main_demo {
+            h3 { class: "dx-component-demo-title", "{name}" }
         }
         Tabs {
             default_value: "Preview",
@@ -1230,28 +1232,35 @@ fn EmailClientDashboard(dark_mode: Option<bool>) -> Element {
 }
 
 #[component]
-fn ComponentBlockDemo(name: String, variant: Option<String>, dark_mode: Option<bool>) -> Element {
-    let Some(demo) = components::DEMOS.iter().find(|d| d.name == name).cloned() else {
+fn ComponentBlockDemo(
+    name: String,
+    demo: Option<String>,
+    variant: Option<String>,
+    dark_mode: Option<bool>,
+) -> Element {
+    let Some(component_demo) = components::DEMOS.iter().find(|d| d.name == name).cloned() else {
         return rsx! {
             div { "Block component not found" }
         };
     };
 
-    let variant = match variant.as_deref() {
-        Some(wanted) => match demo.variants.iter().find(|v| v.name == wanted) {
-            Some(v) => v,
+    let selected_demo = demo.or(variant);
+
+    let demo_entry = match selected_demo.as_deref() {
+        Some(wanted) => match component_demo.demos.iter().find(|v| v.name == wanted) {
+            Some(demo_entry) => demo_entry,
             None => {
                 return rsx! {
                     div { style: "min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 2rem;",
-                        "Variant content not found: {wanted}"
+                        "Demo content not found: {wanted}"
                     }
                 };
             }
         },
-        None => &demo.variants[0],
+        None => &component_demo.demos[0],
     };
 
-    let Comp = variant.component;
+    let Comp = demo_entry.component;
 
     rsx! {
         document::Link { rel: "stylesheet", href: asset!("/assets/main.css") }
@@ -1935,7 +1944,7 @@ fn BlockSchedule() -> Element {
             Badge { variant: BadgeVariant::Outline, "Mar 2026" }
         }
         div { style: "display: grid; justify-items: center;",
-            components::calendar::variants::main::Demo {}
+            components::calendar::demos::main::Demo {}
         }
     }
 }
@@ -2146,12 +2155,12 @@ fn ComponentGalleryPreview(component: ComponentDemoData) -> Element {
         name,
         r#type,
         description,
-        variants,
+        demos,
         ..
     } = component;
 
-    let first_variant = &variants[0];
-    let Comp = first_variant.component;
+    let first_demo = &demos[0];
+    let Comp = first_demo.component;
     let display_name = components::label_of(name);
     let install_command = format!("dx components add {}", components::install_name(name));
 

@@ -2,7 +2,7 @@
   "name": "color_picker",
   "description": "Inline color picking surface without shared input field chrome.",
   "authors": ["Evan Almloff"],
-  "exclude": ["variants", "docs.md", "component.json"],
+  "exclude": ["demos", "docs.md", "component.json"],
   "cargoDependencies": [
     {
       "name": "dioxus-primitives",

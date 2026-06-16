@@ -15,7 +15,7 @@ test("time input column picker click updates the displayed value", async ({
     timeout: 20 * 60 * 1000,
   });
 
-  // The "main" variant renders a 24-hour input seeded to 14:45.
+  // The main preview demo renders a 24-hour input seeded to 14:45.
   const startLabel = page.getByText("Start time", { exact: true });
   await expect(startLabel).toBeVisible();
 

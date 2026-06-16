@@ -2,7 +2,7 @@
   "name": "table_of_contents",
   "description": "A table of contents that highlights the active heading while scrolling.",
   "authors": ["Dioxus Labs"],
-  "exclude": ["variants", "docs.md", "component.json"],
+  "exclude": ["demos", "docs.md", "component.json"],
   "cargoDependencies": [
     {
       "name": "dioxus-primitives",

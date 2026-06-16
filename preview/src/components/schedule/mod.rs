@@ -1,5 +1,5 @@
 pub use dioxus_components::schedule::*;
-#[path = "variants/demo_support.rs"]
+#[path = "demos/demo_support.rs"]
 mod demo_support;
 
 pub(crate) use demo_support::{

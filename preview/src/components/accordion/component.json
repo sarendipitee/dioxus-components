@@ -2,7 +2,7 @@
   "name": "accordion",
   "description": "An accordion component for displaying collapsible content sections.",
   "authors": ["Evan Almloff"],
-  "exclude": ["variants", "docs.md", "component.json"],
+  "exclude": ["demos", "docs.md", "component.json"],
   "cargoDependencies": [
     {
       "name": "dioxus-primitives",

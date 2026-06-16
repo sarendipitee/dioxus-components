@@ -2,7 +2,7 @@
   "name": "autocomplete",
   "description": "A combobox-backed text input that owns the visible query and selected label.",
   "authors": ["Evan Almloff"],
-  "exclude": ["variants", "docs.md", "component.json"],
+  "exclude": ["demos", "docs.md", "component.json"],
   "cargoDependencies": [
     {
       "name": "dioxus-primitives",

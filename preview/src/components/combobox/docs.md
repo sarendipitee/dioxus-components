@@ -6,7 +6,7 @@ Filtering preserves the order defined by the rendered `ComboboxOption` elements 
 props. If you want query-dependent ranking, control `query`, sort your item data in user code,
 render the options in that sorted order, and assign indexes from the sorted list.
 
-## Variants
+## Demos
 
 - `Combobox` is the low-level selectable autocomplete surface.
 - `Autocomplete` owns string input value and maps option submit to the input label.

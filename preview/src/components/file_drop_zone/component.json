@@ -2,7 +2,7 @@
   "name": "file_drop_zone",
   "description": "A file selection and drag-and-drop zone. Supports click, keyboard, and drag/drop file selection with validation.",
   "authors": ["Saren"],
-  "exclude": ["variants", "docs.md", "component.json"],
+  "exclude": ["demos", "docs.md", "component.json"],
   "cargoDependencies": [
     {
       "name": "dioxus-components",

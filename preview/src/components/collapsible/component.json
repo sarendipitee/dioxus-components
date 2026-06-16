@@ -2,7 +2,7 @@
   "name": "collapsible",
   "description": "A collapsible component for showing and hiding content sections.",
   "authors": ["Evan Almloff"],
-  "exclude": ["variants", "docs.md", "component.json"],
+  "exclude": ["demos", "docs.md", "component.json"],
   "cargoDependencies": [
     {
       "name": "dioxus-primitives",

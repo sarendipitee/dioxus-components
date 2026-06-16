@@ -2,7 +2,7 @@
   "name": "alert",
   "description": "A styled inline alert for status, context, and lightweight actions.",
   "authors": ["OpenAI"],
-  "exclude": ["variants", "docs.md", "component.json"],
+  "exclude": ["demos", "docs.md", "component.json"],
   "cargoDependencies": [
     {
       "name": "dioxus-primitives",

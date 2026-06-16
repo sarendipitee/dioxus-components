@@ -2,7 +2,7 @@
   "name": "tags_input",
   "description": "A combobox-family tag entry input with removable pills and Enter-to-add behavior.",
   "authors": ["Evan Almloff"],
-  "exclude": ["variants", "docs.md", "component.json"],
+  "exclude": ["demos", "docs.md", "component.json"],
   "cargoDependencies": [
     {
       "name": "dioxus-primitives",
