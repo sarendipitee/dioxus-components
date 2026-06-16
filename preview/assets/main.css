@@ -72,6 +72,7 @@ body {
 }
 
 .dx-preview-navbar {
+  backdrop-filter: blur(10px);
   position: sticky;
   z-index: 1000;
   top: 0;
@@ -90,7 +91,7 @@ body {
   box-sizing: border-box;
   align-items: center;
   justify-content: space-between;
-  padding: 0.5rem 4.5rem;
+  padding: calc(var(--space) * 3);
   border-right: 1px solid var(--surface-border);
   border-bottom: 1px solid var(--surface-border);
   border-left: 1px solid var(--surface-border);
@@ -102,7 +103,7 @@ body {
   padding: 0.5em 0;
   color: var(--fg-muted);
   font-size: 0.95rem;
-  font-weight: 450;
+  font-weight: 550;
   text-decoration: none;
 }
 
