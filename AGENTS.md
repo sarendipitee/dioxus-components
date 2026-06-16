@@ -34,6 +34,30 @@ When adding or changing a component:
 
 Do not put canonical styled implementations in `preview/src/components`; preview should consume and display the styled crate implementation.
 
+## Dioxus Props and Class Attributes
+
+Do not add a manual `class` prop for ordinary DOM class forwarding when a component already accepts global attributes.
+
+Use Dioxus attribute extension instead:
+
+```rust
+#[props(extends = GlobalAttributes)]
+pub attributes: Vec<Attribute>,
+```
+
+Then spread or merge those attributes onto the rendered element:
+
+```rust
+let base = attributes!(div {
+    class: Styles::component_root,
+});
+let attributes = merge_attributes(vec![base, props.attributes]);
+```
+
+Why: a prop like `pub class: Option<String>` makes `class:` a narrow component prop. CSS module identifiers such as `Styles::my_class` then fail with trait errors like `Option<String>: From<__CssIdent>`. Letting `class` flow through `GlobalAttributes` preserves normal Dioxus attribute behavior and allows CSS module identifiers without `.to_string()`.
+
+Only keep a separate class-like prop when it is not the plain DOM `class` attribute, such as router `active_class`, split-pane divider class configuration, or component-specific class metadata. For styled wrappers in `dioxus-components/`, merge the wrapper's CSS module class into `attributes` with `merge_attributes` and pass `attributes` through to the primitive.
+
 ## Validation
 
 Run the smallest relevant checks for the layer you changed:
