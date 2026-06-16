@@ -792,7 +792,7 @@ impl SliderContext {
     /// (e.g. a neighbor thumb was set to a fractional value), the result is rounded toward
     /// the bound instead of past it.
     fn clamp_for(&self, index: usize, raw: f64) -> f64 {
-        let t = (self.thumbs)();
+        let t = self.thumbs.peek().clone();
         let (lo, hi) = ((self.min)(), (self.max)());
         let (lo, hi) = match (t.len(), index) {
             (2, 0) => (lo, t[1]),
