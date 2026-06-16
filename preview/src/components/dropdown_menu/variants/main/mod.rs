@@ -1,3 +1,5 @@
+use dioxus_components::ButtonVariant;
+use dioxus_components::button::Button;
 use dioxus_components::dropdown_menu::{
     DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger,
 };
@@ -15,7 +17,6 @@ enum Operation {
 #[component]
 pub fn Demo() -> Element {
     let mut selected_operation = use_signal(|| None);
-
     let operations = Operation::iter().enumerate().map(|(i, o)| {
         rsx! {
             DropdownMenuItem::<Operation> {
@@ -29,10 +30,14 @@ pub fn Demo() -> Element {
             }
         }
     });
-
     rsx! {
         DropdownMenu { default_open: false,
-            DropdownMenuTrigger { "Open Menu" }
+            DropdownMenuTrigger {
+                Button {
+                    variant: ButtonVariant::Outline,
+                    "Open Menu" 
+                }
+            }
             DropdownMenuContent { {operations} }
         }
         if let Some(op) = selected_operation() {

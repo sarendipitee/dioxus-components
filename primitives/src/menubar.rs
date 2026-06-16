@@ -4,10 +4,11 @@ use dioxus::prelude::*;
 
 use crate::{
     focus::{
-        use_deferred_focus, use_focus_control, use_focus_controlled_item_disabled,
-        use_focus_entry_disabled, use_focus_provider, FocusPlacement, FocusState,
+        use_deferred_focus, use_focus_control, use_focus_entry_disabled, use_focus_provider,
+        FocusPlacement, FocusState,
     },
-    use_animated_open, use_id_or, use_unique_id,
+    menu::{self, MenuContext},
+    use_unique_id,
 };
 
 #[derive(Clone, Copy)]
@@ -255,12 +256,24 @@ pub fn MenubarMenu(props: MenubarMenuProps) -> Element {
     let is_open = use_memo(move || (ctx.open_menu)() == Some(props.index.cloned()));
     let focus = use_focus_provider(ctx.focus.roving_loop);
     let initial_focus = use_signal(|| None);
+    let trigger_id = use_unique_id();
     let mut menu_ctx = use_context_provider(|| MenubarMenuContext {
         index: props.index,
         focus,
         is_open,
         disabled: props.disabled,
         initial_focus,
+    });
+    let set_menu_open = use_callback(move |open: bool| {
+        ctx.set_open_menu.call(open.then_some(props.index.cloned()));
+    });
+    let shared_disabled = use_memo(move || (ctx.disabled)() || (props.disabled)());
+    use_context_provider(|| MenuContext {
+        open: is_open,
+        set_open: set_menu_open,
+        disabled: shared_disabled,
+        focus,
+        trigger_id,
     });
 
     use_effect(move || {
@@ -393,6 +406,7 @@ pub struct MenubarTriggerProps {
 pub fn MenubarTrigger(props: MenubarTriggerProps) -> Element {
     let mut ctx: MenubarContext = use_context();
     let menu_ctx: MenubarMenuContext = use_context();
+    let shared_menu_ctx: MenuContext = use_context();
     let onmounted = use_focus_control(ctx.focus, menu_ctx.index);
     let disabled = move || (ctx.disabled)() || (menu_ctx.disabled)();
     let is_open = menu_ctx.is_open;
@@ -403,6 +417,7 @@ pub fn MenubarTrigger(props: MenubarTriggerProps) -> Element {
 
     rsx! {
         button {
+            id: shared_menu_ctx.trigger_id,
             onmounted,
             onpointerup: move |_| {
                 if !disabled() {
@@ -514,22 +529,16 @@ pub struct MenubarContentProps {
 #[component]
 pub fn MenubarContent(props: MenubarContentProps) -> Element {
     let menu_ctx: MenubarMenuContext = use_context();
-
-    let unique_id = use_unique_id();
-    let id = use_id_or(unique_id, props.id);
-
-    let render = use_animated_open(id, menu_ctx.is_open);
-    use_deferred_focus(menu_ctx.focus, menu_ctx.initial_focus, render);
+    let shared_menu_ctx: MenuContext = use_context();
+    use_deferred_focus(menu_ctx.focus, menu_ctx.initial_focus, move || {
+        (shared_menu_ctx.open)()
+    });
 
     rsx! {
-        if render() {
-            div {
-                id,
-                role: "menu",
-                "data-state": if (menu_ctx.is_open)() { "open" } else { "closed" },
-                ..props.attributes,
-                {props.children}
-            }
+        menu::MenuContent {
+            id: props.id,
+            attributes: props.attributes,
+            {props.children}
         }
     }
 }
@@ -631,55 +640,13 @@ pub struct MenubarItemProps {
 /// - `data-disabled`: Indicates if the item is disabled. Values are `true` or `false`.
 #[component]
 pub fn MenubarItem(props: MenubarItemProps) -> Element {
-    let mut ctx: MenubarContext = use_context();
-    let mut menu_ctx: MenubarMenuContext = use_context();
-
-    let disabled = move || (ctx.disabled)() || (props.disabled)();
-    let focused = move || menu_ctx.focus.is_focused(props.index.cloned()) && (menu_ctx.is_open)();
-
-    let onmounted = use_focus_controlled_item_disabled(props.index, disabled);
-
     rsx! {
-        div {
-            role: "menuitem",
-            "data-disabled": disabled(),
-            tabindex: if focused() { "0" } else { "-1" },
-
-            onpointerdown: {
-                let value = props.value.clone();
-                move |_| {
-                    if !disabled() {
-                        props.on_select.call(value.clone());
-                        ctx.set_open_menu.call(None);
-                    }
-                }
-            },
-
-            onkeydown: {
-                let value = props.value.clone();
-                move |event: Event<KeyboardData>| {
-                    if event.key() == Key::Enter || event.key() == Key::Character(" ".to_string()) {
-                        if !disabled() {
-                            props.on_select.call(value.clone());
-                            ctx.set_open_menu.call(None);
-                        }
-                        event.prevent_default();
-                        event.stop_propagation();
-                    }
-                }
-            },
-
-            onmounted,
-
-            onblur: move |_| {
-                if focused() {
-                    menu_ctx.focus.blur();
-                    ctx.focus.set_focus(None);
-                    ctx.set_open_menu.call(None);
-                }
-            },
-
-            ..props.attributes,
+        menu::MenuItem {
+            value: props.value,
+            index: props.index,
+            disabled: props.disabled,
+            on_select: props.on_select,
+            attributes: props.attributes,
             {props.children}
         }
     }

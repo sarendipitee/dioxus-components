@@ -1,12 +1,11 @@
 //! Defines the [`ContextMenu`] component and its subcomponents, which provide a context menu interface.
 
 use crate::{
-    focus::{use_focus_controlled_item_disabled, use_focus_provider, FocusState},
-    selectable::{pointer_select_cancel, pointer_select_commit, pointer_select_start},
-    use_animated_open, use_controlled, use_effect_with_cleanup, use_id_or, use_outside_dismiss,
-    use_unique_id,
+    menu::{self, MenuContext},
+    merge_attributes, use_controlled, use_effect_with_cleanup, use_outside_dismiss, use_unique_id,
 };
 use dioxus::prelude::*;
+use dioxus_attributes::attributes;
 use dioxus_core::Task;
 use dioxus_sdk_time::sleep;
 use std::time::Duration;
@@ -35,16 +34,8 @@ async fn visual_viewport_offset() -> (f64, f64) {
 
 #[derive(Clone, Copy)]
 struct ContextMenuCtx {
-    // State
-    open: Memo<bool>,
-    set_open: Callback<bool>,
-    disabled: ReadSignal<bool>,
-
     // Position of the context menu
     position: Signal<(i32, i32)>,
-
-    // Focus state
-    focus: FocusState,
 
     // Id on the root wrapper — covers both trigger and content, so
     // `use_outside_dismiss` treats them as "inside".
@@ -143,38 +134,17 @@ pub fn ContextMenu(props: ContextMenuProps) -> Element {
     let root_id = use_unique_id();
     let long_press_just_fired = use_signal(|| false);
 
-    let focus = use_focus_provider(props.roving_loop);
-    let mut ctx = use_context_provider(|| ContextMenuCtx {
-        open,
-        set_open,
-        disabled: props.disabled,
+    menu::use_menu_provider(open, set_open, props.disabled, props.roving_loop);
+    use_context_provider(|| ContextMenuCtx {
         position,
-        focus,
         root_id,
         long_press_just_fired,
     });
-
-    use_effect(move || {
-        let focused = focus.any_focused();
-        if *ctx.open.peek() != focused {
-            (ctx.set_open)(focused);
-        }
-    });
-
-    // Handle escape key to close the menu
-    let handle_keydown = move |event: Event<KeyboardData>| {
-        if open() && event.key() == Key::Escape {
-            event.prevent_default();
-            set_open.call(false);
-            ctx.focus.blur();
-        }
-    };
 
     rsx! {
         div {
             id: root_id,
             tabindex: 0, // Make the menu container focusable
-            onkeydown: handle_keydown,
             "data-state": if open() { "open" } else { "closed" },
             "data-disabled": (props.disabled)(),
             ..props.attributes,
@@ -240,6 +210,7 @@ pub struct ContextMenuTriggerProps {
 #[component]
 pub fn ContextMenuTrigger(props: ContextMenuTriggerProps) -> Element {
     let ctx: ContextMenuCtx = use_context();
+    let menu_ctx: MenuContext = use_context();
     // iOS Safari does not deliver `contextmenu` from a long-press on touch, so
     // we run a manual timer keyed on the initial touch position and fire it
     // ourselves once the finger has held still long enough.
@@ -256,7 +227,7 @@ pub fn ContextMenuTrigger(props: ContextMenuTriggerProps) -> Element {
         };
 
     let handle_context_menu = move |event: Event<MouseData>| {
-        if !(ctx.disabled)() {
+        if !(menu_ctx.disabled)() {
             // Android Chrome dispatches `contextmenu` ~500ms after a touch long
             // press, which can race our own timer. Defuse the race so only one
             // open lands.
@@ -272,7 +243,7 @@ pub fn ContextMenuTrigger(props: ContextMenuTriggerProps) -> Element {
                 return;
             }
             let p = event.data().client_coordinates();
-            let set_open = ctx.set_open;
+            let set_open = menu_ctx.set_open;
             let mut position = ctx.position;
             spawn(async move {
                 let (off_x, off_y) = visual_viewport_offset().await;
@@ -286,13 +257,13 @@ pub fn ContextMenuTrigger(props: ContextMenuTriggerProps) -> Element {
     let handle_pointer_down = move |event: Event<PointerData>| {
         // Long-press fires for touch and pen (Apple Pencil etc.); mouse keeps
         // using the native `contextmenu` event.
-        if event.pointer_type() == "mouse" || (ctx.disabled)() {
+        if event.pointer_type() == "mouse" || (menu_ctx.disabled)() {
             return;
         }
         cancel_long_press(long_press_task, long_press_start);
         let p = event.client_coordinates();
         long_press_start.set(Some((p.x, p.y)));
-        let set_open = ctx.set_open;
+        let set_open = menu_ctx.set_open;
         let mut position = ctx.position;
         let task = spawn(async move {
             sleep(LONG_PRESS_DURATION).await;
@@ -334,7 +305,7 @@ pub fn ContextMenuTrigger(props: ContextMenuTriggerProps) -> Element {
             onpointercancel: handle_pointer_end,
             role: "button",
             aria_haspopup: "menu",
-            aria_expanded: (ctx.open)(),
+            aria_expanded: (menu_ctx.open)(),
             // Suppress iOS Safari's long-press behaviors (callout sheet, text
             // selection magnifier, gray tap-flash) and the system's own touch
             // gestures so our timer is the only thing that fires.
@@ -410,32 +381,14 @@ pub struct ContextMenuContentProps {
 /// - `data-state`: Indicates if the state of the context menu. Values are `open` or `closed`.
 #[component]
 pub fn ContextMenuContent(props: ContextMenuContentProps) -> Element {
-    let mut ctx: ContextMenuCtx = use_context();
+    let ctx: ContextMenuCtx = use_context();
+    let mut menu_ctx: MenuContext = use_context();
     let position = ctx.position;
     let (x, y) = position();
-
-    let open = ctx.open;
-
-    let onkeydown = move |event: Event<KeyboardData>| {
-        match event.key() {
-            Key::Escape => ctx.focus.blur(),
-            Key::ArrowDown => {
-                ctx.focus.focus_next();
-            }
-            Key::ArrowUp => {
-                if open() {
-                    ctx.focus.focus_prev();
-                }
-            }
-            Key::Home => ctx.focus.focus_first(),
-            Key::End => ctx.focus.focus_last(),
-            _ => return,
-        }
-        event.prevent_default();
-    };
+    let open = menu_ctx.open;
 
     let mut menu_ref: Signal<Option<std::rc::Rc<MountedData>>> = use_signal(|| None);
-    let focused = move || open() && !ctx.focus.any_focused();
+    let focused = move || open() && !menu_ctx.focus.any_focused();
     // If the menu is open, but no item is focused, focus the div itself to capture events
     use_effect(move || {
         let Some(menu) = menu_ref() else {
@@ -449,14 +402,9 @@ pub fn ContextMenuContent(props: ContextMenuContentProps) -> Element {
         }
     });
 
-    let unique_id = use_unique_id();
-    let id = use_id_or(unique_id, props.id);
-
-    let render = use_animated_open(id, open);
-
     use_outside_dismiss(ctx.root_id, move || {
-        ctx.focus.blur();
-        ctx.set_open.call(false);
+        menu_ctx.focus.blur();
+        menu_ctx.set_open.call(false);
     });
 
     // A `position: fixed` menu pinned to a click point drifts away from the
@@ -486,29 +434,26 @@ pub fn ContextMenuContent(props: ContextMenuContentProps) -> Element {
         })
     });
 
-    rsx! {
-        if render() {
-            div {
-                id,
-                role: "menu",
-                aria_orientation: "vertical",
-                position: "fixed",
-                left: "{x}px",
-                top: "{y}px",
-                tabindex: if focused() { "0" } else { "-1" },
-                pointer_events: open().then_some("auto"),
-                "data-state": if open() { "open" } else { "closed" },
-                onkeydown,
-                onblur: move |_| {
-                    if focused() {
-                        ctx.focus.blur();
-                    }
-                },
-                onmounted: move |evt| menu_ref.set(Some(evt.data())),
-                ..props.attributes,
-
-                {props.children}
+    let base = attributes!(div {
+        position: "fixed",
+        left: "{x}px",
+        top: "{y}px",
+        tabindex: if focused() { "0" } else { "-1" },
+        pointer_events: open().then_some("auto"),
+        onblur: move |_| {
+            if focused() {
+                menu_ctx.focus.blur();
             }
+        },
+        onmounted: move |evt| menu_ref.set(Some(evt.data())),
+    });
+    let attributes = merge_attributes(vec![base, props.attributes]);
+
+    rsx! {
+        menu::MenuContent {
+            id: props.id,
+            attributes,
+            {props.children}
         }
     }
 }
@@ -592,66 +537,13 @@ pub struct ContextMenuItemProps {
 /// - `data-disabled`: Indicates if the item is disabled. Possible values are `true` or `false`.
 #[component]
 pub fn ContextMenuItem(props: ContextMenuItemProps) -> Element {
-    let mut ctx: ContextMenuCtx = use_context();
-
-    let disabled = move || (props.disabled)() || (ctx.disabled)();
-    let focused = move || ctx.focus.is_focused(props.index.cloned());
-
-    let onmounted = use_focus_controlled_item_disabled(props.index, disabled);
-
-    let tab_index = use_memo(move || if focused() { "0" } else { "-1" });
-
-    // Touch sequences from the long-press that opened the menu shouldn't
-    // count as selecting an item. Recording on pointerdown and committing on
-    // pointerup means a pointerup without a matching pointerdown on this
-    // item is ignored — exactly the long-press-then-lift case.
-    let down_pos: Signal<Option<(f64, f64)>> = use_signal(|| None);
-    let value = props.value;
-    let mut select = move |val: String| {
-        if !disabled() {
-            props.on_select.call(val);
-            ctx.focus.blur();
-            ctx.set_open.call(false);
-        }
-    };
-
-    let keydown_value = value.clone();
-    let handle_keydown = move |event: Event<KeyboardData>| {
-        if event.key() == Key::Enter || event.key() == Key::Character(" ".to_string()) {
-            select(keydown_value.clone());
-            event.prevent_default();
-            event.stop_propagation();
-        }
-    };
-
     rsx! {
-        div {
-            role: "menuitem",
-            tabindex: tab_index,
-            onpointerdown: move |event| {
-                pointer_select_start(&event, disabled(), down_pos);
-            },
-            onpointerup: move |event| {
-                if pointer_select_commit(&event, disabled(), down_pos) {
-                    select(value.clone());
-                    event.prevent_default();
-                    event.stop_propagation();
-                }
-            },
-            onpointercancel: move |_| {
-                pointer_select_cancel(down_pos);
-            },
-            onkeydown: handle_keydown,
-            onblur: move |_| {
-                if focused() {
-                    ctx.focus.blur();
-                }
-            },
-            onmounted,
-            aria_disabled: disabled(),
-            "data-disabled": disabled(),
-            ..props.attributes,
-
+        menu::MenuItem {
+            value: props.value,
+            index: props.index,
+            disabled: props.disabled,
+            on_select: props.on_select,
+            attributes: props.attributes,
             {props.children}
         }
     }

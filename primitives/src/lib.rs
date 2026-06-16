@@ -33,6 +33,7 @@ mod focus;
 pub mod hover_card;
 pub mod label;
 mod listbox;
+pub mod menu;
 pub mod menubar;
 mod move_interaction;
 #[cfg(feature = "router")]
@@ -454,7 +455,10 @@ pub fn merge_attributes(mut lists: Vec<Vec<Attribute>>) -> Vec<Attribute> {
                                 volatile: was_volatile || attr.volatile,
                                 value: Text(join_class(a, b)),
                             },
-                            _ => attr,
+                            _ => {
+                                by_namespace.push(attr);
+                                continue;
+                            }
                         };
                     } else {
                         *existing = attr;
@@ -564,6 +568,26 @@ mod tests {
         let result = merge_attributes(vec![vec![attr("class", "foo")], vec![attr("class", "bar")]]);
         assert_eq!(result.len(), 1);
         assert_eq!(get_value(&result[0]), "foo bar");
+    }
+
+    #[test]
+    fn class_attributes_preserve_non_text_values() {
+        let result = merge_attributes(vec![
+            vec![attr("class", "dx-dialog")],
+            vec![Attribute {
+                name: "class",
+                namespace: None,
+                volatile: false,
+                value: dioxus_core::AttributeValue::Bool(true),
+            }],
+        ]);
+
+        assert_eq!(result.len(), 2);
+        assert_eq!(get_value(&result[0]), "dx-dialog");
+        assert!(matches!(
+            result[1].value,
+            dioxus_core::AttributeValue::Bool(true)
+        ));
     }
 
     #[test]

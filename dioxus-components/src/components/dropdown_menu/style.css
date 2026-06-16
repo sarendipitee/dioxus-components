@@ -4,27 +4,6 @@
   display: inline-block;
 }
 
-.dx_dropdown_menu_trigger {
-  padding: 8px 18px;
-  border: none;
-  border-radius: var(--radius-control);
-  background: var(--surface);
-  box-shadow: inset 0 0 0 1px var(--surface-border);
-  color: var(--surface-fg);
-  cursor: pointer;
-  font-size: 1rem;
-  transition: background-color 0.2s ease, color 0.2s ease;
-}
-
-.dx_dropdown_menu_trigger:hover {
-  background: var(--surface-hover);
-  color: var(--surface-hover-fg);
-}
-
-.dx_dropdown_menu_trigger:focus-visible {
-  box-shadow: 0 0 0 2px var(--focus);
-}
-
 .dx_dropdown_menu_content {
   position: absolute;
   z-index: 1000;

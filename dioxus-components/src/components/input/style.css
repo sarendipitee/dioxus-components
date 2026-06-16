@@ -97,16 +97,14 @@
 }
 
 .dx_input:hover:not([data-disabled="true"]):not([data-error="true"]) {
-  border-color: var(--input-hover-border);
   background: var(--input-hover);
+  border-color: var(--input-hover-border);
   color: var(--input-hover-fg);
 }
 
 .dx_input:focus-within:not([data-disabled="true"]):not([data-error="true"]) {
-  border-color: var(--input-focus-border);
   background: var(--input-focus);
   color: var(--input-focus-fg);
-  box-shadow: 0 0 0 3px var(--input-focus-ring);
 }
 
 .dx_input[data-error="true"] {
@@ -132,7 +130,7 @@
   flex: 0 0 auto;
   align-items: center;
   justify-content: center;
-  color: var(--input-fg-muted);
+  color: var(--input-fg-faint);
 }
 
 .dx_input_section[data-position="left"] {
@@ -173,7 +171,8 @@
 }
 
 .dx_text_input_control::placeholder {
-  color: var(--input-fg-muted);
+  color: var(--input-fg-faint);
+  opacity: 0.5;
 }
 
 .dx_text_input_control:disabled {

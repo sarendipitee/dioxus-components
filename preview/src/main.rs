@@ -701,6 +701,42 @@ fn Docs(dark_mode: Option<bool>) -> Element {
                         li { "Customize the generated Rust and CSS to fit your app." }
                     }
                 }
+                section { class: "dx-docs-section",
+                    h2 { "Use as a Cargo dependency" }
+                    p {
+                        "If you prefer a dependency over copying files, add "
+                        code { "dioxus-components" }
+                        " directly from Git. This gives you all components in one crate with a combined stylesheet automatically embedded at compile time — no CLI or separate CSS asset needed."
+                    }
+                    pre {
+                        code {
+                            r#"# Cargo.toml
+[dependencies]
+dioxus-components = {{ git = "https://github.com/DioxusLabs/components" }}"#
+                        }
+                    }
+                    p {
+                        "Then place "
+                        code { "DioxusComponentsStyles" }
+                        " near the root of your app to inject the stylesheet once:"
+                    }
+                    pre {
+                        code {
+                            r#"use dioxus::prelude::*;
+use dioxus_components::DioxusComponentsStyles;
+
+fn App() -> Element {{
+    rsx! {{
+        DioxusComponentsStyles {{}}
+        // ... rest of your app
+    }}
+}}"#
+                        }
+                    }
+                    p { class: "dx-docs-muted",
+                        "Unlike the CLI copy approach, this model does not let you modify the component source — you get the components as-is from the library."
+                    }
+                }
             }
         }
     }

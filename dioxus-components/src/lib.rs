@@ -7,10 +7,8 @@ pub mod components;
 pub use components::*;
 pub use dioxus_attributes::component_styles;
 
-const DIOXUS_COMPONENTS_STYLESHEET: &str = include_str!(concat!(
-    env!("OUT_DIR").unwrap_or_else("."),
-    "/dioxus-components.css"
-));
+const DIOXUS_COMPONENTS_STYLESHEET: &str =
+    include_str!(concat!(env!("OUT_DIR"), "/dioxus-components.css"));
 
 /// Inject the combined `dioxus-components` stylesheet into the document.
 #[component]

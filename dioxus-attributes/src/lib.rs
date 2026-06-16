@@ -475,10 +475,7 @@ mod tests {
 
     #[test]
     fn source_dir_from_display_file_accepts_absolute_paths() {
-        let source_file = std::env::current_dir()
-            .unwrap()
-            .join("src")
-            .join("lib.rs");
+        let source_file = std::env::current_dir().unwrap().join("src").join("lib.rs");
 
         assert_eq!(
             source_dir_from_display_file(&source_file.display().to_string()),

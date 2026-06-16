@@ -3,12 +3,13 @@ The DropdownMenu component is used to create a dropdown menu that can be trigger
 ## Component Structure
 
 ```rust
-// The dropdown menu component must wrap all dropdown items.
+// The dropdown menu component must wrap the trigger and dropdown items.
 DropdownMenu {
-    // The dropdown menu trigger is the button that will display the dropdown menu when clicked.
+    // The dropdown menu trigger is an unstyled wrapper that can contain any trigger element.
     DropdownMenuTrigger {
-        // The content of the trigger to display inside the button.
-        {children}
+        Button {
+            "Open Menu"
+        }
     }
     // The dropdown menu content contains all the items that will be displayed in the dropdown menu.
     DropdownMenuContent {

@@ -32,13 +32,12 @@ pub fn DropdownMenu(props: DropdownMenuProps) -> Element {
 
 #[component]
 pub fn DropdownMenuTrigger(props: DropdownMenuTriggerProps) -> Element {
-    let base = attributes!(button {
-        class: Styles::dx_dropdown_menu_trigger.to_string(),
-    });
-    let merged = merge_attributes(vec![base, props.attributes]);
-
     rsx! {
-        dropdown_menu::DropdownMenuTrigger { as: props.r#as, attributes: merged, {props.children} }
+        dropdown_menu::DropdownMenuTrigger {
+            as: props.r#as,
+            attributes: props.attributes,
+            {props.children}
+        }
     }
 }
 
