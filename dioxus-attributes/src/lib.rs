@@ -89,11 +89,10 @@ pub fn attributes(tokens: TokenStream) -> TokenStream {
 /// ```
 #[proc_macro_attribute]
 pub fn component_styles(attr: TokenStream, item: TokenStream) -> TokenStream {
-    let call_span = proc_macro::Span::call_site();
     let path = parse_macro_input!(attr as LitStr);
     let input = parse_macro_input!(item as ItemStruct);
 
-    match expand_component_styles(path, input, call_span) {
+    match expand_component_styles(path, input) {
         Ok(tokens) => tokens.into(),
         Err(err) => err.to_compile_error().into(),
     }
@@ -102,7 +101,6 @@ pub fn component_styles(attr: TokenStream, item: TokenStream) -> TokenStream {
 fn expand_component_styles(
     path: LitStr,
     input: ItemStruct,
-    call_span: proc_macro::Span,
 ) -> syn::Result<proc_macro2::TokenStream> {
     if !matches!(input.fields, syn::Fields::Unit) {
         return Err(syn::Error::new(
@@ -117,7 +115,7 @@ fn expand_component_styles(
         ));
     }
 
-    let css_path = resolve_css_path(&path, call_span)?;
+    let css_path = resolve_css_path(&path)?;
     let css = std::fs::read_to_string(&css_path).map_err(|err| {
         syn::Error::new(
             path.span(),
@@ -149,24 +147,21 @@ fn expand_component_styles(
 /// Resolve a CSS path argument to an absolute filesystem path.
 ///
 /// - Paths starting with `./` or `../` are resolved relative to the calling
-///   source file via `proc_macro::Span::local_file` (stable since Rust 1.88).
+///   source file via the path literal's span.
 /// - All other paths are resolved relative to `CARGO_MANIFEST_DIR`, with any
 ///   leading `/` stripped so both `"src/foo.css"` and `"/src/foo.css"` work.
-fn resolve_css_path(path: &LitStr, call_span: proc_macro::Span) -> syn::Result<PathBuf> {
+fn resolve_css_path(path: &LitStr) -> syn::Result<PathBuf> {
     let raw_path = path.value();
 
     if raw_path.starts_with("./") || raw_path.starts_with("../") {
-        // local_file() is stable since 1.88 but rust-analyzer's proc-macro server may
-        // not implement it yet, causing a panic. Catch it and degrade gracefully.
-        let caller_file =
-            std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| call_span.local_file()))
-                .ok()
-                .flatten();
-        if let Some(caller_file) = caller_file {
-            if let Some(dir) = caller_file.parent() {
-                return Ok(dir.join(&raw_path));
-            }
+        if let Some(source_dir) = path_literal_source_dir(path) {
+            return Ok(source_dir.join(&raw_path));
         }
+
+        return Err(syn::Error::new(
+            path.span(),
+            "#[component_styles] could not resolve a relative CSS path because the proc-macro host did not provide the source file for this attribute",
+        ));
     }
 
     let manifest_dir = std::env::var("CARGO_MANIFEST_DIR").map_err(|err| {
@@ -176,6 +171,56 @@ fn resolve_css_path(path: &LitStr, call_span: proc_macro::Span) -> syn::Result<P
         )
     })?;
     Ok(PathBuf::from(manifest_dir).join(raw_path.trim_start_matches('/')))
+}
+
+fn path_literal_source_dir(path: &LitStr) -> Option<PathBuf> {
+    let span = path.span().unwrap();
+
+    let local_file = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| span.local_file()))
+        .ok()
+        .flatten();
+    if let Some(source_dir) = local_file.and_then(|file| file.parent().map(PathBuf::from)) {
+        return Some(source_dir);
+    }
+
+    let display_file =
+        std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| span.file())).ok()?;
+    source_dir_from_display_file(&display_file)
+}
+
+fn source_dir_from_display_file(display_file: &str) -> Option<PathBuf> {
+    let display_path = PathBuf::from(display_file);
+
+    if display_path.is_absolute() && display_path.is_file() {
+        return display_path.parent().map(PathBuf::from);
+    }
+
+    if display_path.is_relative() {
+        if let Ok(current_dir) = std::env::current_dir() {
+            let current_path = current_dir.join(&display_path);
+            if current_path.is_file() {
+                return current_path.parent().map(PathBuf::from);
+            }
+        }
+
+        if let Ok(manifest_dir) = std::env::var("CARGO_MANIFEST_DIR") {
+            let manifest_path = PathBuf::from(&manifest_dir).join(&display_path);
+            if manifest_path.is_file() {
+                return manifest_path.parent().map(PathBuf::from);
+            }
+
+            if let Some(workspace_path) = PathBuf::from(manifest_dir)
+                .parent()
+                .map(|workspace| workspace.join(&display_path))
+            {
+                if workspace_path.is_file() {
+                    return workspace_path.parent().map(PathBuf::from);
+                }
+            }
+        }
+    }
+
+    None
 }
 
 /// Strip `/* ... */` block comments from CSS source.
@@ -426,5 +471,18 @@ mod tests {
         let classes = collect_classes(css);
         assert!(classes.contains(&"dx-button".to_string()));
         assert!(classes.contains(&"dx-button--primary".to_string()));
+    }
+
+    #[test]
+    fn source_dir_from_display_file_accepts_absolute_paths() {
+        let source_file = std::env::current_dir()
+            .unwrap()
+            .join("src")
+            .join("lib.rs");
+
+        assert_eq!(
+            source_dir_from_display_file(&source_file.display().to_string()),
+            source_file.parent().map(PathBuf::from)
+        );
     }
 }
