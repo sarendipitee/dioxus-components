@@ -2,17 +2,39 @@ import { test, expect } from '@playwright/test';
 
 test('pointer navigation', async ({ page }) => {
   await page.goto('/component/?name=context_menu&', { timeout: 20 * 60 * 1000 }); // Increase timeout to 20 minutes
-  await page.getByRole('button', { name: 'right click here' }).click({
+  await page.getByRole('button', { name: 'right click here' }).first().click({
     button: 'right'
   });
 
   // Assert the context menu is visible
-  const contextMenu = page.getByRole('menu');
+  const contextMenu = page.getByRole('menu').first();
+  await page.waitForTimeout(600);
   await expect(contextMenu).toHaveAttribute('data-state', 'open');
-  // Click on the "Edit" menu item
-  await page.getByRole('menuitem', { name: 'Edit' }).click();
-  // Assert the context menu is closed after clicking
+  await expect(page.locator('.dx_context_menu_label', { hasText: 'Canvas' }).first()).toBeVisible();
+  await expect(page.getByRole('menuitem', { name: 'Edit' }).first()).toContainText('⌘E');
+  await expect(page.getByRole('separator')).toHaveCount(2);
+  await expect(page.getByRole('menuitemcheckbox', { name: 'Show line numbers' }).first()).toHaveAttribute('data-state', 'checked');
+  const arrangeItem = page.getByRole('menuitem', { name: 'Arrange' }).first();
+  await arrangeItem.hover();
+  const submenu = page.locator('.dx_context_menu_sub_content').first();
+  await expect(submenu).toHaveAttribute('data-state', 'open');
+  await expect(submenu.getByRole('menuitem', { name: 'Bring to front' })).toBeVisible();
+  await expect(arrangeItem).toHaveCSS('background-color', 'rgb(247, 247, 247)');
+  const arrangeBox = await arrangeItem.boundingBox();
+  const submenuBox = await submenu.boundingBox();
+  if (!arrangeBox || !submenuBox) throw new Error('submenu geometry unavailable');
+  expect(submenuBox.x).toBeGreaterThanOrEqual(arrangeBox.x + arrangeBox.width - 8);
+  expect(Math.abs(submenuBox.y - arrangeBox.y)).toBeLessThanOrEqual(12);
+  await submenu.getByRole('menuitem', { name: 'Send to back' }).hover();
+  await expect(contextMenu).toHaveAttribute('data-state', 'open');
+  await page.mouse.move(arrangeBox.x - 24, arrangeBox.y + arrangeBox.height / 2);
+  await expect(submenu).toHaveAttribute('data-state', 'closed');
+  await arrangeItem.hover();
+  await expect(submenu).toHaveAttribute('data-state', 'open');
+  await submenu.getByRole('menuitem', { name: 'Send to back' }).click();
+  // Assert the context menu is closed after clicking a submenu item
   await expect(contextMenu).toHaveCount(0);
+  await expect(page.getByText('Selected: Send to back')).toBeVisible();
 });
 
 test('menu lands at the tap coordinates on touch long-press', async ({ page }) => {
@@ -25,8 +47,8 @@ test('menu lands at the tap coordinates on touch long-press', async ({ page }) =
     (main as HTMLElement).style.paddingLeft = '120px';
   });
 
-  const trigger = page.getByRole('button', { name: 'right click here' });
-  const contextMenu = page.getByRole('menu');
+  const trigger = page.getByRole('button', { name: 'right click here' }).first();
+  const contextMenu = page.getByRole('menu').first();
   const box = await trigger.boundingBox();
   if (!box) throw new Error('trigger has no bounding box');
   const tapX = box.x + box.width / 2;
@@ -47,6 +69,7 @@ test('menu lands at the tap coordinates on touch long-press', async ({ page }) =
     }));
   }, { x: tapX, y: tapY, pointerId });
 
+  await page.waitForTimeout(600);
   await expect(contextMenu).toHaveAttribute('data-state', 'open');
   const menuBox = await contextMenu.boundingBox();
   if (!menuBox) throw new Error('menu has no bounding box');
@@ -62,8 +85,8 @@ test('touch long-press opens the context menu', async ({ page }) => {
   // iOS Safari does not fire `contextmenu` on long press, so the menu must
   // open from a held touch instead. Reproduces issue #262.
   await page.goto('/component/?name=context_menu&', { timeout: 20 * 60 * 1000 });
-  const trigger = page.getByRole('button', { name: 'right click here' });
-  const contextMenu = page.getByRole('menu');
+  const trigger = page.getByRole('button', { name: 'right click here' }).first();
+  const contextMenu = page.getByRole('menu').first();
 
   const box = await trigger.boundingBox();
   if (!box) throw new Error('trigger has no bounding box');
@@ -85,6 +108,7 @@ test('touch long-press opens the context menu', async ({ page }) => {
     }));
   }, { x, y, pointerId });
 
+  await page.waitForTimeout(600);
   await expect(contextMenu).toHaveAttribute('data-state', 'open');
 
   // Release the touch after the menu has opened; it should stay open.
@@ -99,13 +123,14 @@ test('touch long-press opens the context menu', async ({ page }) => {
     }));
   }, { x, y, pointerId });
 
+  await page.waitForTimeout(600);
   await expect(contextMenu).toHaveAttribute('data-state', 'open');
 });
 
 test('pen long-press opens the context menu', async ({ page }) => {
   await page.goto('/component/?name=context_menu&', { timeout: 20 * 60 * 1000 });
-  const trigger = page.getByRole('button', { name: 'right click here' });
-  const contextMenu = page.getByRole('menu');
+  const trigger = page.getByRole('button', { name: 'right click here' }).first();
+  const contextMenu = page.getByRole('menu').first();
 
   const box = await trigger.boundingBox();
   if (!box) throw new Error('trigger has no bounding box');
@@ -127,12 +152,13 @@ test('pen long-press opens the context menu', async ({ page }) => {
     }));
   }, { x, y, pointerId });
 
+  await page.waitForTimeout(600);
   await expect(contextMenu).toHaveAttribute('data-state', 'open');
 });
 
 test('mouse pointerdown does not arm the long-press timer', async ({ page }) => {
   await page.goto('/component/?name=context_menu&', { timeout: 20 * 60 * 1000 });
-  const trigger = page.getByRole('button', { name: 'right click here' });
+  const trigger = page.getByRole('button', { name: 'right click here' }).first();
 
   const box = await trigger.boundingBox();
   if (!box) throw new Error('trigger has no bounding box');
@@ -162,8 +188,8 @@ test('mouse pointerdown does not arm the long-press timer', async ({ page }) => 
 
 test('touch tap outside closes the open menu', async ({ page }) => {
   await page.goto('/component/?name=context_menu&', { timeout: 20 * 60 * 1000 });
-  const trigger = page.getByRole('button', { name: 'right click here' });
-  const contextMenu = page.getByRole('menu');
+  const trigger = page.getByRole('button', { name: 'right click here' }).first();
+  const contextMenu = page.getByRole('menu').first();
 
   await trigger.click({ button: 'right' });
   await expect(contextMenu).toHaveAttribute('data-state', 'open');
@@ -199,8 +225,8 @@ test('pointerdown at the trigger location does not dismiss an open menu', async 
   // touch, or from compat-mouse promotion). The dismiss listener must treat
   // the trigger as "inside" the menu's root and ignore it.
   await page.goto('/component/?name=context_menu&', { timeout: 20 * 60 * 1000 });
-  const trigger = page.getByRole('button', { name: 'right click here' });
-  const contextMenu = page.getByRole('menu');
+  const trigger = page.getByRole('button', { name: 'right click here' }).first();
+  const contextMenu = page.getByRole('menu').first();
 
   await trigger.click({ button: 'right' });
   await expect(contextMenu).toHaveAttribute('data-state', 'open');
@@ -248,7 +274,7 @@ test('pointerdown at the trigger location does not dismiss an open menu', async 
 
 test('touch released before long-press threshold does not open the menu', async ({ page }) => {
   await page.goto('/component/?name=context_menu&', { timeout: 20 * 60 * 1000 });
-  const trigger = page.getByRole('button', { name: 'right click here' });
+  const trigger = page.getByRole('button', { name: 'right click here' }).first();
 
   const box = await trigger.boundingBox();
   if (!box) throw new Error('trigger has no bounding box');
@@ -290,12 +316,12 @@ test('touch released before long-press threshold does not open the menu', async 
 
 test('keyboard navigation', async ({ page }) => {
   await page.goto('/component/?name=context_menu&', { timeout: 20 * 60 * 1000 }); // Increase timeout to 20 minutes
-  await page.getByRole('button', { name: 'right click here' }).click({
+  await page.getByRole('button', { name: 'right click here' }).first().click({
     button: 'right'
   });
 
   // Assert the context menu is visible
-  const contextMenu = page.getByRole('menu');
+  const contextMenu = page.getByRole('menu').first();
   await expect(contextMenu).toHaveAttribute('data-state', 'open');
   // Hit escape to close the context menu
   await page.keyboard.press('Escape');
@@ -303,21 +329,21 @@ test('keyboard navigation', async ({ page }) => {
   await expect(contextMenu).toHaveCount(0);
 
   // Reopen the context menu
-  await page.getByRole('button', { name: 'right click here' }).click({
+  await page.getByRole('button', { name: 'right click here' }).first().click({
     button: 'right'
   });
   await page.keyboard.press('ArrowDown');
   // Assert the "Edit" menu item is focused
-  await expect(page.getByRole('menuitem', { name: 'Edit' })).toBeFocused();
-  await expect(page.getByRole('menuitem', { name: 'Undo' })).toHaveAttribute('data-disabled', 'true');
+  await expect(page.getByRole('menuitem', { name: 'Edit' }).first()).toBeFocused();
+  await expect(page.getByRole('menuitem', { name: 'Arrange' }).first()).toBeVisible();
   // Move down to the "Duplicate" menu item
   await page.keyboard.press('ArrowDown');
-  // Assert the "Duplicate" menu item is focused
-  await expect(page.getByRole('menuitem', { name: 'Duplicate' })).toBeFocused();
-  // Hit Enter to select the "Duplicate" menu item
+  await expect(page.getByRole('menuitem', { name: 'Arrange' }).first()).toBeFocused();
+  await page.keyboard.press('ArrowRight');
+  await expect(page.getByRole('menuitem', { name: 'Bring to front' }).first()).toBeFocused();
   await page.keyboard.press('Enter');
   // Assert the context menu is closed after selection
   await expect(contextMenu).toHaveCount(0);
   // Assert the selected item is displayed
-  await expect(page.getByText('Selected: Duplicate')).toBeVisible();
+  await expect(page.getByText('Selected: Bring to front')).toBeVisible();
 });

@@ -2,7 +2,8 @@
 
 use crate::{
     menu::{self, MenuContext},
-    merge_attributes, use_controlled, use_effect_with_cleanup, use_outside_dismiss, use_unique_id,
+    merge_attributes, pointer, use_controlled, use_effect_with_cleanup, use_outside_dismiss,
+    use_unique_id,
 };
 use dioxus::prelude::*;
 use dioxus_attributes::attributes;
@@ -262,11 +263,17 @@ pub fn ContextMenuTrigger(props: ContextMenuTriggerProps) -> Element {
         }
         cancel_long_press(long_press_task, long_press_start);
         let p = event.client_coordinates();
+        let pointer_id = event.data().pointer_id();
+        pointer::track_pointer_down(pointer_id, p);
         long_press_start.set(Some((p.x, p.y)));
         let set_open = menu_ctx.set_open;
         let mut position = ctx.position;
         let task = spawn(async move {
             sleep(LONG_PRESS_DURATION).await;
+            if pointer::pointer_position(pointer_id).is_none() {
+                long_press_task.set(None);
+                return;
+            }
             long_press_task.set(None);
             let (off_x, off_y) = visual_viewport_offset().await;
             position.set(((p.x + off_x) as i32, (p.y + off_y) as i32));
@@ -476,6 +483,10 @@ pub struct ContextMenuItemProps {
     #[props(default)]
     pub on_select: Callback<String>,
 
+    /// Whether the menu should close after the item is selected.
+    #[props(default = true)]
+    pub close_on_select: bool,
+
     /// Additional attributes for the context menu item element
     #[props(extends = GlobalAttributes)]
     pub attributes: Vec<Attribute>,
@@ -543,6 +554,186 @@ pub fn ContextMenuItem(props: ContextMenuItemProps) -> Element {
             index: props.index,
             disabled: props.disabled,
             on_select: props.on_select,
+            close_on_select: props.close_on_select,
+            attributes: props.attributes,
+            {props.children}
+        }
+    }
+}
+
+/// The props for the [`ContextMenuLabel`] component.
+pub type ContextMenuLabelProps = menu::MenuLabelProps;
+
+/// A non-interactive label within a [`ContextMenuContent`].
+#[component]
+pub fn ContextMenuLabel(props: ContextMenuLabelProps) -> Element {
+    rsx! {
+        menu::MenuLabel {
+            attributes: props.attributes,
+            {props.children}
+        }
+    }
+}
+
+/// The props for the [`ContextMenuSeparator`] component.
+pub type ContextMenuSeparatorProps = menu::MenuSeparatorProps;
+
+/// A separator between groups of context menu items.
+#[component]
+pub fn ContextMenuSeparator(props: ContextMenuSeparatorProps) -> Element {
+    rsx! {
+        menu::MenuSeparator {
+            attributes: props.attributes,
+        }
+    }
+}
+
+/// The props for the [`ContextMenuGroup`] component.
+pub type ContextMenuGroupProps = menu::MenuGroupProps;
+
+/// A semantic group of related context menu items.
+#[component]
+pub fn ContextMenuGroup(props: ContextMenuGroupProps) -> Element {
+    rsx! {
+        menu::MenuGroup {
+            attributes: props.attributes,
+            {props.children}
+        }
+    }
+}
+
+/// The props for the [`ContextMenuItemIndicator`] component.
+pub type ContextMenuItemIndicatorProps = menu::MenuItemIndicatorProps;
+
+/// A presentational indicator for checked context menu items.
+#[component]
+pub fn ContextMenuItemIndicator(props: ContextMenuItemIndicatorProps) -> Element {
+    rsx! {
+        menu::MenuItemIndicator {
+            visible: props.visible,
+            attributes: props.attributes,
+            {props.children}
+        }
+    }
+}
+
+/// The props for the [`ContextMenuItemSection`] component.
+pub type ContextMenuItemSectionProps = menu::MenuItemSectionProps;
+
+/// A presentational section inside a context menu item.
+#[component]
+pub fn ContextMenuItemSection(props: ContextMenuItemSectionProps) -> Element {
+    rsx! {
+        menu::MenuItemSection {
+            attributes: props.attributes,
+            {props.children}
+        }
+    }
+}
+
+/// The props for the [`ContextMenuCheckboxItem`] component.
+pub type ContextMenuCheckboxItemProps = menu::MenuCheckboxItemProps<String>;
+
+/// A checkbox-style context menu item.
+#[component]
+pub fn ContextMenuCheckboxItem(props: ContextMenuCheckboxItemProps) -> Element {
+    rsx! {
+        menu::MenuCheckboxItem {
+            value: props.value,
+            index: props.index,
+            checked: props.checked,
+            disabled: props.disabled,
+            on_checked_change: props.on_checked_change,
+            on_select: props.on_select,
+            close_on_select: props.close_on_select,
+            attributes: props.attributes,
+            {props.children}
+        }
+    }
+}
+
+/// The props for the [`ContextMenuRadioGroup`] component.
+pub type ContextMenuRadioGroupProps = menu::MenuRadioGroupProps<String>;
+
+/// A group that coordinates related context menu radio items.
+#[component]
+pub fn ContextMenuRadioGroup(props: ContextMenuRadioGroupProps) -> Element {
+    rsx! {
+        menu::MenuRadioGroup {
+            value: props.value,
+            on_value_change: props.on_value_change,
+            attributes: props.attributes,
+            {props.children}
+        }
+    }
+}
+
+/// The props for the [`ContextMenuRadioItem`] component.
+pub type ContextMenuRadioItemProps = menu::MenuRadioItemProps<String>;
+
+/// A radio-style context menu item.
+#[component]
+pub fn ContextMenuRadioItem(props: ContextMenuRadioItemProps) -> Element {
+    rsx! {
+        menu::MenuRadioItem {
+            value: props.value,
+            index: props.index,
+            disabled: props.disabled,
+            on_select: props.on_select,
+            close_on_select: props.close_on_select,
+            attributes: props.attributes,
+            {props.children}
+        }
+    }
+}
+
+/// The props for the [`ContextMenuSub`] component.
+pub type ContextMenuSubProps = menu::MenuSubProps;
+
+/// A nested context submenu root.
+#[component]
+pub fn ContextMenuSub(props: ContextMenuSubProps) -> Element {
+    rsx! {
+        menu::MenuSub {
+            open: props.open,
+            default_open: props.default_open,
+            on_open_change: props.on_open_change,
+            disabled: props.disabled,
+            roving_loop: props.roving_loop,
+            attributes: props.attributes,
+            {props.children}
+        }
+    }
+}
+
+/// The props for the [`ContextMenuSubTrigger`] component.
+pub type ContextMenuSubTriggerProps = menu::MenuSubTriggerProps<String>;
+
+/// A context menu item that opens a nested submenu.
+#[component]
+pub fn ContextMenuSubTrigger(props: ContextMenuSubTriggerProps) -> Element {
+    rsx! {
+        menu::MenuSubTrigger {
+            value: props.value,
+            index: props.index,
+            disabled: props.disabled,
+            on_select: props.on_select,
+            attributes: props.attributes,
+            {props.children}
+        }
+    }
+}
+
+/// The props for the [`ContextMenuSubContent`] component.
+pub type ContextMenuSubContentProps = menu::MenuSubContentProps;
+
+/// The popup content for a nested context submenu.
+#[component]
+pub fn ContextMenuSubContent(props: ContextMenuSubContentProps) -> Element {
+    rsx! {
+        menu::MenuSubContent {
+            id: props.id,
+            role: props.role,
             attributes: props.attributes,
             {props.children}
         }

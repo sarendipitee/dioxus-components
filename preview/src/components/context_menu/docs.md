@@ -1,4 +1,4 @@
-The context menu component can be used to define a context menu that is displayed when the user right-clicks on an element. It can contain various menu items that the user can interact with.
+The ContextMenu component renders a styled contextual action menu on top of the shared menu primitive APIs. It supports labels, separators, checkbox and radio items, right-side item sections, and nested submenus.
 
 ## Component Structure
 
@@ -10,18 +10,23 @@ ContextMenu {
         // The content of the trigger
         {children}
     }
-    // The context menu content contains all the items that will be displayed in the context menu.
-    ContextMenuContent {
-        // Each context menu item represents an individual action in the context menu. Items are displayed in order based on the order of the index property.
-        ContextMenuItem {
-            // The index of the item, used to determine the order in which items are displayed.
-            index: 0,
-            // The value of the item which will be passed to the on_select callback when the item is selected.
-            value: "",
-            on_select: |value: String| {
-                // This callback is triggered when the item is selected.
-                // The value parameter contains the value of the selected item.
-            },
+    Menu {
+        MenuLabel { "Canvas" }
+        MenuItem {
+            index: 0usize,
+            value: "edit".to_string(),
+            on_select: |_| {},
+            "Edit"
+            MenuItemSection { "⌘E" }
+        }
+        MenuSeparator {}
+        MenuCheckboxItem {
+            value: "line_numbers".to_string(),
+            index: 1usize,
+            checked: show_line_numbers,
+            on_checked_change: move |checked| show_line_numbers.set(checked),
+            MenuItemIndicator { visible: show_line_numbers(), "✓" }
+            "Show line numbers"
         }
     }
 }

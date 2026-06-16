@@ -1,4 +1,4 @@
-The Menubar component can be used to display a menu bar with collapsible menus.
+The Menubar component renders a styled application menubar on top of the shared menu primitive APIs. Top-level menus can contain labels, separators, checkable items, radio groups, right-side item sections, and nested submenus.
 
 ## Component Structure
 
@@ -14,16 +14,22 @@ Menubar {
             // The content of the trigger button
             {children}
         }
-        // The menubar content contains all the items that will be displayed in the menu when it is opened.
-        MenubarContent {
-            // Each menubar item represents an individual items in the menu.
-            MenubarItem {
-                // The value of the item which will be passed to the on_select callback when the item is selected.
-                value: "",
-                on_select: |value: String| {
-                    // This callback is triggered when the item is selected.
-                    // The value parameter contains the value of the selected item.
-                },
+        Menu {
+            MenuItem {
+                index: 0usize,
+                value: "new".to_string(),
+                on_select: |_| {},
+                "New"
+                MenuItemSection { "⌘N" }
+            }
+            MenuSeparator {}
+            MenuCheckboxItem {
+                value: "status_bar".to_string(),
+                index: 1usize,
+                checked: status_bar,
+                on_checked_change: move |checked| status_bar.set(checked),
+                MenuItemIndicator { visible: status_bar(), "✓" }
+                "Status bar"
             }
         }
     }

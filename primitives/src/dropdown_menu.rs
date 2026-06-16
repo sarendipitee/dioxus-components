@@ -1,11 +1,17 @@
 //! Defines the [`DropdownMenu`] component and its subcomponents.
 
 use crate::{
+    focus::{use_deferred_focus, FocusPlacement},
     menu::{self, MenuContext},
     merge_attributes, use_controlled, use_unique_id,
 };
 use dioxus::prelude::*;
 use dioxus_attributes::attributes;
+
+#[derive(Clone, Copy)]
+struct DropdownMenuContext {
+    initial_focus: Signal<Option<FocusPlacement>>,
+}
 
 /// The props for the [`DropdownMenu`] component.
 #[derive(Props, Clone, PartialEq)]
@@ -37,6 +43,9 @@ pub fn DropdownMenu(props: DropdownMenuProps) -> Element {
     let (open, set_open) = use_controlled(props.open, props.default_open, props.on_open_change);
     let mut ctx = menu::use_menu_provider(open, set_open, props.disabled, props.roving_loop);
     let root_id = use_unique_id();
+    let mut initial_focus = use_signal(|| None);
+
+    use_context_provider(|| DropdownMenuContext { initial_focus });
 
     menu::use_menu_outside_dismiss(root_id, ctx, true);
 
@@ -48,10 +57,28 @@ pub fn DropdownMenu(props: DropdownMenuProps) -> Element {
         match event.key() {
             Key::Enter => ctx.set_open.call(!open()),
             Key::Escape => ctx.set_open.call(false),
-            Key::ArrowDown => ctx.focus.focus_next(),
+            Key::ArrowDown => {
+                if open() {
+                    if ctx.focus.any_focused() {
+                        ctx.focus.focus_next();
+                    } else {
+                        initial_focus.set(Some(FocusPlacement::First));
+                    }
+                } else {
+                    initial_focus.set(Some(FocusPlacement::First));
+                    ctx.set_open.call(true);
+                }
+            }
             Key::ArrowUp => {
                 if open() {
-                    ctx.focus.focus_prev();
+                    if ctx.focus.any_focused() {
+                        ctx.focus.focus_prev();
+                    } else {
+                        initial_focus.set(Some(FocusPlacement::Last));
+                    }
+                } else {
+                    initial_focus.set(Some(FocusPlacement::Last));
+                    ctx.set_open.call(true);
                 }
             }
             Key::Home => ctx.focus.focus_first(),
@@ -97,6 +124,7 @@ pub struct DropdownMenuTriggerProps {
 #[component]
 pub fn DropdownMenuTrigger(props: DropdownMenuTriggerProps) -> Element {
     let mut ctx: MenuContext = use_context();
+    let mut dropdown_ctx: DropdownMenuContext = use_context();
     let open = ctx.open;
     let disabled = ctx.disabled;
 
@@ -106,17 +134,43 @@ pub fn DropdownMenuTrigger(props: DropdownMenuTriggerProps) -> Element {
         "data-disabled": disabled,
         aria_disabled: disabled,
         aria_expanded: open,
-        aria_haspopup: "listbox",
+        aria_haspopup: "menu",
         onclick: move |_| {
             if !disabled() {
                 ctx.set_open.call(!open());
             }
         },
-        onblur: move |_| {
-            if !ctx.focus.any_focused() {
-                ctx.focus.blur();
-                ctx.set_open.call(false);
+        onkeydown: move |event: Event<KeyboardData>| {
+            if disabled() {
+                return;
             }
+
+            match event.key() {
+                Key::ArrowDown => {
+                    if !open() {
+                        dropdown_ctx.initial_focus.set(Some(FocusPlacement::First));
+                        ctx.set_open.call(true);
+                    } else if ctx.focus.any_focused() {
+                        ctx.focus.focus_next();
+                    } else {
+                        dropdown_ctx.initial_focus.set(Some(FocusPlacement::First));
+                    }
+                }
+                Key::ArrowUp => {
+                    if !open() {
+                        dropdown_ctx.initial_focus.set(Some(FocusPlacement::Last));
+                        ctx.set_open.call(true);
+                    } else if ctx.focus.any_focused() {
+                        ctx.focus.focus_prev();
+                    } else {
+                        dropdown_ctx.initial_focus.set(Some(FocusPlacement::Last));
+                    }
+                }
+                _ => return,
+            }
+
+            event.prevent_default();
+            event.stop_propagation();
         },
     });
     let attributes = merge_attributes(vec![base, props.attributes]);
@@ -139,11 +193,42 @@ pub type DropdownMenuContentProps = menu::MenuContentProps;
 /// The contents of a [`DropdownMenu`].
 #[component]
 pub fn DropdownMenuContent(props: DropdownMenuContentProps) -> Element {
+    let dropdown_ctx: DropdownMenuContext = use_context();
+    let mut menu_ctx: MenuContext = use_context();
+    let open = menu_ctx.open;
+    let mut menu_ref: Signal<Option<std::rc::Rc<MountedData>>> = use_signal(|| None);
+    let focused = move || open() && !menu_ctx.focus.any_focused();
+
+    use_deferred_focus(menu_ctx.focus, dropdown_ctx.initial_focus, move || {
+        (menu_ctx.open)()
+    });
+    use_effect(move || {
+        let Some(menu) = menu_ref() else {
+            return;
+        };
+        if focused() {
+            spawn(async move {
+                _ = menu.set_focus(true).await;
+            });
+        }
+    });
+
+    let base = attributes!(div {
+        tabindex: if focused() { "0" } else { "-1" },
+        onblur: move |_| {
+            if focused() {
+                menu_ctx.focus.blur();
+            }
+        },
+        onmounted: move |evt| menu_ref.set(Some(evt.data())),
+    });
+    let attributes = merge_attributes(vec![base, props.attributes]);
+
     rsx! {
         menu::MenuContent {
             id: props.id,
-            role: "listbox",
-            attributes: props.attributes,
+            role: "menu",
+            attributes,
             {props.children}
         }
     }
@@ -162,8 +247,196 @@ pub fn DropdownMenuItem<T: Clone + PartialEq + 'static>(
             value: props.value,
             index: props.index,
             disabled: props.disabled,
-            role: "option",
+            role: "menuitem",
             on_select: props.on_select,
+            close_on_select: props.close_on_select,
+            attributes: props.attributes,
+            {props.children}
+        }
+    }
+}
+
+/// The props for the [`DropdownMenuLabel`] component.
+pub type DropdownMenuLabelProps = menu::MenuLabelProps;
+
+/// A non-interactive label within a [`DropdownMenuContent`].
+#[component]
+pub fn DropdownMenuLabel(props: DropdownMenuLabelProps) -> Element {
+    rsx! {
+        menu::MenuLabel {
+            attributes: props.attributes,
+            {props.children}
+        }
+    }
+}
+
+/// The props for the [`DropdownMenuSeparator`] component.
+pub type DropdownMenuSeparatorProps = menu::MenuSeparatorProps;
+
+/// A separator between groups of dropdown menu items.
+#[component]
+pub fn DropdownMenuSeparator(props: DropdownMenuSeparatorProps) -> Element {
+    rsx! {
+        menu::MenuSeparator {
+            attributes: props.attributes,
+        }
+    }
+}
+
+/// The props for the [`DropdownMenuGroup`] component.
+pub type DropdownMenuGroupProps = menu::MenuGroupProps;
+
+/// A semantic group of related dropdown menu items.
+#[component]
+pub fn DropdownMenuGroup(props: DropdownMenuGroupProps) -> Element {
+    rsx! {
+        menu::MenuGroup {
+            attributes: props.attributes,
+            {props.children}
+        }
+    }
+}
+
+/// The props for the [`DropdownMenuItemIndicator`] component.
+pub type DropdownMenuItemIndicatorProps = menu::MenuItemIndicatorProps;
+
+/// A presentational indicator for checked dropdown menu items.
+#[component]
+pub fn DropdownMenuItemIndicator(props: DropdownMenuItemIndicatorProps) -> Element {
+    rsx! {
+        menu::MenuItemIndicator {
+            visible: props.visible,
+            attributes: props.attributes,
+            {props.children}
+        }
+    }
+}
+
+/// The props for the [`DropdownMenuItemSection`] component.
+pub type DropdownMenuItemSectionProps = menu::MenuItemSectionProps;
+
+/// A presentational section inside a dropdown menu item.
+#[component]
+pub fn DropdownMenuItemSection(props: DropdownMenuItemSectionProps) -> Element {
+    rsx! {
+        menu::MenuItemSection {
+            attributes: props.attributes,
+            {props.children}
+        }
+    }
+}
+
+/// The props for the [`DropdownMenuCheckboxItem`] component.
+pub type DropdownMenuCheckboxItemProps<T> = menu::MenuCheckboxItemProps<T>;
+
+/// A checkbox-style dropdown menu item.
+#[component]
+pub fn DropdownMenuCheckboxItem<T: Clone + PartialEq + 'static>(
+    props: DropdownMenuCheckboxItemProps<T>,
+) -> Element {
+    rsx! {
+        menu::MenuCheckboxItem {
+            value: props.value,
+            index: props.index,
+            checked: props.checked,
+            disabled: props.disabled,
+            on_checked_change: props.on_checked_change,
+            on_select: props.on_select,
+            close_on_select: props.close_on_select,
+            attributes: props.attributes,
+            {props.children}
+        }
+    }
+}
+
+/// The props for the [`DropdownMenuRadioGroup`] component.
+pub type DropdownMenuRadioGroupProps<T> = menu::MenuRadioGroupProps<T>;
+
+/// A group that coordinates related dropdown radio items.
+#[component]
+pub fn DropdownMenuRadioGroup<T: Clone + PartialEq + 'static>(
+    props: DropdownMenuRadioGroupProps<T>,
+) -> Element {
+    rsx! {
+        menu::MenuRadioGroup {
+            value: props.value,
+            on_value_change: props.on_value_change,
+            attributes: props.attributes,
+            {props.children}
+        }
+    }
+}
+
+/// The props for the [`DropdownMenuRadioItem`] component.
+pub type DropdownMenuRadioItemProps<T> = menu::MenuRadioItemProps<T>;
+
+/// A radio-style dropdown menu item.
+#[component]
+pub fn DropdownMenuRadioItem<T: Clone + PartialEq + 'static>(
+    props: DropdownMenuRadioItemProps<T>,
+) -> Element {
+    rsx! {
+        menu::MenuRadioItem {
+            value: props.value,
+            index: props.index,
+            disabled: props.disabled,
+            on_select: props.on_select,
+            close_on_select: props.close_on_select,
+            attributes: props.attributes,
+            {props.children}
+        }
+    }
+}
+
+/// The props for the [`DropdownMenuSub`] component.
+pub type DropdownMenuSubProps = menu::MenuSubProps;
+
+/// A nested dropdown submenu root.
+#[component]
+pub fn DropdownMenuSub(props: DropdownMenuSubProps) -> Element {
+    rsx! {
+        menu::MenuSub {
+            open: props.open,
+            default_open: props.default_open,
+            on_open_change: props.on_open_change,
+            disabled: props.disabled,
+            roving_loop: props.roving_loop,
+            attributes: props.attributes,
+            {props.children}
+        }
+    }
+}
+
+/// The props for the [`DropdownMenuSubTrigger`] component.
+pub type DropdownMenuSubTriggerProps<T> = menu::MenuSubTriggerProps<T>;
+
+/// A dropdown menu item that opens a nested submenu.
+#[component]
+pub fn DropdownMenuSubTrigger<T: Clone + PartialEq + 'static>(
+    props: DropdownMenuSubTriggerProps<T>,
+) -> Element {
+    rsx! {
+        menu::MenuSubTrigger {
+            value: props.value,
+            index: props.index,
+            disabled: props.disabled,
+            on_select: props.on_select,
+            attributes: props.attributes,
+            {props.children}
+        }
+    }
+}
+
+/// The props for the [`DropdownMenuSubContent`] component.
+pub type DropdownMenuSubContentProps = menu::MenuSubContentProps;
+
+/// The popup content for a nested dropdown submenu.
+#[component]
+pub fn DropdownMenuSubContent(props: DropdownMenuSubContentProps) -> Element {
+    rsx! {
+        menu::MenuSubContent {
+            id: props.id,
+            role: props.role,
             attributes: props.attributes,
             {props.children}
         }

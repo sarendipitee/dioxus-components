@@ -4,6 +4,15 @@
   display: inline-block;
 }
 
+.dx_dropdown_menu_label {
+  padding: calc(var(--space) * 2) calc(var(--space) * 3);
+  color: var(--surface-muted-fg);
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
 .dx_dropdown_menu_content {
   position: absolute;
   z-index: 1000;
@@ -69,13 +78,80 @@
   user-select: none;
 }
 
+.dx_dropdown_menu_checkable_item,
+.dx_dropdown_menu_sub_trigger {
+  justify-content: space-between;
+}
+
+.dx_dropdown_menu_sub {
+  position: relative;
+}
+
 .dx_dropdown_menu_item[data-disabled="true"] {
   color: var(--surface-disabled-fg);
   cursor: not-allowed;
 }
 
 .dx_dropdown_menu_item:hover:not([data-disabled="true"]),
-.dx_dropdown_menu_item:focus-visible {
+.dx_dropdown_menu_item:focus-visible,
+.dx_dropdown_menu_sub_trigger[data-state="open"] {
   background: var(--surface-hover);
   color: var(--surface-hover-fg);
+}
+
+.dx_dropdown_menu_separator {
+  height: 1px;
+  margin: var(--space) calc(var(--space) * 2);
+  background: var(--overlay-border);
+}
+
+.dx_dropdown_menu_item_indicator {
+  display: inline-flex;
+  min-width: 1rem;
+  align-items: center;
+  justify-content: center;
+  color: inherit;
+}
+
+.dx_dropdown_menu_item_section {
+  margin-left: auto;
+  padding-left: calc(var(--space) * 3);
+  color: var(--surface-muted-fg);
+  font-size: 0.75rem;
+}
+
+.dx_dropdown_menu_sub_trigger::after {
+  content: "›";
+  color: var(--surface-muted-fg);
+}
+
+.dx_dropdown_menu_sub_content {
+  position: absolute;
+  top: calc(var(--space) * -1);
+  left: 100%;
+  margin-top: 0;
+  margin-left: var(--space);
+  transform-origin: left top;
+}
+
+.dx_dropdown_menu_sub_content[data-side="left"] {
+  right: 100%;
+  left: auto;
+  margin-right: var(--space);
+  margin-left: 0;
+  transform-origin: right top;
+}
+
+.dx_dropdown_menu_sub_content::before {
+  position: absolute;
+  top: 0;
+  right: 100%;
+  width: var(--space);
+  height: 100%;
+  content: "";
+}
+
+.dx_dropdown_menu_sub_content[data-side="left"]::before {
+  right: auto;
+  left: 100%;
 }

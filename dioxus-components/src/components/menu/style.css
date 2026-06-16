@@ -1,19 +1,4 @@
-.dx_context_menu {
-  display: inline-block;
-}
-
-.dx_context_menu_trigger {
-  padding: 20px;
-  border: 1px dashed var(--surface-border);
-  border-radius: 0.5rem;
-  background: var(--surface);
-  color: var(--surface-fg);
-  cursor: context-menu;
-  text-align: center;
-  user-select: none;
-}
-
-.dx_context_menu_label {
+.dx_menu_label {
   padding: calc(var(--space) * 2) calc(var(--space) * 3);
   color: var(--surface-muted-fg);
   font-size: 0.75rem;
@@ -22,23 +7,26 @@
   text-transform: uppercase;
 }
 
-.dx_context_menu_content {
+.dx_menu_content {
   z-index: 1000;
-  min-width: 220px;
+  min-width: 200px;
   padding: var(--space);
   border-radius: var(--radius-surface);
+  animation: dx-menu-content-animate-in 150ms ease-out forwards;
   background: var(--overlay);
   box-shadow: inset 0 0 0 1px var(--overlay-border);
   opacity: 0;
   pointer-events: none;
+  transform-origin: top;
   will-change: transform, opacity;
 }
 
-.dx_context_menu_content[data-state="closed"] {
-  animation: dx-context-menu-animate-out 150ms ease-in forwards;
+.dx_menu_content[data-state="closed"] {
+  animation: dx-menu-content-animate-out 150ms ease-in forwards;
+  pointer-events: none;
 }
 
-@keyframes dx-context-menu-animate-out {
+@keyframes dx-menu-content-animate-out {
   0% {
     opacity: 1;
     transform: scale(1) translateY(0);
@@ -50,11 +38,12 @@
   }
 }
 
-.dx_context_menu_content[data-state="open"] {
-  animation: dx-context-menu-animate-in 150ms ease-out forwards;
+.dx_menu_content[data-state="open"] {
+  animation: dx-menu-content-animate-in 150ms ease-out forwards;
+  pointer-events: auto;
 }
 
-@keyframes dx-context-menu-animate-in {
+@keyframes dx-menu-content-animate-in {
   0% {
     opacity: 0;
     transform: scale(0.95) translateY(-2px);
@@ -66,9 +55,10 @@
   }
 }
 
-.dx_context_menu_item {
+.dx_menu_item {
   display: flex;
   align-items: center;
+  gap: var(--item-gap);
   padding: calc(var(--space) * 2) calc(var(--space) * 3);
   border-radius: calc(var(--radius) - var(--space));
   color: var(--overlay-fg);
@@ -79,35 +69,35 @@
   user-select: none;
 }
 
-.dx_context_menu_checkable_item,
-.dx_context_menu_sub_trigger {
-  gap: var(--item-gap);
+.dx_menu_checkable_item,
+.dx_menu_sub_trigger {
   justify-content: space-between;
 }
 
-.dx_context_menu_sub {
+.dx_menu_sub {
   position: relative;
 }
 
-.dx_context_menu_item[data-disabled="true"] {
+.dx_menu_item[data-disabled="true"] {
   color: var(--surface-disabled-fg);
   cursor: not-allowed;
+  opacity: 0.5;
 }
 
-.dx_context_menu_item:hover:not([data-disabled="true"]),
-.dx_context_menu_item:focus-visible,
-.dx_context_menu_sub_trigger[data-state="open"] {
+.dx_menu_item:hover:not([data-disabled="true"]),
+.dx_menu_item:focus-visible,
+.dx_menu_sub_trigger[data-state="open"] {
   background: var(--surface-hover);
   color: var(--surface-hover-fg);
 }
 
-.dx_context_menu_separator {
+.dx_menu_separator {
   height: 1px;
   margin: var(--space) calc(var(--space) * 2);
   background: var(--overlay-border);
 }
 
-.dx_context_menu_item_indicator {
+.dx_menu_item_indicator {
   display: inline-flex;
   min-width: 1rem;
   align-items: center;
@@ -115,31 +105,45 @@
   color: inherit;
 }
 
-.dx_context_menu_item_section {
+.dx_menu_item_section {
   margin-left: auto;
   padding-left: calc(var(--space) * 3);
   color: var(--surface-muted-fg);
   font-size: 0.75rem;
 }
 
-.dx_context_menu_sub_trigger::after {
+.dx_menu_sub_trigger::after {
   content: "›";
   color: var(--surface-muted-fg);
 }
 
-.dx_context_menu_sub_content {
+.dx_menu_sub_content {
   position: absolute;
   top: calc(var(--space) * -1);
   left: 100%;
+  margin-top: 0;
   margin-left: var(--space);
-  pointer-events: auto;
+  transform-origin: left top;
 }
 
-.dx_context_menu_sub_content::before {
+.dx_menu_sub_content[data-side="left"] {
+  right: 100%;
+  left: auto;
+  margin-right: var(--space);
+  margin-left: 0;
+  transform-origin: right top;
+}
+
+.dx_menu_sub_content::before {
   position: absolute;
   top: 0;
   right: 100%;
   width: var(--space);
   height: 100%;
   content: "";
+}
+
+.dx_menu_sub_content[data-side="left"]::before {
+  right: auto;
+  left: 100%;
 }

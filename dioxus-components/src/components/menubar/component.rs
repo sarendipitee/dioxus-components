@@ -1,74 +1,63 @@
 use crate::component_styles;
+use crate::components::menu::{provide_styled_menu_surface, StyledMenuSurface};
 use dioxus::prelude::*;
-use dioxus_primitives::menubar::{
-    self, MenubarContentProps, MenubarItemProps, MenubarMenuProps, MenubarProps,
-    MenubarTriggerProps,
-};
+use dioxus_primitives::menubar::{self, MenubarMenuProps, MenubarProps, MenubarTriggerProps};
 use dioxus_primitives::{dioxus_attributes::attributes, merge_attributes};
-#[component_styles("./style.css")]
-struct Styles;
 
+#[component_styles("./style.css")]
+pub(crate) struct Styles;
+
+fn merge_with_class(tag: &str, class_name: String, attributes: Vec<Attribute>) -> Vec<Attribute> {
+    let base = match tag {
+        "button" => attributes!(button { class: class_name }),
+        _ => attributes!(div { class: class_name }),
+    };
+
+    merge_attributes(vec![base, attributes])
+}
+
+/// Styled wrapper for the menubar root.
 #[component]
 pub fn Menubar(props: MenubarProps) -> Element {
+    let attributes = merge_with_class("div", Styles::dx_menubar.to_string(), props.attributes);
+
     rsx! {
         menubar::Menubar {
-            class: Styles::dx_menubar.to_string(),
             disabled: props.disabled,
             roving_loop: props.roving_loop,
-            attributes: props.attributes,
+            attributes,
             {props.children}
         }
     }
 }
 
+/// Styled wrapper for an individual menubar menu root.
 #[component]
 pub fn MenubarMenu(props: MenubarMenuProps) -> Element {
+    provide_styled_menu_surface(StyledMenuSurface::Menubar);
+
+    let attributes = merge_with_class("div", Styles::dx_menubar_menu.to_string(), props.attributes);
+
     rsx! {
         menubar::MenubarMenu {
-            class: Styles::dx_menubar_menu.to_string(),
             index: props.index,
             disabled: props.disabled,
-            attributes: props.attributes,
+            attributes,
             {props.children}
         }
     }
 }
 
+/// Styled wrapper for a menubar trigger.
 #[component]
 pub fn MenubarTrigger(props: MenubarTriggerProps) -> Element {
-    let base = attributes!(button {
-        class: Styles::dx_menubar_trigger,
-    });
-    let attributes = merge_attributes(vec![base, props.attributes]);
+    let attributes = merge_with_class(
+        "button",
+        Styles::dx_menubar_trigger.to_string(),
+        props.attributes,
+    );
 
     rsx! {
         menubar::MenubarTrigger { attributes, {props.children} }
-    }
-}
-
-#[component]
-pub fn MenubarContent(props: MenubarContentProps) -> Element {
-    rsx! {
-        menubar::MenubarContent {
-            class: Styles::dx_menubar_content.to_string(),
-            id: props.id,
-            attributes: props.attributes,
-            {props.children}
-        }
-    }
-}
-
-#[component]
-pub fn MenubarItem(props: MenubarItemProps) -> Element {
-    rsx! {
-        menubar::MenubarItem {
-            class: Styles::dx_menubar_item.to_string(),
-            index: props.index,
-            value: props.value,
-            disabled: props.disabled,
-            on_select: props.on_select,
-            attributes: props.attributes,
-            {props.children}
-        }
     }
 }

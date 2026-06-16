@@ -1,2 +1,3 @@
 mod component;
-pub use component::*;
+pub(crate) use component::Styles as DropdownMenuStyles;
+pub use component::{DropdownMenu, DropdownMenuTrigger};

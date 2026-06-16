@@ -1,14 +1,28 @@
 use crate::component_styles;
+use crate::components::menu::{provide_styled_menu_surface, StyledMenuSurface};
 use dioxus::prelude::*;
-use dioxus_primitives::context_menu::{
-    self, ContextMenuContentProps, ContextMenuItemProps, ContextMenuProps, ContextMenuTriggerProps,
-};
+use dioxus_primitives::context_menu::{self, ContextMenuProps, ContextMenuTriggerProps};
+use dioxus_primitives::{dioxus_attributes::attributes, merge_attributes};
 
 #[component_styles("./style.css")]
-struct Styles;
+pub(crate) struct Styles;
 
+fn merge_with_class(tag: &str, class_name: String, attributes: Vec<Attribute>) -> Vec<Attribute> {
+    let base = match tag {
+        "button" => attributes!(button { class: class_name }),
+        _ => attributes!(div { class: class_name }),
+    };
+
+    merge_attributes(vec![base, attributes])
+}
+
+/// Styled wrapper for the context menu root.
 #[component]
 pub fn ContextMenu(props: ContextMenuProps) -> Element {
+    provide_styled_menu_surface(StyledMenuSurface::Context);
+
+    let attributes = merge_with_class("div", Styles::dx_context_menu.to_string(), props.attributes);
+
     rsx! {
         context_menu::ContextMenu {
             disabled: props.disabled,
@@ -16,52 +30,24 @@ pub fn ContextMenu(props: ContextMenuProps) -> Element {
             default_open: props.default_open,
             on_open_change: props.on_open_change,
             roving_loop: props.roving_loop,
-            attributes: props.attributes,
+            attributes,
             {props.children}
         }
     }
 }
 
+/// Styled wrapper for the context menu trigger.
 #[component]
 pub fn ContextMenuTrigger(props: ContextMenuTriggerProps) -> Element {
+    let attributes = merge_with_class(
+        "button",
+        Styles::dx_context_menu_trigger.to_string(),
+        props.attributes,
+    );
+
     rsx! {
         context_menu::ContextMenuTrigger {
-            padding: "20px",
-            background: "var(--surface)",
-            border: "1px dashed var(--surface-border)",
-            border_radius: ".5rem",
-            cursor: "context-menu",
-            user_select: "none",
-            text_align: "center",
-            color: "var(--surface-fg)",
-            attributes: props.attributes,
-            {props.children}
-        }
-    }
-}
-
-#[component]
-pub fn ContextMenuContent(props: ContextMenuContentProps) -> Element {
-    rsx! {
-        context_menu::ContextMenuContent {
-            class: Styles::dx_context_menu_content.to_string(),
-            id: props.id,
-            attributes: props.attributes,
-            {props.children}
-        }
-    }
-}
-
-#[component]
-pub fn ContextMenuItem(props: ContextMenuItemProps) -> Element {
-    rsx! {
-        context_menu::ContextMenuItem {
-            class: Styles::dx_context_menu_item.to_string(),
-            disabled: props.disabled,
-            value: props.value,
-            index: props.index,
-            on_select: props.on_select,
-            attributes: props.attributes,
+            attributes,
             {props.children}
         }
     }

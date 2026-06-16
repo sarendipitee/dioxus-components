@@ -1,4 +1,4 @@
-The DropdownMenu component is used to create a dropdown menu that can be triggered by a button click. It allows users to select an option from a list of items.
+The DropdownMenu component renders a styled menu surface on top of the shared primitive menu APIs. It supports labels, separators, grouped items, right-side item sections, checkbox and radio items, and nested submenus.
 
 ## Component Structure
 
@@ -11,18 +11,25 @@ DropdownMenu {
             "Open Menu"
         }
     }
-    // The dropdown menu content contains all the items that will be displayed in the dropdown menu.
-    DropdownMenuContent {
-        // Each dropdown menu item represents an individual option in the dropdown menu. Items are displayed in order based on the order of the index property.
-        DropdownMenuItem {
-            // The index of the item, used to determine the order in which items are displayed.
-            index: 0,
-            // The value of the item which will be passed to the on_select callback when the item is selected.
-            value: "",
-            on_select: |value: String| {
-                // This callback is triggered when the item is selected.
-                // The value parameter contains the value of the selected item.
-            },
+    Menu {
+        MenuLabel { "Actions" }
+        MenuGroup {
+            MenuItem::<String> {
+                index: 0usize,
+                value: "edit".to_string(),
+                on_select: |_| {},
+                "Edit"
+                MenuItemSection { "⌘E" }
+            }
+        }
+        MenuSeparator {}
+        MenuCheckboxItem::<String> {
+            value: "toolbar".to_string(),
+            index: 1usize,
+            checked: show_toolbar,
+            on_checked_change: move |checked| show_toolbar.set(checked),
+            MenuItemIndicator { visible: show_toolbar(), "✓" }
+            "Show Toolbar"
         }
     }
 }

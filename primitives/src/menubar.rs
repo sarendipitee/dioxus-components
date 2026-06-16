@@ -432,9 +432,8 @@ pub fn MenubarTrigger(props: MenubarTriggerProps) -> Element {
                 }
             },
             onblur: move |_| {
-                if is_focused() {
+                if is_focused() && !is_open() {
                     ctx.focus.set_focus(None);
-                    ctx.set_open_menu.call(None);
                 }
             },
             role: "menuitem",
@@ -561,6 +560,10 @@ pub struct MenubarItemProps {
     #[props(default)]
     pub on_select: Callback<String>,
 
+    /// Whether the menu should close after the item is selected.
+    #[props(default = true)]
+    pub close_on_select: bool,
+
     /// Additional attributes to apply to the item element.
     #[props(extends = GlobalAttributes)]
     pub attributes: Vec<Attribute>,
@@ -646,6 +649,186 @@ pub fn MenubarItem(props: MenubarItemProps) -> Element {
             index: props.index,
             disabled: props.disabled,
             on_select: props.on_select,
+            close_on_select: props.close_on_select,
+            attributes: props.attributes,
+            {props.children}
+        }
+    }
+}
+
+/// The props for the [`MenubarLabel`] component.
+pub type MenubarLabelProps = menu::MenuLabelProps;
+
+/// A non-interactive label within a [`MenubarContent`].
+#[component]
+pub fn MenubarLabel(props: MenubarLabelProps) -> Element {
+    rsx! {
+        menu::MenuLabel {
+            attributes: props.attributes,
+            {props.children}
+        }
+    }
+}
+
+/// The props for the [`MenubarSeparator`] component.
+pub type MenubarSeparatorProps = menu::MenuSeparatorProps;
+
+/// A separator between groups of menubar menu items.
+#[component]
+pub fn MenubarSeparator(props: MenubarSeparatorProps) -> Element {
+    rsx! {
+        menu::MenuSeparator {
+            attributes: props.attributes,
+        }
+    }
+}
+
+/// The props for the [`MenubarGroup`] component.
+pub type MenubarGroupProps = menu::MenuGroupProps;
+
+/// A semantic group of related menubar menu items.
+#[component]
+pub fn MenubarGroup(props: MenubarGroupProps) -> Element {
+    rsx! {
+        menu::MenuGroup {
+            attributes: props.attributes,
+            {props.children}
+        }
+    }
+}
+
+/// The props for the [`MenubarItemIndicator`] component.
+pub type MenubarItemIndicatorProps = menu::MenuItemIndicatorProps;
+
+/// A presentational indicator for checked menubar menu items.
+#[component]
+pub fn MenubarItemIndicator(props: MenubarItemIndicatorProps) -> Element {
+    rsx! {
+        menu::MenuItemIndicator {
+            visible: props.visible,
+            attributes: props.attributes,
+            {props.children}
+        }
+    }
+}
+
+/// The props for the [`MenubarItemSection`] component.
+pub type MenubarItemSectionProps = menu::MenuItemSectionProps;
+
+/// A presentational section inside a menubar menu item.
+#[component]
+pub fn MenubarItemSection(props: MenubarItemSectionProps) -> Element {
+    rsx! {
+        menu::MenuItemSection {
+            attributes: props.attributes,
+            {props.children}
+        }
+    }
+}
+
+/// The props for the [`MenubarCheckboxItem`] component.
+pub type MenubarCheckboxItemProps = menu::MenuCheckboxItemProps<String>;
+
+/// A checkbox-style menubar menu item.
+#[component]
+pub fn MenubarCheckboxItem(props: MenubarCheckboxItemProps) -> Element {
+    rsx! {
+        menu::MenuCheckboxItem {
+            value: props.value,
+            index: props.index,
+            checked: props.checked,
+            disabled: props.disabled,
+            on_checked_change: props.on_checked_change,
+            on_select: props.on_select,
+            close_on_select: props.close_on_select,
+            attributes: props.attributes,
+            {props.children}
+        }
+    }
+}
+
+/// The props for the [`MenubarRadioGroup`] component.
+pub type MenubarRadioGroupProps = menu::MenuRadioGroupProps<String>;
+
+/// A group that coordinates related menubar radio items.
+#[component]
+pub fn MenubarRadioGroup(props: MenubarRadioGroupProps) -> Element {
+    rsx! {
+        menu::MenuRadioGroup {
+            value: props.value,
+            on_value_change: props.on_value_change,
+            attributes: props.attributes,
+            {props.children}
+        }
+    }
+}
+
+/// The props for the [`MenubarRadioItem`] component.
+pub type MenubarRadioItemProps = menu::MenuRadioItemProps<String>;
+
+/// A radio-style menubar menu item.
+#[component]
+pub fn MenubarRadioItem(props: MenubarRadioItemProps) -> Element {
+    rsx! {
+        menu::MenuRadioItem {
+            value: props.value,
+            index: props.index,
+            disabled: props.disabled,
+            on_select: props.on_select,
+            close_on_select: props.close_on_select,
+            attributes: props.attributes,
+            {props.children}
+        }
+    }
+}
+
+/// The props for the [`MenubarSub`] component.
+pub type MenubarSubProps = menu::MenuSubProps;
+
+/// A nested menubar submenu root.
+#[component]
+pub fn MenubarSub(props: MenubarSubProps) -> Element {
+    rsx! {
+        menu::MenuSub {
+            open: props.open,
+            default_open: props.default_open,
+            on_open_change: props.on_open_change,
+            disabled: props.disabled,
+            roving_loop: props.roving_loop,
+            attributes: props.attributes,
+            {props.children}
+        }
+    }
+}
+
+/// The props for the [`MenubarSubTrigger`] component.
+pub type MenubarSubTriggerProps = menu::MenuSubTriggerProps<String>;
+
+/// A menubar menu item that opens a nested submenu.
+#[component]
+pub fn MenubarSubTrigger(props: MenubarSubTriggerProps) -> Element {
+    rsx! {
+        menu::MenuSubTrigger {
+            value: props.value,
+            index: props.index,
+            disabled: props.disabled,
+            on_select: props.on_select,
+            attributes: props.attributes,
+            {props.children}
+        }
+    }
+}
+
+/// The props for the [`MenubarSubContent`] component.
+pub type MenubarSubContentProps = menu::MenuSubContentProps;
+
+/// The popup content for a nested menubar submenu.
+#[component]
+pub fn MenubarSubContent(props: MenubarSubContentProps) -> Element {
+    rsx! {
+        menu::MenuSubContent {
+            id: props.id,
+            role: props.role,
             attributes: props.attributes,
             {props.children}
         }

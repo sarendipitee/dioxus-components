@@ -97,7 +97,9 @@
 }
 
 .dx_menubar_item {
-  display: block;
+  display: flex;
+  align-items: center;
+  gap: var(--item-gap);
   padding: calc(var(--space) * 2) calc(var(--space) * 3);
   border-radius: calc(var(--radius) - var(--space));
   cursor: pointer;
@@ -111,8 +113,66 @@
 }
 
 .dx_menubar_item:hover:not([data-disabled="true"]),
-.dx_menubar_item:focus-visible {
+.dx_menubar_item:focus-visible,
+.dx_menubar_sub_trigger[data-state="open"] {
   background: var(--surface-hover);
   color: var(--surface-hover-fg);
   outline: none;
+}
+
+.dx_menubar_label {
+  padding: calc(var(--space) * 2) calc(var(--space) * 3);
+  color: var(--surface-muted-fg);
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.dx_menubar_separator {
+  height: 1px;
+  margin: var(--space) calc(var(--space) * 2);
+  background: var(--overlay-border);
+}
+
+.dx_menubar_checkable_item,
+.dx_menubar_sub_trigger {
+  justify-content: space-between;
+}
+
+.dx_menubar_sub {
+  position: relative;
+}
+
+.dx_menubar_item_indicator {
+  display: inline-flex;
+  min-width: 1rem;
+  align-items: center;
+  justify-content: center;
+  color: inherit;
+}
+
+.dx_menubar_item_section {
+  margin-left: auto;
+  padding-left: calc(var(--space) * 3);
+  color: var(--surface-muted-fg);
+  font-size: 0.75rem;
+}
+
+.dx_menubar_sub_trigger::after {
+  content: "›";
+  color: var(--surface-muted-fg);
+}
+
+.dx_menubar_sub_content {
+  position: absolute;
+  top: calc(var(--space) * -1);
+  left: 100%;
+  margin-top: 0;
+  margin-left: 0;
+  transform-origin: left top;
+}
+
+.dx_menubar_sub_content::before {
+  content: none;
 }
