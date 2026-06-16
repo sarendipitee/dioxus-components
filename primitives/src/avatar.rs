@@ -224,11 +224,11 @@ pub struct AvatarImageProps {
 
     /// The image source URL
     #[props(into)]
-    pub src: String,
+    pub src: ReadSignal<String>,
 
     /// Alt text for the image
     #[props(default)]
-    pub alt: Option<String>,
+    pub alt: ReadSignal<Option<String>>,
 
     /// Additional attributes for the image element
     #[props(extends = GlobalAttributes)]
@@ -265,33 +265,35 @@ pub fn AvatarImage(props: AvatarImageProps) -> Element {
     let ctx: AvatarCtx = use_context();
     let mut current_src = use_signal(|| None::<String>);
     let image_id = use_id_or(use_unique_id(), props.id);
-    let src = props.src.clone();
+    let src = props.src;
     let mut effect_ctx = ctx.clone();
 
     // Track the image source independently so source changes reset loading state before the
     // browser's image events report the final result.
     use_effect(use_reactive!(|src| {
+        let src_value = src();
         effect_ctx.has_image_child.set(true);
 
-        if src.is_empty() {
+        if src_value.is_empty() {
             current_src.set(None);
             set_avatar_state(effect_ctx.clone(), AvatarState::Empty);
             return;
         }
 
-        if current_src.peek().as_ref() != Some(&src) {
-            current_src.set(Some(src.clone()));
+        if current_src.peek().as_ref() != Some(&src_value) {
+            current_src.set(Some(src_value));
             set_avatar_state(effect_ctx.clone(), AvatarState::Loading);
         }
     }));
 
-    let watcher_src = props.src.clone();
+    let watcher_src = props.src;
     let watcher_ctx = ctx.clone();
     let watcher_current_src = current_src;
     // Reconcile cached or very fast image loads that can complete before Dioxus
     // delivers the synthetic load/error event.
     use_effect(use_reactive!(|watcher_src| {
-        if watcher_src.is_empty() {
+        let watcher_src_value = watcher_src();
+        if watcher_src_value.is_empty() {
             return;
         }
 
@@ -316,7 +318,7 @@ pub fn AvatarImage(props: AvatarImageProps) -> Element {
             "#,
         );
         let _ = eval.send(image_id_value);
-        let _ = eval.send(watcher_src.clone());
+        let _ = eval.send(watcher_src_value.clone());
 
         let event_ctx = watcher_ctx.clone();
         let mut event_current_src = watcher_current_src;
@@ -328,7 +330,7 @@ pub fn AvatarImage(props: AvatarImageProps) -> Element {
             let matches_current_src = event_current_src
                 .peek()
                 .as_ref()
-                .map(|src| src == &watcher_src)
+                .map(|src| src == &watcher_src_value)
                 .unwrap_or(true);
 
             if !matches_current_src {
@@ -337,11 +339,11 @@ pub fn AvatarImage(props: AvatarImageProps) -> Element {
 
             match state.as_str() {
                 "loaded" => {
-                    event_current_src.set(Some(watcher_src.clone()));
+                    event_current_src.set(Some(watcher_src_value.clone()));
                     mark_avatar_loaded(event_ctx.clone());
                 }
                 "error" => {
-                    event_current_src.set(Some(watcher_src.clone()));
+                    event_current_src.set(Some(watcher_src_value.clone()));
                     mark_avatar_error(event_ctx.clone());
                 }
                 _ => {}
@@ -349,49 +351,51 @@ pub fn AvatarImage(props: AvatarImageProps) -> Element {
         });
     }));
 
-    let load_src = props.src.clone();
+    let load_src = props.src;
     let load_ctx = ctx.clone();
     let mut load_current_src = current_src;
 
     let handle_load = move |_| {
-        if load_src.is_empty() {
+        let load_src_value = load_src();
+        if load_src_value.is_empty() {
             return;
         }
 
         let matches_current_src = load_current_src
             .peek()
             .as_ref()
-            .map(|src| src == &load_src)
+            .map(|src| src == &load_src_value)
             .unwrap_or(true);
 
         if matches_current_src {
-            load_current_src.set(Some(load_src.clone()));
+            load_current_src.set(Some(load_src_value));
             mark_avatar_loaded(load_ctx.clone());
         }
     };
 
-    let error_src = props.src.clone();
+    let error_src = props.src;
     let error_ctx = ctx.clone();
     let mut error_current_src = current_src;
 
     let handle_error = move |_| {
-        if error_src.is_empty() {
+        let error_src_value = error_src();
+        if error_src_value.is_empty() {
             return;
         }
 
         let matches_current_src = error_current_src
             .peek()
             .as_ref()
-            .map(|src| src == &error_src)
+            .map(|src| src == &error_src_value)
             .unwrap_or(true);
 
         if matches_current_src {
-            error_current_src.set(Some(error_src.clone()));
+            error_current_src.set(Some(error_src_value));
             mark_avatar_error(error_ctx.clone());
         }
     };
 
-    let show_image = !props.src.is_empty() && (ctx.state)() != AvatarState::Error;
+    let show_image = !(props.src)().is_empty() && (ctx.state)() != AvatarState::Error;
     if !show_image {
         return rsx!({});
     }
@@ -399,8 +403,8 @@ pub fn AvatarImage(props: AvatarImageProps) -> Element {
     rsx! {
         img {
             id: image_id,
-            src: props.src.clone(),
-            alt: props.alt.clone().unwrap_or_default(),
+            src: props.src,
+            alt: props.alt,
             onload: handle_load,
             onerror: handle_error,
             style: "width: 100%; height: 100%; object-fit: cover;",

@@ -70,8 +70,8 @@ pub fn Demo() -> Element {
                 manual_filtering: true,
                 loading: server_status() == ServerStatus::Loading,
                 error,
-                empty_message: "Server returned no orders".to_string(),
-                empty_hint: Some("Try another search, filter, sort, or page.".to_string()),
+                empty_message: "Server returned no orders",
+                empty_hint: "Try another search, filter, sort, or page.",
                 toolbar_left: rsx! {
                     span { style: "color: var(--surface-muted-fg); font-size: 0.875rem;", "Server mode" }
                 },

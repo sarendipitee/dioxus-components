@@ -1,9 +1,8 @@
 use dioxus_components::avatar::{ImageAvatar, AvatarImageSize};
 use dioxus_components::button::{Button, ButtonVariant};
 use dioxus_components::collapsible::{Collapsible, CollapsibleContent, CollapsibleTrigger};
-use dioxus_components::dropdown_menu::{
-    DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger,
-};
+use dioxus_components::dropdown_menu::{DropdownMenu, DropdownMenuTrigger};
+use dioxus_components::menu::{Menu, MenuItem, MenuSeparator};
 use dioxus_components::separator::Separator;
 use dioxus_components::sidebar::{
     Sidebar, SidebarCollapsible, SidebarContent, SidebarFooter, SidebarGroup, SidebarGroupLabel,
@@ -226,12 +225,12 @@ fn TeamSwitcher(teams: &'static [Team]) -> Element {
                             }
                         },
                     }
-                    DropdownMenuContent {
+                    Menu {
                         div { style: "padding:0.5rem; font-size:0.75rem; opacity:0.7;",
                             "Teams"
                         }
                         for (idx , team) in teams.iter().enumerate() {
-                            DropdownMenuItem {
+                            MenuItem {
                                 index: idx,
                                 value: idx,
                                 on_select: move |v: usize| active_team.set(v),
@@ -242,8 +241,8 @@ fn TeamSwitcher(teams: &'static [Team]) -> Element {
                                 }
                             }
                         }
-                        Separator { decorative: true }
-                        DropdownMenuItem {
+                        MenuSeparator {}
+                        MenuItem {
                             index: teams.len(),
                             value: 999usize,
                             on_select: move |_: usize| {},
@@ -333,23 +332,23 @@ fn NavProjects(projects: &'static [Project]) -> Element {
                                     }
                                 },
                             }
-                            DropdownMenuContent {
-                                DropdownMenuItem {
+                            Menu {
+                                MenuItem {
                                     index: 0usize,
                                     value: "view".to_string(),
                                     on_select: move |_: String| {},
                                     DemoIcon {}
                                     span { "View Project" }
                                 }
-                                DropdownMenuItem {
+                                MenuItem {
                                     index: 1usize,
                                     value: "share".to_string(),
                                     on_select: move |_: String| {},
                                     DemoIcon {}
                                     span { "Share Project" }
                                 }
-                                Separator { decorative: true }
-                                DropdownMenuItem {
+                                MenuSeparator {}
+                                MenuItem {
                                     index: 2usize,
                                     value: "delete".to_string(),
                                     on_select: move |_: String| {},
@@ -399,7 +398,7 @@ fn NavUser() -> Element {
                             }
                         },
                     }
-                    DropdownMenuContent {
+                    Menu {
                         div { style: "display:flex; align-items:center; gap:0.5rem; padding:0.375rem 0.25rem; text-align:left; font-size:0.875rem;",
                             ImageAvatar {
                                 size: AvatarImageSize::Small,
@@ -413,38 +412,38 @@ fn NavUser() -> Element {
                                 span { class: DemoStyles::dx_sidebar_info_subtitle, "m@example.com" }
                             }
                         }
-                        Separator { decorative: true }
-                        DropdownMenuItem {
+                        MenuSeparator {}
+                        MenuItem {
                             index: 0usize,
                             value: "upgrade".to_string(),
                             on_select: move |_: String| {},
                             DemoIcon {}
                             "Upgrade to Pro"
                         }
-                        Separator { decorative: true }
-                        DropdownMenuItem {
+                        MenuSeparator {}
+                        MenuItem {
                             index: 1usize,
                             value: "account".to_string(),
                             on_select: move |_: String| {},
                             DemoIcon {}
                             "Account"
                         }
-                        DropdownMenuItem {
+                        MenuItem {
                             index: 2usize,
                             value: "billing".to_string(),
                             on_select: move |_: String| {},
                             DemoIcon {}
                             "Billing"
                         }
-                        DropdownMenuItem {
+                        MenuItem {
                             index: 3usize,
                             value: "notifications".to_string(),
                             on_select: move |_: String| {},
                             DemoIcon {}
                             "Notifications"
                         }
-                        Separator { decorative: true }
-                        DropdownMenuItem {
+                        MenuSeparator {}
+                        MenuItem {
                             index: 4usize,
                             value: "logout".to_string(),
                             on_select: move |_: String| {},

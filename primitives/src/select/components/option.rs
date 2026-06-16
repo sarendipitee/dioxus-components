@@ -35,11 +35,11 @@ pub struct SelectOptionProps<T: Clone + PartialEq + 'static> {
 
     /// Optional label for the option (for accessibility)
     #[props(default)]
-    pub aria_label: Option<String>,
+    pub aria_label: ReadSignal<Option<String>>,
 
     /// Optional description role for the option (for accessibility)
     #[props(default)]
-    pub aria_roledescription: Option<String>,
+    pub aria_roledescription: ReadSignal<Option<String>>,
 
     /// Additional attributes for the option element
     #[props(extends = GlobalAttributes)]
@@ -134,8 +134,8 @@ pub fn SelectOption<T: PartialEq + Clone + 'static>(props: SelectOptionProps<T>)
 
                 aria_selected: (option.selected)(),
                 aria_disabled: (option.disabled)(),
-                aria_label: props.aria_label.clone(),
-                aria_roledescription: props.aria_roledescription.clone(),
+                aria_label: props.aria_label,
+                aria_roledescription: props.aria_roledescription,
                 "data-disabled": (option.disabled)(),
 
                 onpointerdown: move |event| {

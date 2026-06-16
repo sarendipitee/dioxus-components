@@ -20,7 +20,7 @@ pub struct DragAndDropListProps {
 
     /// Accessible label for the list
     #[props(default)]
-    pub aria_label: Option<String>,
+    pub aria_label: ReadSignal<Option<String>>,
 
     /// Additional attributes to apply to the list element.
     #[props(extends = GlobalAttributes)]
@@ -35,7 +35,7 @@ pub fn DragAndDropList(props: DragAndDropListProps) -> Element {
     let is_removable = props.is_removable;
     let aria_label = props
         .aria_label
-        .clone()
+        .cloned()
         .unwrap_or_else(|| "Sortable list".to_string());
     // Keep a stable key per item so Dioxus moves keyed siblings instead of
     // swapping content between list items during reorder.

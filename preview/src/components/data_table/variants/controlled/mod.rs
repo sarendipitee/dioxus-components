@@ -23,7 +23,7 @@ pub fn Demo() -> Element {
             state_mode: DataTableStateMode::Controlled { state: state() },
             on_state_change: move |change: DataTableStateChange| state.set(change.next_state),
             row_id: Callback::new(order_row_id),
-            empty_message: "No controlled rows match".to_string(),
+            empty_message: "No controlled rows match",
             toolbar_right: rsx! {
                 Button {
                     variant: ButtonVariant::Outline,

@@ -262,7 +262,7 @@ pub struct DragAndDropListProps {
 
     /// Accessible label for the list
     #[props(default)]
-    pub aria_label: Option<String>,
+    pub aria_label: ReadSignal<Option<String>>,
 
     /// Additional attributes to apply to the list element.
     #[props(extends = GlobalAttributes)]
@@ -278,7 +278,7 @@ pub struct DragAndDropListProps {
 pub struct DragAndDropListItemsProps {
     /// Accessible label for the list.
     #[props(into)]
-    pub aria_label: String,
+    pub aria_label: ReadSignal<String>,
 
     /// Additional attributes to apply to the inner list element.
     #[props(extends = GlobalAttributes)]
@@ -343,9 +343,8 @@ pub fn DragAndDropList(props: DragAndDropListProps) -> Element {
 
     let label = props
         .aria_label
-        .as_deref()
-        .unwrap_or("Sortable list")
-        .to_string();
+        .cloned()
+        .unwrap_or_else(|| "Sortable list".to_string());
 
     let children = props.children.unwrap_or_else(|| {
         rsx! {
@@ -416,7 +415,7 @@ pub fn DragAndDropListItems(props: DragAndDropListItemsProps) -> Element {
 
     rsx! {
         ul {
-            aria_label: "{props.aria_label}",
+            aria_label: props.aria_label,
             aria_roledescription: "sortable list",
             aria_describedby: "dnd-instructions",
             ondragover: move |event: Event<DragData>| {

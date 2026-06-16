@@ -46,7 +46,7 @@ pub struct ToolbarProps {
 
     /// ARIA label for the toolbar
     #[props(default)]
-    pub aria_label: Option<String>,
+    pub aria_label: ReadSignal<Option<String>>,
 
     /// Additional attributes for the toolbar
     #[props(extends = GlobalAttributes)]

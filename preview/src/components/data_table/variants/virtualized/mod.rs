@@ -29,8 +29,8 @@ pub fn Demo() -> Element {
                 overscan: 10,
                 max_height: Some("32rem".to_string()),
             }),
-            empty_message: "No orders match this view".to_string(),
-            empty_hint: Some("Try clearing search, filters, or sorting.".to_string()),
+            empty_message: "No orders match this view",
+            empty_hint: "Try clearing search, filters, or sorting.",
         }
     }
 }

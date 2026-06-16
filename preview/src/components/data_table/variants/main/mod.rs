@@ -20,8 +20,8 @@ pub fn Demo() -> Element {
                 default_state: Some(table_state(CLIENT_PAGE_SIZE)),
             },
             row_id: Callback::new(order_row_id),
-            empty_message: "No orders match this view".to_string(),
-            empty_hint: Some("Try clearing search, filters, or sorting.".to_string()),
+            empty_message: "No orders match this view",
+            empty_hint: "Try clearing search, filters, or sorting.",
         }
     }
 }

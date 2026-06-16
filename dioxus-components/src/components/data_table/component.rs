@@ -843,17 +843,17 @@ pub struct DataTableProps<T: Clone + PartialEq + 'static = String> {
     #[props(default)]
     pub loading: bool,
     /// Message rendered in the loading state.
-    #[props(default = "Loading table data...".to_string())]
-    pub loading_message: String,
+    #[props(default = ReadSignal::new(Signal::new(String::from("Loading table data..."))))]
+    pub loading_message: ReadSignal<String>,
     /// Error message rendered when loading failed.
     #[props(default)]
-    pub error: Option<String>,
+    pub error: ReadSignal<Option<String>>,
     /// Message rendered when there are no rows.
-    #[props(default = "No results found".to_string())]
-    pub empty_message: String,
+    #[props(default = ReadSignal::new(Signal::new(String::from("No results found"))))]
+    pub empty_message: ReadSignal<String>,
     /// Optional supporting message rendered below `empty_message`.
     #[props(default)]
-    pub empty_hint: Option<String>,
+    pub empty_hint: ReadSignal<Option<String>>,
     /// Optional controls rendered above the table on the right.
     #[props(default)]
     pub header_controls: Option<Element>,
@@ -904,6 +904,10 @@ pub fn DataTable<T: Clone + PartialEq + 'static>(props: DataTableProps<T>) -> El
     let page_info = page_info_from_props(&props);
     let operation_columns = canonicalize_operation_columns(&props.columns);
     let canonical_columns = canonicalize_columns(&props.columns, &active_state);
+    let error = (props.error)();
+    let loading_message = (props.loading_message)();
+    let empty_message = (props.empty_message)();
+    let empty_hint = (props.empty_hint)();
     let rows = derive_rows(
         &props.items,
         &props.row_id,
@@ -920,7 +924,7 @@ pub fn DataTable<T: Clone + PartialEq + 'static>(props: DataTableProps<T>) -> El
         &operation_columns,
         &canonical_columns,
         &props.columns,
-        props.error.as_ref(),
+        error.as_ref(),
         props.loading,
         rows.len(),
     );
@@ -969,10 +973,10 @@ pub fn DataTable<T: Clone + PartialEq + 'static>(props: DataTableProps<T>) -> El
         &canonical_columns,
         &active_state,
         props.loading,
-        props.error.as_ref(),
-        &props.loading_message,
-        &props.empty_message,
-        props.empty_hint.as_deref(),
+        error.as_ref(),
+        &loading_message,
+        &empty_message,
+        empty_hint.as_deref(),
         // Row expansion is unsupported while virtualized; dropping it here keeps the expansion
         // column, control colspan, and state-row colspan consistent.
         if is_virtualized {

@@ -509,8 +509,8 @@ pub fn Input(
 #[component]
 pub fn InputClearButton(
     /// Accessible label for the clear action.
-    #[props(default = "Clear value".to_string())]
-    aria_label: String,
+    #[props(default = ReadSignal::new(Signal::new(String::from("Clear value"))))]
+    aria_label: ReadSignal<String>,
     /// Disables the clear button.
     #[props(default = false)]
     disabled: bool,

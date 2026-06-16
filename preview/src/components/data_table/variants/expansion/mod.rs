@@ -28,7 +28,7 @@ pub fn Demo() -> Element {
                 default_state: Some(table_state(CLIENT_PAGE_SIZE)),
             },
             row_id: Callback::new(order_row_id),
-            empty_message: "No expandable orders match".to_string(),
+            empty_message: "No expandable orders match",
             expanded_row: Callback::new(|ctx: DataTableExpandedRowContext<OrderRow>| {
                 let row = ctx.row.item;
                 let priority = if row.priority {
