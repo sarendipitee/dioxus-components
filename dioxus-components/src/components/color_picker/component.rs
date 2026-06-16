@@ -1,5 +1,5 @@
-use dioxus::prelude::*;
 use crate::component_styles;
+use dioxus::prelude::*;
 use dioxus_primitives::color_picker::{self, Color, ColorAreaProps, ColorPickerContext};
 use dioxus_primitives::slider::*;
 use palette::{encoding, FromColor, Hsv, RgbHue, Srgb};

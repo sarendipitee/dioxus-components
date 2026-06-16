@@ -1,5 +1,5 @@
-use dioxus::prelude::*;
 use crate::component_styles;
+use dioxus::prelude::*;
 use dioxus_icons::lucide::ChevronsUpDown;
 use dioxus_primitives::collapsible::{
     self, CollapsibleContentProps, CollapsibleProps, CollapsibleTriggerProps,

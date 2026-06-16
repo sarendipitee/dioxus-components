@@ -1,3 +1,4 @@
+use crate::component_styles;
 use crate::components::button::{Button, ButtonVariant};
 use crate::components::separator::Separator;
 use crate::components::sheet::{
@@ -7,7 +8,6 @@ use crate::components::skeleton::Skeleton;
 use crate::components::tooltip::{Tooltip, TooltipContent, TooltipTrigger};
 use dioxus::core::use_drop;
 use dioxus::prelude::*;
-use crate::component_styles;
 use dioxus_icons::lucide::PanelLeft;
 use dioxus_primitives::dioxus_attributes::attributes;
 use dioxus_primitives::merge_attributes;

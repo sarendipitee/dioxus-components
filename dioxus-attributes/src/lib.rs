@@ -158,11 +158,10 @@ fn resolve_css_path(path: &LitStr, call_span: proc_macro::Span) -> syn::Result<P
     if raw_path.starts_with("./") || raw_path.starts_with("../") {
         // local_file() is stable since 1.88 but rust-analyzer's proc-macro server may
         // not implement it yet, causing a panic. Catch it and degrade gracefully.
-        let caller_file = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
-            call_span.local_file()
-        }))
-        .ok()
-        .flatten();
+        let caller_file =
+            std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| call_span.local_file()))
+                .ok()
+                .flatten();
         if let Some(caller_file) = caller_file {
             if let Some(dir) = caller_file.parent() {
                 return Ok(dir.join(&raw_path));
@@ -251,8 +250,7 @@ fn collect_classes(css: &str) -> Vec<String> {
                 // Only accumulate when in selector context:
                 // - top level (stack empty), or
                 // - directly inside an at-rule body (stack top is true)
-                let in_selector_ctx =
-                    block_stack.is_empty() || block_stack.last() == Some(&true);
+                let in_selector_ctx = block_stack.is_empty() || block_stack.last() == Some(&true);
                 if in_selector_ctx {
                     current.push(ch);
                 }
@@ -329,7 +327,10 @@ mod tests {
 
     #[test]
     fn strip_comments_removes_block_comment() {
-        assert_eq!(strip_css_comments("/* .fake { */\n.real { }"), "\n.real { }");
+        assert_eq!(
+            strip_css_comments("/* .fake { */\n.real { }"),
+            "\n.real { }"
+        );
     }
 
     #[test]

@@ -1,5 +1,5 @@
-use dioxus::prelude::*;
 use crate::component_styles;
+use dioxus::prelude::*;
 use dioxus_primitives::tabs::{
     self, TabContentProps, TabListProps, TabTriggerProps, TabsActivationMode, TabsJustify,
     TabsOrientation, TabsPlacement,

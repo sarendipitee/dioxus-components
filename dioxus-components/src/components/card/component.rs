@@ -1,5 +1,5 @@
-use dioxus::prelude::*;
 use crate::component_styles;
+use dioxus::prelude::*;
 
 #[component_styles("./style.css")]
 struct Styles;

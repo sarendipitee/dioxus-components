@@ -1,14 +1,14 @@
 use std::sync::atomic::{AtomicUsize, Ordering};
 
-use dioxus::prelude::*;
 use crate::component_styles;
+use dioxus::prelude::*;
 use dioxus_primitives::dioxus_attributes::attributes;
-use dioxus_primitives::ContentAlign;
 use dioxus_primitives::time_picker::{
     TimePicker, TimePickerAmPmSegment, TimePickerFormat, TimePickerHourSegment, TimePickerInput,
     TimePickerInputValue, TimePickerLabels, TimePickerMinuteSegment, TimePickerSecondSegment,
     TimePickerSeparator, TimePickerSteps, TimePickerType, TimePickerValue,
 };
+use dioxus_primitives::ContentAlign;
 use time::{macros::time, Time};
 
 use crate::components::input::{

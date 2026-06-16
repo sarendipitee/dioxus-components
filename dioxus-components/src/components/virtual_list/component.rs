@@ -1,5 +1,5 @@
-use dioxus::prelude::*;
 use crate::component_styles;
+use dioxus::prelude::*;
 pub use dioxus_primitives::virtual_list::VirtualListProps;
 use dioxus_primitives::{dioxus_attributes::attributes, merge_attributes};
 

@@ -147,9 +147,7 @@ impl FileDropZoneAccept {
 
 /// Normalize a file extension: strip a single leading dot and lowercase it.
 fn normalize_extension(ext: &str) -> String {
-    ext.trim()
-        .trim_start_matches('.')
-        .to_ascii_lowercase()
+    ext.trim().trim_start_matches('.').to_ascii_lowercase()
 }
 
 /// Extract the lowercase extension (without dot) from a file name, if any.
@@ -675,8 +673,8 @@ pub fn FileDropZone(props: FileDropZoneProps) -> Element {
             // state and fire on_file_dialog_cancel.
             #[cfg(all(feature = "web", target_arch = "wasm32"))]
             {
-                use wasm_bindgen::JsCast;
                 use wasm_bindgen::closure::Closure;
+                use wasm_bindgen::JsCast;
                 let mut dialog_active = file_dialog_active;
                 let on_cancel = on_file_dialog_cancel.clone();
                 let closure: Closure<dyn FnMut()> = Closure::once(move || {
@@ -1047,7 +1045,10 @@ fn accepted_files_from_list(list: &web_sys::FileList) -> Vec<AcceptedFile> {
 /// to make it a no-op rather than guarding the call site. Because `enabled` is
 /// captured by value, the listeners are attached once based on its initial
 /// value and are not re-evaluated if the prop later changes.
-#[cfg_attr(not(all(feature = "web", target_arch = "wasm32")), allow(unused_variables))]
+#[cfg_attr(
+    not(all(feature = "web", target_arch = "wasm32")),
+    allow(unused_variables)
+)]
 fn prevent_document_drop(enabled: bool) {
     #[cfg(all(feature = "web", target_arch = "wasm32"))]
     {
@@ -1064,14 +1065,10 @@ fn prevent_document_drop(enabled: bool) {
 
             if let Some(window) = &window {
                 let target: &web_sys::EventTarget = window.as_ref();
-                let _ = target.add_event_listener_with_callback(
-                    "dragover",
-                    prevent.as_ref().unchecked_ref(),
-                );
-                let _ = target.add_event_listener_with_callback(
-                    "drop",
-                    prevent.as_ref().unchecked_ref(),
-                );
+                let _ = target
+                    .add_event_listener_with_callback("dragover", prevent.as_ref().unchecked_ref());
+                let _ = target
+                    .add_event_listener_with_callback("drop", prevent.as_ref().unchecked_ref());
             }
 
             move || {
@@ -1286,7 +1283,10 @@ mod tests {
         assert_eq!(outcome.accepted.len(), 1);
         assert_eq!(outcome.rejected.len(), 1);
         assert_eq!(outcome.rejected[0].name, "b.txt");
-        assert_eq!(outcome.rejected[0].errors[0].code, RejectionCode::FileInvalidType);
+        assert_eq!(
+            outcome.rejected[0].errors[0].code,
+            RejectionCode::FileInvalidType
+        );
     }
 
     #[test]
@@ -1305,7 +1305,10 @@ mod tests {
         let outcome = validate_files(items, &config, |_| Vec::new());
         assert_eq!(outcome.accepted.len(), 2);
         assert_eq!(outcome.rejected.len(), 1);
-        assert_eq!(outcome.rejected[0].errors[0].code, RejectionCode::TooManyFiles);
+        assert_eq!(
+            outcome.rejected[0].errors[0].code,
+            RejectionCode::TooManyFiles
+        );
     }
 
     #[test]

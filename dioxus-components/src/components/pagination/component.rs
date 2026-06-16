@@ -1,5 +1,5 @@
-use dioxus::prelude::*;
 use crate::component_styles;
+use dioxus::prelude::*;
 use dioxus_icons::lucide::{ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, Ellipsis};
 use dioxus_primitives::use_controlled;
 #[component_styles("./style.css")]

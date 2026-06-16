@@ -2,7 +2,8 @@ use std::fs;
 use std::path::{Path, PathBuf};
 
 fn main() {
-    let manifest_dir = PathBuf::from(std::env::var("CARGO_MANIFEST_DIR").expect("missing CARGO_MANIFEST_DIR"));
+    let manifest_dir =
+        PathBuf::from(std::env::var("CARGO_MANIFEST_DIR").expect("missing CARGO_MANIFEST_DIR"));
     let components_dir = manifest_dir.join("src/components");
     let out_dir = PathBuf::from(std::env::var("OUT_DIR").expect("missing OUT_DIR"));
     let output_path = out_dir.join("dioxus-components.css");

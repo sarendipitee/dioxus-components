@@ -3,16 +3,16 @@ use std::collections::HashSet;
 use std::rc::Rc;
 use std::sync::atomic::{AtomicUsize, Ordering as AtomicOrdering};
 
-use dioxus::prelude::*;
 use crate::component_styles;
+use dioxus::prelude::*;
 use dioxus_icons::lucide::{ArrowDown, ArrowUp, ArrowUpDown, Plus, Search, SlidersHorizontal, X};
 use dioxus_primitives::checkbox::CheckboxState;
-use dioxus_primitives::TextOrElement;
 use dioxus_primitives::r#virtual::types::VirtualItem;
 use dioxus_primitives::r#virtual::{
     compute_measurements, get_total_size, get_virtual_items, resize_item, set_scroll_offset,
     set_viewport_size, VirtualizerState, VirtualizerStateStoreExt,
 };
+use dioxus_primitives::TextOrElement;
 
 use crate::components::{
     Button, ButtonSize, ButtonVariant, Checkbox, ComboboxEmpty, ComboboxOption,

@@ -1,8 +1,8 @@
 use std::sync::atomic::{AtomicUsize, Ordering};
 
+use crate::component_styles;
 use dioxus::core::AttributeValue;
 use dioxus::prelude::*;
-use crate::component_styles;
 use dioxus_primitives::{dioxus_attributes::attributes, merge_attributes, TextOrElement};
 
 use crate::components::label::Label;
@@ -156,7 +156,9 @@ pub struct InputContent {
 
 impl From<String> for InputContent {
     fn from(value: String) -> Self {
-        Self { content: Some(TextOrElement::Text(value)) }
+        Self {
+            content: Some(TextOrElement::Text(value)),
+        }
     }
 }
 
@@ -168,31 +170,41 @@ impl From<&str> for InputContent {
 
 impl From<Element> for InputContent {
     fn from(value: Element) -> Self {
-        Self { content: Some(TextOrElement::Element(value)) }
+        Self {
+            content: Some(TextOrElement::Element(value)),
+        }
     }
 }
 
 impl From<Option<Element>> for InputContent {
     fn from(value: Option<Element>) -> Self {
-        Self { content: value.map(TextOrElement::Element) }
+        Self {
+            content: value.map(TextOrElement::Element),
+        }
     }
 }
 
 impl From<Option<String>> for InputContent {
     fn from(value: Option<String>) -> Self {
-        Self { content: value.map(TextOrElement::Text) }
+        Self {
+            content: value.map(TextOrElement::Text),
+        }
     }
 }
 
 impl From<TextOrElement<()>> for InputContent {
     fn from(value: TextOrElement<()>) -> Self {
-        Self { content: Some(value) }
+        Self {
+            content: Some(value),
+        }
     }
 }
 
 impl From<Callback<(), Element>> for InputContent {
     fn from(value: Callback<(), Element>) -> Self {
-        Self { content: Some(TextOrElement::Render(value)) }
+        Self {
+            content: Some(TextOrElement::Render(value)),
+        }
     }
 }
 

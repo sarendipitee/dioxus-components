@@ -1,7 +1,7 @@
 use std::sync::atomic::{AtomicUsize, Ordering};
 
-use dioxus::prelude::*;
 use crate::component_styles;
+use dioxus::prelude::*;
 use dioxus_primitives::color_picker::Color;
 use dioxus_primitives::use_controlled;
 use dioxus_primitives::{dioxus_attributes::attributes, merge_attributes};
