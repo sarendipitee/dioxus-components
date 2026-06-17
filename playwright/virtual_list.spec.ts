@@ -5,7 +5,7 @@ async function testScrollHeightStability(
   page: import("@playwright/test").Page,
   tolerancePx: number
 ) {
-  await page.goto("/component/?name=virtual_list&", {
+  await page.goto("/components/virtual_list", {
     timeout: 20 * 60 * 1000,
   });
 
@@ -94,7 +94,7 @@ test("scrollHeight remains stable during continuous scroll", async ({ page }) =>
 // Test with the random_heights demo, which has highly variable item sizes.
 // This reproduces production failure where adaptive estimation struggles
 test("scrollHeight stable with random heights demo", async ({ page }) => {
-  await page.goto("/component/block/?name=virtual_list&demo=random_heights", {
+  await page.goto("/components/virtual_list/block#random_heights", {
     timeout: 20 * 60 * 1000,
   });
 
@@ -167,7 +167,7 @@ test("scrollHeight stable with random heights demo", async ({ page }) => {
 });
 
 test("virtual list virtualizes rows and updates on scroll", async ({ page }) => {
-  await page.goto("/component/?name=virtual_list&", { timeout: 20 * 60 * 1000 });
+  await page.goto("/components/virtual_list", { timeout: 20 * 60 * 1000 });
 
   const cards = page.getByRole("listitem");
   await expect(cards.first()).toBeVisible({ timeout: 30000 });

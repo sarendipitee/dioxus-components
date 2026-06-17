@@ -20,7 +20,7 @@ use crate::components::{
     toggle_group::{ToggleGroup, ToggleItem},
 };
 use core::panic;
-use dioxus::prelude::{dioxus_router::LinkProps, *};
+use dioxus::prelude::{dioxus_router::LinkProps, Asset, *};
 use dioxus_components::DioxusComponentsStyles;
 use dioxus_i18n::prelude::{use_init_i18n, I18nConfig};
 use dioxus_icons::lucide::{
@@ -49,7 +49,7 @@ struct ComponentDemoData {
     name: &'static str,
     r#type: ComponentType,
     description: &'static str,
-    docs: &'static str,
+    docs_path: Asset,
     props: &'static [PropMetadata],
     component: HighlightedCode,
     style: HighlightedCode,
@@ -161,15 +161,28 @@ pub enum Route {
     Demos { dark_mode: Option<bool> },
     #[route("/theme?:dark_mode")]
     Theme { dark_mode: Option<bool> },
-    #[route("/component/?:name&:iframe&:dark_mode")]
+    #[route("/components/:name?:iframe&:dark_mode#:demo")]
     ComponentDemo {
+        name: String,
+        iframe: Option<bool>,
+        dark_mode: Option<bool>,
+        demo: String,
+    },
+    #[route("/component/?:name&:iframe&:dark_mode")]
+    LegacyComponentDemo {
         name: String,
         iframe: Option<bool>,
         dark_mode: Option<bool>,
     },
     #[end_layout]
-    #[route("/component/block/?:name&:demo&:variant&:dark_mode")]
+    #[route("/components/:name/block?:dark_mode#:demo")]
     ComponentBlockDemo {
+        name: String,
+        demo: String,
+        dark_mode: Option<bool>,
+    },
+    #[route("/component/block/?:name&:demo&:variant&:dark_mode")]
+    LegacyComponentBlockDemo {
         name: String,
         demo: Option<String>,
         variant: Option<String>,
@@ -187,7 +200,9 @@ impl Route {
             Route::Demos { .. } => None,
             Route::Theme { .. } => None,
             Route::ComponentDemo { iframe, .. } => *iframe,
+            Route::LegacyComponentDemo { iframe, .. } => *iframe,
             Route::ComponentBlockDemo { .. } => None,
+            Route::LegacyComponentBlockDemo { .. } => None,
             Route::EmailClientDashboard { .. } => None,
         }
     }
@@ -204,7 +219,9 @@ impl Route {
             Route::Demos { dark_mode, .. } => *dark_mode,
             Route::Theme { dark_mode, .. } => *dark_mode,
             Route::ComponentDemo { dark_mode, .. } => *dark_mode,
+            Route::LegacyComponentDemo { dark_mode, .. } => *dark_mode,
             Route::ComponentBlockDemo { dark_mode, .. } => *dark_mode,
+            Route::LegacyComponentBlockDemo { dark_mode, .. } => *dark_mode,
             Route::EmailClientDashboard { dark_mode, .. } => *dark_mode,
         }
     }
@@ -242,6 +259,7 @@ impl Route {
             name: name.to_string(),
             iframe,
             dark_mode,
+            demo: String::new(),
         }
     }
 }
@@ -296,7 +314,10 @@ fn NavigationLayout() -> Element {
 #[component]
 fn Navbar() -> Element {
     let in_iframe = Route::in_iframe().unwrap_or_default();
-    let in_component = matches!(router().current(), Route::ComponentDemo { .. });
+    let in_component = matches!(
+        router().current(),
+        Route::ComponentDemo { .. } | Route::LegacyComponentDemo { .. }
+    );
     if in_iframe {
         return rsx! {
             nav {
@@ -432,23 +453,50 @@ fn Footer() -> Element {
 
 #[derive(Clone, PartialEq)]
 pub struct HighlightedCode {
-    pub html: &'static str,
+    pub asset: Asset,
 }
 
 #[component]
 fn CodeBlock(source: HighlightedCode) -> Element {
     rsx! {
         div { class: "dx-code-block", tabindex: "0",
-            PreviewCode { html: source.html }
+            PreviewCode { asset: source.asset }
         }
         CopyButton { position: "absolute", top: "0.5em", right: "0.5em" }
     }
 }
 
 #[component]
-fn PreviewCode(html: &'static str) -> Element {
+fn PreviewCode(asset: Asset) -> Element {
     rsx! {
-        div { dangerous_inner_html: html }
+        FetchHtml { asset }
+    }
+}
+
+#[component]
+fn FetchHtml(asset: Asset) -> Element {
+    let mut html = use_signal(String::new);
+    let fetch_path = asset.to_string();
+
+    use_effect(move || {
+        let fetch_path = fetch_path.clone();
+        spawn(async move {
+            let mut eval = document::eval(
+                r#"
+                const path = await dioxus.recv();
+                const response = await fetch(path);
+                dioxus.send(response.ok ? await response.text() : "");
+                "#,
+            );
+            let _ = eval.send(fetch_path);
+            if let Ok(source) = eval.recv::<String>().await {
+                html.set(source);
+            }
+        });
+    });
+
+    rsx! {
+        div { dangerous_inner_html: html() }
     }
 }
 
@@ -871,7 +919,13 @@ fn Theme(dark_mode: Option<bool>) -> Element {
 }
 
 #[component]
-fn ComponentDemo(iframe: Option<bool>, dark_mode: Option<bool>, name: String) -> Element {
+fn ComponentDemo(
+    iframe: Option<bool>,
+    dark_mode: Option<bool>,
+    name: String,
+    demo: String,
+) -> Element {
+    let _ = demo;
     let route = router().current::<Route>();
     tracing::info!("route: {route}");
     let Some(demo) = components::DEMOS
@@ -892,11 +946,23 @@ fn ComponentDemo(iframe: Option<bool>, dark_mode: Option<bool>, name: String) ->
 }
 
 #[component]
+fn LegacyComponentDemo(iframe: Option<bool>, dark_mode: Option<bool>, name: String) -> Element {
+    rsx! {
+        ComponentDemo {
+            iframe,
+            dark_mode,
+            name,
+            demo: String::new(),
+        }
+    }
+}
+
+#[component]
 fn ComponentHighlight(demo: ComponentDemoData) -> Element {
     let ComponentDemoData {
         name: raw_name,
         r#type,
-        docs,
+        docs_path,
         props,
         description,
         demos,
@@ -920,7 +986,7 @@ fn ComponentHighlight(demo: ComponentDemoData) -> Element {
                     }
                     p { "{description}" }
                 }
-                section { class: "dx-component-section",
+                section { id: "main", class: "dx-component-section",
                     match r#type {
                         ComponentType::Normal => rsx! {
                             ComponentDemoHighlight { demo: main.clone(), main_demo: true, component_name: None }
@@ -957,7 +1023,7 @@ fn ComponentHighlight(demo: ComponentDemoData) -> Element {
                         h2 { "Usage notes" }
                     }
                     div { class: "dx-component-description",
-                        div { dangerous_inner_html: docs }
+                        FetchHtml { asset: docs_path }
                     }
                 }
                 if !demos.is_empty() {
@@ -967,7 +1033,7 @@ fn ComponentHighlight(demo: ComponentDemoData) -> Element {
                             p { "Alternative examples for common configurations." }
                         }
                         for demo in demos {
-                            div { class: "dx-component-demo",
+                            div { id: demo.name, class: "dx-component-demo",
                                 match r#type {
                                     ComponentType::Normal => rsx! {
                                         ComponentDemoHighlight { demo: demo.clone(), main_demo: false, component_name: None }
@@ -1147,11 +1213,11 @@ fn BlockComponentDemoHighlight(
 
     let route_path = Route::ComponentBlockDemo {
         name: component_name.to_string(),
-        demo: Some(name.to_string()),
-        variant: None,
+        demo: name.to_string(),
         dark_mode: Route::in_dark_mode(),
     }
-    .to_string();
+    .to_string()
+    .replace("?#", "#");
 
     let iframe_src = match router().prefix() {
         Some(prefix) => format!("{prefix}{route_path}"),
@@ -1232,21 +1298,14 @@ fn EmailClientDashboard(dark_mode: Option<bool>) -> Element {
 }
 
 #[component]
-fn ComponentBlockDemo(
-    name: String,
-    demo: Option<String>,
-    variant: Option<String>,
-    dark_mode: Option<bool>,
-) -> Element {
+fn ComponentBlockDemo(name: String, demo: String, dark_mode: Option<bool>) -> Element {
     let Some(component_demo) = components::DEMOS.iter().find(|d| d.name == name).cloned() else {
         return rsx! {
             div { "Block component not found" }
         };
     };
 
-    let selected_demo = demo.or(variant);
-
-    let demo_entry = match selected_demo.as_deref() {
+    let demo_entry = match (!demo.is_empty()).then_some(demo.as_str()) {
         Some(wanted) => match component_demo.demos.iter().find(|v| v.name == wanted) {
             Some(demo_entry) => demo_entry,
             None => {
@@ -1269,6 +1328,22 @@ fn ComponentBlockDemo(
             href: asset!("/assets/dx-components-theme.css"),
         }
         div { style: "min-height: 100vh;", Comp {} }
+    }
+}
+
+#[component]
+fn LegacyComponentBlockDemo(
+    name: String,
+    demo: Option<String>,
+    variant: Option<String>,
+    dark_mode: Option<bool>,
+) -> Element {
+    rsx! {
+        ComponentBlockDemo {
+            name,
+            demo: demo.or(variant).unwrap_or_default(),
+            dark_mode,
+        }
     }
 }
 
@@ -2233,8 +2308,5 @@ fn GotoIcon(mut props: LinkProps) -> Element {
 }
 
 const THEME_CSS: HighlightedCode = HighlightedCode {
-    html: include_str!(concat!(
-        env!("OUT_DIR"),
-        "/assets/dx-components-theme.css.html"
-    )),
+    asset: asset!("/assets/generated/assets/dx-components-theme.css.html"),
 };

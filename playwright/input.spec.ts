@@ -1,7 +1,7 @@
 import { test, expect } from "@playwright/test";
 
 test("test", async ({ page }) => {
-  await page.goto("/component/?name=input&", {
+  await page.goto("/components/input", {
     timeout: 20 * 60 * 1000,
   }); // Increase timeout to 20 minutes
 
@@ -10,7 +10,7 @@ test("test", async ({ page }) => {
 });
 
 test("shared input shell wires descriptions and sections", async ({ page }) => {
-  await page.goto("/component/?name=input&", {
+  await page.goto("/components/input", {
     timeout: 20 * 60 * 1000,
   });
 
@@ -44,7 +44,7 @@ test("shared input shell wires descriptions and sections", async ({ page }) => {
 });
 
 test("picker inputs wire generated ids and descriptions to controls", async ({ page }) => {
-  await page.goto("/component/?name=color_input&", {
+  await page.goto("/components/color_input", {
     timeout: 20 * 60 * 1000,
   });
 
@@ -68,7 +68,7 @@ test("picker inputs wire generated ids and descriptions to controls", async ({ p
       .filter({ has: page.getByRole("textbox", { name: "Accent color" }) }),
   ).not.toContainText("Hue");
 
-  await page.goto("/component/?name=date_input&", {
+  await page.goto("/components/date_input", {
     timeout: 20 * 60 * 1000,
   });
 
@@ -107,7 +107,7 @@ test("picker inputs wire generated ids and descriptions to controls", async ({ p
   await rangeInput.focus();
   await expect(page.getByRole("dialog")).toContainText("Su");
 
-  await page.goto("/component/?name=time_input&", {
+  await page.goto("/components/time_input", {
     timeout: 20 * 60 * 1000,
   });
 

@@ -1,8 +1,8 @@
 import { test, expect, devices, type Page } from "@playwright/test";
 
-const URL = "/component/?name=combobox&";
+const URL = "/components/combobox";
 const demoUrl = (demo: string) =>
-    `/component/block/?name=combobox&demo=${demo}&`;
+    `/components/combobox/block#${demo}`;
 
 const input = (page: Page) =>
     page.getByRole("combobox", { name: "Select framework" });

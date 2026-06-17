@@ -22,7 +22,7 @@ test.describe("details", () => {
   test("should not have any automatically detectable accessibility issues", async ({
     page,
   }) => {
-    await page.goto("/component/?name=calendar", { timeout: 20 * 60 * 1000 }); // Increase timeout to 20 minutes
+    await page.goto("/components/calendar", { timeout: 20 * 60 * 1000 }); // Increase timeout to 20 minutes
 
     await expect(
       page.getByRole("heading", { name: /^calendar$/i }).first(),

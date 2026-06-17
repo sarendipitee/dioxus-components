@@ -1,7 +1,7 @@
 import { test, expect } from "@playwright/test";
 
 test("pointer navigation", async ({ page }) => {
-  await page.goto("/component/?name=menubar&", { timeout: 20 * 60 * 1000 }); // Increase timeout to 20 minutes
+  await page.goto("/components/menubar", { timeout: 20 * 60 * 1000 }); // Increase timeout to 20 minutes
   const fileMenuButton = page.getByRole("menuitem", { name: "File" }).first();
   await fileMenuButton.click();
   // Assert the menu is open
@@ -52,7 +52,7 @@ test("pointer navigation", async ({ page }) => {
 });
 
 test("keyboard navigation", async ({ page }) => {
-  await page.goto("/component/?name=menubar&", { timeout: 20 * 60 * 1000 }); // Increase timeout to 20 minutes
+  await page.goto("/components/menubar", { timeout: 20 * 60 * 1000 }); // Increase timeout to 20 minutes
   await page.getByRole("menubar").first().focus();
   const fileMenuButton = page.getByRole("menuitem", { name: "File" }).first();
   // Go right with the keyboard

@@ -1,7 +1,7 @@
 import { expect, test, type Page } from "@playwright/test";
 
 async function gotoSplitPane(page: Page, demo: string) {
-  await page.goto(`/component/block/?name=split_pane&demo=${demo}&`, {
+  await page.goto(`/components/split_pane/block#${demo}`, {
     timeout: 20 * 60 * 1000,
     waitUntil: "load",
   });

@@ -9,9 +9,9 @@ const ROOT_SELECTOR = "[data-schedule-root]:visible";
 test.describe.configure({ mode: "serial" });
 test.setTimeout(TEST_TIMEOUT);
 
-const mainUrl = "/component/?name=schedule&";
+const mainUrl = "/components/schedule";
 const demoUrl = (demo: string) =>
-  `/component/block/?name=schedule&demo=${demo}&`;
+  `/components/schedule/block#${demo}`;
 
 async function loadMain(page: Page) {
   return await loadSchedulePage(page, mainUrl);

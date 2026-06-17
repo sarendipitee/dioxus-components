@@ -1,7 +1,7 @@
 import { test, expect } from "@playwright/test";
 
 test("test", async ({ page }) => {
-  await page.goto("/component/?name=toggle_group&");
+  await page.goto("/components/toggle_group");
   const b_button = page.getByRole("button", { name: "B", exact: true });
   const i_button = page.getByRole("button", { name: "I", exact: true });
   const u_button = page.getByRole("button", { name: "U", exact: true });

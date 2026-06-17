@@ -1,7 +1,7 @@
 import { test, expect, type Page } from "@playwright/test";
 
 const VIRTUALIZED_URL =
-  "/component/block/?name=data_table&demo=virtualized";
+  "/components/data_table/block#virtualized";
 
 // The virtualized demo renders 5,000 rows but should only mount a small
 // window of them at a time.
@@ -145,7 +145,7 @@ test("virtualized table keeps column widths stable during scroll", async ({
 // the focused input and the browser moves focus to the nearest focusable
 // ancestor — which still contains the popover — and that must not be treated as
 // an outside focus-out. Regression test for the popover light-dismiss logic.
-const FILTER_URL = "/component/?name=data_table&";
+const FILTER_URL = "/components/data_table";
 
 async function openFilterPopover(page: Page) {
   const trigger = page.getByRole("button", { name: "Filter" }).first();

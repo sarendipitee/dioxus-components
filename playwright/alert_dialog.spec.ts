@@ -1,7 +1,7 @@
 import { test, expect } from '@playwright/test';
 
 test('opens and closes on cancel', async ({ page }) => {
-  await page.goto('/component/?name=alert_dialog&', { timeout: 20 * 60 * 1000 });
+  await page.goto('/components/alert_dialog', { timeout: 20 * 60 * 1000 });
   await page.getByRole('button', { name: 'Leave page' }).click();
 
   const dialog = page.getByRole('alertdialog');
@@ -12,7 +12,7 @@ test('opens and closes on cancel', async ({ page }) => {
 });
 
 test('fires on_click and closes on action', async ({ page }) => {
-  await page.goto('/component/?name=alert_dialog&', { timeout: 20 * 60 * 1000 });
+  await page.goto('/components/alert_dialog', { timeout: 20 * 60 * 1000 });
   await page.getByRole('button', { name: 'Leave page' }).click();
 
   const dialog = page.getByRole('alertdialog');
@@ -24,7 +24,7 @@ test('fires on_click and closes on action', async ({ page }) => {
 });
 
 test('closes on escape', async ({ page }) => {
-  await page.goto('/component/?name=alert_dialog&', { timeout: 20 * 60 * 1000 });
+  await page.goto('/components/alert_dialog', { timeout: 20 * 60 * 1000 });
   await page.getByRole('button', { name: 'Leave page' }).click();
 
   const dialog = page.getByRole('alertdialog');
@@ -35,7 +35,7 @@ test('closes on escape', async ({ page }) => {
 });
 
 test('does not close on backdrop click', async ({ page }) => {
-  await page.goto('/component/?name=alert_dialog&', { timeout: 20 * 60 * 1000 });
+  await page.goto('/components/alert_dialog', { timeout: 20 * 60 * 1000 });
   await page.getByRole('button', { name: 'Leave page' }).click();
 
   const dialog = page.getByRole('alertdialog');

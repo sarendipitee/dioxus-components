@@ -1,7 +1,7 @@
 import { test, expect } from "@playwright/test";
 
 test("test", async ({ page }) => {
-  await page.goto("/component/?name=calendar&", {
+  await page.goto("/components/calendar", {
     timeout: 20 * 60 * 1000,
   }); // Increase timeout to 20 minutes
   await page.waitForLoadState('networkidle');
@@ -77,7 +77,7 @@ test("test", async ({ page }) => {
 });
 
 test("year navigation by moving 52 weeks with arrow keys", async ({ page }) => {
-  await page.goto("/component/?name=calendar&", {
+  await page.goto("/components/calendar", {
     timeout: 20 * 60 * 1000,
   });
 
@@ -141,7 +141,7 @@ test("year navigation by moving 52 weeks with arrow keys", async ({ page }) => {
 });
 
 test("shift + arrow keys navigation", async ({ page }) => {
-  await page.goto("/component/?name=calendar&", {
+  await page.goto("/components/calendar", {
     timeout: 20 * 60 * 1000,
   });
 
@@ -191,7 +191,7 @@ async function testArrowKeyNavigation(
   startPosition: "first" | "last",
   expectedOrder: "ascending" | "descending"
 ) {
-  await page.goto("/component/?name=calendar&", {
+  await page.goto("/components/calendar", {
     timeout: 20 * 60 * 1000,
   });
 

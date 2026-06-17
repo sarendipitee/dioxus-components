@@ -1,7 +1,7 @@
 import { test, expect } from "@playwright/test";
 
 test("test", async ({ page }) => {
-  await page.goto("/component/?name=tooltip&");
+  await page.goto("/components/tooltip");
   let tooltip = page.getByRole("tooltip");
   // tabbing to the trigger element should show the tooltip
   await page.locator("#component-preview-frame").focus();

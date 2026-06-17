@@ -1,7 +1,7 @@
 import { test, expect } from "@playwright/test";
 
 test("test", async ({ page }) => {
-  await page.goto("/component/?name=toolbar&");
+  await page.goto("/components/toolbar");
   let bold = page.getByRole("button", { name: "Bold" });
   let italic = page.getByRole("button", { name: "Italic" });
   let underline = page.getByRole("button", { name: "Underline" });

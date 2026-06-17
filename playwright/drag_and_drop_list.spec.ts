@@ -1,8 +1,8 @@
 import { test, expect } from "@playwright/test";
 import AxeBuilder from "@axe-core/playwright";
 
-const URL = "/component/?name=drag_and_drop_list&";
-const REMOVABLE_URL = "/component/block/?name=drag_and_drop_list&demo=removable&";
+const URL = "/components/drag_and_drop_list";
+const REMOVABLE_URL = "/components/drag_and_drop_list/block#removable";
 const LOAD_TIMEOUT = 20 * 60 * 1000;
 
 /** Navigate to the DnD page and return the first main demo list. */

@@ -11,7 +11,7 @@ test.use({ viewport: { width: 1280, height: 2000 } });
 test("time input column picker click updates the displayed value", async ({
   page,
 }) => {
-  await page.goto("/component/?name=time_input&", {
+  await page.goto("/components/time_input", {
     timeout: 20 * 60 * 1000,
   });
 

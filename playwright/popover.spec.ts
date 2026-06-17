@@ -1,7 +1,7 @@
 import { test, expect } from "@playwright/test";
 
 test("test", async ({ page }) => {
-  await page.goto("/component/?name=popover&");
+  await page.goto("/components/popover");
   const popoverButton = page.locator("#component-preview-frame").getByText("Show Popover");
   await expect(popoverButton).toBeVisible();
   await popoverButton.click();
@@ -29,7 +29,7 @@ test("test", async ({ page }) => {
 });
 
 test("popover dismisses when clicking outside", async ({ page }) => {
-  await page.goto("/component/?name=popover&");
+  await page.goto("/components/popover");
   const popoverButton = page.locator("#component-preview-frame").getByText("Show Popover");
   await popoverButton.click();
   const dialog = page.getByRole("dialog");

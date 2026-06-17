@@ -101,16 +101,15 @@ async function gotoPreviewCase(
   previewCase: PreviewCase,
   theme?: "light" | "dark",
 ) {
-  const params = new URLSearchParams({
-    name: previewCase.component,
-    demo: previewCase.demo,
-  });
+  const params = new URLSearchParams();
 
   if (theme) {
     params.set("dark_mode", String(theme === "dark"));
   }
 
-  await page.goto(`/component/block/?${params}`, {
+  const query = params.size > 0 ? `?${params}` : "";
+
+  await page.goto(`/components/${previewCase.component}/block${query}#${previewCase.demo}`, {
     waitUntil: "domcontentloaded",
   });
   await stabilizeVisualPage(page);

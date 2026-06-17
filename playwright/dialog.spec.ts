@@ -1,7 +1,7 @@
 import { test, expect } from '@playwright/test';
 
 test('test', async ({ page }) => {
-  await page.goto('/component/?name=dialog&', { timeout: 20 * 60 * 1000 }); // Increase timeout to 20 minutes
+  await page.goto('/components/dialog', { timeout: 20 * 60 * 1000 }); // Increase timeout to 20 minutes
   await page.getByRole('button', { name: 'Show Dialog' }).click();
   // Assert the dialog is open
   const dialog = page.getByRole('dialog');

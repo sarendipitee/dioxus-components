@@ -1,6 +1,6 @@
 import { test, expect, type Page } from "@playwright/test";
 
-const controlledDemoUrl = "/component/block/?name=pagination&demo=controlled&";
+const controlledDemoUrl = "/components/pagination/block#controlled";
 
 // The component page renders every pagination demo, so scope to the controlled one.
 const root = (page: Page) => page.getByTestId("pagination-controlled-demo");

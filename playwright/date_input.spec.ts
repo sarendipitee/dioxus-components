@@ -3,7 +3,7 @@ import { test, expect } from "@playwright/test";
 test("date input popover keeps centered horizontal placement while opening", async ({
   page,
 }) => {
-  await page.goto("/component/?name=date_input&", {
+  await page.goto("/components/date_input", {
     timeout: 20 * 60 * 1000,
   });
 

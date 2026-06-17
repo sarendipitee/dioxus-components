@@ -1,7 +1,7 @@
 import { test, expect } from '@playwright/test';
 
 test('dropdown menu shared wrappers', async ({ page }) => {
-  await page.goto('/component/?name=dropdown_menu&');
+  await page.goto('/components/dropdown_menu');
   const mainDemo = page.locator('.dx-component-section').first();
   const menuButton = mainDemo.getByRole('button', { name: 'Open Menu' });
   const menuElement = menuButton.locator('xpath=..');
