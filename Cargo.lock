@@ -6313,6 +6313,7 @@ dependencies = [
  "dioxus-icons",
  "dioxus-primitives",
  "dioxus-ssr",
+ "manganis",
  "palette",
  "pulldown-cmark",
  "quote",

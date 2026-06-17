@@ -3,6 +3,11 @@ use quote::ToTokens;
 fn main() {
     let out_dir = std::env::var("OUT_DIR").unwrap();
     let out_dir = std::path::PathBuf::from(out_dir);
+    let generated_assets_dir = std::path::PathBuf::from("assets/generated");
+    if generated_assets_dir.exists() {
+        std::fs::remove_dir_all(&generated_assets_dir).unwrap();
+    }
+    std::fs::create_dir_all(&generated_assets_dir).unwrap();
     println!("cargo:rerun-if-changed=src/components");
     // Process all markdown files in each component folder.
     for folder in std::fs::read_dir("src/components").unwrap().flatten() {
@@ -10,9 +15,9 @@ fn main() {
             continue;
         }
         let folder_path = folder.path();
-        walk_markdown_dir(&folder_path, &out_dir).unwrap();
+        walk_markdown_dir(&folder_path, &out_dir, &generated_assets_dir).unwrap();
     }
-    render_theme_css(&out_dir).unwrap();
+    render_theme_css(&out_dir, &generated_assets_dir).unwrap();
 }
 
 fn crate_component_source_folder(folder_name: &str) -> &str {
@@ -49,14 +54,32 @@ fn curated_prop_types(folder_name: &str) -> Option<&'static [&'static str]> {
     Some(types)
 }
 
-fn walk_markdown_dir(dir: &std::path::Path, out_dir: &std::path::Path) -> std::io::Result<()> {
+fn write_generated_html(
+    out_path: &std::path::Path,
+    asset_path: &std::path::Path,
+    html: String,
+) -> std::io::Result<()> {
+    if let Some(parent) = asset_path.parent() {
+        std::fs::create_dir_all(parent)?;
+    }
+    std::fs::write(out_path, &html)?;
+    std::fs::write(asset_path, html)
+}
+
+fn walk_markdown_dir(
+    dir: &std::path::Path,
+    out_dir: &std::path::Path,
+    asset_dir: &std::path::Path,
+) -> std::io::Result<()> {
     let folder_name = dir.file_name().unwrap();
     let folder_name = folder_name.to_string_lossy();
     let out_folder = out_dir.join(&*folder_name);
+    let asset_folder = asset_dir.join(&*folder_name);
     std::fs::create_dir_all(&out_folder).unwrap();
+    std::fs::create_dir_all(&asset_folder).unwrap();
     for file in std::fs::read_dir(dir).unwrap().flatten() {
         if file.file_type().unwrap().is_dir() {
-            walk_markdown_dir(&file.path(), &out_folder)?;
+            walk_markdown_dir(&file.path(), &out_folder, &asset_folder)?;
             continue;
         }
         if file.file_name().to_string_lossy().starts_with('.') {
@@ -65,7 +88,8 @@ fn walk_markdown_dir(dir: &std::path::Path, out_dir: &std::path::Path) -> std::i
         if file.path().extension() == Some(std::ffi::OsStr::new("md")) {
             let markdown = process_markdown_to_html(&file.path());
             let out_file_path = out_folder.join(file.file_name()).with_extension("html");
-            std::fs::write(out_file_path, markdown).unwrap();
+            let asset_file_path = asset_folder.join(file.file_name()).with_extension("html");
+            write_generated_html(&out_file_path, &asset_file_path, markdown).unwrap();
             continue;
         }
         if file.file_name() == "component.json" {
@@ -76,24 +100,27 @@ fn walk_markdown_dir(dir: &std::path::Path, out_dir: &std::path::Path) -> std::i
         if file.file_name() == "component.rs" {
             let source = std::fs::read_to_string(file.path())?;
             let out_file_path = out_folder.join("component.rs.html");
-            std::fs::write(
-                out_file_path,
+            write_generated_html(
+                &out_file_path,
+                &asset_folder.join("component.rs.html"),
                 render_source_html(dioxus_code::Language::Rust, &source),
             )?;
         }
         if file.file_name() == "mod.rs" {
             let source = std::fs::read_to_string(file.path())?;
             let out_file_path = out_folder.join("mod.rs.html");
-            std::fs::write(
-                out_file_path,
+            write_generated_html(
+                &out_file_path,
+                &asset_folder.join("mod.rs.html"),
                 render_source_html(dioxus_code::Language::Rust, &source),
             )?;
         }
         if file.file_name() == "demo.css" {
             let source = std::fs::read_to_string(file.path())?;
             let out_file_path = out_folder.join("demo.css.html");
-            std::fs::write(
-                out_file_path,
+            write_generated_html(
+                &out_file_path,
+                &asset_folder.join("demo.css.html"),
                 render_source_html(dioxus_code::Language::Css, &source),
             )?;
         }
@@ -113,8 +140,9 @@ fn walk_markdown_dir(dir: &std::path::Path, out_dir: &std::path::Path) -> std::i
             println!("cargo:rerun-if-changed={}", crate_component.display());
             let source = std::fs::read_to_string(crate_component)?;
             let out_file_path = out_folder.join("component.rs.html");
-            std::fs::write(
-                out_file_path,
+            write_generated_html(
+                &out_file_path,
+                &asset_folder.join("component.rs.html"),
                 render_source_html(dioxus_code::Language::Rust, &source),
             )?;
             if let Some(types) = curated_prop_types(&folder_name) {
@@ -132,13 +160,15 @@ fn walk_markdown_dir(dir: &std::path::Path, out_dir: &std::path::Path) -> std::i
             println!("cargo:rerun-if-changed={}", crate_style.display());
             let source = std::fs::read_to_string(crate_style)?;
             let out_file_path = out_folder.join("style.css.html");
-            std::fs::write(
-                out_file_path,
+            write_generated_html(
+                &out_file_path,
+                &asset_folder.join("style.css.html"),
                 render_source_html(dioxus_code::Language::Css, &source),
             )?;
         } else {
-            std::fs::write(
-                out_folder.join("style.css.html"),
+            write_generated_html(
+                &out_folder.join("style.css.html"),
+                &asset_folder.join("style.css.html"),
                 render_plain_code_block(""),
             )?;
         }
@@ -799,7 +829,10 @@ fn render_source_html(language: dioxus_code::Language, source: &str) -> String {
     })
 }
 
-fn render_theme_css(out_dir: &std::path::Path) -> std::io::Result<()> {
+fn render_theme_css(
+    out_dir: &std::path::Path,
+    generated_assets_dir: &std::path::Path,
+) -> std::io::Result<()> {
     let theme_path = std::path::Path::new("../themes/default.css");
     println!("cargo:rerun-if-changed={}", theme_path.display());
     let source = std::fs::read_to_string(theme_path)?;
@@ -809,8 +842,11 @@ fn render_theme_css(out_dir: &std::path::Path) -> std::io::Result<()> {
 
     let out_assets = out_dir.join("assets");
     std::fs::create_dir_all(&out_assets)?;
-    std::fs::write(
-        out_assets.join("dx-components-theme.css.html"),
+    let generated_assets = generated_assets_dir.join("assets");
+    std::fs::create_dir_all(&generated_assets)?;
+    write_generated_html(
+        &out_assets.join("dx-components-theme.css.html"),
+        &generated_assets.join("dx-components-theme.css.html"),
         render_source_html(dioxus_code::Language::Css, &source),
     )
 }

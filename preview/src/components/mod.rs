@@ -1,6 +1,7 @@
 use super::{
     ComponentDemoData, ComponentDemoEntryData, ComponentType, HighlightedCode, PropMetadata,
 };
+use dioxus::prelude::{asset, manganis};
 
 #[derive(Copy, Clone, PartialEq, Eq)]
 pub enum ComponentCategory {
@@ -149,6 +150,12 @@ macro_rules! examples {
     (@demo_name $demo:ident) => { stringify!($demo) };
     (@demo_path r#static) => { "static" };
     (@demo_path $demo:ident) => { stringify!($demo) };
+    (@demo_source_asset $name:ident r#static) => {
+        asset!(concat!("/assets/generated/", stringify!($name), "/demos/static/mod.rs.html"))
+    };
+    (@demo_source_asset $name:ident $demo:ident) => {
+        asset!(concat!("/assets/generated/", stringify!($name), "/demos/", stringify!($demo), "/mod.rs.html"))
+    };
 
     // Normal components: no demo-level css_highlighted
     (@demo $name:ident $([$($demo:ident),*])?) => {
@@ -161,19 +168,19 @@ macro_rules! examples {
                 stringify!($name),
                 "/description.txt"
             )),
-            docs: include_str!(concat!(env!("OUT_DIR"), "/", stringify!($name), "/docs.html")),
+            docs_path: asset!(concat!("/assets/generated/", stringify!($name), "/docs.html")),
             props: include!(concat!(env!("OUT_DIR"), "/", stringify!($name), "/props.rs")),
             component: HighlightedCode {
-                html: include_str!(concat!(env!("OUT_DIR"), "/", stringify!($name), "/component.rs.html")),
+                asset: asset!(concat!("/assets/generated/", stringify!($name), "/component.rs.html")),
             },
             style: HighlightedCode {
-                html: include_str!(concat!(env!("OUT_DIR"), "/", stringify!($name), "/style.css.html")),
+                asset: asset!(concat!("/assets/generated/", stringify!($name), "/style.css.html")),
             },
             demos: &[
                 ComponentDemoEntryData {
                     name: "main",
                     rs_highlighted: HighlightedCode {
-                        html: include_str!(concat!(env!("OUT_DIR"), "/", stringify!($name), "/demos/main/mod.rs.html")),
+                        asset: asset!(concat!("/assets/generated/", stringify!($name), "/demos/main/mod.rs.html")),
                     },
                     css_highlighted: None,
                     component: $name::demos::main::Demo,
@@ -183,7 +190,7 @@ macro_rules! examples {
                         ComponentDemoEntryData {
                             name: examples!(@demo_name $demo),
                             rs_highlighted: HighlightedCode {
-                                html: include_str!(concat!(env!("OUT_DIR"), "/", stringify!($name), "/demos/", examples!(@demo_path $demo), "/mod.rs.html")),
+                                asset: examples!(@demo_source_asset $name $demo),
                             },
                             css_highlighted: None,
                             component: $name::demos::$demo::Demo,
@@ -205,22 +212,22 @@ macro_rules! examples {
                 stringify!($name),
                 "/description.txt"
             )),
-            docs: include_str!(concat!(env!("OUT_DIR"), "/", stringify!($name), "/docs.html")),
+            docs_path: asset!(concat!("/assets/generated/", stringify!($name), "/docs.html")),
             props: include!(concat!(env!("OUT_DIR"), "/", stringify!($name), "/props.rs")),
             component: HighlightedCode {
-                html: include_str!(concat!(env!("OUT_DIR"), "/", stringify!($name), "/component.rs.html")),
+                asset: asset!(concat!("/assets/generated/", stringify!($name), "/component.rs.html")),
             },
             style: HighlightedCode {
-                html: include_str!(concat!(env!("OUT_DIR"), "/", stringify!($name), "/style.css.html")),
+                asset: asset!(concat!("/assets/generated/", stringify!($name), "/style.css.html")),
             },
             demos: &[
                 ComponentDemoEntryData {
                     name: "main",
                     rs_highlighted: HighlightedCode {
-                        html: include_str!(concat!(env!("OUT_DIR"), "/", stringify!($name), "/demos/main/mod.rs.html")),
+                        asset: asset!(concat!("/assets/generated/", stringify!($name), "/demos/main/mod.rs.html")),
                     },
                     css_highlighted: Some(HighlightedCode {
-                        html: include_str!(concat!(env!("OUT_DIR"), "/", stringify!($name), "/demos/demo.css.html")),
+                        asset: asset!(concat!("/assets/generated/", stringify!($name), "/demos/demo.css.html")),
                     }),
                     component: $name::demos::main::Demo,
                 },
@@ -229,10 +236,10 @@ macro_rules! examples {
                         ComponentDemoEntryData {
                             name: examples!(@demo_name $demo),
                             rs_highlighted: HighlightedCode {
-                                html: include_str!(concat!(env!("OUT_DIR"), "/", stringify!($name), "/demos/", examples!(@demo_path $demo), "/mod.rs.html")),
+                                asset: examples!(@demo_source_asset $name $demo),
                             },
                             css_highlighted: Some(HighlightedCode {
-                                html: include_str!(concat!(env!("OUT_DIR"), "/", stringify!($name), "/demos/demo.css.html")),
+                                asset: asset!(concat!("/assets/generated/", stringify!($name), "/demos/demo.css.html")),
                             }),
                             component: $name::demos::$demo::Demo,
                         },

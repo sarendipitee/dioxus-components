@@ -1,5 +1,6 @@
 target
 preview/assets/dx-components-theme.css
+preview/assets/generated/
 
 **/.claude/settings.local.json
 node_modules
