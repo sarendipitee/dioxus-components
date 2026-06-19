@@ -368,15 +368,17 @@ pub fn DialogContent(props: DialogContentProps) -> Element {
     rsx! {
         if render() {
             div {
-                id: backdrop_id,
-                class: backdrop_class,
-                aria_hidden: (!open()).then_some("true"),
-                "data-state": if open() { "open" } else { "closed" },
-                onclick: move |_| {
-                    if close_on_backdrop_click {
-                        set_open.call(false);
-                    }
-                },
+                div {
+                    id: backdrop_id,
+                    class: backdrop_class,
+                    aria_hidden: (!open()).then_some("true"),
+                    "data-state": if open() { "open" } else { "closed" },
+                    onclick: move |_| {
+                        if close_on_backdrop_click {
+                            set_open.call(false);
+                        }
+                    },
+                }
                 div {
                     id,
                     role: dialog_role.clone(),
