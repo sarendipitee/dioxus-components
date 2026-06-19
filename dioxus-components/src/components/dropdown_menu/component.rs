@@ -1,8 +1,10 @@
 use crate::component_styles;
-use crate::components::menu::{provide_styled_menu_surface, StyledMenuSurface};
+use crate::components::menu::{provide_styled_menu_surface, Menu, StyledMenuSurface};
 use dioxus::prelude::*;
 use dioxus_primitives::dioxus_attributes::attributes;
-use dioxus_primitives::dropdown_menu::{self, DropdownMenuProps, DropdownMenuTriggerProps};
+use dioxus_primitives::dropdown_menu::{
+    self, DropdownMenuContentProps, DropdownMenuProps, DropdownMenuTriggerProps,
+};
 use dioxus_primitives::merge_attributes;
 
 #[component_styles("./style.css")]
@@ -47,6 +49,18 @@ pub fn DropdownMenuTrigger(props: DropdownMenuTriggerProps) -> Element {
     rsx! {
         dropdown_menu::DropdownMenuTrigger {
             as: props.r#as,
+            attributes: props.attributes,
+            {props.children}
+        }
+    }
+}
+
+/// Styled wrapper for the dropdown menu content surface.
+#[component]
+pub fn DropdownMenuContent(props: DropdownMenuContentProps) -> Element {
+    rsx! {
+        Menu {
+            id: props.id,
             attributes: props.attributes,
             {props.children}
         }

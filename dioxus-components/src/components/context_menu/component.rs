@@ -1,7 +1,9 @@
 use crate::component_styles;
-use crate::components::menu::{provide_styled_menu_surface, StyledMenuSurface};
+use crate::components::menu::{provide_styled_menu_surface, Menu, StyledMenuSurface};
 use dioxus::prelude::*;
-use dioxus_primitives::context_menu::{self, ContextMenuProps, ContextMenuTriggerProps};
+use dioxus_primitives::context_menu::{
+    self, ContextMenuContentProps, ContextMenuProps, ContextMenuTriggerProps,
+};
 use dioxus_primitives::{dioxus_attributes::attributes, merge_attributes};
 
 #[component_styles("./style.css")]
@@ -48,6 +50,18 @@ pub fn ContextMenuTrigger(props: ContextMenuTriggerProps) -> Element {
     rsx! {
         context_menu::ContextMenuTrigger {
             attributes,
+            {props.children}
+        }
+    }
+}
+
+/// Styled wrapper for the context menu content surface.
+#[component]
+pub fn ContextMenuContent(props: ContextMenuContentProps) -> Element {
+    rsx! {
+        Menu {
+            id: props.id,
+            attributes: props.attributes,
             {props.children}
         }
     }

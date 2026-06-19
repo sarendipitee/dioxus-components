@@ -2,6 +2,7 @@ use crate::component_styles;
 use crate::components::context_menu::ContextMenuStyles;
 use crate::components::dropdown_menu::DropdownMenuStyles;
 use crate::components::menubar::MenubarStyles;
+use crate::components::popover::PopoverStyles;
 use dioxus::prelude::*;
 use dioxus_primitives::dioxus_attributes::attributes;
 use dioxus_primitives::menu::{
@@ -145,7 +146,11 @@ enum MenuSurfaceSlot {
 pub fn Menu(props: MenuProps) -> Element {
     let attributes = merge_with_surface_class(
         "div",
-        Styles::dx_menu_content.to_string(),
+        format!(
+            "{} {}",
+            Styles::dx_menu_content,
+            PopoverStyles::dx_popover_surface
+        ),
         MenuSurfaceSlot::Content,
         props.attributes,
     );
@@ -421,8 +426,9 @@ pub fn MenuSubContent(props: MenuSubContentProps) -> Element {
     let attributes = merge_with_class(
         "div",
         format!(
-            "{} {}{}",
+            "{} {} {}{}",
             Styles::dx_menu_content,
+            PopoverStyles::dx_popover_surface,
             Styles::dx_menu_sub_content,
             current_surface_slot_class(MenuSurfaceSlot::SubContent)
                 .map(|class_name| format!(" {class_name}"))

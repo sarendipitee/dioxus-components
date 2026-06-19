@@ -2,6 +2,7 @@
 .dx_item_group {
   display: flex;
   flex-direction: column;
+  gap: calc(var(--space)*4);
 }
 
 /* Item Separator */

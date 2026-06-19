@@ -1,4 +1,5 @@
 use crate::component_styles;
+use crate::components::popover::PopoverStyles;
 use dioxus::prelude::*;
 use dioxus_primitives::dioxus_attributes::attributes;
 use dioxus_primitives::merge_attributes;
@@ -46,7 +47,11 @@ pub fn TooltipTrigger(props: TooltipTriggerProps) -> Element {
 #[component]
 pub fn TooltipContent(props: TooltipContentProps) -> Element {
     let base = attributes!(div {
-        class: Styles::dx_tooltip_content.to_string(),
+        class: format!(
+            "{} {}",
+            Styles::dx_tooltip_content,
+            PopoverStyles::dx_popover_surface
+        ),
     });
     let merged = merge_attributes(vec![base, props.attributes]);
 

@@ -26,9 +26,6 @@
   z-index: 1000;
   min-width: 220px;
   padding: var(--space);
-  border-radius: var(--radius-surface);
-  background: var(--overlay);
-  box-shadow: inset 0 0 0 1px var(--overlay-border);
   opacity: 0;
   pointer-events: none;
   will-change: transform, opacity;

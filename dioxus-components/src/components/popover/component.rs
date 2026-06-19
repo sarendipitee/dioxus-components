@@ -6,7 +6,7 @@ use dioxus_primitives::popover::{
 use dioxus_primitives::{dioxus_attributes::attributes, merge_attributes};
 
 #[component_styles("./style.css")]
-struct Styles;
+pub(crate) struct Styles;
 
 #[component]
 pub fn PopoverRoot(props: PopoverRootProps) -> Element {
@@ -55,7 +55,11 @@ pub fn PopoverOpenTrigger(props: PopoverTriggerProps) -> Element {
 #[component]
 pub fn PopoverContent(props: PopoverContentProps) -> Element {
     let base = attributes!(div {
-        class: Styles::dx_popover_content.to_string()
+        class: format!(
+            "{} {}",
+            Styles::dx_popover_content,
+            Styles::dx_popover_surface
+        )
     });
     let attributes = merge_attributes(vec![base, props.attributes]);
 
