@@ -1,14 +1,16 @@
 # DayView
 
-The day view renders a single day as a vertical time grid. Switch to it with `default_view: ScheduleView::Day` (or the controlled `view` prop), or by selecting a day from another view.
+The Day view is the component page used to inspect one date at a glance. It turns a single day into a vertical schedule with time-labeled rows so overlapping tasks and exact durations stay visually separated.
 
-## Time Grid
+In the preview below, use this view when you want to verify how the component handles narrow windows (for example, business-hour focused calendars, support shifts, or quick drill-down from week/month modes). Enter it with `default_view: ScheduleView::Day` (or a controlled `view` prop), or by selecting a date from another view.
 
-Pass `day_view: ScheduleDayViewConfig` to configure the grid through `ScheduleTimeGridConfig`:
+## Time Grid controls in this demo
+
+This page demonstrates day-level configuration through `day_view: ScheduleDayViewConfig`, which is forwarded into `ScheduleTimeGridConfig`:
 
 - `start_hour` / `end_hour` bound the visible hours.
-- `slot_minutes` sets the slot size (e.g. `30` for half-hour slots).
-- `with_default_header` toggles the per-view header.
+- `slot_minutes` sets the per-row slot size (for example, `30` for half-hour increments).
+- `with_default_header` toggles the built-in day header so you can compare compact vs. labeled layouts.
 
 ```rust
 Schedule {
@@ -24,4 +26,4 @@ Schedule {
 }
 ```
 
-Timed events render in their slots, while all-day events appear in the all-day row above the grid.
+In this view, timed events are rendered directly inside the day’s slot rows, and all-day events are lifted into the dedicated row above the grid, which makes this mode especially useful for checking day-level collisions and agenda density.

@@ -1,8 +1,14 @@
 {
   "name": "time_input",
-  "description": "Styled time input composition built on the shared input foundation.",
-  "authors": ["Evan Almloff"],
-  "exclude": ["demos", "docs.md", "component.json"],
+  "description": "A styled time entry field that wraps TimePicker controls with label/validation chrome for quick clock-time forms.",
+  "authors": [
+    "Evan Almloff"
+  ],
+  "exclude": [
+    "demos",
+    "docs.md",
+    "component.json"
+  ],
   "cargoDependencies": [
     {
       "name": "dioxus-primitives",
@@ -13,6 +19,12 @@
       "version": "0.3.44"
     }
   ],
-  "componentDependencies": ["input", "popover", "time_picker"],
-  "globalAssets": ["../../../../themes/default.css"]
+  "componentDependencies": [
+    "input",
+    "popover",
+    "time_picker"
+  ],
+  "globalAssets": [
+    "../../../../themes/default.css"
+  ]
 }

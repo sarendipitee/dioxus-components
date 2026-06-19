@@ -1,13 +1,21 @@
 {
   "name": "tooltip",
-  "description": "A tooltip component for additional information on hover or focus.",
-  "authors": ["Evan Almloff"],
-  "exclude": ["demos", "docs.md", "component.json"],
+  "description": "Use tooltips to expose just-in-time helper text for compact controls—like icon buttons, table actions, or form labels—without adding permanent UI clutter.",
+  "authors": [
+    "Evan Almloff"
+  ],
+  "exclude": [
+    "demos",
+    "docs.md",
+    "component.json"
+  ],
   "cargoDependencies": [
     {
       "name": "dioxus-primitives",
       "git": "https://github.com/DioxusLabs/components"
     }
   ],
-  "globalAssets": ["../../../../themes/default.css"]
+  "globalAssets": [
+    "../../../../themes/default.css"
+  ]
 }

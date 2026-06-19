@@ -1,4 +1,4 @@
-The pagination component provides navigational controls for paged content. It exposes a consistent structure for previous/next actions, individual page links, and an optional ellipsis for truncated ranges. The same `Pagination` component works two ways: compose the parts by hand, or set `total` to have the page links derived from your data.
+The pagination component in this demo targets list-heavy screens—search results, admin tables, and report pages—where users must jump to a specific position without losing context. It exposes a complete item model (`previous`, numbered links, and ellipsis placeholders) and two rendering modes: explicit composition of each piece, or automatic link generation from `total` and active state.
 
 ## Component Structure
 
@@ -32,11 +32,12 @@ Pagination {
 
 ## Data-backed control
 
-Instead of composing the parts by hand, set `total` on `Pagination` and the page
-links are derived from your data. Give it the total number of pages and a
-controlled active page, and it computes the visible range (including truncation
-ellipses) and emits the next page through `on_change`. Any children are ignored
-in this mode.
+This demo shows how `Pagination` can derive links from state instead of explicit
+children. Set `total` for the dataset page count and keep `value` as your active
+page signal; the component calculates which numbers and truncation points to
+render, including optional edges and prev/next controls. The handler receives
+the newly selected page in `on_change`, which is the signal you should write back
+to drive your list query.
 
 ```rust
 let mut page = use_signal(|| Some(3usize));
@@ -58,10 +59,10 @@ Pagination {
 }
 ```
 
-The same range algorithm is exposed as the pure function
-`pagination_range(total, active, siblings, boundaries)`, which returns a
-`Vec<PaginationRangeItem>` of page numbers and truncation gaps if you need to
-build a custom layout.
+The same range calculation powers both modes and is also available as
+`pagination_range(total, active, siblings, boundaries)`, returning
+`Vec<PaginationRangeItem>` for custom rendering pipelines. Use this helper when
+you need to mirror the built-in clipping behavior in a non-`Pagination` layout.
 
 ## Notes
 

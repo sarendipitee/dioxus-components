@@ -4,11 +4,11 @@ mod demo_support;
 use dioxus::prelude::*;
 use dioxus_components::button::{Button, ButtonSize, ButtonVariant};
 use dioxus_components::data_table::{
-    DataTable, DataTablePageInfo, DataTableRowIdentityContext, DataTableRowSelectionState,
+    DataTable, DataTablePageInfo, DataTableRowSelectionState,
     DataTableState, DataTableStateChange, DataTableStateMode,
 };
 
-use demo_support::{order_columns, order_rows, table_state, CLIENT_PAGE_SIZE};
+use demo_support::{order_columns, order_row_id, order_rows, table_state, CLIENT_PAGE_SIZE};
 
 /// Renders a DataTable with built-in row selection enabled.
 #[component]
@@ -56,7 +56,7 @@ pub fn Demo() -> Element {
             state_mode: DataTableStateMode::Controlled { state: state() },
             on_state_change: move |change: DataTableStateChange| state.set(change.next_state),
             show_selection: true,
-            row_id: Callback::new(|ctx: DataTableRowIdentityContext<_>| ctx.item.order.to_string()),
+            row_id: Callback::new(order_row_id),
             empty_message: "No selectable orders match this view",
             toolbar_right: rsx! {
                 div { class: "dx-demo-toolbar-right", display: "flex", gap: "0.5rem", align_items: "center",

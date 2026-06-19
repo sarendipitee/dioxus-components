@@ -1,13 +1,21 @@
 {
   "name": "menubar",
-  "description": "A menubar component for a collection of menu items.",
-  "authors": ["Evan Almloff"],
-  "exclude": ["demos", "docs.md", "component.json"],
+  "description": "Render a desktop-style top-level command bar where top-level menus host nested actions, separators, checkbox toggles, and keyboard shortcuts.",
+  "authors": [
+    "Evan Almloff"
+  ],
+  "exclude": [
+    "demos",
+    "docs.md",
+    "component.json"
+  ],
   "cargoDependencies": [
     {
       "name": "dioxus-primitives",
       "git": "https://github.com/DioxusLabs/components"
     }
   ],
-  "globalAssets": ["../../../../themes/default.css"]
+  "globalAssets": [
+    "../../../../themes/default.css"
+  ]
 }

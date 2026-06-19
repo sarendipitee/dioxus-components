@@ -150,6 +150,24 @@ macro_rules! examples {
     (@demo_name $demo:ident) => { stringify!($demo) };
     (@demo_path r#static) => { "static" };
     (@demo_path $demo:ident) => { stringify!($demo) };
+    (@main_demo_description $name:ident) => {
+        include_str!(concat!(
+            env!("OUT_DIR"),
+            "/",
+            stringify!($name),
+            "/demos/main/description.html"
+        ))
+    };
+    (@demo_description $name:ident $demo:ident) => {
+        include_str!(concat!(
+            env!("OUT_DIR"),
+            "/",
+            stringify!($name),
+            "/demos/",
+            examples!(@demo_path $demo),
+            "/description.html"
+        ))
+    };
     (@demo_source_asset $name:ident r#static) => {
         asset!(concat!("/assets/generated/", stringify!($name), "/demos/static/mod.rs.html"))
     };
@@ -179,6 +197,7 @@ macro_rules! examples {
             demos: &[
                 ComponentDemoEntryData {
                     name: "main",
+                    description_html: examples!(@main_demo_description $name),
                     rs_highlighted: HighlightedCode {
                         asset: asset!(concat!("/assets/generated/", stringify!($name), "/demos/main/mod.rs.html")),
                     },
@@ -189,6 +208,7 @@ macro_rules! examples {
                     $(
                         ComponentDemoEntryData {
                             name: examples!(@demo_name $demo),
+                            description_html: examples!(@demo_description $name $demo),
                             rs_highlighted: HighlightedCode {
                                 asset: examples!(@demo_source_asset $name $demo),
                             },
@@ -223,6 +243,7 @@ macro_rules! examples {
             demos: &[
                 ComponentDemoEntryData {
                     name: "main",
+                    description_html: examples!(@main_demo_description $name),
                     rs_highlighted: HighlightedCode {
                         asset: asset!(concat!("/assets/generated/", stringify!($name), "/demos/main/mod.rs.html")),
                     },
@@ -235,6 +256,7 @@ macro_rules! examples {
                     $(
                         ComponentDemoEntryData {
                             name: examples!(@demo_name $demo),
+                            description_html: examples!(@demo_description $name $demo),
                             rs_highlighted: HighlightedCode {
                                 asset: examples!(@demo_source_asset $name $demo),
                             },

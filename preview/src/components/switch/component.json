@@ -1,13 +1,21 @@
 {
   "name": "switch",
-  "description": "A togglable switch component.",
-  "authors": ["Evan Almloff"],
-  "exclude": ["demos", "docs.md", "component.json"],
+  "description": "Render an accessible binary toggle for a single setting, like notifications, telemetry, or dark mode, with immediate on/off feedback.",
+  "authors": [
+    "Evan Almloff"
+  ],
+  "exclude": [
+    "demos",
+    "docs.md",
+    "component.json"
+  ],
   "cargoDependencies": [
     {
       "name": "dioxus-primitives",
       "git": "https://github.com/DioxusLabs/components"
     }
   ],
-  "globalAssets": ["../../../../themes/default.css"]
+  "globalAssets": [
+    "../../../../themes/default.css"
+  ]
 }

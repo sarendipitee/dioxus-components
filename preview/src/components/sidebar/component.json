@@ -1,6 +1,6 @@
 {
   "name": "sidebar",
-  "description": "A sidebar component as a vertical interface panel fixed to the screen edge, enable quick access to different sections of an application",
+  "description": "Provide a docked application chrome that hosts navigation, filters, and actions while supporting left/right placement, floating chrome, and collapsible rail states for dense workspaces.",
   "authors": [
     "zhiyanzhaijie"
   ],

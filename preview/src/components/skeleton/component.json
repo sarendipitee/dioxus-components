@@ -1,6 +1,6 @@
 {
   "name": "skeleton",
-  "description": "A placeholder component for all loading elements.",
+  "description": "Use Skeleton to render lightweight loading placeholders that mimic your final UI shape while asynchronous data is fetched.",
   "authors": [
     "zhiyanzhaijie"
   ],

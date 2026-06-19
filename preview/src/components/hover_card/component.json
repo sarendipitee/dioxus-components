@@ -1,13 +1,21 @@
 {
   "name": "hover_card",
-  "description": "A hover card component for displaying additional information on hover.",
-  "authors": ["Evan Almloff"],
-  "exclude": ["demos", "docs.md", "component.json"],
+  "description": "Display contextual preview content in a floating panel tied to a trigger so users can inspect details (metadata, summaries, or actions) without leaving the current interface element.",
+  "authors": [
+    "Evan Almloff"
+  ],
+  "exclude": [
+    "demos",
+    "docs.md",
+    "component.json"
+  ],
   "cargoDependencies": [
     {
       "name": "dioxus-primitives",
       "git": "https://github.com/DioxusLabs/components"
     }
   ],
-  "globalAssets": ["../../../../themes/default.css"]
+  "globalAssets": [
+    "../../../../themes/default.css"
+  ]
 }

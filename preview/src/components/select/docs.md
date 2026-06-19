@@ -1,4 +1,6 @@
-The Select component is used to create a dropdown menu that allows users to select one or more options from the select groups.
+The Select component renders a controlled dropdown field where one selected value is tracked and propagated through `on_value_change`. This page demonstrates how to use Select for menu-style choices (including grouped options) while keeping keyboard behavior, focus handling, and value updates explicit and predictable.
+
+Use the demos on this page to compare the base composition pattern with grouped sections and option entries. The examples are useful when you need a single-selection UI that feels like a form control: a compact trigger, a structured option list, and a clear callback when the active selection changes.
 
 ## Component Structure
 

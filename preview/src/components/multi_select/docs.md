@@ -1,7 +1,7 @@
-`MultiSelect` is the combobox-family adapter for selecting many values from a filterable option list.
-It owns the selected values array, search query, and selected-pill rendering.
+`MultiSelect` is the multi-value entry control for choosing several items from one option source.
+It combines a combobox search field, toggleable options, and an in-field chip list so users can add, remove, and review selected items without leaving the input context.
 
-Use it when users should be able to search a list and toggle several values within one shared field surface.
+Use this component when a user workflow needs both discovery and accumulation: for example building tag lists, selecting categories, or composing filters where each choice should be visible, removable, and constrained by a maximum count.
 
 ## Component Structure
 

@@ -1,4 +1,11 @@
-The Sidebar component is a vertical interface panel fixed to the screen edge, displaying navigation menus or filters that enable quick access to different sections of an application.
+The Sidebar component in this page is the canonical navigation shell for multi-section apps: it anchors core entry points, tool actions, and context filters to an edge while keeping the main work area readable.
+
+The demo pages below show how to combine sidebar primitives into concrete layouts, including:
+
+- fixed side placement on the left or right,
+- floating vs. inset chrome variants,
+- three collapse modes (off-canvas, icon-only rail, and non-collapsible), and
+- nested menu patterns with optional actions, badges, and tooltips.
 
 ## Component Structure
 
@@ -59,10 +66,13 @@ SidebarProvider {
 ```
 
 ## Behaviors
-- Layout: `variant` adjusts chrome (`Floating/Inset` adds padding/radius); `side` selects left/right.
-- Collapse: `Offcanvas` hides the rail; `Icon` keeps a thin icon strip and hides labels/actions/badges; `None` is static.
-- Keyboard: ⌘/Ctrl+B toggles via provider. Focus rings are defined in `sidebar/style.css`; keep or replace with `:focus-visible` styles.
-- Tooltips: `tooltip: Option<Element>` on `SidebarMenuButton`; `None` skips wrapping in Tooltip.
+- Layout control starts at the provider and `Sidebar`: use `side` to attach to left or right edge, then switch `variant` for a floating or inset container treatment without changing menu composition.
+- Collapse behavior is controlled by `collapsible` (`Offcanvas`, `Icon`, `None`) so you can test wide desktop rails, compact icon strips, or fully static sidebars in place.
+- Keyboard support and accessibility are built in: ⌘/Ctrl+B toggles from the provider, and focus visibility is handled through the focus-visible styles declared in `sidebar/style.css`.
+- Menu tooltip behavior is per-item via `SidebarMenuButton { tooltip }`; passing `None` keeps the item label-only and avoids tooltip wrappers in dense icon-only layouts.
 
 ## Custom Rendering with `as`
-Supported components: `SidebarTrigger`, `SidebarGroupLabel`, `SidebarGroupAction`, `SidebarMenuButton`, `SidebarMenuAction`, `SidebarMenuSubButton`. Use `as: |attrs| rsx! { ... }` and spread `..attrs` to retain merged attributes, state data, and handlers.
+Supported components: `SidebarTrigger`, `SidebarGroupLabel`, `SidebarGroupAction`, `SidebarMenuButton`, `SidebarMenuAction`, `SidebarMenuSubButton`. Use `as: |attrs| rsx! { ... }` and spread `..attrs` to preserve merged attributes, state markers, and event handlers while swapping in your own rendering.
+
+## Why these demos exist
+The sidebar page is intentionally split into small scenarios so you can validate a real navigation pattern quickly: placement, chrome variants, collapse ergonomics, and nested menu behavior under keyboard interaction.

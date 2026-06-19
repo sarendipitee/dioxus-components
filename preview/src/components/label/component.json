@@ -1,13 +1,21 @@
 {
   "name": "label",
-  "description": "An accessible label component for form elements.",
-  "authors": ["Evan Almloff"],
-  "exclude": ["demos", "docs.md", "component.json"],
+  "description": "Render an explicit form label that points to one control by id, so users can click or screen-reader navigate directly to that field.",
+  "authors": [
+    "Evan Almloff"
+  ],
+  "exclude": [
+    "demos",
+    "docs.md",
+    "component.json"
+  ],
   "cargoDependencies": [
     {
       "name": "dioxus-primitives",
       "git": "https://github.com/DioxusLabs/components"
     }
   ],
-  "globalAssets": ["../../../../themes/default.css"]
+  "globalAssets": [
+    "../../../../themes/default.css"
+  ]
 }

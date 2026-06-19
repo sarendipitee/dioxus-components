@@ -1,6 +1,6 @@
 {
   "name": "data_table",
-  "description": "A canonical state-driven data table with typed columns, stable row identity, client-side controls, and manual/server-backed modes.",
+  "description": "Build responsive grid-style data explorers for records, orders, and audit lists with typed columns, stateful sorting/filtering, and pluggable paging or server-backed data flows.",
   "authors": [
     "zhiyanzhaijie"
   ],
@@ -15,7 +15,10 @@
       "git": "https://github.com/DioxusLabs/components"
     }
   ],
-  "componentDependencies": ["button", "skeleton"],
+  "componentDependencies": [
+    "button",
+    "skeleton"
+  ],
   "globalAssets": [
     "../../../../themes/default.css"
   ]

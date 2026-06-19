@@ -1,8 +1,14 @@
 {
   "name": "accordion",
-  "description": "An accordion component for displaying collapsible content sections.",
-  "authors": ["Evan Almloff"],
-  "exclude": ["demos", "docs.md", "component.json"],
+  "description": "Use this accordion demo to turn dense, sectioned content into a readable stack where users open one panel at a time to reveal FAQs, settings groups, or step-by-step details.",
+  "authors": [
+    "Evan Almloff"
+  ],
+  "exclude": [
+    "demos",
+    "docs.md",
+    "component.json"
+  ],
   "cargoDependencies": [
     {
       "name": "dioxus-primitives",
@@ -13,5 +19,7 @@
       "version": "0.1.0"
     }
   ],
-  "globalAssets": ["../../../../themes/default.css"]
+  "globalAssets": [
+    "../../../../themes/default.css"
+  ]
 }

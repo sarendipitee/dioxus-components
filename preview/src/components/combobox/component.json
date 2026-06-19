@@ -1,8 +1,14 @@
 {
   "name": "combobox",
-  "description": "An autocomplete input + popover for picking a value from a filterable list of options.",
-  "authors": ["Evan Almloff"],
-  "exclude": ["demos", "docs.md", "component.json"],
+  "description": "A keyboard-friendly autocomplete and selectable list surface that supports single, multi, tag, and virtualized option workflows.",
+  "authors": [
+    "Evan Almloff"
+  ],
+  "exclude": [
+    "demos",
+    "docs.md",
+    "component.json"
+  ],
   "cargoDependencies": [
     {
       "name": "dioxus-primitives",
@@ -13,6 +19,10 @@
       "version": "0.1.0"
     }
   ],
-  "componentDependencies": ["input"],
-  "globalAssets": ["../../../../themes/default.css"]
+  "componentDependencies": [
+    "input"
+  ],
+  "globalAssets": [
+    "../../../../themes/default.css"
+  ]
 }

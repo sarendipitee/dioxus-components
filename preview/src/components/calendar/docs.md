@@ -1,24 +1,26 @@
-The Calendar component is used to display a calendar interface, allowing users to select dates. It provides a grid layout of days for a specific month and year.
+The Calendar component powers date-driven tasks like reservations, deadlines, and analytics windows by rendering a controlled month view with predictable selection state. In this page’s demos, you can move between months, observe how `view_date` drives the visible grid, and see how `selected_date` captures the active choice. The page also includes a `RangeCalendar` example for contiguous interval selection when a workflow needs start/end dates.
 
 ## Component Structure
 
 ```rust
 Calendar {
-    // The currently selected date in the calendar (if any).
+    // The active selected date returned to your app when the user picks a day.
     selected_date,
+    // Handler that receives the selected date whenever the user clicks a day.
     on_date_change: |date: Option<CalendarDate>| {
-        // This callback is triggered when a date is selected in the calendar.
-        // The date parameter contains the selected date.
+        // Triggered on every valid date selection.
+        // `date` is the newly chosen date, or None when cleared.
     },
-    // The current view date of the calendar, which determines the month and year displayed.
+    // Month/year anchor that controls which calendar page is shown.
     view_date,
+    // Handler for month navigation and jumps between years.
     on_view_change: |date: CalendarDate| {
-        // This callback is triggered when the view date changes.
-        // The date parameter contains the new view date.
+        // Called when the user changes month or year.
+        // `date` reflects the new visible calendar month.
     },
-    // Optional number of pre-composed month views to render.
+    // Optional number of month columns to render side-by-side.
     month_count: 1,
 }
 ```
 
-The styled `Calendar` and `RangeCalendar` render a complete month view by default, including the header, navigation, month/year selectors, and date grid.
+The styled `Calendar` example shows the default single-date interaction model, while `RangeCalendar` shows a date interval flow on the same controlled API. Use this page to compare both patterns before wiring either component into forms, filters, or booking flows.

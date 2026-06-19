@@ -1,8 +1,14 @@
 {
   "name": "badge",
-  "description": "A small label to display status or categorization",
-  "authors": ["Evan Almloff"],
-  "exclude": ["demos", "docs.md", "component.json"],
+  "description": "Use this Badge component as a compact label for marking item state, urgency, or category directly beside nearby text, buttons, and list entries without disrupting layout.",
+  "authors": [
+    "Evan Almloff"
+  ],
+  "exclude": [
+    "demos",
+    "docs.md",
+    "component.json"
+  ],
   "cargoDependencies": [
     {
       "name": "dioxus-primitives",
@@ -13,5 +19,7 @@
       "version": "0.1.0"
     }
   ],
-  "globalAssets": ["../../../../themes/default.css"]
+  "globalAssets": [
+    "../../../../themes/default.css"
+  ]
 }

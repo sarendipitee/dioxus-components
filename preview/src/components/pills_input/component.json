@@ -1,8 +1,14 @@
 {
   "name": "pills_input",
-  "description": "A shared input shell for pill-based entry surfaces built on the combobox family.",
-  "authors": ["Evan Almloff"],
-  "exclude": ["demos", "docs.md", "component.json"],
+  "description": "Compose tag-style input rows where each submitted term becomes a removable pill while you keep full control of validation and storage.",
+  "authors": [
+    "Evan Almloff"
+  ],
+  "exclude": [
+    "demos",
+    "docs.md",
+    "component.json"
+  ],
   "cargoDependencies": [
     {
       "name": "dioxus-primitives",
@@ -13,6 +19,10 @@
       "version": "0.1.0"
     }
   ],
-  "componentDependencies": ["input"],
-  "globalAssets": ["../../../../themes/default.css"]
+  "componentDependencies": [
+    "input"
+  ],
+  "globalAssets": [
+    "../../../../themes/default.css"
+  ]
 }

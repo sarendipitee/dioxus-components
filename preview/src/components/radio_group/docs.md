@@ -1,4 +1,10 @@
-The RadioGroup component is used to create a group of radio buttons that allows the user to select one option from a set.
+The `RadioGroup` component is for scenarios where users must pick exactly one option from a defined set, such as plan tiers, delivery methods, or formatting modes.
+It keeps selection state in one place via the group `value` and emits every change through `on_value_change`, so your application can react in one place when the choice switches.
+
+This component page includes demos that show:
+- initializing a preselected option for a known default,
+- handling user-driven selection updates across multiple options,
+- and wiring child items while preserving explicit ordering and per-option semantics.
 
 ## Component Structure
 

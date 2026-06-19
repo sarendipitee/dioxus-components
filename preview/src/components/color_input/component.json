@@ -1,8 +1,14 @@
 {
   "name": "color_input",
-  "description": "Styled color input composition built on the shared input foundation.",
-  "authors": ["Evan Almloff"],
-  "exclude": ["demos", "docs.md", "component.json"],
+  "description": "A text-first color entry control that keeps a live swatch preview and opens a popover color picker without leaving the form context.",
+  "authors": [
+    "Evan Almloff"
+  ],
+  "exclude": [
+    "demos",
+    "docs.md",
+    "component.json"
+  ],
   "cargoDependencies": [
     {
       "name": "dioxus-primitives",
@@ -13,6 +19,12 @@
       "version": "0.7.6"
     }
   ],
-  "componentDependencies": ["input", "popover", "color_picker"],
-  "globalAssets": ["../../../../themes/default.css"]
+  "componentDependencies": [
+    "input",
+    "popover",
+    "color_picker"
+  ],
+  "globalAssets": [
+    "../../../../themes/default.css"
+  ]
 }

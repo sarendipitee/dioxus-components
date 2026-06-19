@@ -1,8 +1,14 @@
 {
   "name": "time_picker",
-  "description": "A time picker component to input times.",
-  "authors": ["Evan Almloff"],
-  "exclude": ["demos", "docs.md", "component.json"],
+  "description": "Select a clock time or duration with controlled state, clear controls, and customizable AM/PM and step precision for scheduling and time-entry forms.",
+  "authors": [
+    "Evan Almloff"
+  ],
+  "exclude": [
+    "demos",
+    "docs.md",
+    "component.json"
+  ],
   "cargoDependencies": [
     {
       "name": "dioxus-primitives",
@@ -14,5 +20,7 @@
     }
   ],
   "componentDependencies": [],
-  "globalAssets": ["../../../../themes/default.css"]
+  "globalAssets": [
+    "../../../../themes/default.css"
+  ]
 }

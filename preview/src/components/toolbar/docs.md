@@ -1,4 +1,6 @@
-The toolbar component is a flexible and customizable component that can be used to create a variety of toolbars. It can be used to create a simple toolbar with a title, or a more complex toolbar with multiple buttons and actions.
+The toolbar component is the action rail for command-driven interfaces: it groups related controls into one predictable region so users can move between actions without scanning the page.
+
+This page demonstrates common toolbar patterns, from a minimal title row to dense action clusters with visual separators and independently managed buttons. Use it when you need a single locus for primary commands (formatting, navigation, state toggles, destructive actions, and grouped utilities) instead of scattering controls across layout sections.
 
 ## Component Structure
 

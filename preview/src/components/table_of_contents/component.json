@@ -1,13 +1,21 @@
 {
   "name": "table_of_contents",
-  "description": "A table of contents that highlights the active heading while scrolling.",
-  "authors": ["Dioxus Labs"],
-  "exclude": ["demos", "docs.md", "component.json"],
+  "description": "Builds a scroll-aware table of contents from document headings, keeping the active section synced to the reader’s position while preserving heading depth.",
+  "authors": [
+    "Dioxus Labs"
+  ],
+  "exclude": [
+    "demos",
+    "docs.md",
+    "component.json"
+  ],
   "cargoDependencies": [
     {
       "name": "dioxus-primitives",
       "git": "https://github.com/DioxusLabs/components"
     }
   ],
-  "globalAssets": ["../../../../themes/default.css"]
+  "globalAssets": [
+    "../../../../themes/default.css"
+  ]
 }

@@ -1,6 +1,6 @@
-`DatePicker` and `DateRangePicker` are inline date selection surfaces. They own calendar state, disabled-date logic, locale formatting, and roving focus, but they do not render shared input field chrome or a popover trigger.
+`DatePicker` and `DateRangePicker` are inline, form-neutral calendar panels. They expose the full interaction layer for choosing one date or a contiguous date range: month navigation, disabled-day behavior, locale formatting, keyboard focus management, and roving focus all remain in the component itself.
 
-Use `DateInput` or `DateRangePickerInput` from the `date_input` registry entry when you need a labeled field, shared input sizing, validation text, or dropdown composition.
+These demos intentionally show the bare calendar experience, so you can reason about selection rules and focus flow without mixing in field labels, input validation copy, or popover shell styling. Use `DateInput` or `DateRangePickerInput` from the `date_input` registry entry when a full input control (label + helper text + trigger pattern) is part of the component contract.
 
 ## Component Structure
 

@@ -1,8 +1,14 @@
 {
   "name": "collapsible",
-  "description": "A collapsible component for showing and hiding content sections.",
-  "authors": ["Evan Almloff"],
-  "exclude": ["demos", "docs.md", "component.json"],
+  "description": "Build compact, keyboard-friendly panels that reveal detail only when the user explicitly opens each section.",
+  "authors": [
+    "Evan Almloff"
+  ],
+  "exclude": [
+    "demos",
+    "docs.md",
+    "component.json"
+  ],
   "cargoDependencies": [
     {
       "name": "dioxus-primitives",
@@ -13,5 +19,7 @@
       "version": "0.1.0"
     }
   ],
-  "globalAssets": ["../../../../themes/default.css"]
+  "globalAssets": [
+    "../../../../themes/default.css"
+  ]
 }

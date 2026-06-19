@@ -1,13 +1,15 @@
 # WeekView
 
-The week view renders seven days side by side as time-grid columns. It is the default view; switch to it explicitly with `default_view: ScheduleView::Week` or the controlled `view` prop.
+The week view is the primary surface for reviewing one full week at a glance. It renders seven day columns and a synchronized hour grid so you can compare back-to-back events, overlapping meetings, and cross-day availability side by side.
+
+In the demo, this component is positioned as the default workspace context: it opens directly with `default_view: ScheduleView::Week` and also supports explicit controlled usage through the `view: ScheduleView::Week` prop.
 
 ## Configuration
 
-Pass `week_view: ScheduleWeekViewConfig`:
+Pass `week_view: ScheduleWeekViewConfig` to tune each aspect of how the week is laid out:
 
-- `time_grid` (`ScheduleTimeGridConfig`) controls the visible hour range, slot size, and per-view header — the same shape used by the day view.
-- `first_day_of_week` sets which weekday starts each row.
+- `time_grid` (`ScheduleTimeGridConfig`) controls the visible hour range, slot size, and per-view header, and it stays API-compatible with the day view so behavior can be consistent across views.
+- `first_day_of_week` controls which weekday begins each page.
 
 ```rust
 Schedule {
@@ -24,4 +26,4 @@ Schedule {
 }
 ```
 
-Multi-day events span the relevant day columns, and all-day events render in the all-day row.
+In practice, multi-day events span across each affected day column, while all-day events stay fixed in the all-day row so your high-level planning lane stays readable even when the grid is dense.

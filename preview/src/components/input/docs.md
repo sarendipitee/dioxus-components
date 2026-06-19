@@ -1,6 +1,6 @@
-The input package is mostly a shared foundation for styled field components. Most app code should start with `TextInput` for native text entry or a higher-level field component such as `Select`, `DateInput`, `TimeInput`, or `ColorInput`.
+The input modules in this folder are the shared form-control primitives used by every styled field in the library. Most apps should use `TextInput` directly for native text entry, while this page is for composing custom form controls that still need the same field structure and accessibility.
 
-This page focuses on the lower-level building blocks:
+This page demonstrates the three construction layers behind any field component:
 
 ```rust
 InputBase {
@@ -10,17 +10,17 @@ InputBase {
 }
 ```
 
-- Use `InputBase` when building a new input-like component that needs label, description, error, required, disabled, sections, and the shared field shell around custom content.
-- Use `Input` only when you already have surrounding field wiring and need the visual shell itself.
-- Use `InputWrapper` only when a component needs wrapper chrome without the shared shell.
-- Use `TextInput` when you want a complete text field. It is documented on the dedicated `text_input` page.
+- Use `InputBase` when creating a custom field that needs both field metadata (`label`, `description`, `error`, `required`) and custom child content.
+- Use `Input` when you need only the visual shell (variant, size, radius, disabled/error state, and optional side sections) and can provide your own wrapper logic.
+- Use `InputWrapper` when you want only the semantic wrapper behavior without the shared shell container.
+- Use `TextInput` for production-ready native text entry. Its full API and examples live on the dedicated `text_input` page.
 
 ## Foundation Parts
 
-- `InputWrapper` renders label, description, error, required marker, and wrapper state.
-- `Input` renders the shared visual shell with variant, size, radius, disabled/error state, and left/right sections.
-- `InputBase` composes `InputWrapper` and `Input`, generates shared field ids, and provides control metadata for custom children.
-- `InputClearButton` provides the shared clear affordance for right sections.
-- `TextInput` is the public native text-entry adapter built on top of `InputBase`.
+- `InputWrapper` handles semantic field scaffolding: id-linked label/description/error text, required marker, and wrapper status classes for error/disabled states.
+- `Input` provides the reusable shell used by all fields: visual variants, sizing, radius presets, and left/right section layout.
+- `InputBase` combines both, wires stable field ids, and exposes the metadata hooks needed when your child component renders its own interactive control.
+- `InputClearButton` owns the shared clear affordance so custom inputs inherit the same behavior on right sections.
+- `TextInput` is the canonical native-text implementation built on top of `InputBase`, not the lower-level building block itself.
 
-The naming follows the same layering model used by Mantine: `Input` is the low-level visual shell, while `InputBase` is the convenience composition of wrapper plus shell. If you expect `Input` to mean "a normal text input", use `TextInput` instead.
+This layering is intentional: `Input` is the narrow styling surface, `InputBase` is the composition boundary, and anything you build for non-text controls should start from there.

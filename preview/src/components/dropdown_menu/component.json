@@ -1,13 +1,21 @@
 {
   "name": "dropdown_menu",
-  "description": "A dropdown menu component for selecting options from a list.",
-  "authors": ["Evan Almloff"],
-  "exclude": ["demos", "docs.md", "component.json"],
+  "description": "Builds a trigger-based command menu with grouped labels, shortcuts, toggle items, and nested submenu flows on top of the shared menu primitive.",
+  "authors": [
+    "Evan Almloff"
+  ],
+  "exclude": [
+    "demos",
+    "docs.md",
+    "component.json"
+  ],
   "cargoDependencies": [
     {
       "name": "dioxus-primitives",
       "git": "https://github.com/DioxusLabs/components"
     }
   ],
-  "globalAssets": ["../../../../themes/default.css"]
+  "globalAssets": [
+    "../../../../themes/default.css"
+  ]
 }

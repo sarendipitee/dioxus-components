@@ -1,8 +1,14 @@
 {
   "name": "checkbox",
-  "description": "A togglable checkbox component.",
-  "authors": ["Evan Almloff"],
-  "exclude": ["demos", "docs.md", "component.json"],
+  "description": "A styled checkbox for capturing one-at-a-time boolean choices, such as feature toggles, agreement consent, or item selection, with explicit checked/unchecked semantics and accessible state feedback.",
+  "authors": [
+    "Evan Almloff"
+  ],
+  "exclude": [
+    "demos",
+    "docs.md",
+    "component.json"
+  ],
   "cargoDependencies": [
     {
       "name": "dioxus-primitives",
@@ -13,5 +19,7 @@
       "version": "0.1.0"
     }
   ],
-  "globalAssets": ["../../../../themes/default.css"]
+  "globalAssets": [
+    "../../../../themes/default.css"
+  ]
 }

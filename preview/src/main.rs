@@ -74,6 +74,7 @@ struct ComponentPropsSectionProps {
 #[derive(Clone, PartialEq)]
 struct ComponentDemoEntryData {
     name: &'static str,
+    description_html: &'static str,
     rs_highlighted: HighlightedCode,
     css_highlighted: Option<HighlightedCode>,
     component: fn() -> Element,
@@ -1144,12 +1145,24 @@ fn ComponentDemoHighlight(
 ) -> Element {
     let ComponentDemoEntryData {
         name,
+        description_html,
         rs_highlighted: highlighted,
         css_highlighted: _,
         component: Comp,
     } = demo;
     rsx! {
-        if !main_demo {
+        if !description_html.is_empty() {
+            if !main_demo {
+                h3 { class: "dx-component-demo-title", "{name}" }
+            }
+            div {
+                class: "dx-component-demo-description",
+                dangerous_inner_html: description_html,
+            }
+        } else if !main_demo {
+            h3 { class: "dx-component-demo-title", "{name}" }
+        }
+        if description_html.is_empty() && main_demo {
             h3 { class: "dx-component-demo-title", "{name}" }
         }
         Tabs {
@@ -1206,6 +1219,7 @@ fn BlockComponentDemoHighlight(
 ) -> Element {
     let ComponentDemoEntryData {
         name,
+        description_html,
         rs_highlighted: highlighted,
         css_highlighted,
         component: _,
@@ -1225,7 +1239,15 @@ fn BlockComponentDemoHighlight(
     };
 
     rsx! {
-        if !main_demo {
+        if !description_html.is_empty() {
+            if !main_demo {
+                h3 { class: "dx-component-demo-title", "{name}" }
+            }
+            div {
+                class: "dx-component-demo-description",
+                dangerous_inner_html: description_html,
+            }
+        } else if !main_demo {
             h3 { class: "dx-component-demo-title", "{name}" }
         }
         Tabs {

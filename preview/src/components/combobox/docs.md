@@ -1,18 +1,18 @@
-The Combobox family provides reusable listbox/search interactions for autocomplete-style inputs.
-The low-level `Combobox` owns dropdown, highlight, option registry, and submit interaction state;
-higher-level components own their own value and query models.
+The Combobox component family powers editable inputs that reveal a list of options while users type.
+In the demos on this page, use `Combobox` when you need full control of query/value flow, `Autocomplete` for simple string-driven lookup behavior, and `MultiSelect`/`TagsInput` when selections should stay visible after choice.
 
-Filtering preserves the order defined by the rendered `ComboboxOption` elements and their `index`
-props. If you want query-dependent ranking, control `query`, sort your item data in user code,
-render the options in that sorted order, and assign indexes from the sorted list.
+`Combobox` itself is the stateful core: it owns open/close, active highlight movement, option registration, and submit semantics for a popover listbox.
+Higher-level wrappers still keep their own query and selection model, which is why demos below vary by API shape instead of reusing one universal pattern.
+
+In this page’s demos, filtering is intentionally left to your data pipeline. The component only renders options in the order you pass to `ComboboxOption`; if you need rank-by-query behavior, sort your source data before rendering and pass matching `index` values with that order.
 
 ## Demos
 
-- `Combobox` is the low-level selectable autocomplete surface.
-- `Autocomplete` owns string input value and maps option submit to the input label.
-- `MultiSelect` owns a selected-value array, search query, max-values, and selected pills.
-- `TagsInput` owns tag parsing and removable pills.
-- `VirtualizedComboboxOptions` renders a listbox with only the visible option window while preserving `ComboboxOption` ids and indexes.
+- `Combobox` demonstrates the primitive surface for custom selection behavior.
+- `Autocomplete` demonstrates controlled text search input with submitted option values mapped back to displayed labels.
+- `MultiSelect` demonstrates bounded multi-selection with query filtering and rendered chips.
+- `TagsInput` demonstrates parsing and removing tokenized entries in a pill-based input.
+- `VirtualizedComboboxOptions` demonstrates rendering thousands of options efficiently while keeping stable `ComboboxOption` indexes/ids.
 
 ## Component Structure
 

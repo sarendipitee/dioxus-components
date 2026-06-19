@@ -1,8 +1,14 @@
 {
   "name": "drag_and_drop_list",
-  "description": "Allows users to create vertically sortable lists supporting drag and drop, touch or keyboard input.",
-  "authors": ["Evan Almloff"],
-  "exclude": ["demos", "docs.md", "component.json"],
+  "description": "A vertically arranged list demo that lets users reorder rows through drag handles, touch gestures, and keyboard interactions while preserving focused item context.",
+  "authors": [
+    "Evan Almloff"
+  ],
+  "exclude": [
+    "demos",
+    "docs.md",
+    "component.json"
+  ],
   "cargoDependencies": [
     {
       "name": "dioxus-primitives",
@@ -13,5 +19,7 @@
       "version": "0.1.0"
     }
   ],
-  "globalAssets": ["../../../../themes/default.css"]
+  "globalAssets": [
+    "../../../../themes/default.css"
+  ]
 }

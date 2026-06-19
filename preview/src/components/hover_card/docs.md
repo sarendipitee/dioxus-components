@@ -1,4 +1,4 @@
-The HoverCard component can be used to display additional information when a user hovers over an element. It is useful for showing tooltips, additional details, or any other content that should be revealed on hover.
+The HoverCard component creates a non-intrusive way to reveal rich context for any trigger element, ideal for situations where users need extra detail but should never lose their place. Typical uses in this page include profile previews, compact metadata callouts, and action cues that appear next to the element being pointed at.
 
 ## Component Structure
 
@@ -16,3 +16,5 @@ HoverCard {
     }
 }
 ```
+
+Use the code above as the foundation for each demo on this page: place the element that should activate the card in `HoverCardTrigger`, then define the exact panel content and placement in `HoverCardContent`. Adjust `side` and `align` per demo when you want the popover to mirror the trigger's position in dense layouts.

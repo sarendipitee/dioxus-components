@@ -1,8 +1,14 @@
 {
   "name": "calendar",
-  "description": "A calendar grid component for selecting dates.",
-  "authors": ["Evan Almloff"],
-  "exclude": ["demos", "docs.md", "component.json"],
+  "description": "Render a controlled month grid for date pickers and scheduling flows, including single-date and range selection workflows.",
+  "authors": [
+    "Evan Almloff"
+  ],
+  "exclude": [
+    "demos",
+    "docs.md",
+    "component.json"
+  ],
   "cargoDependencies": [
     {
       "name": "dioxus-primitives",
@@ -17,5 +23,7 @@
       "version": "0.3.44"
     }
   ],
-  "globalAssets": ["../../../../themes/default.css"]
+  "globalAssets": [
+    "../../../../themes/default.css"
+  ]
 }

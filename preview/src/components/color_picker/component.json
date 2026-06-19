@@ -1,8 +1,14 @@
 {
   "name": "color_picker",
-  "description": "Inline color picking surface without shared input field chrome.",
-  "authors": ["Evan Almloff"],
-  "exclude": ["demos", "docs.md", "component.json"],
+  "description": "Render a compact inline picker for selecting a saturation/value field and hue in one uninterrupted control, ideal for dense UIs that need immediate color feedback.",
+  "authors": [
+    "Evan Almloff"
+  ],
+  "exclude": [
+    "demos",
+    "docs.md",
+    "component.json"
+  ],
   "cargoDependencies": [
     {
       "name": "dioxus-primitives",
@@ -14,5 +20,7 @@
     }
   ],
   "componentDependencies": [],
-  "globalAssets": ["../../../../themes/default.css"]
+  "globalAssets": [
+    "../../../../themes/default.css"
+  ]
 }

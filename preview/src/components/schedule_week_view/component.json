@@ -1,4 +1,4 @@
 {
   "name": "schedule_week_view",
-  "description": "Seven-day timeline with a configurable time grid and a selectable first day of the week."
+  "description": "Render side-by-side daily columns for one week to compare overlapping meetings, all-day blocks, and per-hour density in a shared workspace schedule."
 }

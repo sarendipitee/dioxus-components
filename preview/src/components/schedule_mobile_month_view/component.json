@@ -1,4 +1,4 @@
 {
   "name": "schedule_mobile_month_view",
-  "description": "Compact month view used by the responsive layout on small screens."
+  "description": "Render a touch-friendly monthly calendar surface in the responsive schedule, optimizing week density and readability on phone-sized viewports."
 }

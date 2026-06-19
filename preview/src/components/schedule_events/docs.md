@@ -1,17 +1,17 @@
-# Events data
+# Events data for the schedule demos
 
-Events are plain `ScheduleEvent` values passed to the `events` prop. The model covers timed, all-day, multi-day, colored, and recurring events.
+This page documents the exact `ScheduleEvent` shape that powers the schedule examples in this section. Each field below maps to a concrete rendering or interaction behavior you can observe in the demos: timed placement, all-day row placement, color accents, recurrence expansion, drag affordances, and resize affordances.
 
 ## Event fields
 
-- `id` — stable identifier used to track the event across interactions.
-- `title` — text shown by the default renderer.
-- `start` / `end` — `PrimitiveDateTime` bounds; spanning multiple days renders a multi-day event.
-- `all_day` — render in the all-day row instead of the time grid.
-- `color` — optional token exposed as `data-color` for styling.
-- `description` — optional text exposed as an accessible title.
-- `recurrence` — optional `ScheduleRecurrence` rule (see the Recurring events page).
-- `drag_disabled` / `resize_disabled` — opt individual events out of drag/drop or resize.
+- `id` — a stable identifier that lets the renderer track an event when selections, hover states, or drag interactions are applied.
+- `title` — the label text drawn by the default event renderer.
+- `start` / `end` — `PrimitiveDateTime` bounds used to place events on the day grid; if the end is on a later day, the event appears across multiple day slots.
+- `all_day` — when true, the event is placed in the all-day area instead of the timed grid.
+- `color` — optional style token surfaced as `data-color` for custom schedule theming.
+- `description` — optional text used for accessibility metadata such as the rendered title/tooltip.
+- `recurrence` — optional `ScheduleRecurrence` rule (see the recurring events demo), which expands source events into repeated occurrences.
+- `drag_disabled` / `resize_disabled` — toggles per-event interaction so specific items can be locked while others remain movable.
 
 ```rust
 ScheduleEvent {

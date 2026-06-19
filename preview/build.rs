@@ -129,6 +129,17 @@ fn walk_markdown_dir(
     if dir
         .parent()
         .and_then(std::path::Path::file_name)
+        .is_some_and(|name| name == "demos")
+    {
+        let description_path = out_folder.join("description.html");
+        if !description_path.exists() {
+            std::fs::write(description_path, "")?;
+        }
+    }
+
+    if dir
+        .parent()
+        .and_then(std::path::Path::file_name)
         .is_some_and(|name| name == "components")
     {
         let crate_folder_name = crate_component_source_folder(&folder_name);

@@ -1,13 +1,21 @@
 {
   "name": "alert",
-  "description": "A styled inline alert for status, context, and lightweight actions.",
-  "authors": ["OpenAI"],
-  "exclude": ["demos", "docs.md", "component.json"],
+  "description": "Show critical in-flow messages with a dedicated title, supporting text, and optional action controls so users can acknowledge, fix, or continue after a state change.",
+  "authors": [
+    "OpenAI"
+  ],
+  "exclude": [
+    "demos",
+    "docs.md",
+    "component.json"
+  ],
   "cargoDependencies": [
     {
       "name": "dioxus-primitives",
       "git": "https://github.com/DioxusLabs/components"
     }
   ],
-  "globalAssets": ["../../../../themes/default.css"]
+  "globalAssets": [
+    "../../../../themes/default.css"
+  ]
 }

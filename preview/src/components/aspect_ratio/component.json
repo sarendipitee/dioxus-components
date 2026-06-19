@@ -1,13 +1,21 @@
 {
   "name": "aspect_ratio",
-  "description": "An aspect ratio component for maintaining a consistent width-to-height ratio of an element.",
-  "authors": ["Evan Almloff"],
-  "exclude": ["demos", "docs.md", "component.json"],
+  "description": "Preserve the intended width-to-height ratio of cards, embeds, and media containers while their width changes in responsive layouts.",
+  "authors": [
+    "Evan Almloff"
+  ],
+  "exclude": [
+    "demos",
+    "docs.md",
+    "component.json"
+  ],
   "cargoDependencies": [
     {
       "name": "dioxus-primitives",
       "git": "https://github.com/DioxusLabs/components"
     }
   ],
-  "globalAssets": ["../../../../themes/default.css"]
+  "globalAssets": [
+    "../../../../themes/default.css"
+  ]
 }

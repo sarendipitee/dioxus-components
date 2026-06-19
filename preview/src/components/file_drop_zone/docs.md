@@ -1,4 +1,6 @@
-The FileDropZone component is a styled file selection and drag-and-drop zone. It owns a hidden file input and handles click, keyboard (Enter/Space), and drag/drop selection, then runs validation and reports structured accepted and rejected files. It is not an uploader: you receive the selected files and decide what to do with them.
+FileDropZone is the styled intake wrapper for dropping or selecting files in workflows like asset uploads, document import wizards, and media pickers. It handles the underlying file input and drag behavior, then returns `accepted` and `rejected` results so your app can choose the next step (preview, upload, retry, or annotate).
+
+The main goal of this component is controlled intake UX: it gives users a predictable drop surface while letting you keep upload logic and business rules outside of the visual layer.
 
 ## Component Structure
 
@@ -11,13 +13,13 @@ FileDropZone {
 }
 ```
 
-### Components
+### Demo components and interaction states
 
-- `FileDropZone`: The outer drop zone. Forwards every primitive prop (`accept`, `multiple`, `max_size`, `max_files`, `disabled`, `loading`, `open_request`, and the `on_accepted` / `on_rejected` / `on_drop` callbacks).
-- `FileDropZoneIdle`: Children shown while the zone is idle (not accepting or rejecting a drag).
-- `FileDropZoneAcceptDisplay`: Children shown only while a drag appears acceptable.
-- `FileDropZoneRejectDisplay`: Children shown only while a drag appears unacceptable.
+- `FileDropZone`: The outer drop zone wrapper. It forwards key primitive props and callbacks (`accept`, `multiple`, `min_size`, `max_size`, `max_files`, `disabled`, `loading`, `open_request`, `on_accepted`, `on_rejected`, and `on_drop`) so each demo can exercise a specific behavior.
+- `FileDropZoneIdle`: Content used when no drag interaction is active.
+- `FileDropZoneAcceptDisplay`: Content used while dragged files pass validation and are currently droppable.
+- `FileDropZoneRejectDisplay`: Content used while dragged files violate any active rule and should be rejected.
 
-### Validation
+### Validation behavior
 
-Selected files are validated against `accept`, `min_size`, `max_size`, and `max_files`. Rejected files are reported through `on_rejected` with stable [`RejectionCode`] codes and human-readable messages.
+Selection events are validated against `accept`, `min_size`, `max_size`, and `max_files`. Rejected files are reported through `on_rejected` with stable [`RejectionCode`] values and clear message text, which makes this page ideal for testing user-facing failure states like unsupported type, too-large files, and file-count limits.

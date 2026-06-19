@@ -1,42 +1,49 @@
-The data table component renders typed row data through column definitions and a canonical `DataTableState`. It can own that state for client-side tables or accept controlled state from a parent that maps table actions to local, manual, or server-backed data.
+# Data Table
+
+This component page is a focused demonstration of a production-style data grid: a component that lets users browse, search, and act on large typed record sets without reinventing table behavior each time.
+
+The `DataTable` demos in this page are designed around operational use cases (invoices, tickets, exports, audit rows) where users need one surface that can sort quickly, filter by column, jump pages, and preserve interaction state across rerenders.
 
 ## State Model
 
-- `DataTableState` is the single state object for pagination, sorting, column filters, global search, column visibility, ordering, pinning, sizing, row selection, and expanded rows.
-- `DataTableStateMode::Uncontrolled` lets the table manage state internally from an optional default state.
-- `DataTableStateMode::Controlled` lets the parent provide the complete state and receive `DataTableStateChange` with both the next state and the action that produced it.
-- Manual modes keep the same state contract while disabling built-in pagination, sorting, or filtering transforms so a caller can fetch or derive rows externally.
+`DataTableState` is the contract that describes the table’s complete behavior at any moment. It tracks pagination, sorting, column filters, global search, visibility, order, pinning, column sizing, selection, and expansion state.
+
+- `DataTableStateMode::Uncontrolled` keeps state inside the table and starts from an optional default state. This is the right choice for local, client-only datasets.
+- `DataTableStateMode::Controlled` moves state ownership to the parent and emits `DataTableStateChange` with both the next state and the triggering action.
+- Manual modes preserve the same state schema while disabling built-in sort/filter/pagination transforms so the parent can compute the visible rows itself (for example, via an API call).
+
+This page demonstrates all three patterns side by side so you can compare where control belongs in your app.
 
 ## Rows And Columns
 
-- `items` supplies typed row data.
-- `row_id` maps each row to a stable string identity used by selection, expansion, and keyed rendering.
-- `DataTableColumn<T>` describes a stable column id, header, accessor, feature metadata, and optional typed cell renderer.
-- `DataTableColumnHelper<T>` keeps column construction concise while preserving the row type.
-- Accessors return `DataTableValue`, which powers built-in search, sorting, filtering, and default cell rendering.
-- Cell renderers receive `DataTableCellContext<T>` with the row context, normalized value, current state, and table actions.
-- `expanded_row` enables the built-in row expansion column and renders detail content below expanded rows.
-- `on_row_click` receives `DataTableRowClickContext<T>` when a body row is clicked.
-- `show_selection: true` enables the built-in selection checkbox column. Leave it unset to provide custom row selection chrome from cells, `toolbar_left`, or `toolbar_right`.
-- Custom headers receive `DataTableColumnHeaderContext` with the column id, current sort direction, state, and actions.
+- `items` is the typed row source passed to the table.
+- `row_id` maps each row to a stable identifier used for selection, expansion, and stable keyed rendering.
+- `DataTableColumn<T>` defines a column’s ID, header, accessor, metadata, and optional typed renderer.
+- `DataTableColumnHelper<T>` provides a concise way to declare strongly-typed columns for a specific row model.
+- Accessors return `DataTableValue`, which powers built-in search/sort/filter behavior and default rendering.
+- Cell renderers receive `DataTableCellContext<T>`, which includes the row context, normalized value, current state, and actions.
+- `expanded_row` enables detail rendering beneath a row using the built-in expansion column.
+- `on_row_click` receives `DataTableRowClickContext<T>` whenever a body row is selected.
+- `show_selection: true` turns on the built-in selection checkbox column. Omit it if you provide custom selection UI from `toolbar_left`, `toolbar_right`, or cell content.
+- Custom header callbacks receive `DataTableColumnHeaderContext` with the column ID, active sort direction, and action helpers.
 
 ## DataTableColumn API
 
-`DataTableColumn<T>` is the primary column model for `DataTable` behavior and rendering.
+`DataTableColumn<T>` is the primary column model for table behavior and rendering decisions.
 
 ### Core fields
 
 - `id: String`
-  - Stable column identifier used for ordering, pinning, sorting, filtering, visibility, and state keys.
+  - Stable identifier used across ordering, pinning, sorting, filtering, visibility, and state tracking.
 - `header: DataTableColumnHeader`
-  - Text label or render callback for header content.
+  - Text header label or custom header render callback.
 - `accessor: DataTableColumnAccessor<T>`
-  - Usually `Accessor` for built-in `DataTableValue`-driven behavior, or `DisplayOnly`.
+  - Usually `Accessor` for built-in `DataTableValue` behavior, or `DisplayOnly`.
 - `width: Option<DataTableColumnWidth>`
 - `min_width: Option<f64>`
 - `max_width: Option<f64>`
 - `cell: Option<Callback<DataTableCellContext<T>, Element>>`
-  - Optional custom renderer; if omitted, cells render `DataTableValue` text.
+  - Optional renderer for per-cell custom markup; otherwise the default renderer uses `DataTableValue`.
 - `sortable: Option<DataTableColumnSorting<T>>`
 - `filter: Option<DataTableColumnFilter<T>>`
 - `searchable: bool`
@@ -48,48 +55,48 @@ The data table component renders typed row data through column definitions and a
 
 - `text_align: Option<DataTableColumnTextAlign>`
   - Default: `None`
-  - Explicitly controls header/body alignment (`start`, `center`, `end`).
+  - Explicitly controls alignment for headers and body (`start`, `center`, `end`).
 - `toggleable: bool`
   - Default: `false`
-  - Whether this column can appear in the visibility toggle list.
+  - Whether the user can include this column in the visibility toggle list.
 - `default_toggle: bool`
   - Default: `false`
-  - If `true` and `hidden` is also `true`, the column starts toggled on by default.
+  - If `true` and `hidden` is also `true`, the column begins in the default-on position.
 - `title_class_name: Option<String>`
-  - Optional extra class name applied to text headers.
+  - Optional extra class for plain-text headers.
 - `title_style: Option<String>`
-  - Optional CSS style string applied to text headers.
+  - Optional inline style for plain-text headers.
 - `hidden: bool`
   - Default: `false`
-  - If `true`, the column starts out hidden from rendered output unless toggled visible through state.
+  - When `true`, the column is excluded from output unless state overrides show it.
 - `hidden_content: bool`
   - Default: `false`
-  - If `true`, keeps the column in layout but renders empty `<td>` content.
+  - Keeps column structure while rendering an empty content cell.
 
 ### Notes
 
-- `text_align` is the recommended field for alignment. `align(...)` builder sets both `text_align` and metadata alignment for compatibility.
-- Visibility controls are driven by `toggleable`. A column is considered visible by default unless a matching `column_visibility` state override says otherwise.
-- Hidden-by-default columns are omitted during canonicalization unless overridden via column visibility state.
+- Use `text_align` for alignment. `align(...)` remains available and maps to both `text_align` and metadata for compatibility.
+- `toggleable` drives visibility controls. A column is visible by default unless state explicitly hides it.
+- Columns hidden by default are omitted during canonicalization unless `column_visibility` state brings them back in.
 
 ## Client And Server Usage
 
-Use uncontrolled mode for simple client-side datasets. The table applies search, column filters, sorting, selection, and pagination to the supplied `items`.
+Use uncontrolled mode when the full row set already exists in memory. The table applies built-in search, filtering, sorting, selection, and pagination directly to `items`.
 
-Use controlled mode when parent code needs to persist or inspect table state. The parent stores `DataTableState` and assigns `change.next_state` from `on_state_change`.
+Use controlled mode when surrounding app logic needs to observe or persist grid state. The parent owns `DataTableState` and applies `change.next_state` from `on_state_change`.
 
-Use manual pagination, sorting, and filtering for server-backed data. The table still emits `DataTableStateChange`; the parent sends that state to the backend, supplies the returned page of `items`, and sets `page_info` from the server response.
+Use manual mode for server-backed workflows. The table continues emitting `DataTableStateChange`, while the parent sends those changes to the server and passes back a new `items` page plus updated `page_info`.
 
 ## Virtualization
 
-Set `virtualization` to a `DataTableVirtualization` to render only the rows near the viewport plus an overscan buffer, reusing the shared virtualizer primitive. This keeps large client-side datasets responsive without manual paging.
+Set `virtualization` to a `DataTableVirtualization` to render only rows near the viewport plus an overscan buffer. This is the preferred pattern for large datasets when you want smooth scrolling without loading a small subset manually.
 
-- The whole filtered and sorted row set scrolls within a bounded, sticky-header surface, so built-in pagination is disabled while virtualization is active.
-- `estimated_row_height` seeds row positions before measurement; set it close to the real row height for stable scrolling. Rows are measured after mount, so dynamic heights still resolve correctly.
-- `overscan` controls how many buffer rows render above and below the viewport.
-- `max_height` bounds the scroll viewport (any CSS length); set it to `None` to bound the surface height via CSS instead.
-- Virtualization keeps the column layout fixed and rows single-line so widths and the header stay aligned during scrolling.
-- Row expansion (`expanded_row`) is not supported together with virtualization; expanded detail rows are ignored while it is active.
+- While virtualization is active, built-in pagination is disabled and the filtered/sorted row set scrolls inside a bounded sticky-header viewport.
+- `estimated_row_height` seeds initial row positions before measurement; pick a value close to expected row height for stable first paint.
+- `overscan` determines how many extra rows render above and below the viewport.
+- `max_height` limits the scroll viewport with an explicit size token; set `None` if your parent layout controls height.
+- Column widths stay fixed and aligned through scrolling.
+- Expansion rows from `expanded_row` are not supported with virtualization and are intentionally omitted while virtual mode is active.
 
 ```rust
 DataTable {
@@ -106,13 +113,15 @@ DataTable {
 
 ## Preview Demos
 
-- `main` shows the default uncontrolled client-side table.
-- `controlled` shows a parent-owned `DataTableState` with a reset control.
-- `server_backed` shows a preview-local fake server applying manual pagination, sorting, filtering, search, loading, error, and retry states.
-- `expansion` shows row detail content rendered through `expanded_row`.
-- `selectable` enables built-in row selection checkboxes and shows controlled selection state.
-- `virtualized` shows a 5,000-row client-side table virtualized through a bounded viewport.
-- `density` shows preset density modes and direct inline x/y CSS variable overrides.
+This page includes targeted demos so you can validate behavior quickly:
+
+- `main` shows the default uncontrolled client-side table with standard searching, filtering, sorting, and paging.
+- `controlled` shows parent-owned state with a manual reset action and state-driven rendering.
+- `server_backed` simulates a backend query cycle with manual pagination, sorting, filtering, search, loading, error, and retry states.
+- `expansion` shows row-level detail rendering through `expanded_row`.
+- `selectable` demonstrates built-in checkbox selection and external state visibility.
+- `virtualized` renders a 5,000-row local set inside a bounded scroll window using row virtualization.
+- `density` demonstrates density presets plus inline CSS variable overrides.
 
 ## Example
 
@@ -173,19 +182,19 @@ DataTable {
 
 ## Core Controls
 
-The styled table includes a single toolbar row with global search, active removable filter chips, a `+ Filter` menu, table settings, sortable headers, column visibility, optional row selection, optional row expansion, and pagination when the relevant column metadata and state allow them. Loading, empty, and error states are still provided by props so controlled and manual tables can reflect external query status.
+The styled table ships with a single toolbar row that is designed for list-management workflows: global search, removable filter chips, a `+ Filter` menu, settings, sortable headers, column visibility, optional selection, optional expansion, and pagination controls.
 
-Use `toolbar_left` and `toolbar_right` to inject additional controls around the built-in search/filter/settings controls. Use `table_settings` to add extra content to the settings dropdown next to the built-in column visibility controls. `header_controls` remains supported as a compatibility alias for right-side toolbar content.
+External controls can be merged through `toolbar_left` and `toolbar_right`, while `table_settings` lets you append project-specific options to the settings dropdown. `header_controls` remains available as a compatibility path for right-side injection.
 
 ## Density
 
-`DataTable` supports density presets through `density`.
+`DataTableDensity` controls the table’s baseline spacing profile:
 
-- `DataTableDensity::Compact` reduces vertical rhythm.
-- `DataTableDensity::Default` uses the standard spacing.
-- `DataTableDensity::Comfortable` adds extra row breathing room.
+- `DataTableDensity::Compact` tightens rhythm for dense administrative screens.
+- `DataTableDensity::Default` uses the balanced baseline spacing.
+- `DataTableDensity::Comfortable` increases row breathing room for readability-heavy screens.
 
-You can also override spacing directly with CSS variables, including x/y axis-specific values:
+For precise spacing control, override the CSS variables directly. Both x/y axis-specific pairs are supported:
 
 - `--dx-data-table-cell-padding-x`
 - `--dx-data-table-cell-padding-y`
@@ -194,7 +203,7 @@ You can also override spacing directly with CSS variables, including x/y axis-sp
 - `--dx-data-table-selection-cell-padding-x`
 - `--dx-data-table-selection-cell-padding-y`
 
-The default values are derived from `var(--space)` so they scale with the active theme.
+The defaults resolve against `var(--space)` so density changes remain theme-aware.
 
 Example:
 

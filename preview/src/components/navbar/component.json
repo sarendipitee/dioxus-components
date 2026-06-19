@@ -1,13 +1,21 @@
 {
   "name": "navbar",
-  "description": "A navbar component for navigation between pages.",
-  "authors": ["Evan Almloff"],
-  "exclude": ["demos", "docs.md", "component.json"],
+  "description": "A persistent app-shell navbar component for grouping route-level actions, section menus, and branded navigation into one predictable top-level entry point.",
+  "authors": [
+    "Evan Almloff"
+  ],
+  "exclude": [
+    "demos",
+    "docs.md",
+    "component.json"
+  ],
   "cargoDependencies": [
     {
       "name": "dioxus-primitives",
       "git": "https://github.com/DioxusLabs/components",
-      "features": ["router"]
+      "features": [
+        "router"
+      ]
     },
     {
       "name": "dioxus-icons",

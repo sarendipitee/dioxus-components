@@ -1,13 +1,21 @@
 {
   "name": "toggle_group",
-  "description": "A group of toggle buttons for selecting one or more options from a set.",
-  "authors": ["Evan Almloff"],
-  "exclude": ["demos", "docs.md", "component.json"],
+  "description": "Render mutually-aware toggle pills (single or multiple selection) where one grouped control set needs shared focus, spacing, and pressed-state semantics.",
+  "authors": [
+    "Evan Almloff"
+  ],
+  "exclude": [
+    "demos",
+    "docs.md",
+    "component.json"
+  ],
   "cargoDependencies": [
     {
       "name": "dioxus-primitives",
       "git": "https://github.com/DioxusLabs/components"
     }
   ],
-  "globalAssets": ["../../../../themes/default.css"]
+  "globalAssets": [
+    "../../../../themes/default.css"
+  ]
 }

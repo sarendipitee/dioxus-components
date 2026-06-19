@@ -1,6 +1,6 @@
-`TextInput` is the public text-field component for ordinary string entry. It renders a native `<input>` inside the shared `InputBase` wrapper, so label, description, error, size, radius, sections, and disabled styling match the rest of the input family.
+`TextInput` is the canonical single-line text entry component in the component library. It is intended for places where users type plain characters—email addresses, usernames, tags, IDs, or search-like fields—and it gives you consistent behavior for labels, helper copy, status text, sizing, and disabled/error visual states.
 
-Use `InputBase` when you are building a custom field component around non-text content. Use `Input` directly only when you need the visual shell without wrapper metadata.
+This page’s demos show `TextInput` as the form-level field with built-in field metadata and layout, while keeping the actual input semantics as a native `<input>` underneath. When you need only the shell styles (no labels or field copy), use `Input`; when you need a custom wrapper for non-text content, start from `InputBase`.
 
 ```rust
 TextInput {

@@ -1,13 +1,20 @@
-The ContextMenu component renders a styled contextual action menu on top of the shared menu primitive APIs. It supports labels, separators, checkbox and radio items, right-side item sections, and nested submenus.
+The ContextMenu component is for commands that should be tied to a specific target area. You attach it to a trigger element so users can open a small, anchored command surface from right-click, long-press, or menu-key interaction.
+
+In this page’s demos, the menu is used to represent workspace actions (for example “Edit”) with supporting metadata like keyboard hints, grouped stateful items, and nested choices, so you can verify both structure and behavior in a realistic context menu flow rather than as a generic list.
+
+Key behavior shown here:
+- A dedicated trigger wrapper that owns the open/close interaction for that target.
+- Mixed item types in one menu: plain actions, labeled sections, toggle-style checkbox items, and nested submenu branches.
+- Visual structure helpers like labels and separators that separate command groups without losing keyboard/navigation flow.
 
 ## Component Structure
 
 ```rust
-// The context menu component must wrap all context menu items.
+// Wrap every context menu demo root with a trigger+menu pair.
 ContextMenu {
-    // The context menu trigger is the element that will display the context menu when right-clicked.
+    // The trigger owns the interaction surface users invoke.
     ContextMenuTrigger {
-        // The content of the trigger
+        // Any renderable content can serve as the target.
         {children}
     }
     Menu {

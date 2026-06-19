@@ -1,4 +1,4 @@
 {
   "name": "schedule_year_view",
-  "description": "Twelve-month overview of the active year; selecting a month opens the month view."
+  "description": "Presents a compact, click-through year layout where each month becomes a gateway to its month-level schedule."
 }

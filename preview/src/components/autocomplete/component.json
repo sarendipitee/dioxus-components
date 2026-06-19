@@ -1,8 +1,14 @@
 {
   "name": "autocomplete",
-  "description": "A combobox-backed text input that owns the visible query and selected label.",
-  "authors": ["Evan Almloff"],
-  "exclude": ["demos", "docs.md", "component.json"],
+  "description": "Autocomplete pairs a text field with a registered combobox option set so users can filter suggestions and commit one selected item from a live typeahead list.",
+  "authors": [
+    "Evan Almloff"
+  ],
+  "exclude": [
+    "demos",
+    "docs.md",
+    "component.json"
+  ],
   "cargoDependencies": [
     {
       "name": "dioxus-primitives",
@@ -13,6 +19,10 @@
       "version": "0.1.0"
     }
   ],
-  "componentDependencies": ["input"],
-  "globalAssets": ["../../../../themes/default.css"]
+  "componentDependencies": [
+    "input"
+  ],
+  "globalAssets": [
+    "../../../../themes/default.css"
+  ]
 }

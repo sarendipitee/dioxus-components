@@ -1,8 +1,14 @@
 {
   "name": "file_drop_zone",
-  "description": "A file selection and drag-and-drop zone. Supports click, keyboard, and drag/drop file selection with validation.",
-  "authors": ["Saren"],
-  "exclude": ["demos", "docs.md", "component.json"],
+  "description": "Collects files from click-to-open or drag-and-drop gestures, then emits validated accepted/rejected file sets for your own processing pipeline.",
+  "authors": [
+    "Saren"
+  ],
+  "exclude": [
+    "demos",
+    "docs.md",
+    "component.json"
+  ],
   "cargoDependencies": [
     {
       "name": "dioxus-components",
@@ -13,5 +19,7 @@
       "git": "https://github.com/DioxusLabs/components"
     }
   ],
-  "globalAssets": ["../../../../themes/default.css"]
+  "globalAssets": [
+    "../../../../themes/default.css"
+  ]
 }

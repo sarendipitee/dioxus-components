@@ -1,13 +1,21 @@
 {
   "name": "context_menu",
-  "description": "A context menu component for displaying a list of actions or option after right clicking an area.",
-  "authors": ["Evan Almloff"],
-  "exclude": ["demos", "docs.md", "component.json"],
+  "description": "Render a focused, trigger-bound action menu that exposes context-specific commands, nested branches, and stateful toggles at the user’s pointer location.",
+  "authors": [
+    "Evan Almloff"
+  ],
+  "exclude": [
+    "demos",
+    "docs.md",
+    "component.json"
+  ],
   "cargoDependencies": [
     {
       "name": "dioxus-primitives",
       "git": "https://github.com/DioxusLabs/components"
     }
   ],
-  "globalAssets": ["../../../../themes/default.css"]
+  "globalAssets": [
+    "../../../../themes/default.css"
+  ]
 }

@@ -807,6 +807,20 @@ body {
   text-transform: capitalize;
 }
 
+.dx-component-demo-description {
+  margin: 0 0 0.9rem;
+  color: var(--fg-muted);
+  line-height: 1.4;
+}
+
+.dx-component-demo-description > :first-child {
+  margin-top: 0;
+}
+
+.dx-component-demo-description > :last-child {
+  margin-bottom: 0;
+}
+
 /* Homepage component catalog */
 .dx-home-page {
   width: min(var(--dx-content-width), calc(100vw - 2rem));

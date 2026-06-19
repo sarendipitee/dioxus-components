@@ -1,6 +1,6 @@
 {
   "name": "textarea",
-  "description": "a textarea component used to allow users to enter multi-line text input",
+  "description": "A textarea component for long-form input that supports autosizing, row constraints, and an optional helper region beneath the field.",
   "authors": [
     "zhiyanzhaijie"
   ],

@@ -1,8 +1,14 @@
 {
   "name": "date_input",
-  "description": "Styled date input composition built on the shared input foundation.",
-  "authors": ["Evan Almloff"],
-  "exclude": ["demos", "docs.md", "component.json"],
+  "description": "A styled date entry field that opens a popover-backed single-date calendar while preserving label, helper text, and input validation states.",
+  "authors": [
+    "Evan Almloff"
+  ],
+  "exclude": [
+    "demos",
+    "docs.md",
+    "component.json"
+  ],
   "cargoDependencies": [
     {
       "name": "dioxus-primitives",
@@ -17,6 +23,13 @@
       "version": "0.3.44"
     }
   ],
-  "componentDependencies": ["input", "popover", "calendar", "date_picker"],
-  "globalAssets": ["../../../../themes/default.css"]
+  "componentDependencies": [
+    "input",
+    "popover",
+    "calendar",
+    "date_picker"
+  ],
+  "globalAssets": [
+    "../../../../themes/default.css"
+  ]
 }

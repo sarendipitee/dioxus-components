@@ -1,4 +1,4 @@
 {
   "name": "schedule_recurring",
-  "description": "Repeat events with daily, weekly, monthly, and yearly recurrence rules and a bounded expansion limit."
+  "description": "Showcase how to build recurring calendar events by configuring cadence rules and limiting generated occurrences in one place."
 }

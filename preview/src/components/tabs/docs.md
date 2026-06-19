@@ -1,4 +1,4 @@
-The Tabs component is used to create a tabbed interface, allowing users to switch between different views or sections of content.
+The Tabs component turns a single page into a focused, sectioned workflow: only one panel is shown at a time, but users can jump between related content without page churn. This page’s demos show how triggers and panels stay tightly coupled by shared `value`, so each tab maps to a distinct state while preserving keyboard-friendly, predictable focus order.
 
 ## Component Structure
 

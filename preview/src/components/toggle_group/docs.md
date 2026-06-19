@@ -1,17 +1,17 @@
-The Toggle Group component is used to create a group of toggle buttons that allows the user to select one or more options from a set. It is useful for creating a set of options.
+Use `ToggleGroup` when you need a compact set of related choices that should behave like a single segmented control, such as view filters, content views, or mode switches. The group manages how each toggle item is related to the others so users can move through choices consistently and see a shared active state.
 
 ## Component Structure
 
 ```rust
-// The ToggleGroup component wraps all toggle items in the group.
+// The ToggleGroup owns the shared container, layout direction, and group semantics.
 ToggleGroup {
-    // The orientation of the toggle group, true for horizontal and false for vertical.
+    // Horizontal groups are common for toolbar-like controls; set `horizontal: false` for compact vertical stacks.
     horizontal: true,
-    // The toggle item represents each individual toggle button in the group.
+    // ToggleItem creates a focusable option inside the group, with keyboard order driven by its index.
     ToggleItem {
-        // The index of the toggle item, used to determine the order in which items are focused.
+        // Index controls the traversal order for arrow-key focus movement.
         index: 0,
-        // The contents of the toggle item button
+        // The visible label/content for this option.
         {children}
     }
 }

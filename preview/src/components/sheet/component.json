@@ -1,6 +1,6 @@
 {
   "name": "sheet",
-  "description": "A sheet component as an edge panel that complements the main content",
+  "description": "Use Sheet for transient, on-demand panels like edit drawers, quick settings, or confirmation flows that should stay beside the main page instead of replacing it.",
   "authors": [
     "zhiyanzhaijie"
   ],

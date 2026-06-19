@@ -1,7 +1,9 @@
-`TagsInput` is the combobox-family adapter for freeform tag entry.
-It owns tag parsing, duplicate handling, removable pills, and the inner search text used while composing tags.
+`TagsInput` is the tag-entry component for collecting arbitrary values a user types and immediately promoting each committed value into a removable chip.
+This demo page is intentionally scoped to the practical editing flow: users enter tokens, confirm with Enter, and the control turns entries into a managed list they can inspect, remove, and reorder in a consistent pattern.
 
-Use it when users should type arbitrary values and commit them into a tag list, typically by pressing Enter.
+The examples highlight why you would use this component over a plain input: it combines value normalization, duplicate prevention, and interactive chip affordances so tag-like data stays predictable while the user is typing.
+
+Use this component in interfaces where users build collections of values, such as keywords, labels, recipients, or filter terms.
 
 ## Component Structure
 

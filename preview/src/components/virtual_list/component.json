@@ -1,13 +1,22 @@
 {
   "name": "virtual_list",
-  "description": "A virtualized list component for large datasets.",
-  "authors": ["brian", "Evan Almloff"],
-  "exclude": ["demos", "docs.md", "component.json"],
+  "description": "Render a huge, scrollable list by only mounting rows inside the viewport plus a tuned overscan buffer, so scroll performance stays smooth as item count grows.",
+  "authors": [
+    "brian",
+    "Evan Almloff"
+  ],
+  "exclude": [
+    "demos",
+    "docs.md",
+    "component.json"
+  ],
   "cargoDependencies": [
     {
       "name": "dioxus-primitives",
       "git": "https://github.com/DioxusLabs/components"
     }
   ],
-  "globalAssets": ["../../../../themes/default.css"]
+  "globalAssets": [
+    "../../../../themes/default.css"
+  ]
 }

@@ -1,10 +1,10 @@
-# Recurring events
+# Scheduling recurring events in one place
 
-Attach a `ScheduleRecurrence` to an event's `recurrence` field to repeat it. The schedule expands recurrences into individual occurrences for the visible range.
+This demo focuses on recurring events that need both flexibility and guardrails. `ScheduleRecurrence` sits on an event so you can define exactly how often it should repeat, and the schedule renderer expands those rules into concrete occurrences for the date window you display.
 
-## Recurrence rule
+## Recurrence rule demo
 
-`ScheduleRecurrence` controls how an event repeats:
+Use the recurrence rule to model real patterns like “every 3rd day,” “every second Thursday,” or “up to 10 occurrences total”:
 
 - `frequency` — `Daily`, `Weekly`, `Monthly`, or `Yearly`.
 - `interval` — units between occurrences (e.g. `2` for every other week). Values below one are treated as one.
@@ -23,9 +23,9 @@ ScheduleEvent {
 }
 ```
 
-## Expansion limit
+## Expansion limit demo
 
-`recurrence_expansion_limit: ScheduleRecurrenceExpansionLimit` bounds how many occurrences are created per recurring event, guarding against unbounded rules.
+`recurrence_expansion_limit: ScheduleRecurrenceExpansionLimit` bounds how many generated rows can come from one recurring event, which is important when a broad rule would otherwise flood the timeline.
 
 ```rust
 Schedule {

@@ -1,14 +1,24 @@
 {
   "name": "text_input",
-  "description": "Styled text field built on the shared input foundation.",
-  "authors": ["Evan Almloff"],
-  "exclude": ["demos", "docs.md", "component.json"],
+  "description": "Capture single-line user text like names, emails, and IDs with the same labeled/error state pattern as the other primitive-backed inputs.",
+  "authors": [
+    "Evan Almloff"
+  ],
+  "exclude": [
+    "demos",
+    "docs.md",
+    "component.json"
+  ],
   "cargoDependencies": [
     {
       "name": "dioxus-primitives",
       "git": "https://github.com/DioxusLabs/components"
     }
   ],
-  "componentDependencies": ["input"],
-  "globalAssets": ["../../../../themes/default.css"]
+  "componentDependencies": [
+    "input"
+  ],
+  "globalAssets": [
+    "../../../../themes/default.css"
+  ]
 }

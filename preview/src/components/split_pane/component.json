@@ -1,13 +1,21 @@
 {
   "name": "split_pane",
-  "description": "A resizable split-pane layout component.",
-  "authors": ["Dioxus Labs"],
-  "exclude": ["demos", "docs.md", "component.json"],
+  "description": "SplitPane builds adjustable side-by-side or stacked workspaces where users can re-balance content regions with keyboard-accessible and pointer-driven dividers.",
+  "authors": [
+    "Dioxus Labs"
+  ],
+  "exclude": [
+    "demos",
+    "docs.md",
+    "component.json"
+  ],
   "cargoDependencies": [
     {
       "name": "dioxus-primitives",
       "git": "https://github.com/DioxusLabs/components"
     }
   ],
-  "globalAssets": ["../../../../themes/default.css"]
+  "globalAssets": [
+    "../../../../themes/default.css"
+  ]
 }

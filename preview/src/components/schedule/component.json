@@ -1,8 +1,14 @@
 {
   "name": "schedule",
-  "description": "A responsive schedule component for calendar views, events, recurrence, and scheduling interactions.",
-  "authors": ["Dioxus Labs"],
-  "exclude": ["demos", "docs.md", "component.json"],
+  "description": "Coordinate appointments and capacity blocks in one shared schedule state, with day/week/month/year views, recurrence-aware events, and controllable interactive editing.",
+  "authors": [
+    "Dioxus Labs"
+  ],
+  "exclude": [
+    "demos",
+    "docs.md",
+    "component.json"
+  ],
   "cargoDependencies": [
     {
       "name": "dioxus-primitives",
@@ -11,8 +17,12 @@
     {
       "name": "time",
       "version": "0.3.44",
-      "features": ["macros"]
+      "features": [
+        "macros"
+      ]
     }
   ],
-  "globalAssets": ["../../../../themes/default.css"]
+  "globalAssets": [
+    "../../../../themes/default.css"
+  ]
 }

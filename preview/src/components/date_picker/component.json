@@ -1,8 +1,14 @@
 {
   "name": "date_picker",
-  "description": "Inline date selection surface without shared input field chrome.",
-  "authors": ["Evan Almloff"],
-  "exclude": ["demos", "docs.md", "component.json"],
+  "description": "Calendar-first date selection surfaces that let consumers embed single-date or range picking directly in forms, dialogs, or layouts without built-in input chrome.",
+  "authors": [
+    "Evan Almloff"
+  ],
+  "exclude": [
+    "demos",
+    "docs.md",
+    "component.json"
+  ],
   "cargoDependencies": [
     {
       "name": "dioxus-primitives",
@@ -17,6 +23,10 @@
       "version": "0.3.44"
     }
   ],
-  "componentDependencies": ["calendar"],
-  "globalAssets": ["../../../../themes/default.css"]
+  "componentDependencies": [
+    "calendar"
+  ],
+  "globalAssets": [
+    "../../../../themes/default.css"
+  ]
 }

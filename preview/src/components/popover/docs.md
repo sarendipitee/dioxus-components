@@ -1,15 +1,19 @@
-The Popover primitive provides an interactive modal that is positioned relative to the target element. It can be used to display additional options, or actions related to the trigger.
+This page demonstrates `Popover`, a compact anchored overlay that stays attached to a trigger element and is meant for local, in-context interactions.
+
+Use it for quick command surfaces like row actions in a table, tiny form helpers, or ephemeral metadata blocks that should appear exactly next to the control that opened them. Unlike a full modal, the popover keeps the current task in place while presenting focused follow-up content.
+
+The examples below show the structural pieces and how placement is controlled with `side` and `align` so you can tune where the panel appears relative to the trigger.
 
 ## Component Structure
 
 ```rust
-// The PopoverRoot is the root component that contains the trigger and content.
+// PopoverRoot owns the visibility state and positioning context for trigger + content.
 PopoverRoot {
-    // The PopoverTrigger contains the elements that will trigger the popover to display when clicked.
+    // PopoverTrigger is the anchor: users interact with this node to open the popover.
     PopoverTrigger {
         "Show Popover"
     }
-    // The PopoverContent contains the content that will be displayed when the user clicks on the trigger.
+    // PopoverContent is the anchored floating panel rendered from the specified side/alignment.
     PopoverContent {
         side: ContentSide::Top,
         align: ContentAlign::Center,

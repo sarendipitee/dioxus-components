@@ -1,19 +1,21 @@
-The dialog component can be used to display additional information or actions related to an item. It is a simple modal dialog that can be opened and closed by the user.
+The Dialog component is for momentary task switches: it overlays the current view so users can confirm an action, review item details, or complete a small form without losing their place.
+
+In the demos below, this is the pattern to look for: the dialog is only shown when a boolean `open` flag is true, and each variant shows how title/description text guides users to the decision point before they confirm, save, or dismiss.
 
 ## Component Structure
 
 ```rust
 // The dialog component must wrap all dialog elements.
 Dialog {
-    // The open prop determines if the dialog is currently open or closed.
+    // Toggle visibility by binding this to your local open state.
     open: open(),
-    // The dialog title defines the heading of the dialog.
+    // Use a clear action-oriented title so users understand the temporary context.
     DialogTitle {
-        "Item information"
+        "Confirm item update"
     }
-    // The dialog description provides additional information about the dialog.
+    // Provide a short description that explains consequence and next step.
     DialogDescription {
-        "Here is some additional information about the item."
+        "Changes are staged in this dialog until you save or cancel."
     }
 }
 ```

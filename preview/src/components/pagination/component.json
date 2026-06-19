@@ -1,6 +1,6 @@
 {
   "name": "pagination",
-  "description": "Navigation controls for paged content.",
+  "description": "Split a large ordered list into deterministic pages with either hand-composed items or a `total`-driven link range.",
   "authors": [
     "zhiyanzhaijie"
   ],

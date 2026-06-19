@@ -1,4 +1,5 @@
-The textarea element is used to allow users to enter multi-line text input in a user interface.
+Use this component when you need multi-line, long-form input that behaves like a form field instead of a plain text block.  
+The textarea demo covers two key behaviors: compact form sizing with a controlled root layout, and auto-expanding height that tracks the typed content without disrupting adjacent UI.
 
 ## Component Structure
 
@@ -21,9 +22,20 @@ if bottom_section.is_none() {
 }
 ```
 
+The structure shows how the component switches between a single `textarea` element and a wrapper with a dedicated bottom section.  
+When a `bottom_section` is provided, it is rendered under the field inside the same container so helper copy, counters, validation hints, or action links stay visually tied to the input.
+
 ## API Notes
 
-- `bottom_section` renders optional helper or meta content below the textarea inside the same component container.
-- `autosize` grows and shrinks the textarea height to fit its rendered value. When enabled, manual resizing is disabled so native resize handles do not conflict with autosizing.
-- `min_rows` and `max_rows` constrain autosize height in row units.
-- Native resize behavior is controlled through standard textarea attributes or inline CSS such as `style: "resize: both;"`.
+- `bottom_section` is the component’s hook for contextual metadata below the input (character counters, hints, or form status), kept as part of the same layout block.
+- `autosize` dynamically adjusts the textarea height to fit current content. In autosize mode, native resize handles are intentionally disabled so JS-driven growth is authoritative.
+- `min_rows` and `max_rows` let you bound that growth in row units, preventing the control from collapsing too small or expanding past layout constraints.
+- Native resize behavior can be restored or customized through standard textarea attributes and inline CSS (for example, `style: "resize: both;"`) when automatic growth is not used.
+
+## Demo Focus
+
+This page is intentionally split into demos that show:
+
+- A baseline multiline field for normal text entry.
+- A footer slot example that keeps helper text anchored beneath the field.
+- An autosizing variant with row caps that grows while preserving form rhythm.

@@ -1,4 +1,4 @@
 {
   "name": "schedule_events",
-  "description": "The event data model: timed, all-day, multi-day, colored, and recurring events."
+  "description": "Defines the exact `ScheduleEvent` shape consumed by the schedule demos, including timed, all-day, recurring, and interactive drag/resize behaviors."
 }

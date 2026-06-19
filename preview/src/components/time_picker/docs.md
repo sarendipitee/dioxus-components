@@ -1,6 +1,8 @@
-The TimePicker preview reflects the picker-surface API: a primitive-style `TimePicker` container with `TimePickerInput {}` as its child. Use `TimeInput` from the `time_input` registry entry for first-class styled field chrome with label, description, error, sections, and shared input sizing.
+The TimePicker page demonstrates the core picker primitive contract: `TimePicker` owns the selection state and behavioral props, while `TimePickerInput {}` renders the styled field shell inside the same surface.
 
-For normal clock-time usage, control the picker with `selected_time: Option<Time>` and `on_value_change`. For duration values that can exceed 23 hours, switch to `selected_value: Option<TimePickerValue>` with `picker_type: TimePickerType::Duration` and `on_picker_value_change`.
+Pair this component with `TimeInput` from the `time_input` registry whenever you want consistent label, description, error, and sizing treatment with the rest of your form fields.
+
+Use `selected_time: Option<Time>` plus `on_value_change` for ordinary clock-time entry (for example, choosing a meeting start). Switch to `selected_value: Option<TimePickerValue>` and `picker_type: TimePickerType::Duration` with `on_picker_value_change` when input can represent spans longer than one day.
 
 ## Basic clock time
 
@@ -59,4 +61,4 @@ TimePicker {
 }
 ```
 
-The stale preview-only wrapper props are no longer documented here. Use the current public fields instead: `labels`, `clearable`, `with_seconds`, `format`, `selected_time`, `selected_value`, `picker_type`, `am_pm_labels`, and `steps`.
+This page intentionally documents only current public fields: `labels`, `clearable`, `with_seconds`, `format`, `selected_time`, `selected_value`, `picker_type`, `am_pm_labels`, and `steps`. Each demo is intentionally scoped to one usage mode so you can copy the block that matches your input contract without adapting legacy API examples.
