@@ -831,6 +831,28 @@ impl Default for DataTableVirtualization {
     }
 }
 
+/// Preset density options for table padding and row height rhythm.
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
+pub enum DataTableDensity {
+    /// Default density matching existing styles.
+    #[default]
+    Default,
+    /// Compact density for denser vertical rhythm.
+    Compact,
+    /// Comfortable density for more generous row spacing.
+    Comfortable,
+}
+
+impl DataTableDensity {
+    fn as_str(self) -> &'static str {
+        match self {
+            Self::Default => "default",
+            Self::Compact => "compact",
+            Self::Comfortable => "comfortable",
+        }
+    }
+}
+
 /// Props for the canonical styled `DataTable`.
 #[derive(Props, Clone, PartialEq)]
 pub struct DataTableProps<T: Clone + PartialEq + 'static = String> {
@@ -914,6 +936,9 @@ pub struct DataTableProps<T: Clone + PartialEq + 'static = String> {
     /// is not supported while virtualization is active.
     #[props(default)]
     pub virtualization: Option<DataTableVirtualization>,
+    /// Row density preset for table cell spacing.
+    #[props(default)]
+    pub density: DataTableDensity,
     /// Additional attributes applied to the root element.
     #[props(extends = GlobalAttributes)]
     pub attributes: Vec<Attribute>,
@@ -1038,6 +1063,7 @@ pub fn DataTable<T: Clone + PartialEq + 'static>(props: DataTableProps<T>) -> El
     rsx! {
         div {
             class: Styles::dx_data_table,
+            "data-density": props.density.as_str(),
             "data-slot": "data-table",
             ..props.attributes,
             if toolbar_model

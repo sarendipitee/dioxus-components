@@ -3,6 +3,51 @@
     width: 100%;
     flex-direction: column;
     gap: calc(var(--space) * 3);
+    --dx-data-table-cell-padding-y: calc(var(--space) * 1.75);
+    --dx-data-table-cell-padding-x: calc(var(--space) * 2);
+    --dx-data-table-head-cell-padding-y: calc(var(--space) * 1.25);
+    --dx-data-table-head-cell-padding-x: calc(var(--space) * 2);
+    --dx-data-table-selection-cell-padding-y: calc(var(--space) * 2);
+    --dx-data-table-selection-cell-padding-x: calc(var(--space) * 2);
+
+    --dx-data-table-cell-padding-block: var(--dx-data-table-cell-padding-y);
+    --dx-data-table-cell-padding-inline: var(--dx-data-table-cell-padding-x);
+    --dx-data-table-head-cell-padding-block: var(--dx-data-table-head-cell-padding-y);
+    --dx-data-table-head-cell-padding-inline: var(--dx-data-table-head-cell-padding-x);
+    --dx-data-table-selection-cell-padding-block: var(--dx-data-table-selection-cell-padding-y);
+    --dx-data-table-selection-cell-padding-inline: var(--dx-data-table-selection-cell-padding-x);
+}
+
+.dx_data_table[data-density="compact"] {
+    --dx-data-table-cell-padding-y: var(--space);
+    --dx-data-table-cell-padding-x: calc(var(--space) * 1.5);
+    --dx-data-table-head-cell-padding-y: calc(var(--space) * 0.8);
+    --dx-data-table-head-cell-padding-x: calc(var(--space) * 1.5);
+    --dx-data-table-selection-cell-padding-y: calc(var(--space) * 1.5);
+    --dx-data-table-selection-cell-padding-x: calc(var(--space) * 1.5);
+
+    --dx-data-table-cell-padding-block: var(--dx-data-table-cell-padding-y);
+    --dx-data-table-cell-padding-inline: var(--dx-data-table-cell-padding-x);
+    --dx-data-table-head-cell-padding-block: var(--dx-data-table-head-cell-padding-y);
+    --dx-data-table-head-cell-padding-inline: var(--dx-data-table-head-cell-padding-x);
+    --dx-data-table-selection-cell-padding-block: var(--dx-data-table-selection-cell-padding-y);
+    --dx-data-table-selection-cell-padding-inline: var(--dx-data-table-selection-cell-padding-x);
+}
+
+.dx_data_table[data-density="comfortable"] {
+    --dx-data-table-cell-padding-y: calc(var(--space) * 2);
+    --dx-data-table-cell-padding-x: calc(var(--space) * 2.5);
+    --dx-data-table-head-cell-padding-y: calc(var(--space) * 1.75);
+    --dx-data-table-head-cell-padding-x: calc(var(--space) * 2.5);
+    --dx-data-table-selection-cell-padding-y: calc(var(--space) * 2.5);
+    --dx-data-table-selection-cell-padding-x: calc(var(--space) * 2.5);
+
+    --dx-data-table-cell-padding-block: var(--dx-data-table-cell-padding-y);
+    --dx-data-table-cell-padding-inline: var(--dx-data-table-cell-padding-x);
+    --dx-data-table-head-cell-padding-block: var(--dx-data-table-head-cell-padding-y);
+    --dx-data-table-head-cell-padding-inline: var(--dx-data-table-head-cell-padding-x);
+    --dx-data-table-selection-cell-padding-block: var(--dx-data-table-selection-cell-padding-y);
+    --dx-data-table-selection-cell-padding-inline: var(--dx-data-table-selection-cell-padding-x);
 }
 
 .dx_data_table_toolbar {
@@ -241,7 +286,7 @@
 }
 
 .dx_data_table_head_cell {
-    padding: 0.625rem 1rem;
+    padding: var(--dx-data-table-head-cell-padding-block) var(--dx-data-table-head-cell-padding-inline);
     border-bottom: 1px solid var(--surface-border);
     color: var(--surface-muted-fg);
     font-size: 0.75rem;
@@ -272,7 +317,7 @@
 .dx_data_table_selection_cell,
 .dx_data_table_expansion_cell {
     width: 1%;
-    padding: calc(var(--space) * 2);
+    padding: var(--dx-data-table-selection-cell-padding-block) var(--dx-data-table-selection-cell-padding-inline);
     border-bottom: 1px solid var(--surface-border);
     text-align: center;
     white-space: nowrap;
@@ -358,7 +403,7 @@
 }
 
 .dx_data_table_cell {
-    padding: 0.875rem 1rem;
+    padding: var(--dx-data-table-cell-padding-block) var(--dx-data-table-cell-padding-inline);
     border-bottom: 1px solid var(--surface-border);
     color: var(--surface-fg);
     font-size: 0.875rem;
