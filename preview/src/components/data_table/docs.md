@@ -20,6 +20,58 @@ The data table component renders typed row data through column definitions and a
 - `show_selection: true` enables the built-in selection checkbox column. Leave it unset to provide custom row selection chrome from cells, `toolbar_left`, or `toolbar_right`.
 - Custom headers receive `DataTableColumnHeaderContext` with the column id, current sort direction, state, and actions.
 
+## DataTableColumn API
+
+`DataTableColumn<T>` is the primary column model for `DataTable` behavior and rendering.
+
+### Core fields
+
+- `id: String`
+  - Stable column identifier used for ordering, pinning, sorting, filtering, visibility, and state keys.
+- `header: DataTableColumnHeader`
+  - Text label or render callback for header content.
+- `accessor: DataTableColumnAccessor<T>`
+  - Usually `Accessor` for built-in `DataTableValue`-driven behavior, or `DisplayOnly`.
+- `width: Option<DataTableColumnWidth>`
+- `min_width: Option<f64>`
+- `max_width: Option<f64>`
+- `cell: Option<Callback<DataTableCellContext<T>, Element>>`
+  - Optional custom renderer; if omitted, cells render `DataTableValue` text.
+- `sortable: Option<DataTableColumnSorting<T>>`
+- `filter: Option<DataTableColumnFilter<T>>`
+- `searchable: bool`
+- `resizable: bool`
+- `pinnable: bool`
+- `meta: Option<DataTableColumnMeta>`
+
+### Additional behavior fields
+
+- `text_align: Option<DataTableColumnTextAlign>`
+  - Default: `None`
+  - Explicitly controls header/body alignment (`start`, `center`, `end`).
+- `toggleable: bool`
+  - Default: `false`
+  - Whether this column can appear in the visibility toggle list.
+- `default_toggle: bool`
+  - Default: `false`
+  - If `true` and `hidden` is also `true`, the column starts toggled on by default.
+- `title_class_name: Option<String>`
+  - Optional extra class name applied to text headers.
+- `title_style: Option<String>`
+  - Optional CSS style string applied to text headers.
+- `hidden: bool`
+  - Default: `false`
+  - If `true`, the column starts out hidden from rendered output unless toggled visible through state.
+- `hidden_content: bool`
+  - Default: `false`
+  - If `true`, keeps the column in layout but renders empty `<td>` content.
+
+### Notes
+
+- `text_align` is the recommended field for alignment. `align(...)` builder sets both `text_align` and metadata alignment for compatibility.
+- Visibility controls are driven by `toggleable`. A column is considered visible by default unless a matching `column_visibility` state override says otherwise.
+- Hidden-by-default columns are omitted during canonicalization unless overridden via column visibility state.
+
 ## Client And Server Usage
 
 Use uncontrolled mode for simple client-side datasets. The table applies search, column filters, sorting, selection, and pagination to the supplied `items`.

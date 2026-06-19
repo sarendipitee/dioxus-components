@@ -59,7 +59,7 @@ pub struct DataTableState {
 
 impl Default for DataTableState {
     fn default() -> Self {
-        Self {
+    Self {
             pagination: DataTablePaginationState {
                 page: 1,
                 page_size: 25,
@@ -435,6 +435,9 @@ pub enum DataTableColumnAlign {
     End,
 }
 
+/// Alias retained for compatibility with callers using the text-align naming.
+pub type DataTableColumnTextAlign = DataTableColumnAlign;
+
 /// Describes a single `DataTable` column and its feature metadata.
 #[derive(Clone, PartialEq)]
 pub struct DataTableColumn<T: Clone + PartialEq + 'static = String> {
@@ -458,14 +461,26 @@ pub struct DataTableColumn<T: Clone + PartialEq + 'static = String> {
     pub filter: Option<DataTableColumnFilter<T>>,
     /// Whether this column participates in global search.
     pub searchable: bool,
-    /// Whether this column can be hidden.
-    pub hideable: bool,
+    /// Whether this column can be toggled from column visibility controls.
+    pub toggleable: bool,
     /// Whether this column can be resized.
     pub resizable: bool,
     /// Whether this column can be pinned.
     pub pinnable: bool,
     /// Optional presentation metadata.
     pub meta: Option<DataTableColumnMeta>,
+    /// Optional text alignment.
+    pub text_align: Option<DataTableColumnTextAlign>,
+    /// If true, this column starts toggled on in visibility controls.
+    pub default_toggle: bool,
+    /// Optional class name for the column title.
+    pub title_class_name: Option<String>,
+    /// Optional style string for the column title.
+    pub title_style: Option<String>,
+    /// If true, this column is initially hidden.
+    pub hidden: bool,
+    /// If true, tbody cells for this column render empty content.
+    pub hidden_content: bool,
 }
 
 impl<T: Clone + PartialEq + 'static> DataTableColumn<T> {
@@ -487,10 +502,16 @@ impl<T: Clone + PartialEq + 'static> DataTableColumn<T> {
             sortable: None,
             filter: None,
             searchable: false,
-            hideable: true,
+            toggleable: false,
             resizable: false,
             pinnable: false,
             meta: None,
+            text_align: None,
+            default_toggle: false,
+            title_class_name: None,
+            title_style: None,
+            hidden: false,
+            hidden_content: false,
         }
     }
 
@@ -525,10 +546,16 @@ impl<T: Clone + PartialEq + 'static> DataTableColumn<T> {
             sortable: None,
             filter: None,
             searchable: true,
-            hideable: true,
+            toggleable: false,
             resizable: false,
             pinnable: false,
             meta: None,
+            text_align: None,
+            default_toggle: false,
+            title_class_name: None,
+            title_style: None,
+            hidden: false,
+            hidden_content: false,
         }
     }
 
@@ -605,13 +632,14 @@ impl<T: Clone + PartialEq + 'static> DataTableColumn<T> {
     }
 
     /// Enables this column for built-in visibility controls.
-    pub fn hideable(mut self) -> Self {
-        self.hideable = true;
+    pub fn toggleable(mut self) -> Self {
+        self.toggleable = true;
         self
     }
 
     /// Sets the column text alignment for header and body cells.
     pub fn align(mut self, align: DataTableColumnAlign) -> Self {
+        self.text_align = Some(align);
         self.meta
             .get_or_insert_with(DataTableColumnMeta::default)
             .align = Some(align);
@@ -663,10 +691,16 @@ impl<T: Clone + PartialEq + 'static> DataTableColumnHelper<T> {
             sortable: None,
             filter: None,
             searchable: false,
-            hideable: true,
+            toggleable: false,
             resizable: false,
             pinnable: false,
             meta: None,
+            text_align: None,
+            default_toggle: false,
+            title_class_name: None,
+            title_style: None,
+            hidden: false,
+            hidden_content: false,
         }
     }
 }
@@ -1128,7 +1162,9 @@ impl<'a> DataTableToolbarModel<'a> {
                 .iter()
                 .any(|column| column.filter.is_some()),
             has_search_controls: visible_columns.iter().any(|column| column.searchable),
-            has_visibility_controls: configured_columns.iter().any(|column| column.hideable),
+            has_visibility_controls: configured_columns
+                .iter()
+                .any(|column| column.toggleable),
             inline_error: error.filter(|_| !loading && row_count > 0),
         }
     }
@@ -1333,7 +1369,9 @@ fn canonicalize_columns<T: Clone + PartialEq + 'static>(
 
     let mut remaining = unique
         .into_iter()
-        .filter(|column| !hidden.contains(column.id.as_str()))
+        .filter(|column| {
+            !hidden.contains(column.id.as_str()) && !(column.hidden && !column.default_toggle)
+        })
         .collect::<Vec<_>>();
     let mut ordered = Vec::new();
     for id in &state.column_order {
@@ -1853,7 +1891,9 @@ fn render_data_row<T: Clone + PartialEq + 'static>(
                     class: Styles::dx_data_table_cell,
                     "data-column-key": column.id.as_str(),
                     "data-align": column_align(column),
-                    {render_cell(column, row, model.columns, model.state, actions)}
+                    if !column.hidden_content {
+                        {render_cell(column, row, model.columns, model.state, actions)}
+                    }
                 }
             }
         }
@@ -2167,7 +2207,9 @@ fn render_virtual_data_row<T: Clone + PartialEq + 'static>(
                     class: Styles::dx_data_table_cell,
                     "data-column-key": column.id.as_str(),
                     "data-align": column_align(column),
-                    {render_cell(column, row, columns, state, actions)}
+                    if !column.hidden_content {
+                        {render_cell(column, row, columns, state, actions)}
+                    }
                 }
             }
         }
@@ -2333,6 +2375,12 @@ fn render_label_header<T: Clone + PartialEq + 'static>(
     state: &DataTableState,
     actions: &DataTableActions,
 ) -> Element {
+    let class_name = column
+        .title_class_name
+        .as_deref()
+        .map(|class| format!("{} {class}", Styles::dx_data_table_head_label))
+        .unwrap_or_else(|| Styles::dx_data_table_head_label.to_string());
+    let title_style = column.title_style.clone();
     if column.sortable.is_some() {
         let next_sorting = next_sorting_for_column(state, &column.id);
         let aria_label = match sorting {
@@ -2342,7 +2390,11 @@ fn render_label_header<T: Clone + PartialEq + 'static>(
         };
         rsx! {
             span { class: Styles::dx_data_table_sort_header,
-                span { class: Styles::dx_data_table_head_label, "{label}" }
+                span {
+                    class: class_name.as_str(),
+                    style: title_style.as_deref(),
+                    "{label}"
+                }
                 Button {
                     variant: ButtonVariant::Ghost,
                     size: ButtonSize::Sm,
@@ -2369,7 +2421,11 @@ fn render_label_header<T: Clone + PartialEq + 'static>(
         }
     } else {
         rsx! {
-            span { class: Styles::dx_data_table_head_label, "{label}" }
+            span {
+                class: class_name.as_str(),
+                style: title_style.as_deref(),
+                "{label}"
+            }
         }
     }
 }
@@ -2613,7 +2669,10 @@ fn render_table_settings<T: Clone + PartialEq + 'static>(
                 if has_visibility_controls {
                     div { class: Styles::dx_data_table_column_options,
                         div { class: Styles::dx_data_table_column_options_header, "Columns" }
-                        for column in columns.iter().filter(|column| column.hideable) {
+                        for column in columns
+                            .iter()
+                            .filter(|column| column.toggleable)
+                        {
                             label { class: Styles::dx_data_table_option,
                                 Checkbox {
                                     // label: column_label(column),
@@ -2939,7 +2998,10 @@ fn column_width<T: Clone + PartialEq + 'static>(
 fn column_align<T: Clone + PartialEq + 'static>(
     column: &DataTableColumn<T>,
 ) -> Option<&'static str> {
-    match column.meta.as_ref().and_then(|meta| meta.align) {
+    let align = column
+        .text_align
+        .or(column.meta.as_ref().and_then(|meta| meta.align));
+    match align {
         Some(DataTableColumnAlign::Start) => Some("start"),
         Some(DataTableColumnAlign::Center) => Some("center"),
         Some(DataTableColumnAlign::End) => Some("end"),
@@ -2998,6 +3060,17 @@ fn is_column_visible<T: Clone + PartialEq + 'static>(
     column: &DataTableColumn<T>,
     state: &DataTableState,
 ) -> bool {
+    if column.hidden && !column.default_toggle {
+        if let Some(visibility) = state
+            .column_visibility
+            .iter()
+            .rev()
+            .find(|visibility| visibility.column == column.id)
+        {
+            return visibility.visible;
+        }
+        return false;
+    }
     state
         .column_visibility
         .iter()
@@ -3776,14 +3849,14 @@ mod tests {
             )
             .searchable()
             .filter_text()
-            .hideable(),
+            .toggleable(),
             DataTableColumn::accessor(
                 "rank",
                 "Rank",
                 Callback::new(|item: Rc<TestItem>| DataTableValue::Number(item.rank)),
             )
             .sortable()
-            .hideable(),
+            .toggleable(),
         ]
     }
 
