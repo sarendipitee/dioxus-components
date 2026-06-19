@@ -3,30 +3,31 @@
   will-change: opacity, backdrop-filter;
   background: rgba(0, 0, 0, .3);
   position: fixed;
+  z-index: 1000;
   inset: 0;
   backdrop-filter: blur(0px);
   transition: opacity, backdrop-filter;
 }
 
 .dx_dialog_backdrop[data-state="closed"] {
-  animation: dx-dialog-backdrop-animate-out 150ms ease-in forwards;
+  animation: dx-dialog-backdrop-animate-out 100ms ease-in forwards;
   pointer-events: none;
 }
 
 @keyframes dx-dialog-backdrop-animate-out {
   0% {
     opacity: 1;
-    backdrop-filter: blur(2px);
+    backdrop-filter: blur(var(--dialog-backdrop-blur, 10px));
   }
 
   100% {
     opacity: 0;
-    backdrop-filter: blur(0px);
+    backdrop-filter: blur(0);
   }
 }
 
 .dx_dialog_backdrop[data-state="open"] {
-  animation: dx-dialog-backdrop-animate-in 150ms ease-out forwards;
+  animation: dx-dialog-backdrop-animate-in 444ms ease-out forwards;
 }
 
 @keyframes dx-dialog-backdrop-animate-in {
@@ -37,11 +38,10 @@
 
   100% {
     opacity: 1;
-    backdrop-filter: blur(2px);
+    backdrop-filter: blur(var(--dialog-backdrop-blur, 10px));
   }
 }
 
-/* Dialog Container - improved for theme consistency */
 .dx_dialog {
   position: fixed;
   z-index: 1001;
