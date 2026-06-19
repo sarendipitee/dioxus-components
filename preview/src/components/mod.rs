@@ -269,7 +269,7 @@ examples!(
     context_menu,
     date_input,
     date_picker[internationalized, range, multi_month, unavailable_dates],
-    data_table[controlled, server_backed, expansion, virtualized],
+    data_table[controlled, server_backed, expansion, virtualized, density, selectable],
     dialog[scrollable, form],
     drag_and_drop_list[removable],
     dropdown_menu[checkable, structure, presentation, nested_submenus],

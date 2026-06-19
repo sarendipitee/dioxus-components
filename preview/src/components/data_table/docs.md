@@ -110,7 +110,9 @@ DataTable {
 - `controlled` shows a parent-owned `DataTableState` with a reset control.
 - `server_backed` shows a preview-local fake server applying manual pagination, sorting, filtering, search, loading, error, and retry states.
 - `expansion` shows row detail content rendered through `expanded_row`.
+- `selectable` enables built-in row selection checkboxes and shows controlled selection state.
 - `virtualized` shows a 5,000-row client-side table virtualized through a bounded viewport.
+- `density` shows preset density modes and direct inline x/y CSS variable overrides.
 
 ## Example
 
@@ -174,3 +176,38 @@ DataTable {
 The styled table includes a single toolbar row with global search, active removable filter chips, a `+ Filter` menu, table settings, sortable headers, column visibility, optional row selection, optional row expansion, and pagination when the relevant column metadata and state allow them. Loading, empty, and error states are still provided by props so controlled and manual tables can reflect external query status.
 
 Use `toolbar_left` and `toolbar_right` to inject additional controls around the built-in search/filter/settings controls. Use `table_settings` to add extra content to the settings dropdown next to the built-in column visibility controls. `header_controls` remains supported as a compatibility alias for right-side toolbar content.
+
+## Density
+
+`DataTable` supports density presets through `density`.
+
+- `DataTableDensity::Compact` reduces vertical rhythm.
+- `DataTableDensity::Default` uses the standard spacing.
+- `DataTableDensity::Comfortable` adds extra row breathing room.
+
+You can also override spacing directly with CSS variables, including x/y axis-specific values:
+
+- `--dx-data-table-cell-padding-x`
+- `--dx-data-table-cell-padding-y`
+- `--dx-data-table-head-cell-padding-x`
+- `--dx-data-table-head-cell-padding-y`
+- `--dx-data-table-selection-cell-padding-x`
+- `--dx-data-table-selection-cell-padding-y`
+
+The default values are derived from `var(--space)` so they scale with the active theme.
+
+Example:
+
+```rust
+DataTable {
+    // ...
+    density: DataTableDensity::Compact,
+}
+```
+
+```rust
+DataTable {
+    // ...
+    style: "--dx-data-table-cell-padding-x: 0.8rem; --dx-data-table-cell-padding-y: 0.45rem; --dx-data-table-selection-cell-padding-x: 0.8rem; --dx-data-table-selection-cell-padding-y: 0.55rem;",
+}
+```

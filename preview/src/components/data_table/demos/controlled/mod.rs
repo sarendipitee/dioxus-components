@@ -16,6 +16,11 @@ pub fn Demo() -> Element {
     let rows = order_rows();
 
     rsx! {
+        Button {
+            variant: ButtonVariant::Outline,
+            onclick: move |_| state.set(table_state(CLIENT_PAGE_SIZE)),
+            "Reset state"
+        }
         DataTable {
             page_info: DataTablePageInfo::known_total(rows.len() as u64),
             items: rows,
@@ -25,12 +30,6 @@ pub fn Demo() -> Element {
             row_id: Callback::new(order_row_id),
             empty_message: "No controlled rows match",
             toolbar_right: rsx! {
-                Button {
-                    variant: ButtonVariant::Outline,
-                    size: ButtonSize::Sm,
-                    onclick: move |_| state.set(table_state(CLIENT_PAGE_SIZE)),
-                    "Reset state"
-                }
             },
         }
     }
