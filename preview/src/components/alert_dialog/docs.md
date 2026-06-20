@@ -1,26 +1,36 @@
-The AlertDialog component is for interrupting the user with a focused, high-stakes confirmation flow: one action must be explicitly approved before it can continue. Its primary demos model destructive and irreversible workflows (delete/archive, permission changes, and irreversible submissions) so users can back out or confirm with clear intent.
+AlertDialog is a stricter variant of Dialog for high-stakes decisions where the user **must** make an explicit choice. Three things distinguish it from Dialog:
+
+1. **Non-dismissible** — pressing Escape or clicking the backdrop does nothing. The user must click a button.
+2. **`role="alertdialog"`** — signals to screen readers that a response is required before continuing, not just a supplemental overlay.
+3. **Preset button styling** — `AlertDialogCancel` renders as a secondary button and `AlertDialogAction` renders as a destructive button, enforcing the visual hierarchy of the decision without extra configuration.
+
+Use AlertDialog when the consequence of proceeding is severe enough that an accidental dismiss would be worse than forcing a deliberate choice.
 
 ## Component Structure
 
 ```rust
 let mut open = use_signal(|| false);
 rsx! {
-    button { onclick: move |_| open.set(true), type: "button", "Show Alert Dialog" }
+    button { onclick: move |_| open.set(true), type: "button", "Delete account" }
     AlertDialog { open: open(), on_open_change: move |v| open.set(v),
-        AlertDialogTitle { "Title" }
-        AlertDialogDescription { "Description" }
-        AlertDialogActions {
-            AlertDialogCancel { "Cancel" }
-            AlertDialogAction { on_click: move |_| { /* destructive action */ }, "Confirm" }
+        AlertDialogContent {
+            AlertDialogTitle { "Are you absolutely sure?" }
+            AlertDialogDescription { "This action cannot be undone." }
+            AlertDialogActions {
+                AlertDialogCancel { "Cancel" }
+                AlertDialogAction { on_click: move |_| { /* destructive action */ }, "Yes, delete account" }
+            }
         }
     }
 }
 ```
 
 ### Component Parts
-- **AlertDialog**: Provides the dialog context, handles open state, and owns the modal shell with overlay and focus trap behavior.
-- **AlertDialogTitle**: The primary heading that communicates exactly what decision the user is about to make.
-- **AlertDialogDescription**: Context text that explains the consequence of confirming.
-- **AlertDialogActions**: The action bar that keeps confirmation and cancellation controls together.
-- **AlertDialogAction**: The affirmative button for the critical action (for example, delete, archive, or submit), closing the dialog and running optional `on_click`.
-- **AlertDialogCancel**: The safe exit path for reversing the interaction, also closing the dialog and running optional `on_click`.
+- **AlertDialog**: Root context provider — manages open state, enforces non-dismissible behavior, and sets `role="alertdialog"`.
+- **AlertDialogContent**: The modal panel with backdrop. Unlike `DialogContent`, backdrop clicks and Escape are inert.
+- **AlertDialogHeader**: Optional layout wrapper grouping title and description.
+- **AlertDialogTitle**: The primary heading describing the decision.
+- **AlertDialogDescription**: Context explaining the consequence of confirming.
+- **AlertDialogActions**: Row that holds the Cancel and Action buttons.
+- **AlertDialogCancel**: Safe exit path — secondary button styling, auto-closes the dialog.
+- **AlertDialogAction**: Affirmative path — destructive button styling, fires `on_click` then auto-closes the dialog.

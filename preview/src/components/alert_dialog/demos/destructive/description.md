@@ -1,1 +1,1 @@
-Uses AlertDialog for an irreversible account deletion flow, requiring an explicit destructive confirmation before the success state is shown.
+An irreversible account deletion flow. The destructive button styling on "Yes, delete account" is automatic — `AlertDialogAction` always renders as a destructive button, no variant prop needed.
