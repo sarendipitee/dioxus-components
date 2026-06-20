@@ -59,7 +59,7 @@ pub struct DataTableState {
 
 impl Default for DataTableState {
     fn default() -> Self {
-    Self {
+        Self {
             pagination: DataTablePaginationState {
                 page: 1,
                 page_size: 25,
@@ -1188,9 +1188,7 @@ impl<'a> DataTableToolbarModel<'a> {
                 .iter()
                 .any(|column| column.filter.is_some()),
             has_search_controls: visible_columns.iter().any(|column| column.searchable),
-            has_visibility_controls: configured_columns
-                .iter()
-                .any(|column| column.toggleable),
+            has_visibility_controls: configured_columns.iter().any(|column| column.toggleable),
             inline_error: error.filter(|_| !loading && row_count > 0),
         }
     }
