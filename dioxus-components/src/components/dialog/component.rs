@@ -7,7 +7,7 @@ use dioxus_primitives::dialog::{
 use dioxus_primitives::{dioxus_attributes::attributes, merge_attributes};
 
 #[component_styles("./style.css")]
-struct Styles;
+pub(crate) struct Styles;
 
 /// The root dialog component — a context provider that manages open state.
 /// Place [`DialogTrigger`] and [`DialogContent`] as children.

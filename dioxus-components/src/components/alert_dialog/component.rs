@@ -1,14 +1,13 @@
-use crate::component_styles;
+use crate::components::button::{Button, ButtonVariant};
+use crate::components::dialog::DialogStyles;
 use dioxus::prelude::*;
 use dioxus_primitives::alert_dialog::{
     self, AlertDialogActionProps, AlertDialogActionsProps, AlertDialogCancelProps,
     AlertDialogContentProps, AlertDialogDescriptionProps, AlertDialogRootProps,
     AlertDialogTitleProps, AlertDialogTriggerProps,
 };
+use dioxus_primitives::dialog::DialogCtx;
 use dioxus_primitives::{dioxus_attributes::attributes, merge_attributes};
-
-#[component_styles("./style.css")]
-struct Styles;
 
 /// The root alert dialog component — a context provider that manages open state.
 /// Place [`AlertDialogContent`] as a child.
@@ -31,14 +30,14 @@ pub fn AlertDialogTrigger(props: AlertDialogTriggerProps) -> Element {
 #[component]
 pub fn AlertDialogContent(props: AlertDialogContentProps) -> Element {
     let base = attributes!(div {
-        class: Styles::dx_alert_dialog.to_string()
+        class: DialogStyles::dx_dialog.to_string()
     });
     let merged = merge_attributes(vec![base, props.attributes]);
 
     rsx! {
         alert_dialog::AlertDialogContent {
             id: props.id,
-            backdrop_class: Styles::dx_alert_dialog_backdrop.to_string(),
+            backdrop_class: DialogStyles::dx_dialog_backdrop.to_string(),
             attributes: merged,
             {props.children}
         }
@@ -60,7 +59,7 @@ pub fn AlertDialogHeader(props: AlertDialogLayoutProps) -> Element {
     rsx! {
         div {
             ..merge_attributes(vec![
-                attributes!(div { class: Styles::dx_alert_dialog_header.to_string() }),
+                attributes!(div { class: DialogStyles::dx_dialog_header }),
                 props.attributes,
             ]),
             {props.children}
@@ -74,7 +73,7 @@ pub fn AlertDialogBody(props: AlertDialogLayoutProps) -> Element {
     rsx! {
         div {
             ..merge_attributes(vec![
-                attributes!(div { class: Styles::dx_alert_dialog_body.to_string() }),
+                attributes!(div { class: DialogStyles::dx_dialog_body }),
                 props.attributes,
             ]),
             {props.children}
@@ -84,23 +83,31 @@ pub fn AlertDialogBody(props: AlertDialogLayoutProps) -> Element {
 
 #[component]
 pub fn AlertDialogTitle(props: AlertDialogTitleProps) -> Element {
-    let base = attributes!(div {
-        class: Styles::dx_alert_dialog_title.to_string()
+    let base = attributes!(h2 {
+        class: DialogStyles::dx_dialog_title.to_string()
     });
     let merged = merge_attributes(vec![base, props.attributes]);
     rsx! {
-        alert_dialog::AlertDialogTitle { attributes: merged, {props.children} }
+        alert_dialog::AlertDialogTitle {
+            id: props.id,
+            attributes: merged,
+            {props.children}
+        }
     }
 }
 
 #[component]
 pub fn AlertDialogDescription(props: AlertDialogDescriptionProps) -> Element {
-    let base = attributes!(div {
-        class: Styles::dx_alert_dialog_description.to_string()
+    let base = attributes!(p {
+        class: DialogStyles::dx_dialog_description.to_string()
     });
     let merged = merge_attributes(vec![base, props.attributes]);
     rsx! {
-        alert_dialog::AlertDialogDescription { attributes: merged, {props.children} }
+        alert_dialog::AlertDialogDescription {
+            id: props.id,
+            attributes: merged,
+            {props.children}
+        }
     }
 }
 
@@ -108,7 +115,7 @@ pub fn AlertDialogDescription(props: AlertDialogDescriptionProps) -> Element {
 pub fn AlertDialogActions(props: AlertDialogActionsProps) -> Element {
     let merged = merge_attributes(vec![
         attributes!(div {
-            class: Styles::dx_alert_dialog_actions.to_string()
+            class: DialogStyles::dx_dialog_footer.to_string()
         }),
         props.attributes,
     ]);
@@ -119,16 +126,25 @@ pub fn AlertDialogActions(props: AlertDialogActionsProps) -> Element {
 
 #[component]
 pub fn AlertDialogCancel(props: AlertDialogCancelProps) -> Element {
-    let merged = merge_attributes(vec![
-        attributes!(div {
-            class: Styles::dx_alert_dialog_cancel.to_string()
-        }),
+    let ctx: DialogCtx = use_context();
+    let open = ctx.open_memo();
+    let user_on_click = props.on_click;
+    let on_click = use_callback(move |evt: MouseEvent| {
+        ctx.set_open(false);
+        if let Some(cb) = &user_on_click {
+            cb.call(evt);
+        }
+    });
+    let tabindex = if open() { "0" } else { "-1" };
+    let attrs = merge_attributes(vec![
+        attributes!(button { tabindex: tabindex }),
         props.attributes,
     ]);
     rsx! {
-        alert_dialog::AlertDialogCancel {
-            on_click: props.on_click,
-            attributes: merged,
+        Button {
+            variant: ButtonVariant::Secondary,
+            onclick: move |evt| on_click(evt),
+            attributes: attrs,
             {props.children}
         }
     }
@@ -136,16 +152,25 @@ pub fn AlertDialogCancel(props: AlertDialogCancelProps) -> Element {
 
 #[component]
 pub fn AlertDialogAction(props: AlertDialogActionProps) -> Element {
-    let merged = merge_attributes(vec![
-        attributes!(div {
-            class: Styles::dx_alert_dialog_action.to_string()
-        }),
+    let ctx: DialogCtx = use_context();
+    let open = ctx.open_memo();
+    let user_on_click = props.on_click;
+    let on_click = use_callback(move |evt: MouseEvent| {
+        ctx.set_open(false);
+        if let Some(cb) = &user_on_click {
+            cb.call(evt);
+        }
+    });
+    let tabindex = if open() { "0" } else { "-1" };
+    let attrs = merge_attributes(vec![
+        attributes!(button { tabindex: tabindex }),
         props.attributes,
     ]);
     rsx! {
-        alert_dialog::AlertDialogAction {
-            on_click: props.on_click,
-            attributes: merged,
+        Button {
+            variant: ButtonVariant::Destructive,
+            onclick: move |evt| on_click(evt),
+            attributes: attrs,
             {props.children}
         }
     }

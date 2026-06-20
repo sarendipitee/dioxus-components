@@ -3,14 +3,32 @@
   will-change: opacity, backdrop-filter;
   background: rgba(0, 0, 0, .3);
   position: fixed;
-  z-index: 1000;
+  z-index: 110;
   inset: 0;
   backdrop-filter: blur(0px);
   transition: opacity, backdrop-filter;
 }
 
+.dx_dialog_backdrop[data-state="open"] {
+  animation: dx-dialog-backdrop-animate-in 222ms linear forwards;
+}
+
+@keyframes dx-dialog-backdrop-animate-in {
+  0% {
+    opacity: 1;
+    backdrop-filter: blur(0px);
+  }
+  50% {
+    backdrop-filter: blur(var(--dialog-backdrop-blur, 10px));
+  }
+  100% {
+    opacity: 1;
+    backdrop-filter: blur(var(--dialog-backdrop-blur, 10px));
+  }
+}
+
 .dx_dialog_backdrop[data-state="closed"] {
-  animation: dx-dialog-backdrop-animate-out 100ms ease-in forwards;
+  animation: dx-dialog-backdrop-animate-out 111ms linear forwards;
   pointer-events: none;
 }
 
@@ -26,25 +44,10 @@
   }
 }
 
-.dx_dialog_backdrop[data-state="open"] {
-  animation: dx-dialog-backdrop-animate-in 444ms ease-out forwards;
-}
-
-@keyframes dx-dialog-backdrop-animate-in {
-  0% {
-    opacity: 0;
-    backdrop-filter: blur(0px);
-  }
-
-  100% {
-    opacity: 1;
-    backdrop-filter: blur(var(--dialog-backdrop-blur, 10px));
-  }
-}
 
 .dx_dialog {
   position: fixed;
-  z-index: 1001;
+  z-index: 111;
   top: 50%;
   left: 50%;
   display: flex;
@@ -64,7 +67,47 @@
   gap: calc(var(--space) * 4);
   text-align: center;
   transform: translate(-50%, -50%);
+  will-change: opacity, transform;
 }
+
+.dx_dialog[data-state="open"] {
+  animation: dx-dialog-animate-in 333ms forwards;
+  animation-timing-function: linear(0, 0.0014 0.52%, 0.007, 0.0164, 0.0294 2.45%, 0.0689 3.87%, 0.1258 5.42%, 0.2489 8.13%, 0.5268 13.55%, 0.6462 16%, 0.7592 18.58%, 0.8514 21.03%, 0.9239 23.35%, 0.9848 25.81%, 1.0107, 1.0325, 1.0505, 1.065 30.97%, 1.0799, 1.0893 34.58%, 1.0941 36.52%, 1.0944 38.58%, 1.09 40.9%, 1.0812 43.48%, 1.0357 53.16%, 1.0184 57.42%, 1.0058, 0.9975 65.68%, 0.9924 70.45%, 0.991 76%, 0.9996 100%);
+}
+
+@keyframes dx-dialog-animate-in {
+  0% {
+    opacity: 0;
+    transform: translate(-50%, -25%) scale(0.50);
+  }
+
+  33% {
+    opacity: 1;
+  }
+
+  100% {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+  }
+}
+
+.dx_dialog[data-state="closed"] {
+  animation: dx-dialog-animate-out 222ms ease forwards;
+  pointer-events: none;
+}
+
+@keyframes dx-dialog-animate-out {
+  0% {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+  }
+
+  100% {
+    opacity: 0;
+    transform: translate(-50%, 60%) scale(0.30);
+  }
+}
+
 
 .dx_dialog_header {
   display: flex;
