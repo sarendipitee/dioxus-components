@@ -1,7 +1,7 @@
 use dioxus_components::virtual_list::*;
 use dioxus::prelude::*;
 
-const INLINE_STYLE: &str = r#".dx-virtual-list-container {
+const INLINE_STYLE: &str = r#".dx_virtual_list_container {
   position: relative;
   max-height: 36rem;
   contain: layout paint;

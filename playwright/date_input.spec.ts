@@ -15,16 +15,14 @@ test("date input popover keeps centered horizontal placement while opening", asy
   const dueDateShell = page
     .locator("[data-slot='input-wrapper']")
     .filter({ has: dueDateInput });
-  const showCalendar = dueDateShell.getByRole("button", {
-    name: "Show Calendar",
-  });
+  const showCalendar = dueDateShell.locator('[aria-label="Show Calendar"]');
 
   await expect(dueDateInput).toBeVisible();
   await expect(showCalendar).toBeVisible();
 
   await showCalendar.click();
 
-  const dialog = page.getByRole("dialog", { name: "Show Calendar" });
+  const dialog = page.getByRole("dialog");
   await expect(dialog).toBeVisible();
   await expect
     .poll(async () => (await dialog.boundingBox())?.x ?? -1)

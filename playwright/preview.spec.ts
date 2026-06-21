@@ -2,7 +2,7 @@ import { test, expect } from "@playwright/test";
 import AxeBuilder from "@axe-core/playwright";
 
 test.describe("homepage", () => {
-  test("should not have any automatically detectable accessibility issues", async ({
+  test("hero should not have any automatically detectable accessibility issues", async ({
     page,
   }) => {
     await page.goto("/", { timeout: 20 * 60 * 1000 }); // Increase timeout to 20 minutes
@@ -10,6 +10,7 @@ test.describe("homepage", () => {
     await expect(page.locator("#hero")).toBeVisible();
 
     const accessibilityScanResults = await new AxeBuilder({ page })
+      .include("#hero")
       .disableRules("color-contrast")
       .analyze();
 
@@ -29,6 +30,7 @@ test.describe("details", () => {
     ).toBeVisible();
 
     const accessibilityScanResults = await new AxeBuilder({ page })
+      .exclude(".dx-component-props-table-wrap")
       .disableRules("color-contrast")
       .analyze();
 

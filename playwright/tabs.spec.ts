@@ -1,32 +1,37 @@
 import { test, expect } from "@playwright/test";
 
 test("test", async ({ page }) => {
-  await page.goto("/components/tabs");
-  let activeTab = page.locator('[role="tabpanel"][data-state="active"]:not(#component-preview-frame)')
-    .filter({ hasText: /^Tab \d Content$/ });
-  let tab1Button = page.getByRole("tab", { name: "Tab 1" });
-  let tab2Button = page.getByRole("tab", { name: "Tab 2" });
-  let tab3Button = page.getByRole("tab", { name: "Tab 3" });
-  // Clicking the right arrow should focus the next tab trigger
-  await tab1Button.click();
-  await page.keyboard.press("ArrowRight");
-  await expect(tab2Button).toBeFocused();
+  await page.goto("/components/tabs/block#main");
 
-  // Clicking enter should activate the focused tab
-  await page.keyboard.press("Enter");
-  await expect(activeTab).toContainText("Tab 2 Content");
+  const activePanel = page.locator('[role="tabpanel"][data-state="active"]').first();
+  const overviewTab = page.getByRole("tab", { name: "Overview" });
+  const metricsTab = page.getByRole("tab", { name: "Metrics" });
+  const filesTab = page.getByRole("tab", { name: "Files" });
 
-  // Clicking right twice more should bring us back to the first tab
-  await page.keyboard.press("ArrowRight");
-  await expect(tab3Button).toBeFocused();
-  await page.keyboard.press("ArrowRight");
-  await expect(tab1Button).toBeFocused();
+  await expect(overviewTab).toHaveAttribute("aria-selected", "true");
+  await expect(activePanel).toContainText("Overview content");
 
-  // Clicking each tab should activate it
-  await tab3Button.click();
-  await expect(activeTab).toContainText("Tab 3 Content");
-  await tab2Button.click();
-  await expect(activeTab).toContainText("Tab 2 Content");
-  await tab1Button.click();
-  await expect(activeTab).toContainText("Tab 1 Content");
+  // Automatic tabs should activate as focus moves with arrow navigation.
+  await overviewTab.focus();
+  await page.keyboard.press("ArrowRight");
+  await expect(metricsTab).toBeFocused();
+  await expect(metricsTab).toHaveAttribute("aria-selected", "true");
+  await expect(activePanel).toContainText("Metrics content");
+
+  await page.keyboard.press("ArrowRight");
+  await expect(filesTab).toBeFocused();
+  await expect(filesTab).toHaveAttribute("aria-selected", "true");
+  await expect(activePanel).toContainText("Files content");
+
+  await page.keyboard.press("ArrowRight");
+  await expect(overviewTab).toBeFocused();
+  await expect(overviewTab).toHaveAttribute("aria-selected", "true");
+  await expect(activePanel).toContainText("Overview content");
+
+  await filesTab.click();
+  await expect(activePanel).toContainText("Files content");
+  await metricsTab.click();
+  await expect(activePanel).toContainText("Metrics content");
+  await overviewTab.click();
+  await expect(activePanel).toContainText("Overview content");
 });

@@ -5,8 +5,11 @@ test("test", async ({ page }) => {
     timeout: 20 * 60 * 1000,
   }); // Increase timeout to 20 minutes
 
-  await page.getByRole('textbox', { name: 'Enter your name' }).fill('name');
-  await expect(page.locator('#input-greeting')).toContainText('Hello, name!');
+  const shellInput = page.getByPlaceholder("release-notes").first();
+  await shellInput.fill("customer-portal");
+  await expect(page.locator("#input-shell-value")).toContainText(
+    "Shell value: customer-portal",
+  );
 });
 
 test("shared input shell wires descriptions and sections", async ({ page }) => {
@@ -14,33 +17,47 @@ test("shared input shell wires descriptions and sections", async ({ page }) => {
     timeout: 20 * 60 * 1000,
   });
 
-  const nameInput = page.getByRole("textbox", { name: "Name" });
-  const nameInputId = await nameInput.getAttribute("id");
-  const describedBy = await nameInput.getAttribute("aria-describedby");
-  expect(nameInputId).toBeTruthy();
-  expect(describedBy).toBeTruthy();
-  const describedByIds = describedBy!.split(/\s+/).filter(Boolean);
-  expect(describedByIds).toContain(`${nameInputId}-description`);
-  await expect(page.locator(`#${nameInputId}-description`)).toHaveText(
-    "TextInput keeps the native text-entry API.",
-  );
-
-  const searchWrapper = page
+  const labeledShellInput = page.getByPlaceholder("project-slug").first();
+  const labeledShell = page
     .locator("[data-slot='input-wrapper']")
-    .filter({ has: page.getByRole("textbox", { name: "Search" }) });
-  await expect(searchWrapper.locator("[data-slot='input-left-section']")).toContainText("S");
-  await expect(searchWrapper.locator("[data-slot='input-right-section']")).toBeVisible();
+    .filter({ has: labeledShellInput });
+  await expect(labeledShell.locator("[data-slot='input-left-section']")).toContainText("#");
+  await expect(page.getByText("Labeled shell", { exact: true }).first()).toBeVisible();
   await expect(
-    searchWrapper.getByRole("button", { name: "Clear search", exact: true }),
+    page.getByText("InputBase adds wrapper metadata around the same shell.", {
+      exact: true,
+    }).first(),
   ).toBeVisible();
 
-  const customShell = page
-    .locator("[data-slot='input-wrapper']")
-    .filter({ has: page.getByText("Custom shell content", { exact: true }) });
-  await expect(customShell.locator("[data-slot='input-left-section']")).toContainText("#");
-  await expect(customShell.locator("[data-slot='input-control']")).toContainText(
-    "Arbitrary input-like content",
+  const searchInput = page.getByPlaceholder("Search a route").first();
+  const clearButton = page.getByRole("button", {
+    name: "Clear query",
+    exact: true,
+  });
+  await expect(clearButton).toBeVisible();
+  await clearButton.click();
+  await expect(searchInput).toHaveValue("");
+
+  const environmentInput = page.getByRole("textbox", { name: "Environment" }).first();
+  const environmentInputId = await environmentInput.getAttribute("id");
+  const environmentDescribedBy = await environmentInput.getAttribute("aria-describedby");
+  expect(environmentInputId).toBeTruthy();
+  expect(environmentDescribedBy).toBeTruthy();
+  const environmentDescribedByIds = environmentDescribedBy!.split(/\s+/).filter(Boolean);
+  expect(environmentDescribedByIds).toContain(`${environmentInputId}-description`);
+  expect(environmentDescribedByIds).toContain(`${environmentInputId}-error`);
+  await expect(page.locator(`#${environmentInputId}-description`)).toHaveText(
+    "InputBase provides ids, described-by wiring, and shell state.",
   );
+  await expect(page.locator(`#${environmentInputId}-error`)).toHaveText(
+    "Only lowercase letters are allowed.",
+  );
+  await expect(
+    page
+      .locator("[data-slot='input-wrapper']")
+      .filter({ has: environmentInput })
+      .locator("[data-slot='input-left-section']"),
+  ).toContainText("env");
 });
 
 test("picker inputs wire generated ids and descriptions to controls", async ({ page }) => {
@@ -48,7 +65,10 @@ test("picker inputs wire generated ids and descriptions to controls", async ({ p
     timeout: 20 * 60 * 1000,
   });
 
-  const colorInput = page.getByRole("textbox", { name: "Accent color" });
+  const colorLabel = page.getByText("Accent color", { exact: true });
+  const colorInputId = await colorLabel.getAttribute("for");
+  expect(colorInputId).toBeTruthy();
+  const colorInput = page.locator(`#${colorInputId}`);
   const colorId = await colorInput.getAttribute("id");
   const colorDescribedBy = await colorInput.getAttribute("aria-describedby");
   expect(colorId).toBeTruthy();
@@ -65,7 +85,7 @@ test("picker inputs wire generated ids and descriptions to controls", async ({ p
   await expect(
     page
       .locator("[data-slot='input-control']")
-      .filter({ has: page.getByRole("textbox", { name: "Accent color" }) }),
+      .filter({ has: colorInput }),
   ).not.toContainText("Hue");
 
   await page.goto("/components/date_input", {
@@ -86,7 +106,7 @@ test("picker inputs wire generated ids and descriptions to controls", async ({ p
   const dueDateShell = page
     .locator("[data-slot='input-wrapper']")
     .filter({ has: page.locator(`#${dueDateInputId}`) });
-  const dueDateChevron = dueDateShell.getByRole("button", { name: "Show Calendar" });
+  const dueDateChevron = dueDateShell.locator('[aria-label="Show Calendar"]');
   await expect(dueDateChevron).toBeVisible();
   await expect(dueDateShell.locator("[data-slot='input-right-section']")).toBeVisible();
   await dueDateChevron.click();
@@ -103,7 +123,7 @@ test("picker inputs wire generated ids and descriptions to controls", async ({ p
   const rangeShell = page
     .locator("[data-slot='input-wrapper']")
     .filter({ has: page.locator(`#${rangeInputId}`) });
-  await expect(rangeShell.getByRole("button", { name: "Show Calendar" })).toBeVisible();
+  await expect(rangeShell.locator('[aria-label="Show Calendar"]')).toBeVisible();
   await rangeInput.focus();
   await expect(page.getByRole("dialog")).toContainText("Su");
 
@@ -117,6 +137,6 @@ test("picker inputs wire generated ids and descriptions to controls", async ({ p
   const timeInput = page.locator(`#${timeInputId}`);
   await expect(timeInput).toHaveAttribute("aria-describedby", `${timeInputId}-description`);
   await expect(page.locator(`#${timeInputId}-description`)).toHaveText(
-    "Shared input chrome with primitive time editing.",
+    "Opens a column picker when focused.",
   );
 });

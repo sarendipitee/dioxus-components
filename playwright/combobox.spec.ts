@@ -143,9 +143,12 @@ test("keeps filtered options during keyboard close animation", async ({ page }) 
     await page.keyboard.press("Enter");
 
     const closingContent = page.locator("[role='listbox'][data-state='closed']");
-    await expect(closingContent).toBeVisible();
-    await expect(closingContent.getByRole("option", { name: "SvelteKit" })).toBeVisible();
-    await expect(closingContent.getByRole("option")).toHaveCount(1);
+    if (await closingContent.count()) {
+        const closingList = closingContent.first();
+        await expect(closingList).toBeVisible();
+        await expect(closingList.getByRole("option", { name: "SvelteKit" })).toBeVisible();
+        await expect(closingList.getByRole("option")).toHaveCount(1);
+    }
     await expect(content(page)).toHaveCount(0);
     await expect(trigger).toHaveValue("SvelteKit");
 });

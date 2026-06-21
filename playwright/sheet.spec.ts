@@ -1,78 +1,77 @@
-import { test, expect } from '@playwright/test';
+import { expect, test, type Page } from "@playwright/test";
 
-test('sheet basic interactions', async ({ page }) => {
-  await page.goto('/components/sheet', { timeout: 20 * 60 * 1000 });
+const SHEET_DEMO_URL = "/components/sheet/block#main";
 
-  // Open sheet from Right button
-  await page.getByRole('button', { name: 'Right' }).click();
+async function gotoSheetDemo(page: Page) {
+  await page.goto(SHEET_DEMO_URL, {
+    timeout: 20 * 60 * 1000,
+    waitUntil: "load",
+  });
+}
 
-  // Assert the sheet is open
-  const sheet = page.locator('[data-slot="sheet-root"]');
-  await expect(sheet).toHaveAttribute('data-state', 'open');
+async function openSheet(page: Page, side: "Top" | "Right" | "Bottom" | "Left") {
+  await page.getByRole("button", { name: side }).click();
 
-  // Assert the first input is focused (focus trap)
-  const nameInput = page.locator('#sheet-demo-name');
+  const dialog = page.getByRole("dialog", { name: "Sheet Title" });
+  await expect(dialog).toBeVisible();
+
+  return dialog;
+}
+
+test("sheet basic interactions", async ({ page }) => {
+  await gotoSheetDemo(page);
+
+  const dialog = await openSheet(page, "Right");
+  const sheetContent = page.locator('[data-slot="sheet-content"]').first();
+  const nameInput = dialog.locator("#sheet-demo-name");
+  const usernameInput = dialog.locator("#sheet-demo-username");
+  const saveButton = dialog.getByRole("button", { name: "Save changes" });
+  const cancelButton = dialog.getByRole("button", { name: "Cancel" });
+  const closeButton = dialog.locator(".dx_sheet_close");
+
+  await expect(sheetContent).toHaveAttribute("data-side", "right");
   await expect(nameInput).toBeFocused();
 
-  // Tab through focusable elements and verify focus cycles
-  // Tab: name input -> username input -> Save button -> Cancel button -> close button -> name input
-  await page.keyboard.press('Tab');
-  const usernameInput = page.locator('#sheet-demo-username');
+  await page.keyboard.press("Tab");
   await expect(usernameInput).toBeFocused();
 
-  await page.keyboard.press('Tab');
-  const saveButton = page.getByRole('button', { name: 'Save changes' });
+  await page.keyboard.press("Tab");
   await expect(saveButton).toBeFocused();
 
-  await page.keyboard.press('Tab');
-  const cancelButton = page.getByRole('button', { name: 'Cancel' });
+  await page.keyboard.press("Tab");
   await expect(cancelButton).toBeFocused();
 
-  await page.keyboard.press('Tab');
-  const closeButton = sheet.getByRole('button').last();
+  await page.keyboard.press("Tab");
   await expect(closeButton).toBeFocused();
 
-  // Tab again should cycle back to first input
-  await page.keyboard.press('Tab');
+  await page.keyboard.press("Tab");
   await expect(nameInput).toBeFocused();
 
-  // Hitting escape should close the sheet
-  await page.keyboard.press('Escape');
-  await expect(sheet).toHaveCount(0);
+  await page.keyboard.press("Escape");
+  await expect(dialog).toBeHidden();
 
-  // Reopen the sheet
-  await page.getByRole('button', { name: 'Right' }).click();
-  await expect(sheet).toHaveAttribute('data-state', 'open');
-
-  // Click the close button
-  await closeButton.click();
-  await expect(sheet).toHaveCount(0);
+  const reopenedDialog = await openSheet(page, "Right");
+  const reopenedCloseButton = reopenedDialog.locator(".dx_sheet_close");
+  await reopenedCloseButton.focus();
+  await expect(reopenedCloseButton).toBeFocused();
+  await page.keyboard.press("Enter");
+  await expect(reopenedDialog).toBeHidden();
 });
 
-test('sheet opens from different sides', async ({ page }) => {
-  await page.goto('/components/sheet', { timeout: 20 * 60 * 1000 });
+test("sheet opens from different sides", async ({ page }) => {
+  await gotoSheetDemo(page);
 
-  const sheet = page.locator('[data-slot="sheet-root"]');
-  const sheetContent = page.locator('[data-slot="sheet-content"]');
-
-  // Test Top
-  await page.getByRole('button', { name: 'Top' }).click();
-  await expect(sheet).toHaveAttribute('data-state', 'open');
-  await expect(sheetContent).toHaveAttribute('data-side', 'top');
-  await page.keyboard.press('Escape');
-  await expect(sheet).toHaveCount(0);
-
-  // Test Bottom
-  await page.getByRole('button', { name: 'Bottom' }).click();
-  await expect(sheet).toHaveAttribute('data-state', 'open');
-  await expect(sheetContent).toHaveAttribute('data-side', 'bottom');
-  await page.keyboard.press('Escape');
-  await expect(sheet).toHaveCount(0);
-
-  // Test Left
-  await page.getByRole('button', { name: 'Left' }).click();
-  await expect(sheet).toHaveAttribute('data-state', 'open');
-  await expect(sheetContent).toHaveAttribute('data-side', 'left');
-  await page.keyboard.press('Escape');
-  await expect(sheet).toHaveCount(0);
+  for (const [buttonName, side] of [
+    ["Top", "top"],
+    ["Bottom", "bottom"],
+    ["Left", "left"],
+  ] as const) {
+    await openSheet(page, buttonName);
+    await expect(page.locator('[data-slot="sheet-content"]').first()).toHaveAttribute(
+      "data-side",
+      side,
+    );
+    await page.keyboard.press("Escape");
+    await expect(page.getByRole("dialog", { name: "Sheet Title" })).toBeHidden();
+  }
 });

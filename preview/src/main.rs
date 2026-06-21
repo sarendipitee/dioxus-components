@@ -1349,7 +1349,7 @@ fn ComponentBlockDemo(name: String, demo: String, dark_mode: Option<bool>) -> El
             rel: "stylesheet",
             href: asset!("/assets/dx-components-theme.css"),
         }
-        div { style: "min-height: 100vh;", Comp {} }
+        div { id: "dx-preview-block-root", style: "min-height: 100vh;", Comp {} }
     }
 }
 

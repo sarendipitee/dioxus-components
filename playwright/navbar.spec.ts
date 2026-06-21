@@ -13,7 +13,7 @@ test('hover navigation', async ({ page }) => {
     (element as HTMLElement).click();
   });
   // Assert the url changed to the calendar component
-  await expect(page).toHaveURL(/.*name=calendar/);
+  await expect(page).toHaveURL(/\/components\/calendar\?/);
 });
 
 test('mobile navigation', async ({ page }) => {
@@ -21,7 +21,7 @@ test('mobile navigation', async ({ page }) => {
   await page.getByRole('menuitem', { name: 'Inputs' }).tap();
   await page.getByRole('menuitem', { name: 'Calendar' }).tap();
   // Assert the url changed to the calendar component
-  await expect(page).toHaveURL(/.*name=calendar/);
+  await expect(page).toHaveURL(/\/components\/calendar\?/);
 });
 
 test('keyboard navigation', async ({ page }) => {
@@ -45,5 +45,5 @@ test('keyboard navigation', async ({ page }) => {
   // Click the focused menu item
   await page.keyboard.press('Enter');
   // Assert the url changed to the checkbox component
-  await expect(page).toHaveURL(/.*name=checkbox/);
+  await expect(page).toHaveURL(/\/components\/checkbox\?/);
 });

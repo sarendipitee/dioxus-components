@@ -167,9 +167,12 @@ test("scrollHeight stable with random heights demo", async ({ page }) => {
 });
 
 test("virtual list virtualizes rows and updates on scroll", async ({ page }) => {
-  await page.goto("/components/virtual_list", { timeout: 20 * 60 * 1000 });
+  await page.goto("/components/virtual_list/block#main", {
+    timeout: 20 * 60 * 1000,
+  });
 
-  const cards = page.getByRole("listitem");
+  const container = page.getByRole("list").first();
+  const cards = container.getByRole("listitem");
   await expect(cards.first()).toBeVisible({ timeout: 30000 });
 
   const initialCount = await cards.count();
@@ -180,16 +183,13 @@ test("virtual list virtualizes rows and updates on scroll", async ({ page }) => 
   // Retry scrolling + assertion: re-apply scroll on each retry since WASM
   // re-renders may reset scrollTop, especially on slower engines (WebKit).
   await expect(async () => {
-    await page.evaluate(() => {
-      document.querySelectorAll('[role="list"]').forEach((c) => {
-        if (c.scrollHeight > c.clientHeight + 1) {
-          c.scrollTop = 6000;
-        }
-      });
-      window.scrollTo(0, 6000);
+    await container.evaluate((element) => {
+      element.scrollTop = 6000;
     });
     await page.waitForTimeout(300);
-    const headings = await page.getByRole("heading", { level: 3 }).allTextContents();
+    const headings = await container
+      .getByRole("heading", { level: 3 })
+      .allTextContents();
     // After scrolling to offset 6000, at least some items with index > 30
     // should be visible, proving the virtual list responded to the scroll.
     const hasScrolledContent = headings.some((h) => {

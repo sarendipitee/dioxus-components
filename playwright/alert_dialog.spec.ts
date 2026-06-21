@@ -18,12 +18,12 @@ test('fires on_click and closes on action', async ({ page }) => {
   const dialog = page.getByRole('alertdialog');
   await expect(dialog).toBeVisible();
 
-  await page.getByRole('button', { name: 'Leave' }).click();
+  await page.getByRole('button', { name: 'Leave', exact: true }).click();
   await expect(dialog).toHaveCount(0);
-  await expect(page.getByText('You left the page.')).toBeVisible();
+  await expect(page.getByText('You left the page.', { exact: true }).first()).toBeVisible();
 });
 
-test('closes on escape', async ({ page }) => {
+test('does not close on escape', async ({ page }) => {
   await page.goto('/components/alert_dialog', { timeout: 20 * 60 * 1000 });
   await page.getByRole('button', { name: 'Leave page' }).click();
 
@@ -31,7 +31,7 @@ test('closes on escape', async ({ page }) => {
   await expect(dialog).toBeVisible();
 
   await page.keyboard.press('Escape');
-  await expect(dialog).toHaveCount(0);
+  await expect(dialog).toBeVisible();
 });
 
 test('does not close on backdrop click', async ({ page }) => {

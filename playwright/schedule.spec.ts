@@ -47,9 +47,10 @@ function header(root: Locator) {
   return root.locator("[data-schedule-header]").first();
 }
 
-function viewButton(root: Locator, view: "day" | "week" | "month" | "year") {
-  return root
-    .getByRole("tab", { name: new RegExp(`^${view}$`, "i") })
+function viewButton(page: Page, view: "day" | "week" | "month" | "year") {
+  return page
+    .locator("[data-schedule-view-controls]")
+    .getByRole("button", { name: new RegExp(`^${view}$`, "i") })
     .first();
 }
 
@@ -108,11 +109,11 @@ test("preview page loads with header, controls, and events", async ({
   await expect(root.getByRole("button", { name: "Previous" })).toBeVisible();
   await expect(root.getByRole("button", { name: "Today" })).toBeVisible();
   await expect(root.getByRole("button", { name: "Next" })).toBeVisible();
-  await expect(root.getByRole("tablist")).toBeVisible();
-  await expect(viewButton(root, "day")).toHaveAttribute("aria-selected", "false");
-  await expect(viewButton(root, "week")).toHaveAttribute("aria-selected", "true");
-  await expect(viewButton(root, "month")).toHaveAttribute("aria-selected", "false");
-  await expect(viewButton(root, "year")).toHaveAttribute("aria-selected", "false");
+  await expect(page.getByRole("group", { name: "Schedule views" }).first()).toBeVisible();
+  await expect(viewButton(page, "day")).toHaveAttribute("aria-pressed", "false");
+  await expect(viewButton(page, "week")).toHaveAttribute("aria-pressed", "true");
+  await expect(viewButton(page, "month")).toHaveAttribute("aria-pressed", "false");
+  await expect(viewButton(page, "year")).toHaveAttribute("aria-pressed", "false");
   await expect(root.locator("[data-schedule-desktop]")).toBeVisible();
   await expect(visibleEvent(root, "Planning sync")).toBeVisible();
   await expect(visibleEvent(root, "Leadership offsite")).toHaveAttribute(
@@ -192,8 +193,8 @@ test("primary navigation controls are keyboard focusable", async ({ page }) => {
   const prev = root.getByRole("button", { name: "Previous" });
   const next = root.getByRole("button", { name: "Next" });
   const today = root.getByRole("button", { name: "Today" });
-  const day = viewButton(root, "day");
-  const week = viewButton(root, "week");
+  const day = viewButton(page, "day");
+  const week = viewButton(page, "week");
 
   await prev.focus();
   await expect(prev).toBeFocused();
@@ -216,13 +217,13 @@ test("view switching, date navigation, and year-to-month transition work", async
 }) => {
   const root = await loadMain(page);
   const title = root.locator("[data-schedule-title]");
-  await expect(title).toContainText("May 2026");
+  await expect(title).toContainText(/May\s*2026/);
 
-  await viewButton(root, "day").click();
+  await viewButton(page, "day").click();
   await expect(root).toHaveAttribute("data-view", "day");
   await expect(root.locator("[data-schedule-view='day']")).toBeVisible();
 
-  await viewButton(root, "week").click();
+  await viewButton(page, "week").click();
   await expect(root).toHaveAttribute("data-view", "week");
   await expect(root.locator("[data-schedule-view='week']")).toBeVisible();
 
@@ -232,7 +233,7 @@ test("view switching, date navigation, and year-to-month transition work", async
   await root.getByRole("button", { name: "Previous" }).click();
   await expect(visibleEvent(root, "Planning sync")).toBeVisible();
 
-  await viewButton(root, "year").click();
+  await viewButton(page, "year").click();
   await expect(root).toHaveAttribute("data-view", "year");
   await expect(root.locator("[data-schedule-view='year']")).toBeVisible();
 
@@ -348,10 +349,8 @@ test("external drops expose external data in the preview", async ({ page }) => {
 
 test("controlled state and recurrence are observable", async ({ page }) => {
   const controlledRoot = await loadDemo(page, "controlled");
-  await controlledRoot.getByRole("tab", { name: /^month$/i }).first().click();
-  await expect(page.locator("[data-schedule-controlled-status]")).toContainText(
-    "View changed to Month",
-  );
+  await page.getByRole("button", { name: "Month", exact: true }).click();
+  await expect(controlledRoot).toHaveAttribute("data-view", "month");
 
   const recurringRoot = await loadDemo(page, "drag_and_drop");
   await expect
@@ -401,7 +400,7 @@ test("mobile month and year views remain reachable in responsive mode", async ({
   await page.setViewportSize({ width: 390, height: 844 });
   const root = await loadDemo(page, "responsive");
 
-  await viewButton(root, "year").click();
+  await viewButton(page, "year").click();
   await expect(root).toHaveAttribute("data-view", "year");
   await expect(
     root.locator("[data-schedule-mobile] [data-schedule-view='year']"),

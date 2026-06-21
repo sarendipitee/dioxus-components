@@ -99,6 +99,7 @@ test("multi-pane layout keeps both dividers interactive", async ({ page }) => {
   await expect(firstDivider).toBeFocused();
   await page.keyboard.press("ArrowRight");
 
-  await expect(secondDivider).toBeVisible();
+  await secondDivider.focus();
+  await expect(secondDivider).toBeFocused();
   await expect(inspectorPane).toBeVisible();
 });
