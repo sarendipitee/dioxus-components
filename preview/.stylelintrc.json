@@ -4,6 +4,7 @@
     "number-max-precision": null,
     "no-descending-specificity": null,
     "selector-class-pattern": "^dx-[a-z0-9-]+$",
+    "custom-property-pattern": "^(dx-)?([a-z][a-z0-9-]*|ON|OFF)$",
     "nesting-selector-no-missing-scoping-root": true
   },
   "overrides": [

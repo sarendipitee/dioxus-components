@@ -72,7 +72,6 @@ body {
 }
 
 .dx-preview-navbar {
-  backdrop-filter: blur(10px);
   position: sticky;
   z-index: 10;
   top: 0;
@@ -82,6 +81,7 @@ body {
   align-items: center;
   justify-content: center;
   padding: 0;
+  backdrop-filter: blur(10px);
   inset-block-start: 0;
 }
 
@@ -997,8 +997,8 @@ body {
 }
 
 .dx-theme-token-name {
-  font-weight: 600;
   flex: 0 0 33%;
+  font-weight: 600;
 }
 
 .dx-theme-token-meta {
