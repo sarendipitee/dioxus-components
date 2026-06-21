@@ -7,5 +7,5 @@ index_on_404 = true
 watch_path = ["src", "../primitives/src", "../dioxus-components/src", "../dioxus-attributes/src", "../themes"]
 
 [web.wasm_opt]
-level = "z"
+level = "0"
 debug = false

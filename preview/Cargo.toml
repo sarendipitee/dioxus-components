@@ -16,6 +16,7 @@ unic-langid = { version = "0.9", features = ["macros"] }
 strum = { version = "0.27.2", features = ["derive"] }
 tracing = { workspace = true }
 time = { version = "0.3.44", features = ["std", "macros"] }
+gloo-timers = { version = "0.3.0", features = ["futures"] }
 
 
 [build-dependencies]

@@ -363,7 +363,7 @@ examples!(
     tags_input,
     time_input[with_seconds, presets, with_picker],
     time_picker[clearable, seconds_12_hour, duration, presets],
-    toast[with_description, permanent, custom_duration],
+    toast[with_description, permanent, custom_duration, with_action, loading],
     toggle,
     toggle_group,
     toolbar,
