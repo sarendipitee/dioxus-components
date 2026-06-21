@@ -24,38 +24,38 @@ fn ToastButtons() -> Element {
                 r#type: "button",
                 variant: ButtonVariant::Outline,
                 onclick: move |_| {
-                    toast.info(
-                        "Quick note".to_string(),
-                        ToastOptions::new()
-                            .description("Disappears in 2 seconds.")
-                            .duration(Duration::from_secs(2)),
+                    toast.success(
+                        "Copied to clipboard".to_string(),
+                        ToastOptions::new().duration(Duration::from_secs(2)),
                     );
                 },
-                "2 seconds"
+                "2s — quick confirm"
             }
             Button {
                 r#type: "button",
                 variant: ButtonVariant::Outline,
                 onclick: move |_| {
                     toast.info(
-                        "Standard notice".to_string(),
-                        ToastOptions::new().description("Disappears in 5 seconds (default)."),
+                        "Your report is being generated".to_string(),
+                        ToastOptions::new()
+                            .description("This may take a moment.")
+                            .duration(Duration::from_secs(5)),
                     );
                 },
-                "5 seconds (default)"
+                "5s — default"
             }
             Button {
                 r#type: "button",
                 variant: ButtonVariant::Outline,
                 onclick: move |_| {
-                    toast.info(
-                        "Extended notice".to_string(),
+                    toast.warning(
+                        "Scheduled maintenance tonight".to_string(),
                         ToastOptions::new()
-                            .description("Disappears in 30 seconds.")
+                            .description("The service will be unavailable from 2–4am UTC.")
                             .duration(Duration::from_secs(30)),
                     );
                 },
-                "30 seconds"
+                "30s — important notice"
             }
         }
     }

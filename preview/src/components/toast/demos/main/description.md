@@ -1,1 +1,1 @@
-Four toast types — success, error, warning, and info — each styled to communicate a distinct outcome at a glance.
+Four semantic types — each communicates a distinct outcome at a glance.

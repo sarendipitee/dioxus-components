@@ -22,7 +22,7 @@ fn ToastButtons() -> Element {
             Button {
                 r#type: "button",
                 onclick: move |_| {
-                    toast.success("Changes saved".to_string(), ToastOptions::new());
+                    toast.success("Event has been created".to_string(), ToastOptions::new());
                 },
                 "Success"
             }
@@ -30,7 +30,7 @@ fn ToastButtons() -> Element {
                 r#type: "button",
                 variant: ButtonVariant::Destructive,
                 onclick: move |_| {
-                    toast.error("Upload failed".to_string(), ToastOptions::new());
+                    toast.error("Event has not been created".to_string(), ToastOptions::new());
                 },
                 "Error"
             }
@@ -38,7 +38,10 @@ fn ToastButtons() -> Element {
                 r#type: "button",
                 variant: ButtonVariant::Outline,
                 onclick: move |_| {
-                    toast.warning("Disk space low".to_string(), ToastOptions::new());
+                    toast.warning(
+                        "Event start time cannot be earlier than 8am".to_string(),
+                        ToastOptions::new(),
+                    );
                 },
                 "Warning"
             }
@@ -46,7 +49,10 @@ fn ToastButtons() -> Element {
                 r#type: "button",
                 variant: ButtonVariant::Outline,
                 onclick: move |_| {
-                    toast.info("Update available".to_string(), ToastOptions::new());
+                    toast.info(
+                        "Be at the area 10 minutes before the event time".to_string(),
+                        ToastOptions::new(),
+                    );
                 },
                 "Info"
             }

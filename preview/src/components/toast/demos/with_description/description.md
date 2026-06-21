@@ -1,1 +1,1 @@
-Each toast type paired with a description — use the two-line layout to provide context behind the headline.
+Pair a headline with a line of context when the title alone isn't enough.

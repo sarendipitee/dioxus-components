@@ -23,29 +23,30 @@ fn ToastButtons() -> Element {
                 r#type: "button",
                 variant: ButtonVariant::Outline,
                 onclick: move |_| {
-                    toast.info(
-                        "File deleted".to_string(),
+                    toast.success(
+                        "Event has been created".to_string(),
                         ToastOptions::new()
+                            .description("Monday, January 3rd at 6:00pm")
                             .permanent(true)
                             .action("Undo", move |_| {}),
                     );
                 },
-                "With action"
+                "Action"
             }
             Button {
                 r#type: "button",
                 variant: ButtonVariant::Outline,
                 onclick: move |_| {
                     toast.warning(
-                        "Unsaved changes".to_string(),
+                        "You have unsaved changes".to_string(),
                         ToastOptions::new()
-                            .description("Your edits will be lost.")
+                            .description("Navigating away will discard your edits.")
                             .permanent(true)
                             .action("Save now", move |_| {})
                             .cancel("Discard", move |_| {}),
                     );
                 },
-                "With action + cancel"
+                "Action + cancel"
             }
         }
     }

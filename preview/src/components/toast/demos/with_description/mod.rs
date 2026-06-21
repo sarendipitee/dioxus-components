@@ -23,8 +23,8 @@ fn ToastButtons() -> Element {
                 r#type: "button",
                 onclick: move |_| {
                     toast.success(
-                        "Profile updated".to_string(),
-                        ToastOptions::new().description("Your changes have been saved."),
+                        "Event has been created".to_string(),
+                        ToastOptions::new().description("Monday, January 3rd at 6:00pm"),
                     );
                 },
                 "Success"
@@ -34,9 +34,9 @@ fn ToastButtons() -> Element {
                 variant: ButtonVariant::Destructive,
                 onclick: move |_| {
                     toast.error(
-                        "Payment failed".to_string(),
+                        "Event has not been created".to_string(),
                         ToastOptions::new()
-                            .description("Your card was declined. Try a different payment method."),
+                            .description("Your session expired. Please sign in and try again."),
                     );
                 },
                 "Error"
@@ -46,8 +46,8 @@ fn ToastButtons() -> Element {
                 variant: ButtonVariant::Outline,
                 onclick: move |_| {
                     toast.warning(
-                        "Session expiring".to_string(),
-                        ToastOptions::new().description("You'll be signed out in 5 minutes."),
+                        "Event start time cannot be earlier than 8am".to_string(),
+                        ToastOptions::new().description("Set a start time of 8:00am or later."),
                     );
                 },
                 "Warning"
@@ -57,9 +57,9 @@ fn ToastButtons() -> Element {
                 variant: ButtonVariant::Outline,
                 onclick: move |_| {
                     toast.info(
-                        "New features available".to_string(),
+                        "App update available".to_string(),
                         ToastOptions::new()
-                            .description("Dark mode and keyboard shortcuts are now supported."),
+                            .description("Version 2.0 includes performance improvements and new features."),
                     );
                 },
                 "Info"

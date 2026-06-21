@@ -22,36 +22,37 @@ fn ToastButtons() -> Element {
             gap: "0.5rem",
             Button {
                 r#type: "button",
+                variant: ButtonVariant::Outline,
                 onclick: move |_| {
                     toast.promise(
                         async {
                             gloo_timers::future::sleep(Duration::from_secs(2)).await;
                             Ok::<_, String>(())
                         },
-                        "Uploading file\u{2026}",
-                        "Upload complete",
-                        "Upload failed",
+                        "Saving your changes\u{2026}",
+                        "Changes saved",
+                        "Failed to save",
                         ToastOptions::new(),
                     );
                 },
-                "Promise (success)"
+                "Save (success)"
             }
             Button {
                 r#type: "button",
-                variant: ButtonVariant::Destructive,
+                variant: ButtonVariant::Outline,
                 onclick: move |_| {
                     toast.promise(
                         async {
                             gloo_timers::future::sleep(Duration::from_secs(2)).await;
-                            Err::<(), _>("Network error".to_string())
+                            Err::<(), _>("Request timed out".to_string())
                         },
-                        "Connecting\u{2026}",
-                        "Connected",
-                        "Connection failed",
+                        "Publishing\u{2026}",
+                        "Published",
+                        "Publish failed",
                         ToastOptions::new(),
                     );
                 },
-                "Promise (error)"
+                "Publish (error)"
             }
         }
     }

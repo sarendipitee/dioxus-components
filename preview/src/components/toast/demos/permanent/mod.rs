@@ -1,4 +1,4 @@
-use dioxus_components::button::Button;
+use dioxus_components::button::{Button, ButtonVariant};
 use dioxus_components::toast::*;
 use dioxus::prelude::*;
 use dioxus_primitives::toast::{use_toast, ToastOptions};
@@ -17,15 +17,16 @@ fn ToastButton() -> Element {
     rsx! {
         Button {
             r#type: "button",
+            variant: ButtonVariant::Outline,
             onclick: move |_| {
                 toast.warning(
-                    "Action required".to_string(),
+                    "You are in offline mode".to_string(),
                     ToastOptions::new()
-                        .description("This notification stays until you dismiss it.")
+                        .description("Changes will sync when your connection is restored.")
                         .permanent(true),
                 );
             },
-            "Show permanent toast"
+            "Show permanent"
         }
     }
 }

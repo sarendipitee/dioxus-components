@@ -1,1 +1,1 @@
-Add an action button (and optional cancel) to let users respond to or dismiss a toast inline.
+Let users act on a notification inline — an "Undo" to reverse an action, or paired save/discard choices.
