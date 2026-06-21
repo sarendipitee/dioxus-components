@@ -229,21 +229,44 @@ html[data-theme="dark"] .dx_toast {
 .dx_toast[data-type="success"] {
   background: var(--success-subtle);
   color: var(--success-subtle-fg);
+  border-color: var(--success-subtle-border);
 }
 
 .dx_toast[data-type="error"] {
   background: var(--danger-subtle);
   color: var(--danger-subtle-fg);
+  border-color: var(--danger-subtle-border);
 }
 
 .dx_toast[data-type="warning"] {
   background: var(--warning-subtle);
   color: var(--warning-subtle-fg);
+  border-color: var(--warning-subtle-border);
 }
 
 .dx_toast[data-type="info"] {
   background: var(--info-subtle);
   color: var(--info-subtle-fg);
+  border-color: var(--info-subtle-border);
+}
+
+/* Typed toasts: let title, description, and close inherit the semantic color */
+.dx_toast[data-type] .dx_toast_title {
+  color: inherit;
+}
+
+.dx_toast[data-type] .dx_toast_description {
+  color: inherit;
+  opacity: 0.8;
+}
+
+.dx_toast[data-type] .dx_toast_close {
+  color: inherit;
+  opacity: 0.6;
+}
+
+.dx_toast[data-type] .dx_toast_close:hover {
+  opacity: 1;
 }
 
 /* Loading toast: spinner replaces the close button area */
