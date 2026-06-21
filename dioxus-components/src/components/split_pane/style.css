@@ -1,0 +1,70 @@
+.dx_split_pane {
+  --split-pane-divider-size: 6px;
+
+  overflow: hidden;
+  box-sizing: border-box;
+  border: 1px solid var(--surface-border);
+  border-radius: 0.5rem;
+  background: var(--surface-muted);
+}
+
+.dx_split_pane_pane {
+  box-sizing: border-box;
+  color: var(--surface-fg);
+}
+
+.dx_split_pane_divider {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: center;
+  background: var(--surface-border);
+  color: var(--fg-muted);
+  outline: none;
+  touch-action: none;
+  transition:
+    background-color 120ms ease,
+    box-shadow 120ms ease;
+}
+
+.dx_split_pane_divider[data-orientation="horizontal"] {
+  height: 100%;
+  cursor: col-resize;
+}
+
+.dx_split_pane_divider[data-orientation="vertical"] {
+  width: 100%;
+  cursor: row-resize;
+}
+
+.dx_split_pane_divider:hover,
+.dx_split_pane_divider:focus-visible,
+.dx_split_pane_divider[data-dragging="true"] {
+  background: var(--accent);
+  box-shadow: 0 0 0 3px color-mix(in oklab, var(--accent) 30%, transparent);
+}
+
+.dx_split_pane_divider[data-resizable="false"] {
+  cursor: default;
+  opacity: 0.6;
+}
+
+.dx_split_pane_divider_handle {
+  display: block;
+  border-radius: 9999px;
+  background: currentcolor;
+  opacity: 0.33;
+  pointer-events: none;
+}
+
+.dx_split_pane_divider[data-orientation="horizontal"] .dx_split_pane_divider_handle {
+  width: 33%;
+  height: 2rem;
+}
+
+.dx_split_pane_divider[data-orientation="vertical"] .dx_split_pane_divider_handle {
+  width: 2rem;
+  height: 0.25rem;
+}
