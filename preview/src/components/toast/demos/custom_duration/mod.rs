@@ -2,6 +2,7 @@ use dioxus_components::button::{Button, ButtonVariant};
 use dioxus_components::toast::*;
 use dioxus::prelude::*;
 use dioxus_primitives::toast::{use_toast, ToastOptions};
+use std::time::Duration;
 
 #[component]
 pub fn Demo() -> Element {
@@ -21,34 +22,40 @@ fn ToastButtons() -> Element {
             gap: "0.5rem",
             Button {
                 r#type: "button",
+                variant: ButtonVariant::Outline,
                 onclick: move |_| {
-                    toast.success("Changes saved".to_string(), ToastOptions::new());
+                    toast.info(
+                        "Quick note".to_string(),
+                        ToastOptions::new()
+                            .description("Disappears in 2 seconds.")
+                            .duration(Duration::from_secs(2)),
+                    );
                 },
-                "Success"
-            }
-            Button {
-                r#type: "button",
-                variant: ButtonVariant::Destructive,
-                onclick: move |_| {
-                    toast.error("Upload failed".to_string(), ToastOptions::new());
-                },
-                "Error"
+                "2 seconds"
             }
             Button {
                 r#type: "button",
                 variant: ButtonVariant::Outline,
                 onclick: move |_| {
-                    toast.warning("Disk space low".to_string(), ToastOptions::new());
+                    toast.info(
+                        "Standard notice".to_string(),
+                        ToastOptions::new().description("Disappears in 5 seconds (default)."),
+                    );
                 },
-                "Warning"
+                "5 seconds (default)"
             }
             Button {
                 r#type: "button",
                 variant: ButtonVariant::Outline,
                 onclick: move |_| {
-                    toast.info("Update available".to_string(), ToastOptions::new());
+                    toast.info(
+                        "Extended notice".to_string(),
+                        ToastOptions::new()
+                            .description("Disappears in 30 seconds.")
+                            .duration(Duration::from_secs(30)),
+                    );
                 },
-                "Info"
+                "30 seconds"
             }
         }
     }

@@ -1,1 +1,1 @@
-Demonstrates the provider-driven toast flow with a button that pushes a long-lived informational message into the shared toast stack.
+Four toast types — success, error, warning, and info — each styled to communicate a distinct outcome at a glance.

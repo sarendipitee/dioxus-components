@@ -22,7 +22,10 @@ fn ToastButtons() -> Element {
             Button {
                 r#type: "button",
                 onclick: move |_| {
-                    toast.success("Changes saved".to_string(), ToastOptions::new());
+                    toast.success(
+                        "Profile updated".to_string(),
+                        ToastOptions::new().description("Your changes have been saved."),
+                    );
                 },
                 "Success"
             }
@@ -30,7 +33,11 @@ fn ToastButtons() -> Element {
                 r#type: "button",
                 variant: ButtonVariant::Destructive,
                 onclick: move |_| {
-                    toast.error("Upload failed".to_string(), ToastOptions::new());
+                    toast.error(
+                        "Payment failed".to_string(),
+                        ToastOptions::new()
+                            .description("Your card was declined. Try a different payment method."),
+                    );
                 },
                 "Error"
             }
@@ -38,7 +45,10 @@ fn ToastButtons() -> Element {
                 r#type: "button",
                 variant: ButtonVariant::Outline,
                 onclick: move |_| {
-                    toast.warning("Disk space low".to_string(), ToastOptions::new());
+                    toast.warning(
+                        "Session expiring".to_string(),
+                        ToastOptions::new().description("You'll be signed out in 5 minutes."),
+                    );
                 },
                 "Warning"
             }
@@ -46,7 +56,11 @@ fn ToastButtons() -> Element {
                 r#type: "button",
                 variant: ButtonVariant::Outline,
                 onclick: move |_| {
-                    toast.info("Update available".to_string(), ToastOptions::new());
+                    toast.info(
+                        "New features available".to_string(),
+                        ToastOptions::new()
+                            .description("Dark mode and keyboard shortcuts are now supported."),
+                    );
                 },
                 "Info"
             }
