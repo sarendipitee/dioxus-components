@@ -5,9 +5,58 @@ use crate::{
     use_global_keydown_listener, use_unique_id,
 };
 use dioxus::prelude::*;
-use dioxus_sdk_time::use_timeout;
 use std::collections::VecDeque;
 use std::time::Duration;
+
+async fn platform_sleep(duration: Duration) {
+    #[cfg(not(target_family = "wasm"))]
+    tokio::time::sleep(duration).await;
+
+    #[cfg(target_family = "wasm")]
+    gloo_timers::future::sleep(duration).await;
+}
+
+/// Position of the toast container on screen.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
+pub enum ToastPosition {
+    /// Top-left corner
+    TopLeft,
+    /// Top center
+    TopCenter,
+    /// Top-right corner
+    TopRight,
+    /// Bottom-left corner
+    BottomLeft,
+    /// Bottom center
+    BottomCenter,
+    /// Bottom-right corner (default)
+    #[default]
+    BottomRight,
+}
+
+impl ToastPosition {
+    fn as_str(&self) -> &'static str {
+        match self {
+            ToastPosition::TopLeft => "top-left",
+            ToastPosition::TopCenter => "top-center",
+            ToastPosition::TopRight => "top-right",
+            ToastPosition::BottomLeft => "bottom-left",
+            ToastPosition::BottomCenter => "bottom-center",
+            ToastPosition::BottomRight => "bottom-right",
+        }
+    }
+}
+
+/// An action button attached to a toast notification.
+///
+/// Clicking the button calls `on_click` and auto-dismisses the toast.
+#[derive(Clone, PartialEq)]
+pub struct ToastAction {
+    /// Label text displayed on the button.
+    pub label: String,
+    /// Callback invoked when the button is clicked.
+    pub on_click: Callback<MouseEvent>,
+}
 
 /// Toast types for different visual styles
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -20,6 +69,8 @@ pub enum ToastType {
     Warning,
     /// An info toast
     Info,
+    /// A loading toast (typically permanent until dismissed or replaced)
+    Loading,
 }
 
 impl ToastType {
@@ -29,12 +80,13 @@ impl ToastType {
             ToastType::Error => "error",
             ToastType::Warning => "warning",
             ToastType::Info => "info",
+            ToastType::Loading => "loading",
         }
     }
 }
 
-// A single toast item
-#[derive(Debug, Clone, PartialEq)]
+// A single toast item — no Debug derive because Callback<T> is not Debug
+#[derive(Clone, PartialEq)]
 struct ToastRecord {
     id: usize,
     title: String,
@@ -42,10 +94,22 @@ struct ToastRecord {
     toast_type: ToastType,
     duration: Option<Duration>,
     permanent: bool,
+    action: Option<ToastAction>,
+    cancel: Option<ToastAction>,
 }
 
-// Type alias for the complex callback type
-type AddToastCallback = Callback<(String, Option<String>, ToastType, Option<Duration>, bool)>;
+// Arguments for adding a new toast (replaces the previous anonymous tuple)
+struct AddToastArgs {
+    title: String,
+    description: Option<String>,
+    toast_type: ToastType,
+    duration: Option<Duration>,
+    permanent: bool,
+    action: Option<ToastAction>,
+    cancel: Option<ToastAction>,
+}
+
+type AddToastCallback = Callback<AddToastArgs, usize>;
 
 // Context for managing toasts
 #[derive(Clone)]
@@ -54,7 +118,9 @@ struct ToastCtx {
     toasts: Signal<VecDeque<ToastRecord>>,
     add_toast: AddToastCallback,
     remove_toast: Callback<usize>,
+    remove_all_toasts: Callback,
     focus_region: Callback,
+    is_hovered: Signal<bool>,
 }
 
 // Toast provider props
@@ -68,6 +134,10 @@ pub struct ToastProviderProps {
     /// The maximum number of toasts to display at once. Defaults to 10.
     #[props(default = ReadSignal::new(Signal::new(10)))]
     pub max_toasts: ReadSignal<usize>,
+
+    /// The position of the toast container on screen. Defaults to [`ToastPosition::BottomRight`].
+    #[props(default)]
+    pub position: ToastPosition,
 
     /// The callback to render a toast. Defaults to rendering the [`Toast`] component.
     #[props(default = Callback::new(|props: ToastPropsWithOwner| rsx! { Toast { ..props } }))]
@@ -152,6 +222,7 @@ pub struct ToastListItemProps {
 #[component]
 pub fn ToastProvider(props: ToastProviderProps) -> Element {
     let mut toasts = use_signal(VecDeque::new);
+    let mut is_hovered = use_signal(|| false);
     let portal = use_portal();
 
     // Remove toast callback
@@ -162,21 +233,24 @@ pub fn ToastProvider(props: ToastProviderProps) -> Element {
         }
     });
 
+    let remove_all_toasts = use_callback(move |_| {
+        toasts.write().clear();
+    });
+
     // Add toast callback
     let add_toast = use_callback(
-        move |(title, description, toast_type, duration, permanent): (
-            String,
-            Option<String>,
-            ToastType,
-            Option<Duration>,
-            bool,
-        )| {
-            // Generate a unique ID for the toast
-            // Use a static atomic counter to ensure unique IDs
+        move |AddToastArgs {
+                  title,
+                  description,
+                  toast_type,
+                  duration,
+                  permanent,
+                  action,
+                  cancel,
+              }| {
             use std::sync::atomic::{AtomicUsize, Ordering};
             static NEXT_ID: AtomicUsize = AtomicUsize::new(0);
 
-            // Get the current ID and increment it atomically
             let id = NEXT_ID.fetch_add(1, Ordering::SeqCst);
 
             // Only use default duration for non-permanent toasts
@@ -193,6 +267,8 @@ pub fn ToastProvider(props: ToastProviderProps) -> Element {
                 toast_type,
                 duration,
                 permanent,
+                action,
+                cancel,
             };
 
             // Add the toast directly to the queue
@@ -212,7 +288,7 @@ pub fn ToastProvider(props: ToastProviderProps) -> Element {
                 }
             }
 
-            // We'll handle auto-dismissal in the Toast component
+            id
         },
     );
 
@@ -242,7 +318,9 @@ pub fn ToastProvider(props: ToastProviderProps) -> Element {
         toasts,
         add_toast,
         remove_toast,
+        remove_all_toasts,
         focus_region,
+        is_hovered,
     });
 
     rsx! {
@@ -255,10 +333,13 @@ pub fn ToastProvider(props: ToastProviderProps) -> Element {
                 role: "region",
                 aria_label: "{length} notifications",
                 tabindex: "-1",
+                "data-position": props.position.as_str(),
                 style: "--toast-count: {length}",
                 onmounted: move |e| {
                     region_ref.set(Some(e.data()));
                 },
+                onmouseenter: move |_| { is_hovered.set(true); },
+                onmouseleave: move |_| { is_hovered.set(false); },
                 ..props.attributes,
 
                 ToastList {
@@ -280,8 +361,9 @@ pub fn ToastProvider(props: ToastProviderProps) -> Element {
                                             remove_toast.call(toast_id);
                                         }
                                     })
-                                    // Only pass duration to non-permanent toasts
                                     .duration(if toast.permanent { None } else { toast.duration })
+                                    .action(toast.action.clone())
+                                    .cancel(toast.cancel.clone())
                                     .attributes(vec![])
                                     .build()
                                 )
@@ -342,6 +424,14 @@ pub struct ToastProps {
     /// The duration for which the toast is displayed.
     pub duration: Option<Duration>,
 
+    /// An optional primary action button.
+    #[props(default)]
+    pub action: Option<ToastAction>,
+
+    /// An optional secondary (cancel) action button.
+    #[props(default)]
+    pub cancel: Option<ToastAction>,
+
     /// Additional attributes to apply to the toast element.
     #[props(extends = GlobalAttributes)]
     pub attributes: Vec<Attribute>,
@@ -398,6 +488,31 @@ pub struct ToastCloseButtonProps {
     pub children: Option<Element>,
 }
 
+/// The props for the [`ToastActions`] component.
+#[derive(Props, Clone, PartialEq)]
+pub struct ToastActionsProps {
+    /// Additional attributes to apply to the actions container.
+    #[props(extends = GlobalAttributes)]
+    pub attributes: Vec<Attribute>,
+
+    /// The action buttons to render.
+    pub children: Element,
+}
+
+/// The props for the [`ToastActionButton`] component.
+#[derive(Props, Clone, PartialEq)]
+pub struct ToastActionButtonProps {
+    /// Callback invoked when the action button is clicked (toast is also dismissed).
+    pub on_click: Callback<MouseEvent>,
+
+    /// Additional attributes to apply to the button.
+    #[props(extends = GlobalAttributes)]
+    pub attributes: Vec<Attribute>,
+
+    /// The label content of the button.
+    pub children: Element,
+}
+
 #[derive(Clone)]
 struct ToastRenderCtx {
     label_id: String,
@@ -405,6 +520,8 @@ struct ToastRenderCtx {
     title: String,
     description: Option<String>,
     on_close: Callback<MouseEvent>,
+    action: Option<ToastAction>,
+    cancel: Option<ToastAction>,
 }
 
 /// # Toast
@@ -472,38 +589,67 @@ pub fn Toast(props: ToastProps) -> Element {
 
     // Get the context at the top level of the component
     let ctx = use_context::<ToastCtx>();
-    use_context_provider(|| ToastRenderCtx {
+    let render_ctx = use_context_provider(|| ToastRenderCtx {
         label_id: label_id.clone(),
         description_id: description_id.clone(),
         title: props.title.clone(),
         description: props.description.clone(),
         on_close: props.on_close,
+        action: props.action.clone(),
+        cancel: props.cancel.clone(),
     });
 
-    // Handle auto-dismissal for non-permanent toasts with a duration
-    // Double-check that the toast is not permanent and has a duration
-    if !props.permanent && props.duration.is_some() {
-        let duration = props.duration.unwrap();
-        let toast_id = props.id;
-        let remove_toast = ctx.remove_toast;
+    // Handle auto-dismissal for non-permanent toasts with a duration.
+    // Uses a tick loop so we can pause the countdown while the container is hovered.
+    // use_hook is called unconditionally to keep hook count stable across re-renders.
+    let permanent = props.permanent;
+    let duration = props.duration;
+    let toast_id = props.id;
+    let remove_toast = ctx.remove_toast;
+    let is_hovered = ctx.is_hovered;
+    use_hook(|| {
+        if !permanent {
+            if let Some(duration) = duration {
+                spawn(async move {
+                    const TICK: Duration = Duration::from_millis(50);
+                    let mut remaining = duration;
 
-        // Create a timeout using dioxus-time
-        let timeout = use_timeout(duration, move |()| {
-            // Call the remove_toast function directly with the toast ID
-            remove_toast.call(toast_id);
-        });
+                    while remaining > Duration::ZERO {
+                        platform_sleep(TICK.min(remaining)).await;
+                        if !is_hovered.peek().clone() {
+                            remaining = remaining.saturating_sub(TICK);
+                        }
+                    }
 
-        // Start the timeout when the component mounts
-        use_effect(move || {
-            timeout.action(());
-        });
-    }
+                    remove_toast.call(toast_id);
+                });
+            }
+        }
+    });
+
+    let action = render_ctx.action.clone();
+    let cancel = render_ctx.cancel.clone();
+    let has_actions = action.is_some() || cancel.is_some();
 
     let children = props.children.unwrap_or_else(|| {
         rsx! {
             ToastContent {
                 ToastTitle {}
                 ToastDescription {}
+                if has_actions {
+                    ToastActions {
+                        if let Some(a) = action {
+                            ToastActionButton { on_click: a.on_click, {a.label} }
+                        }
+                        if let Some(c) = cancel {
+                            ToastActionButton {
+                                on_click: c.on_click,
+                                "data-cancel": "true",
+                                {c.label}
+                            }
+                        }
+                    }
+                }
             }
             ToastCloseButton {}
         }
@@ -595,12 +741,41 @@ pub fn ToastCloseButton(props: ToastCloseButtonProps) -> Element {
             aria_label: "close",
             type: "button",
             onclick: move |e| {
-                // Focus the region again after closing
                 ctx.focus_region.call(());
                 render_ctx.on_close.call(e);
             },
             ..props.attributes,
             {children}
+        }
+    }
+}
+
+/// Container for action and cancel buttons inside a toast.
+#[component]
+pub fn ToastActions(props: ToastActionsProps) -> Element {
+    rsx! {
+        div { ..props.attributes, {props.children} }
+    }
+}
+
+/// An action or cancel button inside a toast.
+///
+/// Clicking the button calls `on_click` and auto-dismisses the toast.
+#[component]
+pub fn ToastActionButton(props: ToastActionButtonProps) -> Element {
+    let ctx = use_context::<ToastCtx>();
+    let render_ctx = use_context::<ToastRenderCtx>();
+
+    rsx! {
+        button {
+            type: "button",
+            onclick: move |e| {
+                ctx.focus_region.call(());
+                render_ctx.on_close.call(e.clone());
+                props.on_click.call(e);
+            },
+            ..props.attributes,
+            {props.children}
         }
     }
 }
@@ -611,16 +786,14 @@ pub struct ToastOptions {
     description: Option<String>,
     duration: Option<Duration>,
     permanent: bool,
+    action: Option<ToastAction>,
+    cancel: Option<ToastAction>,
 }
 
 impl ToastOptions {
-    /// Create a new `ToastOptions` with an empty description, no duration, that is not permanent.
+    /// Create a new `ToastOptions` with default values.
     pub fn new() -> Self {
-        Self {
-            description: None,
-            duration: None,
-            permanent: false,
-        }
+        Self::default()
     }
 
     /// Set the description for the toast.
@@ -635,9 +808,35 @@ impl ToastOptions {
         self
     }
 
-    /// Set whether the toast is permanent.
+    /// Set whether the toast is permanent (not auto-dismissed).
     pub fn permanent(mut self, permanent: bool) -> Self {
         self.permanent = permanent;
+        self
+    }
+
+    /// Add a primary action button. Clicking it calls `on_click` and dismisses the toast.
+    pub fn action(
+        mut self,
+        label: impl ToString,
+        on_click: impl Fn(MouseEvent) + 'static,
+    ) -> Self {
+        self.action = Some(ToastAction {
+            label: label.to_string(),
+            on_click: Callback::new(on_click),
+        });
+        self
+    }
+
+    /// Add a secondary (cancel) action button. Clicking it calls `on_click` and dismisses the toast.
+    pub fn cancel(
+        mut self,
+        label: impl ToString,
+        on_click: impl Fn(MouseEvent) + 'static,
+    ) -> Self {
+        self.cancel = Some(ToastAction {
+            label: label.to_string(),
+            on_click: Callback::new(on_click),
+        });
         self
     }
 }
@@ -646,46 +845,118 @@ impl ToastOptions {
 #[derive(Clone, Copy)]
 pub struct Toasts {
     add_toast: AddToastCallback,
-    // We keep remove_toast for potential future use
-    #[allow(dead_code)]
     remove_toast: Callback<usize>,
+    remove_all_toasts: Callback,
 }
 
 impl Toasts {
+    /// Dismiss a specific toast by its ID.
+    pub fn dismiss(&self, id: usize) {
+        self.remove_toast.call(id);
+    }
+
+    /// Dismiss all currently visible toasts.
+    pub fn dismiss_all(&self) {
+        self.remove_all_toasts.call(());
+    }
+
     /// Send a toast to the associated [`ToastProvider`] with the given title, type, and options.
-    pub fn show(&self, title: String, toast_type: ToastType, options: ToastOptions) {
-        self.add_toast.call((
+    ///
+    /// Returns the ID of the created toast, which can be used with [`Toasts::dismiss`].
+    pub fn show(&self, title: String, toast_type: ToastType, options: ToastOptions) -> usize {
+        self.add_toast.call(AddToastArgs {
             title,
-            options.description,
+            description: options.description,
             toast_type,
-            // If permanent, force duration to None
-            if options.permanent {
-                None
-            } else {
-                options.duration
-            },
-            options.permanent,
-        ));
+            duration: if options.permanent { None } else { options.duration },
+            permanent: options.permanent,
+            action: options.action,
+            cancel: options.cancel,
+        })
     }
 
-    /// Create a new success toast with the given title and options.
-    pub fn success(&self, title: String, options: ToastOptions) {
-        self.show(title, ToastType::Success, options);
+    /// Create a new success toast. Returns the toast ID.
+    pub fn success(&self, title: String, options: ToastOptions) -> usize {
+        self.show(title, ToastType::Success, options)
     }
 
-    /// Create a new error toast with the given title and options.
-    pub fn error(&self, title: String, options: ToastOptions) {
-        self.show(title, ToastType::Error, options);
+    /// Create a new error toast. Returns the toast ID.
+    pub fn error(&self, title: String, options: ToastOptions) -> usize {
+        self.show(title, ToastType::Error, options)
     }
 
-    /// Create a new warning toast with the given title and options.
-    pub fn warning(&self, title: String, options: ToastOptions) {
-        self.show(title, ToastType::Warning, options);
+    /// Create a new warning toast. Returns the toast ID.
+    pub fn warning(&self, title: String, options: ToastOptions) -> usize {
+        self.show(title, ToastType::Warning, options)
     }
 
-    /// Create a new info toast with the given title and options.
-    pub fn info(&self, title: String, options: ToastOptions) {
-        self.show(title, ToastType::Info, options);
+    /// Create a new info toast. Returns the toast ID.
+    pub fn info(&self, title: String, options: ToastOptions) -> usize {
+        self.show(title, ToastType::Info, options)
+    }
+
+    /// Create a permanent loading toast. Returns the toast ID.
+    ///
+    /// Use [`Toasts::dismiss`] with the returned ID to remove it when the operation completes.
+    pub fn loading(&self, title: String, options: ToastOptions) -> usize {
+        self.show(title, ToastType::Loading, options.permanent(true))
+    }
+
+    /// Show a loading toast while a future runs, then replace it with a success or error toast.
+    ///
+    /// ## Example
+    ///
+    /// ```rust
+    /// # use dioxus::prelude::*;
+    /// # use dioxus_primitives::toast::{ToastOptions, ToastProvider, use_toast};
+    /// # #[component]
+    /// # fn Demo() -> Element { rsx! { ToastProvider { Inner {} } } }
+    /// #[component]
+    /// fn Inner() -> Element {
+    ///     let toast = use_toast();
+    ///     rsx! {
+    ///         button {
+    ///             onclick: move |_| {
+    ///                 toast.promise(
+    ///                     async move { Ok::<_, ()>(42) },
+    ///                     "Saving…",
+    ///                     "Saved!",
+    ///                     "Save failed",
+    ///                     ToastOptions::new(),
+    ///                 );
+    ///             },
+    ///             "Save"
+    ///         }
+    ///     }
+    /// }
+    /// ```
+    pub fn promise<F, T, E>(
+        &self,
+        future: F,
+        loading: impl ToString,
+        success: impl ToString,
+        error: impl ToString,
+        options: ToastOptions,
+    ) where
+        F: std::future::Future<Output = Result<T, E>> + 'static,
+    {
+        let toast = *self;
+        let loading_id = self.loading(loading.to_string(), ToastOptions::new());
+        let success_msg = success.to_string();
+        let error_msg = error.to_string();
+
+        spawn(async move {
+            match future.await {
+                Ok(_) => {
+                    toast.dismiss(loading_id);
+                    toast.success(success_msg, options);
+                }
+                Err(_) => {
+                    toast.dismiss(loading_id);
+                    toast.error(error_msg, options);
+                }
+            }
+        });
     }
 }
 
@@ -732,11 +1003,9 @@ pub fn use_toast() -> Toasts {
 /// This must be called under a [`ToastProvider`] component.
 pub fn consume_toast() -> Toasts {
     let ctx = consume_context::<ToastCtx>();
-    let add_toast = ctx.add_toast;
-    let remove_toast = ctx.remove_toast;
-
     Toasts {
-        add_toast,
-        remove_toast,
+        add_toast: ctx.add_toast,
+        remove_toast: ctx.remove_toast,
+        remove_all_toasts: ctx.remove_all_toasts,
     }
 }

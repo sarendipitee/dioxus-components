@@ -1,9 +1,50 @@
 .dx_toast_container {
   position: fixed;
   z-index: 9999;
+  max-width: 350px;
+
+  /* default: bottom-right */
   right: 20px;
   bottom: 20px;
-  max-width: 350px;
+}
+
+.dx_toast_container[data-position="top-left"] {
+  top: 20px;
+  left: 20px;
+  right: unset;
+  bottom: unset;
+}
+
+.dx_toast_container[data-position="top-center"] {
+  top: 20px;
+  left: 50%;
+  right: unset;
+  bottom: unset;
+  transform: translateX(-50%);
+}
+
+.dx_toast_container[data-position="top-right"] {
+  top: 20px;
+  right: 20px;
+  bottom: unset;
+}
+
+.dx_toast_container[data-position="bottom-left"] {
+  bottom: 20px;
+  left: 20px;
+  right: unset;
+}
+
+.dx_toast_container[data-position="bottom-center"] {
+  bottom: 20px;
+  left: 50%;
+  right: unset;
+  transform: translateX(-50%);
+}
+
+.dx_toast_container[data-position="bottom-right"] {
+  bottom: 20px;
+  right: 20px;
 }
 
 .dx_toast_container ol {
@@ -12,6 +53,11 @@
   padding: 0;
   margin: 0;
   gap: calc(var(--space) * 3);
+}
+
+/* Top positions stack newest toast at top (column direction) */
+.dx_toast_container[data-position^="top"] ol {
+  flex-direction: column;
 }
 
 .dx_toast_container li {
@@ -23,9 +69,9 @@
   display: flex;
   overflow: hidden;
   width: 18rem;
-  height: 4rem;
+  min-height: 4rem;
   box-sizing: border-box;
-  align-items: center;
+  align-items: flex-start;
   justify-content: space-between;
   padding: calc(var(--space) * 3) calc(var(--space) * 4);
   border: 1px solid var(--overlay-border);
@@ -118,6 +164,47 @@
   }
 }
 
+/* Top positions: toasts slide in from above and stack downward */
+.dx_toast_container[data-position^="top"] .dx_toast[data-top] {
+  animation: dx-toast-slide-in-top 0.2s ease-out;
+}
+
+.dx_toast_container[data-position^="top"]:hover .dx_toast[data-top],
+.dx_toast_container[data-position^="top"]:focus-within .dx_toast[data-top] {
+  animation: dx-toast-slide-in-top 0 ease-out;
+}
+
+@keyframes dx-toast-slide-in-top {
+  from {
+    opacity: 0;
+    transform: translateY(-100%)
+      scale(
+        calc(110% - var(--toast-index) * 5%),
+        calc(110% - var(--toast-index) * 2%)
+      );
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0)
+      scale(
+        calc(100% - var(--toast-index) * 5%),
+        calc(100% - var(--toast-index) * 2%)
+      );
+  }
+}
+
+/* Top positions: stacking goes downward, so use margin-bottom instead of margin-top */
+.dx_toast_container[data-position^="top"] .dx_toast {
+  margin-top: 0;
+  margin-bottom: -4rem;
+}
+
+.dx_toast_container[data-position^="top"]:hover .dx_toast,
+.dx_toast_container[data-position^="top"]:focus-within .dx_toast {
+  margin-bottom: calc(var(--space) * 2);
+}
+
 .dx_toast_container:hover .dx_toast,
 .dx_toast_container:focus-within .dx_toast {
   margin-top: calc(var(--space) * 2);
@@ -159,6 +246,33 @@ html[data-theme="dark"] .dx_toast {
   color: var(--info-subtle-fg);
 }
 
+/* Loading toast: spinner replaces the close button area */
+.dx_toast[data-type="loading"] {
+  align-items: center;
+}
+
+.dx_toast[data-type="loading"] .dx_toast_close {
+  display: flex;
+  width: 16px;
+  height: 16px;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  border: 2px solid transparent;
+  border-top-color: currentcolor;
+  border-radius: 50%;
+  animation: dx-toast-spin 0.6s linear infinite;
+  background: none;
+  font-size: 0;
+  pointer-events: none;
+}
+
+@keyframes dx-toast-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
 .dx_toast_content {
   flex: 1;
   margin-right: calc(var(--space) * 2);
@@ -190,4 +304,53 @@ html[data-theme="dark"] .dx_toast {
 
 .dx_toast_close:hover {
   color: var(--overlay-fg);
+}
+
+.dx_toast_actions {
+  display: flex;
+  gap: calc(var(--space) * 2);
+  margin-top: calc(var(--space) * 2);
+}
+
+.dx_toast_action {
+  padding: calc(var(--space) * 1) calc(var(--space) * 3);
+  border: 1px solid currentcolor;
+  border-radius: var(--radius-surface);
+  background: none;
+  color: inherit;
+  cursor: pointer;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  line-height: 1.4;
+  transition: opacity 0.15s ease;
+}
+
+.dx_toast_action:hover {
+  opacity: 0.8;
+}
+
+.dx_toast_action[data-cancel] {
+  border-color: transparent;
+  color: var(--fg-muted);
+}
+
+.dx_toast_action[data-cancel]:hover {
+  color: var(--overlay-fg);
+  opacity: 1;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .dx_toast,
+  .dx_toast_content {
+    transition: none;
+  }
+
+  .dx_toast[data-top],
+  .dx_toast_container:not(:hover, :focus-within) .dx_toast[data-toast-even]:not([data-top]),
+  .dx_toast_container:not(:hover, :focus-within) .dx_toast[data-toast-odd]:not([data-top]),
+  .dx_toast_container:hover .dx_toast[data-top],
+  .dx_toast_container:focus-within .dx_toast[data-top],
+  .dx_toast[data-type="loading"] .dx_toast_close {
+    animation: none;
+  }
 }
