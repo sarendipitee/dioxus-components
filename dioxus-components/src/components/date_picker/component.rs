@@ -352,8 +352,8 @@ mod tests {
         dom.rebuild_in_place();
         let html = dioxus_ssr::render(&dom);
 
-        assert!(html.contains("dx-date-picker"));
-        assert!(html.contains("dx-date-picker-surface"));
+        assert!(html.contains("dx_date_picker"));
+        assert!(html.contains("dx_date_picker_surface"));
         assert!(!html.contains("Show Calendar"));
     }
 
@@ -363,8 +363,8 @@ mod tests {
         dom.rebuild_in_place();
         let html = dioxus_ssr::render(&dom);
 
-        assert!(html.contains("dx-date-picker"));
-        assert!(html.contains("dx-date-picker-surface"));
+        assert!(html.contains("dx_date_picker"));
+        assert!(html.contains("dx_date_picker_surface"));
         assert!(!html.contains("Show Calendar"));
     }
 }
