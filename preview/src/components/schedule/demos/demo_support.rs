@@ -1,3 +1,4 @@
+#![allow(dead_code)]
 use crate::components::schedule::*;
 use time::macros::{date, time};
 use time::{Date, PrimitiveDateTime};

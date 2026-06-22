@@ -1,7 +1,5 @@
-use crate::components::button::{Button, ButtonSize, ButtonVariant};
 use crate::components::tabs::*;
 use dioxus::prelude::*;
-use dioxus_primitives::tabs::TabsOrientation;
 
 #[component]
 pub fn Demo() -> Element {

@@ -2,7 +2,7 @@
 mod demo_support;
 
 use dioxus::prelude::*;
-use dioxus_components::button::{Button, ButtonSize, ButtonVariant};
+use dioxus_components::button::{Button, ButtonVariant};
 use dioxus_components::data_table::{
     DataTable, DataTablePageInfo, DataTableStateChange, DataTableStateMode,
 };

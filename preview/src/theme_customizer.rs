@@ -8,7 +8,7 @@ use crate::components::{
 };
 use crate::Route;
 use dioxus::prelude::{dioxus_router::Link, *};
-use dioxus_components::{InputSize, InputWrapper};
+use dioxus_components::InputSize;
 use dioxus_primitives::color_picker::Color;
 use palette::{encoding, FromColor, Hsv, IntoColor, Srgb};
 use std::sync::OnceLock;

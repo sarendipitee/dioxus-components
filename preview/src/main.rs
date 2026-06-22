@@ -1,3 +1,4 @@
+#![allow(clippy::duplicate_mod)]
 use crate::components::{
     avatar::{AvatarImageSize, ImageAvatar},
     badge::{Badge, BadgeVariant, VerifiedIcon},

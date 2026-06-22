@@ -454,9 +454,7 @@ fn prop_value(attrs: &[syn::Attribute], ty: &syn::Type) -> String {
 
     if has_default {
         "Default::default()".to_string()
-    } else if has_extends {
-        "none".to_string()
-    } else if is_option_type(ty) {
+    } else if has_extends || is_option_type(ty) {
         "none".to_string()
     } else {
         "required".to_string()
@@ -705,15 +703,13 @@ fn cooked_char_escape_len(source: &str) -> Option<usize> {
                 return None;
             }
 
-            let mut digits = 0usize;
-            for (idx, ch) in chars {
+            for (digits, (idx, ch)) in chars.enumerate() {
                 if ch == '}' {
                     return (digits > 0).then_some(idx + ch.len_utf8());
                 }
                 if !ch.is_ascii_hexdigit() || digits >= 6 {
                     return None;
                 }
-                digits += 1;
             }
             None
         }
