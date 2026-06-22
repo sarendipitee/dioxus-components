@@ -350,9 +350,11 @@ fn StyledTimePickerSegments(
     apply_control_attributes: bool,
     #[props(default)] control_attributes: Vec<Attribute>,
 ) -> Element {
-    let hour_attributes = apply_control_attributes
-        .then_some(control_attributes)
-        .unwrap_or_default();
+    let hour_attributes = if apply_control_attributes {
+        control_attributes
+    } else {
+        Vec::new()
+    };
 
     rsx! {
         TimePickerInputValue {

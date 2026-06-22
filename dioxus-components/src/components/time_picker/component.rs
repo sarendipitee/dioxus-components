@@ -20,7 +20,7 @@ pub fn time_range(start: Time, end: Time, interval: time::Duration) -> Vec<Time>
 }
 
 fn display_12h_hour(h: u8) -> u32 {
-    if h % 12 == 0 {
+    if h.is_multiple_of(12) {
         12
     } else {
         (h % 12) as u32

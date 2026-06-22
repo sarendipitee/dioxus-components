@@ -143,7 +143,7 @@ pub fn AlertDialogCancel(props: AlertDialogCancelProps) -> Element {
     rsx! {
         Button {
             variant: ButtonVariant::Secondary,
-            onclick: move |evt| on_click(evt),
+            onclick: on_click,
             attributes: attrs,
             {props.children}
         }
@@ -169,7 +169,7 @@ pub fn AlertDialogAction(props: AlertDialogActionProps) -> Element {
     rsx! {
         Button {
             variant: ButtonVariant::Destructive,
-            onclick: move |evt| on_click(evt),
+            onclick: on_click,
             attributes: attrs,
             {props.children}
         }

@@ -1394,7 +1394,7 @@ fn canonicalize_columns<T: Clone + PartialEq + 'static>(
     let mut remaining = unique
         .into_iter()
         .filter(|column| {
-            !hidden.contains(column.id.as_str()) && !(column.hidden && !column.default_toggle)
+            !hidden.contains(column.id.as_str()) && (!column.hidden || column.default_toggle)
         })
         .collect::<Vec<_>>();
     let mut ordered = Vec::new();
@@ -1651,7 +1651,7 @@ fn filter_matches<T: Clone + PartialEq + 'static>(
         (_, DataTableFilterValue::Option(filter)) => value.to_string() == *filter,
         (_, DataTableFilterValue::Multiple(filters)) => {
             let value = value.to_string();
-            filters.iter().any(|filter| *filter == value)
+            filters.contains(&value)
         }
         (_, DataTableFilterValue::Boolean(filter)) => {
             matches!(value, DataTableValue::Boolean(value) if value == *filter)
@@ -2150,7 +2150,7 @@ fn DataTableVirtualBody<T: Clone + PartialEq + 'static>(
                             row,
                             on_row_resize,
                             show_selection,
-                            on_row_click.clone(),
+                            on_row_click,
                         )
                     }
                 }
@@ -3180,7 +3180,6 @@ fn data_table_actions(
     DataTableActions {
         update_state,
         toggle_row_selected: Callback::new({
-            let update_state = update_state;
             let state = state.clone();
             move |row_id| {
                 update_state.call(DataTableAction::SetRowSelection {
@@ -3189,7 +3188,6 @@ fn data_table_actions(
             }
         }),
         toggle_row_expanded: Callback::new({
-            let update_state = update_state;
             let state = state.clone();
             move |row_id| {
                 let mut rows = state.expanded_rows.clone();
@@ -3202,7 +3200,6 @@ fn data_table_actions(
             }
         }),
         toggle_all_page_rows_selected: Callback::new({
-            let update_state = update_state;
             let state = state.clone();
             let page_row_ids = page_row_ids.clone();
             move |_| {
@@ -3216,7 +3213,6 @@ fn data_table_actions(
             }
         }),
         toggle_all_matching_rows_selected: Callback::new({
-            let update_state = update_state;
             let state = state.clone();
             move |_| {
                 let query = query_fingerprint(&state);
@@ -3237,7 +3233,6 @@ fn data_table_actions(
             }
         }),
         reset_filters: Callback::new({
-            let update_state = update_state;
             move |_| update_state.call(DataTableAction::ResetFilters)
         }),
         reset_column_state: Callback::new(move |_| {

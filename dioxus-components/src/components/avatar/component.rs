@@ -74,7 +74,7 @@ pub struct AvatarProps {
 pub fn Avatar(props: AvatarProps) -> Element {
     let class = format!(
         "{} {} {}",
-        Styles::dx_avatar.to_string(),
+        Styles::dx_avatar,
         props.size.to_class(),
         props.shape.to_class()
     );

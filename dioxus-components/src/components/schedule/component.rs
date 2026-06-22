@@ -33,20 +33,20 @@ fn append_class(existing: String, class_name: &str) -> String {
 
 fn schedule_class_names(class_names: PrimitiveScheduleClassNames) -> PrimitiveScheduleClassNames {
     PrimitiveScheduleClassNames {
-        desktop_view: append_class(class_names.desktop_view, &Styles::dx_schedule_desktop),
-        mobile_view: append_class(class_names.mobile_view, &Styles::dx_schedule_mobile),
-        day_view: append_class(class_names.day_view, &Styles::dx_schedule_time_view),
-        week_view: append_class(class_names.week_view, &Styles::dx_schedule_time_view),
-        month_view: append_class(class_names.month_view, &Styles::dx_schedule_month_view),
-        year_view: append_class(class_names.year_view, &Styles::dx_schedule_year_view),
+        desktop_view: append_class(class_names.desktop_view, Styles::dx_schedule_desktop),
+        mobile_view: append_class(class_names.mobile_view, Styles::dx_schedule_mobile),
+        day_view: append_class(class_names.day_view, Styles::dx_schedule_time_view),
+        week_view: append_class(class_names.week_view, Styles::dx_schedule_time_view),
+        month_view: append_class(class_names.month_view, Styles::dx_schedule_month_view),
+        year_view: append_class(class_names.year_view, Styles::dx_schedule_year_view),
         mobile_month_view: append_class(
             class_names.mobile_month_view,
-            &Styles::dx_schedule_mobile_month_view,
+            Styles::dx_schedule_mobile_month_view,
         ),
-        time_slot: append_class(class_names.time_slot, &Styles::dx_schedule_time_slot),
-        all_day_slot: append_class(class_names.all_day_slot, &Styles::dx_schedule_all_day_slot),
-        month_day: append_class(class_names.month_day, &Styles::dx_schedule_month_day),
-        event: append_class(class_names.event, &Styles::dx_schedule_event),
+        time_slot: append_class(class_names.time_slot, Styles::dx_schedule_time_slot),
+        all_day_slot: append_class(class_names.all_day_slot, Styles::dx_schedule_all_day_slot),
+        month_day: append_class(class_names.month_day, Styles::dx_schedule_month_day),
+        event: append_class(class_names.event, Styles::dx_schedule_event),
     }
 }
 
