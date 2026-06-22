@@ -441,6 +441,7 @@ fn textarea_line_count(value: &str) -> usize {
     value.lines().count() + usize::from(value.ends_with('\n'))
 }
 
+#[allow(dead_code)]
 fn textarea_content_width_from_layout_width(
     width_px: f64,
     horizontal_chrome_px: f64,

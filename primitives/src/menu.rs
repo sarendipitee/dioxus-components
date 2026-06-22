@@ -28,6 +28,7 @@ pub struct MenuContext {
 }
 
 /// Provides shared menu state to descendants in the current component scope.
+#[allow(clippy::redundant_closure)]
 pub(crate) fn use_menu_provider(
     open: Memo<bool>,
     set_open: Callback<bool>,

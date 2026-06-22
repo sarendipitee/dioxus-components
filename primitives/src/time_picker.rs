@@ -368,10 +368,9 @@ impl TimePickerContext {
     /// it inside effects that must resync internal segment state with external
     /// updates (e.g. selecting a value from a column picker).
     fn reactive_current_value(&self) -> Option<TimePickerValue> {
-        self.selected_value.read().clone().or_else(|| {
-            self.selected_time
-                .read()
-                .clone()
+        (*self.selected_value.read()).or_else(|| {
+            (*self.selected_time
+                .read())
                 .map(|time| TimePickerValue::from_time(time, self.precision))
         })
     }
@@ -1223,7 +1222,7 @@ pub fn TimePickerInputValue(props: TimePickerInputValueProps) -> Element {
     // by comparing against `last_synced`.
     use_effect(move || {
         let incoming = ctx.reactive_current_value();
-        if value_precision_eq(incoming, last_synced.peek().clone(), ctx.precision) {
+        if value_precision_eq(incoming, *last_synced.peek(), ctx.precision) {
             return;
         }
         last_synced.set(incoming);

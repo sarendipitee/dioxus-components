@@ -616,7 +616,7 @@ pub fn Toast(props: ToastProps) -> Element {
 
                     while remaining > Duration::ZERO {
                         platform_sleep(TICK.min(remaining)).await;
-                        if !is_hovered.peek().clone() {
+                        if !*is_hovered.peek() {
                             remaining = remaining.saturating_sub(TICK);
                         }
                     }

@@ -584,6 +584,7 @@ pub struct TabTriggerProps {
 /// - `data-state`: Indicates the state of the tab trigger. Values are `active` or `inactive`.
 /// - `data-disabled`: Indicates if the tab trigger is disabled. Values are `true` or `false`.
 #[component]
+#[allow(clippy::redundant_closure)]
 pub fn TabTrigger(props: TabTriggerProps) -> Element {
     let mut ctx: TabsContext = use_context();
     let generated_id = use_unique_id();

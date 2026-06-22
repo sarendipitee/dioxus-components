@@ -9,9 +9,7 @@
 
 use dioxus::prelude::*;
 
-use crate::dialog::{
-    self, DialogCtx, DialogDescriptionProps, DialogRootProps, DialogTitleProps, DialogTriggerProps,
-};
+use crate::dialog::{self, DialogCtx};
 
 // Re-export root/trigger/title/description props so callers don't need to import both modules.
 pub use dialog::{

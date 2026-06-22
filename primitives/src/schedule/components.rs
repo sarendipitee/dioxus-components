@@ -2066,6 +2066,7 @@ pub(crate) fn timed_drop_preview_style(
     ))
 }
 
+#[allow(dead_code)]
 pub(crate) fn time_slot_drop_active(
     drop_target: Option<String>,
     slot_start: PrimitiveDateTime,
