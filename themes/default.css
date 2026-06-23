@@ -194,6 +194,9 @@
      without changing page layout. */
   --space: 0.25rem;
 
+  /* Shared animation timing curve. Use for spring-like transitions and keyframed motion. */
+  --timing-function: linear(0, 0.0014 0.52%, 0.007, 0.0164, 0.0294 2.45%, 0.0689 3.87%, 0.1258 5.42%, 0.2489 8.13%, 0.5268 13.55%, 0.6462 16%, 0.7592 18.58%, 0.8514 21.03%, 0.9239 23.35%, 0.9848 25.81%, 1.0107, 1.0325, 1.0505, 1.065 30.97%, 1.0799, 1.0893 34.58%, 1.0941 36.52%, 1.0944 38.58%, 1.09 40.9%, 1.0812 43.48%, 1.0357 53.16%, 1.0184 57.42%, 1.0058, 0.9975 65.68%, 0.9924 70.45%, 0.991 76%, 0.9996 100%);
+
   /* Surface padding. Use for cards, popovers, dialogs, menus, and panels. */
   --surface-padding: calc(var(--space) * 4);
 
