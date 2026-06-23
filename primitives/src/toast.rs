@@ -815,11 +815,7 @@ impl ToastOptions {
     }
 
     /// Add a primary action button. Clicking it calls `on_click` and dismisses the toast.
-    pub fn action(
-        mut self,
-        label: impl ToString,
-        on_click: impl Fn(MouseEvent) + 'static,
-    ) -> Self {
+    pub fn action(mut self, label: impl ToString, on_click: impl Fn(MouseEvent) + 'static) -> Self {
         self.action = Some(ToastAction {
             label: label.to_string(),
             on_click: Callback::new(on_click),
@@ -828,11 +824,7 @@ impl ToastOptions {
     }
 
     /// Add a secondary (cancel) action button. Clicking it calls `on_click` and dismisses the toast.
-    pub fn cancel(
-        mut self,
-        label: impl ToString,
-        on_click: impl Fn(MouseEvent) + 'static,
-    ) -> Self {
+    pub fn cancel(mut self, label: impl ToString, on_click: impl Fn(MouseEvent) + 'static) -> Self {
         self.cancel = Some(ToastAction {
             label: label.to_string(),
             on_click: Callback::new(on_click),
@@ -868,7 +860,11 @@ impl Toasts {
             title,
             description: options.description,
             toast_type,
-            duration: if options.permanent { None } else { options.duration },
+            duration: if options.permanent {
+                None
+            } else {
+                options.duration
+            },
             permanent: options.permanent,
             action: options.action,
             cancel: options.cancel,
