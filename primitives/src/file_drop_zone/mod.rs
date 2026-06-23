@@ -698,6 +698,7 @@ pub fn FileDropZone(props: FileDropZoneProps) -> Element {
             #[cfg(not(all(feature = "web", target_arch = "wasm32")))]
             {
                 let _ = &node;
+                let _ = &on_file_dialog_cancel;
             }
         }
     });

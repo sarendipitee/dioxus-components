@@ -51,7 +51,7 @@ jobs:
           cache-on-failure: "false"
       - uses: DioxusLabs/dioxus-ci/actions/install-dioxus-cli@v0.1.0
         with:
-          version: 0.7.6
+          version: 0.7.9
       - name: Add components and check
         run: |
           cd test-harness
@@ -61,8 +61,9 @@ jobs:
           dx components add dialog,input --path ..
           # Add all components
           dx components add --all --path .. --force
-          # Switch to the local version of dioxus-primitives
+          # Switch to the local versions of dioxus-primitives and dioxus-components
           cargo add dioxus-primitives --path ../primitives
+          cargo add dioxus-components --path ../dioxus-components
           # Make sure it still builds
           cargo check --all-features
   add-each-component:
@@ -85,7 +86,7 @@ jobs:
           cache-on-failure: "false"
       - uses: DioxusLabs/dioxus-ci/actions/install-dioxus-cli@v0.1.0
         with:
-          version: 0.7.6
+          version: 0.7.9
       - name: Add each component and check
         run: |
           cd preview/src/components/
@@ -109,8 +110,9 @@ jobs:
             fi
             # Add the component
             dx components add "$file" --path ..
-            # Switch to the local version of dioxus-primitives
+            # Switch to the local versions of dioxus-primitives and dioxus-components
             cargo add dioxus-primitives --path ../primitives
+            cargo add dioxus-components --path ../dioxus-components
             # Make sure it still builds
             cargo check --all-features
             # Undo changes

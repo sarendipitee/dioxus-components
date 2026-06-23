@@ -161,7 +161,7 @@ pub fn ColorSwatch(props: ColorSwatchProps) -> Element {
     }
 }
 
-/// The props for the [`ColorSlider`] component.
+/// The props for the `ColorSlider` component.
 #[derive(Props, Clone, PartialEq)]
 pub struct ColorSliderProps {
     pub title: ReadSignal<String>,

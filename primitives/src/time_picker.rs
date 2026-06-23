@@ -364,13 +364,12 @@ impl TimePickerContext {
     /// Reactively reads the controlled value so effects re-run when the
     /// `selected_value`/`selected_time` props change externally.
     ///
-    /// Unlike [`current_value`], this subscribes to the underlying signals; use
+    /// Unlike [`Self::current_value`], this subscribes to the underlying signals; use
     /// it inside effects that must resync internal segment state with external
     /// updates (e.g. selecting a value from a column picker).
     fn reactive_current_value(&self) -> Option<TimePickerValue> {
         (*self.selected_value.read()).or_else(|| {
-            (*self.selected_time
-                .read())
+            (*self.selected_time.read())
                 .map(|time| TimePickerValue::from_time(time, self.precision))
         })
     }
