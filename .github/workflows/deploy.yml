@@ -35,11 +35,8 @@ jobs:
           curl -L https://github.com/DioxusLabs/dioxus/releases/download/v0.7.9/dx-x86_64-unknown-linux-gnu.tar.gz | tar -xz
           mv dx ~/.cargo/bin/dx
 
-      - name: Enable SSG
-        run: printf '\n[web.ssg]\n\n[web.app]\nbase_path = "dioxus-components"\n' >> preview/Dioxus.toml
-
       - name: Build with SSG
-        run: dx build -p preview --web --release --features fullstack
+        run: dx build -p preview --web --release --features fullstack --ssg --base-path dioxus-components
 
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v3
