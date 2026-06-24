@@ -1,5 +1,5 @@
-use dioxus_components::table_of_contents::*;
 use dioxus::prelude::*;
+use dioxus_components::table_of_contents::*;
 use dioxus_primitives::scroll_spy::{ScrollSpyOptions, ScrollSpyScrollHost};
 
 #[component]
@@ -20,11 +20,6 @@ pub fn Demo() -> Element {
             align_items: "start",
             max_height: "40rem",
             overflow_y: "auto",
-            padding: "2rem",
-            border: "1px solid var(--surface-border)",
-            border_radius: "1rem",
-            background: "var(--surface-hover)",
-            color: "var(--fg)",
 
             article {
                 max_width: "44rem",
