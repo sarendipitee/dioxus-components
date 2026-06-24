@@ -38,7 +38,8 @@
     border-color 120ms ease,
     box-shadow 120ms ease,
     color 120ms ease,
-    opacity 120ms ease;
+    opacity 120ms ease,
+    transform 120ms ease;
   white-space: nowrap;
 }
 
@@ -121,6 +122,7 @@
   border-color: var(--button-active-border);
   background: var(--button-active-bg);
   color: var(--button-active-fg);
+  transform: scale(0.95) translateY(1px);
 }
 
 .dx_button:focus-visible {
