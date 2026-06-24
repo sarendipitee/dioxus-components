@@ -40,15 +40,15 @@
 
   /* Active surface recipe. Use for pressed neutral controls and active rows
      where the state is temporary or interaction-driven. */
-  --surface-active: var(--is-light, #d0d0d0) var(--is-dark, #5d5d5d);
+  --surface-active: var(--is-light, #d0d0d0) var(--is-dark, #222222);
   --surface-active-fg: var(--is-light, #111111) var(--is-dark, #d4d4d4);
-  --surface-active-border: var(--is-light, #b0b0b0) var(--is-dark, #848484);
+  --surface-active-border: var(--is-light, #b0b0b0) var(--is-dark, #454545);
 
   /* Selected surface recipe. Use for current tabs, selected menu options,
      selected list rows, and persistent neutral selection. */
-  --surface-selected: var(--is-light, #d0d0d0) var(--is-dark, #5d5d5d);
+  --surface-selected: var(--is-light, #d0d0d0) var(--is-dark, #222222);
   --surface-selected-fg: var(--is-light, #111111) var(--is-dark, #d4d4d4);
-  --surface-selected-border: var(--is-light, #b0b0b0) var(--is-dark, #848484);
+  --surface-selected-border: var(--is-light, #b0b0b0) var(--is-dark, #454545);
 
   /* Disabled surface recipe. Use for disabled controls and disabled rows. */
   --surface-disabled: var(--is-light, #f5f5f5) var(--is-dark, #232323);
