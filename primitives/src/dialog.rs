@@ -153,7 +153,11 @@ pub fn DialogRoot(props: DialogRootProps) -> Element {
             src: FOCUS_TRAP_JS,
             defer: true
         }
-        {props.children}
+        div {
+            "data-state": if open() { "open" } else { "closed" },
+            ..props.attributes,
+            {props.children}
+        }
     }
 }
 
@@ -229,8 +233,8 @@ pub struct DialogContentProps {
     /// CSS class name to apply to the backdrop overlay element.
     /// When using the styled component layer, pass the hashed class from the CSS module
     /// so that scoped CSS rules match.
-    #[props(default)]
-    pub backdrop_class: Option<String>,
+    #[props(default, into)]
+    pub backdrop_class: String,
 
     /// Whether clicking outside the dialog (on the backdrop) closes it. Defaults to `true`.
     #[props(default = true)]
@@ -242,7 +246,7 @@ pub struct DialogContentProps {
 
     /// The ARIA role for the inner dialog element. Defaults to `"dialog"`.
     /// Pass `"alertdialog"` when building an alert dialog.
-    #[props(default = "dialog".to_string())]
+    #[props(default = "dialog", into)]
     pub dialog_role: String,
 
     /// Additional attributes to apply to the dialog content element.
@@ -358,19 +362,12 @@ pub fn DialogContent(props: DialogContentProps) -> Element {
 
     let render = use_animated_open(backdrop_id, open);
 
-    let backdrop_class = props
-        .backdrop_class
-        .as_deref()
-        .unwrap_or("dx-dialog-backdrop");
-
-    let dialog_role = props.dialog_role.clone();
-
     rsx! {
         if render() {
             div {
                 div {
                     id: backdrop_id,
-                    class: backdrop_class,
+                    class: props.backdrop_class,
                     aria_hidden: (!open()).then_some("true"),
                     "data-state": if open() { "open" } else { "closed" },
                     onclick: move |_| {
@@ -381,7 +378,7 @@ pub fn DialogContent(props: DialogContentProps) -> Element {
                 }
                 div {
                     id,
-                    role: dialog_role.clone(),
+                    role: props.dialog_role,
                     aria_modal: "true",
                     aria_labelledby: ctx.dialog_labelledby,
                     aria_describedby: ctx.dialog_describedby,
