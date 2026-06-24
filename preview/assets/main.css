@@ -1325,7 +1325,6 @@ body {
   padding: 2rem;
   border: 1px solid var(--surface-border);
   border-radius: 0.25rem;
-  background: var(--surface-muted);
 }
 
 .dx-component-card-preview > * {
