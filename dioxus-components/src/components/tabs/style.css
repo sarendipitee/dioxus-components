@@ -167,21 +167,21 @@
 }
 
 .dx_tabs[data-variant="default"] .dx_tabs_trigger[data-state="active"] {
-    box-shadow: 0 1px 0 0 var(--surface-active-fg);
-    background: var(--surface-active);
-    color: var(--surface-active-fg);
+    box-shadow: 0 1px 0 0 var(--surface-selected-fg);
+    background: var(--surface-selected);
+    color: var(--surface-selected-fg);
 }
 
 .dx_tabs[data-variant="default"][data-inverted="true"] .dx_tabs_trigger[data-state="active"] {
-    box-shadow: 0 -1px 0 0 var(--surface-active-fg);
+    box-shadow: 0 -1px 0 0 var(--surface-selected-fg);
 }
 
 .dx_tabs[data-variant="default"][data-orientation="vertical"][data-placement="start"] .dx_tabs_trigger[data-state="active"] {
-    box-shadow: 1px 0 0 0 var(--surface-active-fg);
+    box-shadow: 1px 0 0 0 var(--surface-selected-fg);
 }
 
 .dx_tabs[data-variant="default"][data-orientation="vertical"][data-placement="end"] .dx_tabs_trigger[data-state="active"] {
-    box-shadow: -1px 0 0 0 var(--surface-active-fg);
+    box-shadow: -1px 0 0 0 var(--surface-selected-fg);
 }
 
 .dx_tabs[data-variant="outline"] .dx_tabs_trigger[data-state="active"] {
@@ -202,8 +202,8 @@
 }
 
 .dx_tabs[data-variant="ghost"] .dx_tabs_trigger[data-state="active"] {
-    background: var(--surface-active);
-    color: var(--surface-active-hover-fg);
+    background: var(--surface-selected);
+    color: var(--surface-selected-hover-fg);
 }
 
 .dx_tabs_content {
