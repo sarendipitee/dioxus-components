@@ -101,16 +101,10 @@ pub fn AlertDialogTrigger(props: AlertDialogTriggerProps) -> Element {
 /// Must be used inside an [`AlertDialogRoot`].
 #[component]
 pub fn AlertDialogContent(props: AlertDialogContentProps) -> Element {
-    let backdrop_class = if props.backdrop_class.is_empty() {
-        None
-    } else {
-        Some(props.backdrop_class)
-    };
-
     rsx! {
         dialog::DialogContent {
             id: props.id,
-            backdrop_class,
+            backdrop_class: props.backdrop_class,
             close_on_backdrop_click: false,
             close_on_escape: false,
             dialog_role: "alertdialog",
