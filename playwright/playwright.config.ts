@@ -127,7 +127,7 @@ export default defineConfig({
     ? undefined
     : {
         cwd: path.join(process.cwd(), "../preview"),
-        command: `dx build --web && node ../playwright/serve-preview.mjs ../target/dx/preview/debug/web/public ${localBasePort}`,
+        command: `node ../playwright/start-preview.mjs ../target/dx/preview/debug/web/public ${localBasePort}`,
         port: localBasePort,
         timeout: 50 * 60 * 1000,
         reuseExistingServer: false,
