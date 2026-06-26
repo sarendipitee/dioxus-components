@@ -161,9 +161,6 @@
   background: var(--dx-sidebar-background);
 }
 
-.dx_sidebar_sheet_close {
-  display: none;
-}
 
 .dx_sidebar_mobile_inner {
   display: flex;

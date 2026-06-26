@@ -31,7 +31,7 @@ fn described_by(
     let mut ids = Vec::new();
 
     if let Some(id) = described_by.filter(|id| !id.is_empty()) {
-        ids.push(id);
+        ids.push(id.to_string());
     }
     if description {
         ids.push(format!("{id}-description"));

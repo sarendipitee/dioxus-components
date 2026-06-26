@@ -1,9 +1,7 @@
 use crate::component_styles;
 use crate::components::button::{Button, ButtonVariant};
 use crate::components::separator::Separator;
-use crate::components::sheet::{
-    Sheet, SheetContentClose, SheetDescription, SheetHeader, SheetSide, SheetTitle,
-};
+use crate::components::sheet::{Sheet, SheetSide};
 use crate::components::skeleton::Skeleton;
 use crate::components::tooltip::{Tooltip, TooltipContent, TooltipTrigger};
 use dioxus::core::use_drop;
@@ -296,16 +294,14 @@ pub fn Sidebar(
             Sheet {
                 open: open_mobile(),
                 on_open_change: move |v| ctx.set_open_mobile(v),
-                "data-side": sheet_side.as_str(),
+                side: sheet_side,
                 class: Styles::dx_sidebar_sheet.to_string(),
                 "data-sidebar": "sidebar",
                 "data-slot": "sidebar",
                 "data-mobile": "true",
-                SheetContentClose { class: Styles::dx_sidebar_sheet_close.to_string() }
-                SheetHeader { class: Styles::dx_sr_only.to_string(),
-                    SheetTitle { "Sidebar" }
-                    SheetDescription { "Displays the mobile sidebar." }
-                }
+                title: "Sidebar",
+                description: "Displays the mobile sidebar.",
+                with_close_button: false,
                 div { class: Styles::dx_sidebar_mobile_inner.to_string(), {children} }
             }
         };

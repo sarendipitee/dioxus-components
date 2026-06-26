@@ -367,6 +367,6 @@ examples!(
     toggle,
     toggle_group,
     toolbar,
-    tooltip,
+    tooltip[shorthand],
     virtual_list[random_heights],
 );

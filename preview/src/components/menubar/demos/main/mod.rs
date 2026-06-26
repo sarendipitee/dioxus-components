@@ -88,8 +88,10 @@ pub fn Demo() -> Element {
                 }
             }
         }
-        p { "Selected: {selected_item}" }
-        p { "Status bar: {status_bar}" }
-        p { "Sort: {sort_order().unwrap_or(\"none\".to_string())}" }
+        div {
+            p { "Selected: {selected_item}" }
+            p { "Status bar: {status_bar}" }
+            p { "Sort: {sort_order().unwrap_or(\"none\".to_string())}" }
+        }
     }
 }

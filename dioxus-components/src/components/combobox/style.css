@@ -53,9 +53,9 @@
   flex-direction: column;
   padding: var(--space);
   border-radius: var(--radius-surface);
-  background: var(--surface);
-  box-shadow: inset 0 0 0 1px var(--surface-border);
-  color: var(--surface-fg);
+  background: var(--overlay);
+  box-shadow: inset 0 0 0 1px var(--overlay-border);
+  color: var(--overlay-fg);
   transform-origin: top;
 }
 
@@ -201,7 +201,10 @@
 }
 
 .dx_combobox_pills_root [data-combobox-search],
+.dx_combobox_pills_input [data-combobox-search],
+[data-pills-input] [data-combobox-search],
 .dx_combobox_pills_input [data-pills-input-field],
+[data-pills-input] [data-pills-input-field],
 .dx_combobox_tags_input [data-pills-input-field] {
   min-width: 7rem;
   flex: 1 1 7rem;
@@ -241,9 +244,9 @@
   flex-direction: column;
   padding: var(--space);
   border-radius: var(--radius-surface);
-  background: var(--surface);
-  box-shadow: inset 0 0 0 1px var(--surface-border);
-  color: var(--surface-fg);
+  background: var(--overlay);
+  box-shadow: inset 0 0 0 1px var(--overlay-border);
+  color: var(--overlay-fg);
   transform-origin: top;
 }
 
