@@ -46,9 +46,9 @@
 
   /* Selected surface recipe. Use for current tabs, selected menu options,
      selected list rows, and persistent neutral selection. */
-  --surface-selected: var(--is-light, #d0d0d0) var(--is-dark, #222222);
-  --surface-selected-fg: var(--is-light, #111111) var(--is-dark, #d4d4d4);
-  --surface-selected-border: var(--is-light, #b0b0b0) var(--is-dark, #454545);
+  --surface-selected: var(--is-light, #eeeeee) var(--is-dark, #222222);
+  --surface-selected-fg: var(--is-light, #454545) var(--is-dark, #d4d4d4);
+  --surface-selected-border: var(--is-light, #c0c0c0) var(--is-dark, #454545);
 
   /* Disabled surface recipe. Use for disabled controls and disabled rows. */
   --surface-disabled: var(--is-light, #f5f5f5) var(--is-dark, #232323);
@@ -61,7 +61,7 @@
   --input-fg: var(--is-light, #111111) var(--is-dark, #d4d4d4);
   --input-fg-muted: var(--is-light, #717171) var(--is-dark, #a1a1a1);
   --input-fg-faint: var(--is-light, #b0b0b0) var(--is-dark, #5d5d5d);
-  --input-border: var(--is-light, #ecf1f6) var(--is-dark, #3e3e3e);
+  --input-border: var(--is-light, #d6dbdf) var(--is-dark, #3e3e3e);
 
   /* Input hover recipe. Use when a field shell is hovered but not focused. */
   --input-hover: var(--is-light, #ffffff) var(--is-dark, #111111);
