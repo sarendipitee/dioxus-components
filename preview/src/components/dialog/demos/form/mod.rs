@@ -12,27 +12,18 @@ pub fn Demo() -> Element {
         Dialog {
             open: open(),
             on_open_change: move |v| open.set(v),
-            DialogContent {
-                DialogClose { "×" }
-                DialogHeader {
-                    DialogTitle { "Edit profile" }
-                    DialogDescription {
-                        "Make changes to your profile here. Click save when you're done."
-                    }
+            title: "Edit profile",
+            description: "Make changes to your profile here. Click save when you're done.",
+            footer: rsx! {
+                Button {
+                    variant: ButtonVariant::Outline,
+                    onclick: move |_| open.set(false),
+                    "Cancel"
                 }
-                DialogBody {
-                    TextInput { id: "dialog-name", label: "Name", value: "Pedro Duarte" }
-                    TextInput { id: "dialog-username", label: "Username", value: "@peduarte" }
-                }
-                DialogFooter {
-                    Button {
-                        variant: ButtonVariant::Outline,
-                        onclick: move |_| open.set(false),
-                        "Cancel"
-                    }
-                    Button { "Save changes" }
-                }
-            }
+                Button { "Save changes" }
+            },
+            TextInput { id: "dialog-name", label: "Name", value: "Pedro Duarte" }
+            TextInput { id: "dialog-username", label: "Username", value: "@peduarte" }
         }
     }
 }

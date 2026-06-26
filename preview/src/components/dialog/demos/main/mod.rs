@@ -11,23 +11,16 @@ pub fn Demo() -> Element {
         Dialog {
             open: open(),
             on_open_change: move |v| open.set(v),
-            DialogContent {
-                DialogClose { "×" }
-                DialogHeader {
-                    DialogTitle { "Item information" }
-                    DialogDescription {
-                        "Here is some additional information about this item. Review the details before proceeding."
-                    }
+            title: "Item information",
+            description: "Here is some additional information about this item. Review the details before proceeding.",
+            footer: rsx! {
+                Button {
+                    variant: ButtonVariant::Outline,
+                    onclick: move |_| open.set(false),
+                    "Cancel"
                 }
-                DialogFooter {
-                    Button {
-                        variant: ButtonVariant::Outline,
-                        onclick: move |_| open.set(false),
-                        "Cancel"
-                    }
-                    Button { "Continue" }
-                }
-            }
+                Button { "Continue" }
+            },
         }
     }
 }

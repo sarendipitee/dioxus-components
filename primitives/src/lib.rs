@@ -348,6 +348,8 @@ impl ContentAlign {
 /// that renders an element from context.
 ///
 /// `Ctx` defaults to `()` for the common case where no render context is needed.
+///
+/// Defaults to `Text("")` — the empty-string variant signals "no content" for optional slots.
 #[derive(Clone, PartialEq)]
 pub enum TextOrElement<Ctx: 'static = ()> {
     /// Plain text content.
@@ -379,6 +381,21 @@ impl<Ctx: 'static> From<Element> for TextOrElement<Ctx> {
 impl<Ctx: 'static> From<Callback<Ctx, Element>> for TextOrElement<Ctx> {
     fn from(value: Callback<Ctx, Element>) -> Self {
         Self::Render(value)
+    }
+}
+
+/// Default is `Text("")` — the empty string represents "no content"
+/// for optional component slots.
+impl<Ctx: 'static> Default for TextOrElement<Ctx> {
+    fn default() -> Self {
+        Self::Text(String::new())
+    }
+}
+
+impl<Ctx: 'static> TextOrElement<Ctx> {
+    /// Whether this slot has meaningful content (non-empty text, an element, or a callback).
+    pub fn is_empty(&self) -> bool {
+        matches!(self, TextOrElement::Text(s) if s.is_empty())
     }
 }
 

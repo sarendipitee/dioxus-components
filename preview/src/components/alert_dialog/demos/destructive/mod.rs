@@ -16,19 +16,11 @@ pub fn Demo() -> Element {
         AlertDialog {
             open: open(),
             on_open_change: move |v| open.set(v),
-            AlertDialogContent {
-                AlertDialogTitle { "Are you absolutely sure?" }
-                AlertDialogDescription {
-                    "This action cannot be undone. This will permanently delete your account and remove all of your data from our servers."
-                }
-                AlertDialogActions {
-                    AlertDialogCancel { "Cancel" }
-                    AlertDialogAction {
-                        on_click: move |_| deleted.set(true),
-                        "Yes, delete account"
-                    }
-                }
-            }
+            title: "Are you absolutely sure?",
+            description: "This action cannot be undone. This will permanently delete your account and remove all of your data from our servers.",
+            cancel: "Cancel",
+            confirm: "Yes, delete account",
+            on_confirm: move |_| deleted.set(true),
         }
         if deleted() {
             p {

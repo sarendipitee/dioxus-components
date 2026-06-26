@@ -75,3 +75,72 @@ test("sheet opens from different sides", async ({ page }) => {
     await expect(page.getByRole("dialog", { name: "Sheet Title" })).toBeHidden();
   }
 });
+
+test("sheet root wrapper exists and reflects open state", async ({ page }) => {
+  await gotoSheetDemo(page);
+
+  const root = page.locator('[data-slot="sheet-root"]');
+
+  // Root wrapper should always exist in DOM, initially closed
+  await expect(root).toHaveAttribute("data-state", "closed");
+
+  // Open sheet
+  await page.getByRole("button", { name: "Right" }).click();
+  await expect(root).toHaveAttribute("data-state", "open");
+
+  // Close with Escape
+  await page.keyboard.press("Escape");
+  await expect(root).toHaveAttribute("data-state", "closed");
+});
+
+test("sheet panel appears on the correct side", async ({ page }) => {
+  await gotoSheetDemo(page);
+  const viewport = page.viewportSize()!;
+
+  for (const [buttonName, side, edgeCheck] of [
+    ["Right", "right", (box: { x: number; y: number; width: number; height: number }) => {
+      // Right edge of sheet panel should be at viewport right edge
+      expect(box.x + box.width).toBe(viewport.width);
+    }],
+    ["Left", "left", (box: { x: number; y: number; width: number; height: number }) => {
+      expect(box.x).toBe(0);
+    }],
+    ["Top", "top", (box: { x: number; y: number; width: number; height: number }) => {
+      expect(box.y).toBe(0);
+    }],
+    ["Bottom", "bottom", (box: { x: number; y: number; width: number; height: number }) => {
+      expect(box.y + box.height).toBe(viewport.height);
+    }],
+  ] as const) {
+    await openSheet(page, buttonName);
+
+    const content = page.locator('[data-slot="sheet-content"]').first();
+    // Wait for slide-in animation to finish (200ms ease-out)
+    await page.waitForTimeout(300);
+
+    const box = await content.boundingBox();
+    expect(box, "sheet content should have non-zero bounding box").toBeTruthy();
+    edgeCheck(box!);
+
+    await page.keyboard.press("Escape");
+    await expect(page.getByRole("dialog", { name: "Sheet Title" })).toBeHidden();
+  }
+});
+
+test("sheet backdrop covers viewport and catches clicks", async ({ page }) => {
+  await gotoSheetDemo(page);
+
+  await openSheet(page, "Right");
+
+  // The root wrapper should be fixed and cover the viewport
+  const root = page.locator('[data-slot="sheet-root"]');
+  await expect(root).toHaveCSS("position", "fixed");
+  await expect(root).toHaveCSS("top", "0px");
+  await expect(root).toHaveCSS("right", "0px");
+  await expect(root).toHaveCSS("bottom", "0px");
+  await expect(root).toHaveCSS("left", "0px");
+
+  // Click far left of the sheet panel — on the backdrop
+  await page.mouse.click(5, 200);
+  await expect(page.getByRole("dialog", { name: "Sheet Title" })).toBeHidden();
+});

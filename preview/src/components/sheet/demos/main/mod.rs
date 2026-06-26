@@ -1,13 +1,8 @@
 use dioxus::prelude::*;
-use dioxus_components::{
-    button::{Button, ButtonVariant},
-    input::TextInput,
-    label::Label,
-    sheet::{
-        Sheet, SheetClose, SheetContentClose, SheetDescription, SheetFooter, SheetHeader,
-        SheetSide, SheetTitle,
-    },
-};
+use dioxus_components::button::{Button, ButtonVariant};
+use dioxus_components::input::TextInput;
+use dioxus_components::label::Label;
+use dioxus_components::sheet::{Sheet, SheetSide};
 
 #[component]
 pub fn Demo() -> Element {
@@ -28,18 +23,25 @@ pub fn Demo() -> Element {
             Button { variant: ButtonVariant::Outline, onclick: open_sheet(SheetSide::Bottom), "Bottom" }
             Button { variant: ButtonVariant::Outline, onclick: open_sheet(SheetSide::Left), "Left" }
         }
-        Sheet { open: open(), on_open_change: move |v| open.set(v), "data-side": side().as_str(),
-            SheetHeader {
-                SheetTitle { "Sheet Title" }
-                SheetDescription { "Sheet description goes here." }
-            }
-
+        Sheet {
+            open: open(),
+            on_open_change: move |v| open.set(v),
+            side: side(),
+            title: "Sheet Title",
+            description: "Sheet description goes here.",
+            footer: rsx! {
+                Button { "Save changes" }
+                Button {
+                    variant: ButtonVariant::Outline,
+                    onclick: move |_| open.set(false),
+                    "Cancel"
+                }
+            },
             div {
                 display: "grid",
                 flex: "1 1 0%",
                 grid_auto_rows: "min-content",
                 gap: "1.5rem",
-                padding: "0 1rem",
                 div { display: "grid", gap: "0.75rem",
                     Label { html_for: "sheet-demo-name", "Name" }
                     TextInput {
@@ -55,16 +57,6 @@ pub fn Demo() -> Element {
                     }
                 }
             }
-
-            SheetFooter {
-                Button { "Save changes" }
-                SheetClose {
-                    as: |attributes| rsx! {
-                        Button { variant: ButtonVariant::Outline, attributes, "Cancel" }
-                    },
-                }
-            }
-            SheetContentClose {}
         }
     }
 }

@@ -16,19 +16,11 @@ pub fn Demo() -> Element {
         AlertDialog {
             open: open(),
             on_open_change: move |v| open.set(v),
-            AlertDialogContent {
-                AlertDialogTitle { "Unsaved changes" }
-                AlertDialogDescription {
-                    "You have unsaved changes that will be lost. Are you sure you want to leave this page?"
-                }
-                AlertDialogActions {
-                    AlertDialogCancel { "Stay" }
-                    AlertDialogAction {
-                        on_click: move |_| navigated.set(true),
-                        "Leave"
-                    }
-                }
-            }
+            title: "Unsaved changes",
+            description: "You have unsaved changes that will be lost. Are you sure you want to leave this page?",
+            cancel: "Stay",
+            confirm: "Leave",
+            on_confirm: move |_| navigated.set(true),
         }
         if navigated() {
             p {

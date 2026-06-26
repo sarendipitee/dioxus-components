@@ -22,24 +22,17 @@ pub fn Demo() -> Element {
         Dialog {
             open: open(),
             on_open_change: move |v| open.set(v),
-            DialogContent {
-                style: "max-height: 400px;",
-                DialogClose { "×" }
-                DialogHeader {
-                    DialogTitle { "About Dioxus" }
-                    DialogDescription { "Scroll through the content below to learn more." }
+            title: "About Dioxus",
+            description: "Scroll through the content below to learn more.",
+            style: "max-height: 400px;",
+            footer: rsx! {
+                Button {
+                    onclick: move |_| open.set(false),
+                    "Close"
                 }
-                DialogBody {
-                    for para in PARAGRAPHS {
-                        p { "{para}" }
-                    }
-                }
-                DialogFooter {
-                    Button {
-                        onclick: move |_| open.set(false),
-                        "Close"
-                    }
-                }
+            },
+            for para in PARAGRAPHS {
+                p { "{para}" }
             }
         }
     }

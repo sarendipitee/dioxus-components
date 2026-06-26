@@ -195,6 +195,9 @@ pub fn DialogTrigger(props: DialogTriggerProps) -> Element {
 /// The props for the [`DialogClose`] component
 #[derive(Props, Clone, PartialEq)]
 pub struct DialogCloseProps {
+    /// Override the rendered element (e.g. wrap in styled Button).
+    /// Receives merged attributes; return the replacement element.
+    pub r#as: Option<Callback<Vec<Attribute>, Element>>,
     /// Additional attributes to apply to the close button element.
     #[props(extends = GlobalAttributes)]
     pub attributes: Vec<Attribute>,
@@ -214,13 +217,17 @@ pub fn DialogClose(props: DialogCloseProps) -> Element {
     let ctx: DialogCtx = use_context();
     let set_open = ctx.set_open;
 
-    rsx! {
-        button {
-            r#type: "button",
-            onclick: move |_| set_open.call(false),
-            ..props.attributes,
-            {props.children}
-        }
+    let base = attributes!(button {
+        r#type: "button",
+        aria_label: "Close",
+        onclick: move |_| set_open.call(false),
+    });
+    let attributes = merge_attributes(vec![base, props.attributes]);
+
+    if let Some(dynamic) = props.r#as {
+        dynamic.call(attributes)
+    } else {
+        rsx! { button { ..attributes, {props.children} } }
     }
 }
 
