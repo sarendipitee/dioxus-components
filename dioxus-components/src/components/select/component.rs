@@ -7,7 +7,7 @@ use dioxus_icons::lucide::{Check, ChevronDown};
 use dioxus_primitives::select::{self, SelectGroupLabelProps, SelectOptionProps};
 use dioxus_primitives::{dioxus_attributes::attributes, merge_attributes};
 
-use crate::input::{element_label, Input, InputRadius, InputSize, InputVariant, InputWrapper};
+use crate::input::{Input, InputContent, InputLabel, InputRadius, InputSize, InputVariant, InputWrapper};
 
 pub use dioxus_primitives::select::SelectGroup;
 
@@ -81,14 +81,14 @@ pub struct SelectProps<T: Clone + PartialEq + 'static = String> {
     #[props(default = ReadSignal::new(Signal::new(Duration::from_millis(1000))))]
     pub typeahead_timeout: ReadSignal<Duration>,
     /// Label rendered by the shared input wrapper.
-    #[props(default)]
-    pub label: Option<Element>,
+    #[props(default, into)]
+    pub label: InputLabel,
     /// Description rendered by the shared input wrapper.
-    #[props(default)]
-    pub description: Option<Element>,
+    #[props(default, into)]
+    pub description: InputContent,
     /// Error rendered by the shared input wrapper and reflected on the shell.
-    #[props(default)]
-    pub error: Option<Element>,
+    #[props(default, into)]
+    pub error: InputContent,
     /// Marks the field as required.
     #[props(default = false)]
     pub required: bool,
@@ -160,14 +160,14 @@ pub struct SelectMultiProps<T: Clone + PartialEq + 'static = String> {
     #[props(default = ReadSignal::new(Signal::new(Duration::from_millis(1000))))]
     pub typeahead_timeout: ReadSignal<Duration>,
     /// Label rendered by the shared input wrapper.
-    #[props(default)]
-    pub label: Option<Element>,
+    #[props(default, into)]
+    pub label: InputLabel,
     /// Description rendered by the shared input wrapper.
-    #[props(default)]
-    pub description: Option<Element>,
+    #[props(default, into)]
+    pub description: InputContent,
     /// Error rendered by the shared input wrapper and reflected on the shell.
-    #[props(default)]
-    pub error: Option<Element>,
+    #[props(default, into)]
+    pub error: InputContent,
     /// Marks the field as required.
     #[props(default = false)]
     pub required: bool,
@@ -228,7 +228,7 @@ pub fn Select<T: Clone + PartialEq + 'static>(props: SelectProps<T>) -> Element 
             attributes: merged,
             InputWrapper {
                 id: input_id.clone(),
-                label: element_label(props.label),
+                label: props.label,
                 description: props.description,
                 error: props.error.clone(),
                 required: props.required,
@@ -289,7 +289,7 @@ pub fn SelectMulti<T: Clone + PartialEq + 'static>(props: SelectMultiProps<T>) -
             attributes: merged,
             InputWrapper {
                 id: input_id.clone(),
-                label: element_label(props.label),
+                label: props.label,
                 description: props.description,
                 error: props.error.clone(),
                 required: props.required,

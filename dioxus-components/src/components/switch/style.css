@@ -45,3 +45,56 @@
   cursor: not-allowed;
   opacity: 0.5;
 }
+
+.dx_switch_field {
+    display: flex;
+    align-items: flex-start;
+    gap: var(--item-gap);
+    color: var(--input-fg);
+}
+
+.dx_switch_field[data-disabled="true"] {
+    color: var(--input-disabled-fg);
+}
+
+.dx_switch_label_container {
+    display: inline-flex;
+    min-width: 0;
+    flex-direction: column;
+    gap: var(--space);
+}
+
+.dx_switch_label {
+    display: inline-flex;
+    width: fit-content;
+    align-items: center;
+    gap: calc(var(--space) / 2);
+    color: var(--input-fg);
+    font-size: 0.875rem;
+    font-weight: 500;
+    line-height: 1.25rem;
+}
+
+.dx_switch_field[data-disabled="true"] .dx_switch_label {
+    color: var(--input-disabled-fg);
+    cursor: not-allowed;
+}
+
+.dx_switch_required,
+.dx_switch_error {
+    color: var(--danger);
+}
+
+.dx_switch_description,
+.dx_switch_error {
+    font-size: 0.8125rem;
+    line-height: 1.125rem;
+}
+
+.dx_switch_description {
+    color: var(--input-fg-muted);
+}
+
+.dx_switch_field[data-disabled="true"] .dx_switch_description {
+    color: var(--input-disabled-fg);
+}

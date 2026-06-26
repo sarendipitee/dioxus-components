@@ -9,8 +9,8 @@ use palette::{encoding, FromColor, Hsv, IntoColor, Srgb};
 
 use crate::components::color_picker::{ColorPickerRoot, ColorPickerSurface, ColorSwatch};
 use crate::components::input::{
-    element_label, use_input_control_context, Input, InputClearButton, InputControlContext,
-    InputRadius, InputSize, InputVariant, InputWrapper,
+    use_input_control_context, Input, InputClearButton, InputContent, InputLabel, InputRadius,
+    InputSize, InputVariant, InputWrapper,
 };
 use crate::components::popover::{PopoverContent, PopoverRoot};
 
@@ -84,14 +84,14 @@ pub struct ColorInputProps {
     #[props(default = false)]
     clearable: bool,
     /// Label rendered above the input.
-    #[props(default)]
-    label: Option<Element>,
+    #[props(default, into)]
+    label: InputLabel,
     /// Description rendered below the label.
-    #[props(default)]
-    description: Option<Element>,
+    #[props(default, into)]
+    description: InputContent,
     /// Error rendered below the input.
-    #[props(default)]
-    error: Option<Element>,
+    #[props(default, into)]
+    error: InputContent,
     /// Marks the input as required.
     #[props(default = false)]
     required: bool,
@@ -154,21 +154,6 @@ pub fn ColorInput(props: ColorInputProps) -> Element {
     let value = format_color_hex(color());
     let input_id = use_color_input_id();
     let popover_id = format!("{input_id}-popover");
-    let description_id = description
-        .as_ref()
-        .map(|_| format!("{input_id}-description"));
-    let error_id = error.as_ref().map(|_| format!("{input_id}-error"));
-    let described_by = [description_id.as_deref(), error_id.as_deref()]
-        .into_iter()
-        .flatten()
-        .collect::<Vec<_>>()
-        .join(" ");
-    let control_context = InputControlContext {
-        id: input_id.clone(),
-        described_by: (!described_by.is_empty()).then_some(described_by),
-        invalid: error.is_some(),
-    };
-    use_context_provider(|| control_context);
     let mut draft_value = use_signal(|| value.clone());
 
     use_effect(use_reactive!(|value| {
@@ -203,7 +188,7 @@ pub fn ColorInput(props: ColorInputProps) -> Element {
     rsx! {
         InputWrapper {
             id: input_id,
-            label: element_label(label),
+            label,
             description,
             error: error.clone(),
             required,

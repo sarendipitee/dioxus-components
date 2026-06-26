@@ -6,6 +6,10 @@ use dioxus_primitives::{
     textarea::{self, TextareaProps as PrimitiveTextareaProps},
 };
 
+use crate::components::input::{
+    build_input_field_text_state, use_input_id, InputContent, InputLabel, InputWrapper,
+};
+
 #[component_styles("./style.css")]
 struct Styles;
 
@@ -58,6 +62,18 @@ pub fn Textarea(
     #[props(default = 24.0)] autosize_line_height_px: f64,
     #[props(default = 16.0)] autosize_vertical_chrome_px: f64,
     #[props(default)] variant: TextareaVariant,
+    /// Label rendered above the textarea.
+    #[props(default, into)] label: InputLabel,
+    /// Description rendered below the label.
+    #[props(default, into)] description: InputContent,
+    /// Error rendered below the textarea.
+    #[props(default, into)] error: InputContent,
+    /// Marks the field as required.
+    #[props(default = false)] required: bool,
+    /// Shows the required asterisk without native validation.
+    #[props(default = false)] with_asterisk: bool,
+    /// Marks the field as disabled.
+    #[props(default = false)] disabled: bool,
     #[props(extends = GlobalAttributes)]
     #[props(extends = textarea)]
     attributes: Vec<Attribute>,
@@ -65,10 +81,20 @@ pub fn Textarea(
     #[props(default)] bottom_section_attributes: Vec<Attribute>,
     children: Element,
 ) -> Element {
+    let textarea_id = use_input_id("dx-textarea");
+    let field = build_input_field_text_state(textarea_id.clone(), &description, &error, None);
+    let invalid = field.invalid;
+
     let textarea_base = attributes!(textarea {
         class: Styles::dx_textarea.to_string(),
         "data-slot": "textarea",
         "data-style": variant.class(),
+    });
+    let control_attrs = attributes!(textarea {
+        id: field.id,
+        "aria-describedby": field.described_by,
+        "aria-invalid": invalid,
+        disabled: if disabled { true },
     });
     let root_base = attributes!(div {
         class: "dx-textarea-root",
@@ -79,40 +105,51 @@ pub fn Textarea(
         style: "display: flex; align-items: center; justify-content: space-between; gap: 0.75rem; color: var(--secondary-color-5); font-size: 0.875rem;",
     });
 
-    let attributes = merge_attributes(vec![textarea_base, attributes]);
+    let attributes = merge_attributes(vec![textarea_base, control_attrs, attributes]);
     let root_attributes = merge_attributes(vec![root_base, root_attributes]);
     let bottom_section_attributes =
         merge_attributes(vec![bottom_section_base, bottom_section_attributes]);
 
-    textarea::Textarea(PrimitiveTextareaProps {
-        oninput,
-        onchange,
-        oninvalid,
-        onselect,
-        onselectionchange,
-        onfocus,
-        onblur,
-        onfocusin,
-        onfocusout,
-        onkeydown,
-        onkeypress,
-        onkeyup,
-        oncompositionstart,
-        oncompositionupdate,
-        oncompositionend,
-        oncopy,
-        oncut,
-        onpaste,
-        onmounted,
-        bottom_section,
-        autosize,
-        min_rows,
-        max_rows,
-        autosize_line_height_px,
-        autosize_vertical_chrome_px,
-        attributes,
-        root_attributes,
-        bottom_section_attributes,
-        children,
-    })
+    rsx! {
+        InputWrapper {
+            id: textarea_id,
+            label,
+            description,
+            error,
+            required,
+            with_asterisk,
+            disabled,
+            {textarea::Textarea(PrimitiveTextareaProps {
+                oninput,
+                onchange,
+                oninvalid,
+                onselect,
+                onselectionchange,
+                onfocus,
+                onblur,
+                onfocusin,
+                onfocusout,
+                onkeydown,
+                onkeypress,
+                onkeyup,
+                oncompositionstart,
+                oncompositionupdate,
+                oncompositionend,
+                oncopy,
+                oncut,
+                onpaste,
+                onmounted,
+                bottom_section,
+                autosize,
+                min_rows,
+                max_rows,
+                autosize_line_height_px,
+                autosize_vertical_chrome_px,
+                attributes,
+                root_attributes,
+                bottom_section_attributes,
+                children,
+            })}
+        }
+    }
 }

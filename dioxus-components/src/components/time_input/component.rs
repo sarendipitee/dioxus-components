@@ -12,8 +12,8 @@ use dioxus_primitives::ContentAlign;
 use time::{macros::time, Time};
 
 use crate::components::input::{
-    element_label, use_input_control_context, InputBase, InputClearButton, InputRadius, InputSize,
-    InputVariant,
+    use_input_control_context, InputBase, InputClearButton, InputContent, InputLabel, InputRadius,
+    InputSize, InputVariant,
 };
 use crate::components::popover::{PopoverContent, PopoverRoot};
 
@@ -159,14 +159,14 @@ pub fn TimeInput(
     #[props(default = ReadSignal::new(Signal::new(false)))]
     roving_loop: ReadSignal<bool>,
     /// Label rendered above the input.
-    #[props(default)]
-    label: Option<Element>,
+    #[props(default, into)]
+    label: InputLabel,
     /// Description rendered below the label.
-    #[props(default)]
-    description: Option<Element>,
+    #[props(default, into)]
+    description: InputContent,
     /// Error rendered below the input.
-    #[props(default)]
-    error: Option<Element>,
+    #[props(default, into)]
+    error: InputContent,
     /// Marks the input as required.
     #[props(default = false)]
     required: bool,
@@ -216,7 +216,7 @@ pub fn TimeInput(
     );
     rsx! {
         InputBase {
-            label: element_label(label),
+            label,
             description,
             error: error.clone(),
             required,
