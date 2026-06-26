@@ -478,10 +478,16 @@ fn PreviewCode(asset: Asset) -> Element {
 #[component]
 fn FetchHtml(asset: Asset) -> Element {
     let mut html = use_signal(String::new);
-    let fetch_path = asset.to_string();
+    let mut asset_path = use_signal(|| asset.to_string());
+
+    let current = asset.to_string();
+    if *asset_path.peek() != current {
+        asset_path.set(current);
+    }
 
     use_effect(move || {
-        let fetch_path = fetch_path.clone();
+        let path = asset_path();
+        html.set(String::new());
         spawn(async move {
             let mut eval = document::eval(
                 r#"
@@ -490,7 +496,7 @@ fn FetchHtml(asset: Asset) -> Element {
                 dioxus.send(response.ok ? await response.text() : "");
                 "#,
             );
-            let _ = eval.send(fetch_path);
+            let _ = eval.send(path);
             if let Ok(source) = eval.recv::<String>().await {
                 html.set(source);
             }
