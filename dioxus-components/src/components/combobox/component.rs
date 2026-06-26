@@ -31,7 +31,7 @@ fn described_by(
     let mut ids = Vec::new();
 
     if let Some(id) = described_by.filter(|id| !id.is_empty()) {
-        ids.push(id.to_string());
+        ids.push(id);
     }
     if description {
         ids.push(format!("{id}-description"));
@@ -151,7 +151,7 @@ pub struct ComboboxProps<T: Clone + PartialEq + 'static = String> {
 #[component]
 pub fn Combobox<T: Clone + PartialEq + 'static>(props: ComboboxProps<T>) -> Element {
     let base = attributes!(div {
-        class: Styles::dx_combobox.to_string()
+        class: Styles::dx_combobox
     });
     let merged = merge_attributes(vec![base, props.attributes]);
     let input_id = props.id.unwrap_or_else(use_combobox_input_id);
@@ -191,20 +191,20 @@ pub fn Combobox<T: Clone + PartialEq + 'static>(props: ComboboxProps<T>) -> Elem
                 left_section: props.left_section,
                 right_section: props.right_section.unwrap_or_else(|| rsx! {
                     ChevronsUpDown {
-                        class: Styles::dx_combobox_expand_icon.to_string(),
+                        class: Styles::dx_combobox_expand_icon,
                         size: "16px",
                     }
                 }),
                 described_by: props.described_by,
                 wrapper_attributes: attributes!(div {
-                    class: Styles::dx_combobox_field.to_string(),
+                    class: Styles::dx_combobox_field,
                 }),
                 input_attributes: attributes!(div {
-                    class: Styles::dx_combobox_input_wrapper.to_string(),
+                    class: Styles::dx_combobox_input_wrapper,
                 }),
                 combobox::ComboboxInput {
                     id: Some(input_id),
-                    class: Styles::dx_combobox_input.to_string(),
+                    class: Styles::dx_combobox_input,
                     placeholder: props.placeholder,
                     aria_label: props.aria_label.clone(),
                     "aria-describedby": aria_describedby,
@@ -213,7 +213,7 @@ pub fn Combobox<T: Clone + PartialEq + 'static>(props: ComboboxProps<T>) -> Elem
             }
             if props.with_list {
                 combobox::ComboboxList {
-                    class: Styles::dx_combobox_list.to_string(),
+                    class: Styles::dx_combobox_list,
                     aria_label: props.list_aria_label.clone(),
                     {props.children}
                 }
@@ -333,7 +333,7 @@ pub struct MultiSelectProps<T: Clone + PartialEq + 'static = String> {
 #[component]
 pub fn MultiSelect<T: Clone + PartialEq + 'static>(props: MultiSelectProps<T>) -> Element {
     let base = attributes!(div {
-        class: Styles::dx_combobox_pills_root.to_string(),
+        class: Styles::dx_combobox_pills_root,
     });
     let attributes = merge_attributes(vec![base, props.attributes]);
 
@@ -345,12 +345,12 @@ pub fn MultiSelect<T: Clone + PartialEq + 'static>(props: MultiSelectProps<T>) -
             disabled: (props.disabled)(),
             right_section: Some(rsx! {
                 ChevronsUpDown {
-                    class: Styles::dx_combobox_expand_icon.to_string(),
+                    class: Styles::dx_combobox_expand_icon,
                     size: "16px",
                 }
             }),
             attributes: attributes!(div {
-                class: Styles::dx_combobox_pill_field.to_string(),
+                class: Styles::dx_combobox_pill_field,
             }),
             combobox::MultiSelect::<T> {
                 values: props.values,
@@ -405,7 +405,7 @@ pub struct PillsInputProps {
 #[component]
 pub fn PillsInput(props: PillsInputProps) -> Element {
     let base = attributes!(div {
-        class: Styles::dx_combobox_pills_input.to_string(),
+        class: Styles::dx_combobox_pills_input,
     });
     let attributes = merge_attributes(vec![base, props.attributes]);
 
@@ -416,7 +416,7 @@ pub fn PillsInput(props: PillsInputProps) -> Element {
             radius: props.radius,
             disabled: (props.disabled)(),
             attributes: attributes!(div {
-                class: Styles::dx_combobox_pill_field.to_string(),
+                class: Styles::dx_combobox_pill_field,
             }),
             combobox::PillsInput {
                 disabled: props.disabled,
@@ -474,7 +474,7 @@ pub struct TagsInputProps {
 #[component]
 pub fn TagsInput(props: TagsInputProps) -> Element {
     let base = attributes!(div {
-        class: Styles::dx_combobox_tags_input.to_string(),
+        class: Styles::dx_combobox_tags_input,
     });
     let attributes = merge_attributes(vec![base, props.attributes]);
 
@@ -485,7 +485,7 @@ pub fn TagsInput(props: TagsInputProps) -> Element {
             radius: props.radius,
             disabled: (props.disabled)(),
             attributes: attributes!(div {
-                class: Styles::dx_combobox_pill_field.to_string(),
+                class: Styles::dx_combobox_pill_field,
             }),
             combobox::TagsInput {
                 values: props.values,
@@ -503,7 +503,7 @@ pub fn TagsInput(props: TagsInputProps) -> Element {
 #[component]
 pub fn ComboboxEmpty(props: ComboboxEmptyProps) -> Element {
     let base = attributes!(div {
-        class: Styles::dx_combobox_empty.to_string()
+        class: Styles::dx_combobox_empty
     });
     let merged = merge_attributes(vec![base, props.attributes]);
 
@@ -518,7 +518,7 @@ pub fn ComboboxEmpty(props: ComboboxEmptyProps) -> Element {
 #[component]
 pub fn ComboboxOption<T: Clone + PartialEq + 'static>(props: ComboboxOptionProps<T>) -> Element {
     let base = attributes!(div {
-        class: Styles::dx_combobox_option.to_string()
+        class: Styles::dx_combobox_option
     });
     let merged = merge_attributes(vec![base, props.attributes]);
 
@@ -535,7 +535,7 @@ pub fn ComboboxOption<T: Clone + PartialEq + 'static>(props: ComboboxOptionProps
             {props.children}
             combobox::ComboboxItemIndicator {
                 Check {
-                    class: Styles::dx_combobox_check_icon.to_string(),
+                    class: Styles::dx_combobox_check_icon,
                     size: "16px",
                 }
             }
