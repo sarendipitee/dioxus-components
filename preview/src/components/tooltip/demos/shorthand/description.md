@@ -1,0 +1,1 @@
+Demonstrates the `content` prop shorthand. When `content` is provided, children automatically become the trigger and the content renders inside `TooltipContent`.
