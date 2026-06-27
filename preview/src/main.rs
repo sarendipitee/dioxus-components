@@ -307,6 +307,10 @@ fn NavigationLayout() -> Element {
             href: asset!("/assets/dx-components-theme.css"),
         }
         document::Link { rel: "stylesheet", href: asset!("/assets/hero.css") }
+        document::Link {
+            rel: "stylesheet",
+            href: asset!("/assets/dioxus-code-themes.css"),
+        }
         Navbar {}
         Outlet::<Route> {}
         Footer {}

@@ -799,8 +799,8 @@ fn render_code_block_html(kind: &pulldown_cmark::CodeBlockKind<'_>, source: &str
             dioxus_code::Code {
                 src: highlighted,
                 theme: dioxus_code::CodeTheme::system(
-                    dioxus_code::Theme::GITHUB_LIGHT,
-                    dioxus_code::Theme::GITHUB_DARK,
+                    dioxus_code::Theme::AYU_LIGHT,
+                    dioxus_code::Theme::CATPPUCCIN_MOCHA,
                 ),
             }
         }
@@ -828,8 +828,8 @@ fn render_source_html(language: dioxus_code::Language, source: &str) -> String {
             dioxus_code::Code {
                 src: highlighted,
                 theme: dioxus_code::CodeTheme::system(
-                    dioxus_code::Theme::GITHUB_LIGHT,
-                    dioxus_code::Theme::GITHUB_DARK,
+                    dioxus_code::Theme::AYU_LIGHT,
+                    dioxus_code::Theme::CATPPUCCIN_MOCHA,
                 ),
             }
         }
@@ -840,12 +840,14 @@ fn render_theme_css(
     out_dir: &std::path::Path,
     generated_assets_dir: &std::path::Path,
 ) -> std::io::Result<()> {
-    let theme_path = std::path::Path::new("../themes/default.css");
-    println!("cargo:rerun-if-changed={}", theme_path.display());
-    let source = std::fs::read_to_string(theme_path)?;
+    // Sourced through the themes crate (build-dependency) rather than a relative
+    // path read, so cargo tracks the CSS via the crate graph: editing default.css
+    // recompiles dioxus-components-themes (it `include_str!`s the file) and reruns
+    // this build script, refreshing the copied asset.
+    let source = dioxus_components_themes::DEFAULT_CSS;
     let app_assets = std::path::Path::new("assets");
     std::fs::create_dir_all(app_assets)?;
-    std::fs::write(app_assets.join("dx-components-theme.css"), &source)?;
+    std::fs::write(app_assets.join("dx-components-theme.css"), source)?;
 
     let out_assets = out_dir.join("assets");
     std::fs::create_dir_all(&out_assets)?;
@@ -854,7 +856,7 @@ fn render_theme_css(
     write_generated_html(
         &out_assets.join("dx-components-theme.css.html"),
         &generated_assets.join("dx-components-theme.css.html"),
-        render_source_html(dioxus_code::Language::Css, &source),
+        render_source_html(dioxus_code::Language::Css, source),
     )
 }
 

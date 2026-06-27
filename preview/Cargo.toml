@@ -20,6 +20,7 @@ gloo-timers = { version = "0.3.0", features = ["futures"] }
 
 
 [build-dependencies]
+dioxus-components-themes = { path = "../themes" }
 dioxus = { workspace = true }
 dioxus-code = { version = "0.1.0", default-features = false, features = ["runtime", "lang-css"] }
 dioxus-ssr = "0.7.0"
