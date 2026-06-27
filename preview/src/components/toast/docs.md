@@ -14,7 +14,7 @@ ToastProvider {
             let toast_api = consume_toast();
             toast_api
                 .error(
-                    "Critical Error".to_string(),
+                    "Critical Error",
                     ToastOptions::new()
                         .description("Some info you need")
                         .duration(Duration::from_secs(60))

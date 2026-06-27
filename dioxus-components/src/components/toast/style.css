@@ -47,25 +47,64 @@
   right: 20px;
 }
 
+/* ── Stacking model (Sonner-style, transform-only) ────────────────────────
+   Every toast is absolutely positioned and pinned to the same anchor (the
+   bottom edge for bottom-* positions, the top edge for top-* positions). All
+   stacking, collapsing, hover-expansion and exit motion is expressed purely
+   through `transform: translateY() scale()` and `opacity`, both GPU-composited.
+   No layout property (margin / height / top) is ever transitioned, so frames
+   never reflow and the motion stays smooth. Because each toast's offset is
+   derived from `--toast-index`, and that index is recomputed (excluding
+   `removing` toasts) on every render, the remaining toasts begin sliding into
+   the gap the instant a toast is dismissed — concurrent with its fade. */
+
 .dx_toast_container ol {
-  display: flex;
-  flex-direction: column-reverse;
+  position: relative;
+  display: block;
+  width: 18rem;
   padding: 0;
   margin: 0;
-  gap: calc(var(--space) * 3);
-}
-
-/* Top positions stack newest toast at top (column direction) */
-.dx_toast_container[data-position^="top"] ol {
-  flex-direction: column;
+  list-style: none;
 }
 
 .dx_toast_container li {
-  display: flex;
+  position: absolute;
+  right: 0;
+  left: 0;
+  /* Stacking order MUST live on the absolutely-positioned <li> (the element
+     that participates in the container's stacking context), not on the inner
+     .dx_toast. The inner node is transformed, so it forms its own stacking
+     context and any z-index there only orders descendants of that one toast —
+     it cannot lift the toast above its siblings. With every <li> at z-index
+     auto, inter-toast paint order collapses to DOM order, and because the
+     newest toast is rendered first (the list is reversed), it would paint
+     BEHIND the older ones. Setting z-index here, highest for the newest
+     (--toast-index 0), keeps the newest in front. --toast-count inherits from
+     the container; --toast-index is emitted on each <li>. */
+  z-index: calc(var(--toast-count) - var(--toast-index));
+}
+
+/* Bottom positions: toasts pinned to the bottom edge, stack grows upward. */
+.dx_toast_container[data-position^="bottom"] li {
+  bottom: 0;
+}
+
+/* Top positions: toasts pinned to the top edge, stack grows downward. */
+.dx_toast_container[data-position^="top"] li {
+  top: 0;
 }
 
 .dx_toast {
-  z-index: calc(var(--toast-count) - var(--toast-index));
+  /* Per-step peek (how much each deeper toast shows) and per-step shrink. */
+  --toast-gap: 0.9375rem;
+  --toast-scale-step: 0.05;
+  /* Direction the stack grows: up (-1) for bottom positions, down (+1) for top.
+     Overridden for top positions below. */
+  --toast-dir: -1;
+  /* Collapsed offset: each toast behind the front peeks by --toast-gap. */
+  --toast-y: calc(var(--toast-dir) * var(--toast-index) * var(--toast-gap));
+  --toast-scale: calc(1 - var(--toast-index) * var(--toast-scale-step));
+
   display: flex;
   overflow: hidden;
   width: 18rem;
@@ -78,150 +117,93 @@
   border-radius: var(--radius-surface);
   background: var(--surface);
   color: var(--surface-fg);
-  margin-top: -4rem;
   box-shadow: 0 1px 2px rgb(0 0 0 / 6%);
   filter: none;
+  transform-origin: center
+    var(--toast-origin, bottom);
   opacity: calc(1 - var(--toast-hidden));
-  transform: scale(
-    calc(100% - var(--toast-index) * 5%),
-    calc(100% - var(--toast-index) * 2%)
-  );
-  transition: transform 0.2s ease, margin-top 0.2s ease, opacity 0.2s ease;
+  transform: translateY(var(--toast-y)) scale(var(--toast-scale));
+  /* Only transform + opacity are ever animated (both GPU-composited). The
+     lift curve is a touch slower/eased than opacity, matching Sonner's feel. */
+  transition:
+    transform 0.4s cubic-bezier(0.22, 1, 0.36, 1),
+    opacity 0.3s ease,
+    filter 0.2s ease;
 
+  /* Toasts past the 3rd are faded out (still occupy a stack slot). */
   --toast-hidden: calc(min(max(0, var(--toast-index) - 2), 1));
 }
 
-.dx_toast_container:not(:hover, :focus-within)
-  .dx_toast[data-toast-even]:not([data-top]) {
-  animation: dx-slide-up-even 0.2s ease-out;
+.dx_toast_container[data-position^="top"] .dx_toast {
+  --toast-dir: 1;
+  --toast-origin: top;
 }
 
-.dx_toast_container:not(:hover, :focus-within)
-  .dx_toast[data-toast-odd]:not([data-top]) {
-  animation: dx-slide-up-odd 0.2s ease-out;
-}
-
-@keyframes dx-slide-up-even {
-  from {
-    transform: translateY(0.5rem)
-      scale(
-        calc(100% - var(--toast-index) * 5%),
-        calc(100% - var(--toast-index) * 2%)
-      );
-  }
-
-  to {
-    transform: translateY(0)
-      scale(
-        calc(100% - var(--toast-index) * 5%),
-        calc(100% - var(--toast-index) * 2%)
-      );
-  }
-}
-
-@keyframes dx-slide-up-odd {
-  from {
-    transform: translateY(0.5rem)
-      scale(
-        calc(100% - var(--toast-index) * 5%),
-        calc(100% - var(--toast-index) * 2%)
-      );
-  }
-
-  to {
-    transform: translateY(0)
-      scale(
-        calc(100% - var(--toast-index) * 5%),
-        calc(100% - var(--toast-index) * 2%)
-      );
-  }
-}
-
+/* ── Entry animation ──────────────────────────────────────────────────────
+   The newest toast (data-top) animates in from beyond the anchor edge. */
 .dx_toast[data-top] {
-  animation: dx-toast-slide-in 0.2s ease-out;
-}
-
-.dx_toast_container:hover .dx_toast[data-top],
-.dx_toast_container:focus-within .dx_toast[data-top] {
-  animation: dx-toast-slide-in 0 ease-out;
+  animation: dx-toast-slide-in 0.4s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 @keyframes dx-toast-slide-in {
   from {
     opacity: 0;
-    transform: translateY(100%)
-      scale(
-        calc(110% - var(--toast-index) * 5%),
-        calc(110% - var(--toast-index) * 2%)
-      );
+    transform: translateY(calc(var(--toast-dir) * -100%)) scale(var(--toast-scale));
   }
 
   to {
     opacity: 1;
-    transform: translateY(0)
-      scale(
-        calc(100% - var(--toast-index) * 5%),
-        calc(100% - var(--toast-index) * 2%)
-      );
+    transform: translateY(var(--toast-y)) scale(var(--toast-scale));
   }
 }
 
-/* Top positions: toasts slide in from above and stack downward */
-.dx_toast_container[data-position^="top"] .dx_toast[data-top] {
-  animation: dx-toast-slide-in-top 0.2s ease-out;
+/* Don't replay the entry animation while the stack is expanded (hover/focus). */
+.dx_toast_container:hover .dx_toast[data-top],
+.dx_toast_container:focus-within .dx_toast[data-top] {
+  animation: none;
 }
 
-.dx_toast_container[data-position^="top"]:hover .dx_toast[data-top],
-.dx_toast_container[data-position^="top"]:focus-within .dx_toast[data-top] {
-  animation: dx-toast-slide-in-top 0 ease-out;
-}
-
-@keyframes dx-toast-slide-in-top {
-  from {
-    opacity: 0;
-    transform: translateY(-100%)
-      scale(
-        calc(110% - var(--toast-index) * 5%),
-        calc(110% - var(--toast-index) * 2%)
-      );
-  }
-
-  to {
-    opacity: 1;
-    transform: translateY(0)
-      scale(
-        calc(100% - var(--toast-index) * 5%),
-        calc(100% - var(--toast-index) * 2%)
-      );
-  }
-}
-
-/* Top positions: stacking goes downward, so use margin-bottom instead of margin-top */
-.dx_toast_container[data-position^="top"] .dx_toast {
-  margin-top: 0;
-  margin-bottom: -4rem;
-}
-
-.dx_toast_container[data-position^="top"]:hover .dx_toast,
-.dx_toast_container[data-position^="top"]:focus-within .dx_toast {
-  margin-bottom: calc(var(--space) * 2);
-}
-
+/* ── Hover / focus expansion ──────────────────────────────────────────────
+   The stack spreads out: every toast returns to full scale and is laid out
+   end-to-end. --toast-offset is the cumulative pixel height of all toasts in
+   front of this one (measured per toast and summed in the provider), so
+   variable-height toasts no longer overlap. Still transform driven, so the
+   spread/collapse stays smooth. */
 .dx_toast_container:hover .dx_toast,
 .dx_toast_container:focus-within .dx_toast {
-  margin-top: calc(var(--space) * 2);
-  filter: brightness(1);
+  --toast-y: calc(var(--toast-dir) * var(--toast-offset, 0px));
+  --toast-scale: 1;
+  --toast-hidden: 0;
   opacity: 1;
-  transform: scale(calc(100%));
 }
 
-:root[data-theme="dark"] .dx_toast,
-html[data-theme="dark"] .dx_toast {
+/* ── Exit animation (Sonner-style) ────────────────────────────────────────
+   Driven by `data-removed="true"`. The dismissed toast fades and slides
+   further in the dismiss direction (toward its anchored edge). Crucially it is
+   transform + opacity ONLY: it fades "in place" while the live siblings — whose
+   --toast-index already dropped because `removing` toasts are excluded from the
+   index — translate past it into the gap, all in one continuous motion.
+
+   Specificity: base stacking transform lives on `.dx_toast` (0,1,0) and is
+   overridden by the hover/focus rules (0,2,0). During click-to-dismiss the
+   cursor sits over the container, so the exit rule must match or beat (0,2,0).
+   The selectors below are (0,3,0)/(0,4,0) and win by specificity. */
+.dx_toast_container .dx_toast[data-removed="true"],
+.dx_toast_container:hover .dx_toast[data-removed="true"],
+.dx_toast_container:focus-within .dx_toast[data-removed="true"] {
+  opacity: 0;
+  /* Slide toward the anchored edge (down for bottom, up for top) and shrink. */
+  transform: translateY(calc(var(--toast-dir) * -1 * 100%)) scale(0.9);
+  pointer-events: none;
+}
+
+:root[data-theme="dark"] .dx_toast_container:not(:hover, :focus-within) .dx_toast,
+html[data-theme="dark"] .dx_toast_container:not(:hover, :focus-within) .dx_toast {
   filter: brightness(calc(0.5 + 0.5 * (1 - ((var(--toast-index) + 1) / 4))));
 }
 
 @media (prefers-color-scheme: dark) {
-  :root:not([data-theme="light"], [data-theme="dark"]) .dx_toast {
+  :root:not([data-theme="light"], [data-theme="dark"]) .dx_toast_container:not(:hover, :focus-within) .dx_toast {
     filter: brightness(
       calc(0.5 + 0.5 * (1 - ((var(--toast-index) + 1) / 4)))
     );
@@ -252,24 +234,7 @@ html[data-theme="dark"] .dx_toast {
   border-color: var(--info-subtle-border);
 }
 
-/* Typed toasts: let title, description, and close inherit the semantic color */
-.dx_toast[data-type] .dx_toast_title {
-  color: inherit;
-}
-
-.dx_toast[data-type] .dx_toast_description {
-  color: inherit;
-  opacity: 0.8;
-}
-
-.dx_toast[data-type] .dx_toast_close {
-  color: inherit;
-  opacity: 0.6;
-}
-
-.dx_toast[data-type] .dx_toast_close:hover {
-  opacity: 1;
-}
+/* Typed toasts already inherit semantic color from .dx_toast[data-type] */
 
 /* Loading toast: spinner replaces the close button area */
 .dx_toast[data-type="loading"] {
@@ -298,6 +263,18 @@ html[data-theme="dark"] .dx_toast {
   }
 }
 
+.dx_toast_icon {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  width: 1.25rem;
+  min-height: 1.25rem;
+  margin-top: 0.125rem;
+  margin-right: calc(var(--space) * 3);
+  line-height: 1;
+}
+
 .dx_toast_content {
   flex: 1;
   margin-right: calc(var(--space) * 2);
@@ -306,13 +283,15 @@ html[data-theme="dark"] .dx_toast {
 
 .dx_toast_title {
   margin-bottom: var(--space);
-  color: var(--overlay-fg);
+  font-size: 0.9375rem;
   font-weight: 600;
+  line-height: 1.4;
 }
 
 .dx_toast_description {
-  color: var(--fg-muted);
+  color: color-mix(in srgb, currentColor 78%, transparent);
   font-size: 0.875rem;
+  line-height: 1.5;
 }
 
 .dx_toast_close {
@@ -321,14 +300,14 @@ html[data-theme="dark"] .dx_toast {
   border: none;
   margin: 0;
   background: none;
-  color: var(--fg-muted);
+  color: color-mix(in srgb, currentColor 60%, transparent);
   cursor: pointer;
   font-size: 18px;
   line-height: 1;
 }
 
 .dx_toast_close:hover {
-  color: var(--overlay-fg);
+  color: currentColor;
 }
 
 .dx_toast_actions {
@@ -370,12 +349,8 @@ html[data-theme="dark"] .dx_toast {
     transition: none;
   }
 
-  .dx_toast[data-top],
-  .dx_toast_container:not(:hover, :focus-within) .dx_toast[data-toast-even]:not([data-top]),
-  .dx_toast_container:not(:hover, :focus-within) .dx_toast[data-toast-odd]:not([data-top]),
-  .dx_toast_container:hover .dx_toast[data-top],
-  .dx_toast_container:focus-within .dx_toast[data-top],
-  .dx_toast[data-type="loading"] .dx_toast_close {
+  /* Drop the entry slide; keep the spinner (it conveys ongoing state). */
+  .dx_toast[data-top] {
     animation: none;
   }
 }

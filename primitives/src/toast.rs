@@ -5,8 +5,26 @@ use crate::{
     use_global_keydown_listener, use_unique_id,
 };
 use dioxus::prelude::*;
-use std::collections::VecDeque;
+use std::collections::{HashMap, VecDeque};
 use std::time::Duration;
+
+/// Gap (in CSS pixels) inserted between toasts when the stack is expanded
+/// (hover / focus). Added on top of each toast's measured height to compute the
+/// cumulative `--toast-offset`. Matches the previous fixed `3 * --space` gap
+/// (`--space` is `0.25rem` → 4px).
+const TOAST_EXPAND_GAP_PX: f64 = 12.0;
+
+/// Fallback height (in CSS pixels) used for a toast whose real height has not
+/// been measured yet (first paint, before `onmounted` fires). Equals the CSS
+/// `min-height: 4rem` so the pre-measurement layout matches the old fixed-step
+/// stacking instead of collapsing every toast to offset 0.
+const TOAST_FALLBACK_HEIGHT_PX: f64 = 64.0;
+
+/// Duration of the toast exit transition. The node stays in the list (with
+/// `removing == true`) for this long so the CSS exit transition can play before
+/// the record is removed. Must be `>=` the CSS transition duration (0.3s) so the
+/// fade is not torn down mid-animation.
+const TOAST_EXIT: Duration = Duration::from_millis(320);
 
 async fn platform_sleep(duration: Duration) {
     #[cfg(not(target_family = "wasm"))]
@@ -96,6 +114,10 @@ struct ToastRecord {
     permanent: bool,
     action: Option<ToastAction>,
     cancel: Option<ToastAction>,
+    /// Whether the toast is in its exit phase. Set true by `begin_dismiss`; the
+    /// record stays in the list while the CSS exit transition plays, then is
+    /// removed by `remove_toast` after `TOAST_EXIT`.
+    removing: bool,
 }
 
 // Arguments for adding a new toast (replaces the previous anonymous tuple)
@@ -118,9 +140,14 @@ struct ToastCtx {
     toasts: Signal<VecDeque<ToastRecord>>,
     add_toast: AddToastCallback,
     remove_toast: Callback<usize>,
+    begin_dismiss: Callback<usize>,
     remove_all_toasts: Callback,
     focus_region: Callback,
     is_hovered: Signal<bool>,
+    /// Report a toast's measured pixel height (id, height). Populated by
+    /// [`ToastListItem`] via `onmounted`/`onresize`; the provider sums these into
+    /// the cumulative `--toast-offset` used by the expanded stack layout.
+    set_height: Callback<(usize, f64)>,
 }
 
 // Toast provider props
@@ -165,6 +192,13 @@ pub struct ToastListProps {
 /// The props for the [`ToastListItem`] component.
 #[derive(Props, Clone, PartialEq)]
 pub struct ToastListItemProps {
+    /// The id of the toast this item wraps. When set (and rendered under a
+    /// [`ToastProvider`]), the item measures its own height and reports it so the
+    /// provider can compute the expanded-stack offsets. Optional so the component
+    /// can still be used standalone.
+    #[props(default)]
+    pub toast_id: Option<usize>,
+
     /// Additional attributes to apply to the toast list item element.
     #[props(extends = GlobalAttributes)]
     pub attributes: Vec<Attribute>,
@@ -202,7 +236,7 @@ pub struct ToastListItemProps {
 ///             onclick: move |_| {
 ///                 toast_api
 ///                     .info(
-///                         "Custom Toast".to_string(),
+///                         "Custom Toast",
 ///                         ToastOptions::new()
 ///                             .description("Some info you need")
 ///                             .duration(Duration::from_secs(60))
@@ -223,7 +257,17 @@ pub struct ToastListItemProps {
 pub fn ToastProvider(props: ToastProviderProps) -> Element {
     let mut toasts = use_signal(VecDeque::new);
     let mut is_hovered = use_signal(|| false);
+    let mut heights = use_signal(HashMap::<usize, f64>::new);
     let portal = use_portal();
+
+    // Record a toast's measured height. Skips sub-pixel jitter so resize
+    // observers don't trigger needless re-renders of the whole stack.
+    let set_height = use_callback(move |(id, height): (usize, f64)| {
+        let mut map = heights.write();
+        if map.get(&id).map_or(true, |&old| (old - height).abs() > 0.5) {
+            map.insert(id, height);
+        }
+    });
 
     // Remove toast callback
     let remove_toast = use_callback(move |id: usize| {
@@ -231,10 +275,40 @@ pub fn ToastProvider(props: ToastProviderProps) -> Element {
         if let Some(pos) = toasts_vec.iter().position(|t: &ToastRecord| t.id == id) {
             toasts_vec.remove(pos);
         }
+        // Drop the stale height so the map can't grow unbounded.
+        heights.write().remove(&id);
     });
 
     let remove_all_toasts = use_callback(move |_| {
         toasts.write().clear();
+        heights.write().clear();
+    });
+
+    // Begin the two-step exit lifecycle for a single toast: mark it `removing`
+    // (which toggles the `data-removed` attr so the CSS exit transition plays),
+    // then remove it by id after `TOAST_EXIT`.
+    //
+    // Idempotent: the `removing` check and set happen under a single `write()`
+    // borrow so two rapid dismiss clicks can't both spawn a timer (no TOCTOU).
+    // Removal is by id and `remove_toast` no-ops on a missing id, so a stale
+    // timer for an already-removed toast is harmless. Because ids are monotonic
+    // and never reused, a re-shown toast gets a fresh id and is never matched by
+    // an old timer.
+    let begin_dismiss = use_callback(move |id: usize| {
+        {
+            let mut toasts_vec = toasts.write();
+            let Some(toast) = toasts_vec.iter_mut().find(|t: &&mut ToastRecord| t.id == id) else {
+                return;
+            };
+            if toast.removing {
+                return;
+            }
+            toast.removing = true;
+        }
+        spawn(async move {
+            platform_sleep(TOAST_EXIT).await;
+            remove_toast.call(id);
+        });
     });
 
     // Add toast callback
@@ -269,6 +343,7 @@ pub fn ToastProvider(props: ToastProviderProps) -> Element {
                 permanent,
                 action,
                 cancel,
+                removing: false,
             };
 
             // Add the toast directly to the queue
@@ -318,9 +393,11 @@ pub fn ToastProvider(props: ToastProviderProps) -> Element {
         toasts,
         add_toast,
         remove_toast,
+        begin_dismiss,
         remove_all_toasts,
         focus_region,
         is_hovered,
+        set_height,
     });
 
     rsx! {
@@ -343,27 +420,77 @@ pub fn ToastProvider(props: ToastProviderProps) -> Element {
                 ..props.attributes,
 
                 ToastList {
-                    // Render all toasts
-                    for (index, toast) in toast_list.read().iter().rev().enumerate() {
+                    // Render all toasts. `stack_index` is the visual stacking
+                    // position and counts only toasts that are NOT removing, so
+                    // the moment a toast begins dismissing it stops contributing
+                    // to the offset/scale of the toasts behind it. Those toasts
+                    // then slide forward immediately (concurrent with the exit
+                    // fade) instead of waiting for the node to leave the DOM.
+                    // The removing toast still receives a stable index (its last
+                    // visual slot) but its transform is overridden by the exit
+                    // rule, so the value only matters for z-ordering.
+                    for (stack_index, offset, toast) in {
+                        // Accumulate each toast's measured height (plus a gap) into
+                        // a running pixel offset. A toast's `--toast-offset` is the
+                        // sum of the heights of every toast in front of it (lower
+                        // stack index / newer), which is what the expanded layout
+                        // needs to lay them out end-to-end without overlap.
+                        // Unmeasured toasts fall back to the CSS min-height so the
+                        // first paint matches the old fixed-step spacing.
+                        let heights_map = heights.read();
+                        let mut counter = 0usize;
+                        let mut offset_acc = 0f64;
+                        toast_list
+                            .read()
+                            .iter()
+                            .rev()
+                            .map(|t| {
+                                let assigned = counter;
+                                let this_offset = offset_acc;
+                                if !t.removing {
+                                    counter += 1;
+                                    let h = heights_map
+                                        .get(&t.id)
+                                        .copied()
+                                        .unwrap_or(TOAST_FALLBACK_HEIGHT_PX);
+                                    offset_acc += h + TOAST_EXPAND_GAP_PX;
+                                }
+                                (assigned, this_offset, t.clone())
+                            })
+                            .collect::<Vec<_>>()
+                            .into_iter()
+                    } {
                         ToastListItem {
                             key: "{toast.id}",
+                            toast_id: toast.id,
+                            // The <li> is the absolutely-positioned element that
+                            // participates in the container's stacking context, so
+                            // its z-index (derived from --toast-index in CSS) is
+                            // what actually orders toasts front-to-back. The inner
+                            // Toast div is transformed and forms its own stacking
+                            // context, so a z-index there cannot lift it above
+                            // sibling toasts. --toast-offset is the cumulative
+                            // height of the toasts in front, used by the expanded
+                            // (hover/focus) layout to avoid overlap.
+                            style: "--toast-index: {stack_index}; --toast-offset: {offset}px",
                             {
                                 props.render_toast.call(ToastProps::builder().id(toast.id)
-                                    .index(index)
+                                    .index(stack_index)
                                     .title(toast.title.clone())
                                     .description(toast.description.clone())
                                     .toast_type(toast.toast_type)
                                     .permanent(toast.permanent)
                                     .on_close({
                                         let toast_id = toast.id;
-                                        let remove_toast = ctx.remove_toast;
+                                        let begin_dismiss = ctx.begin_dismiss;
                                         move |_| {
-                                            remove_toast.call(toast_id);
+                                            begin_dismiss.call(toast_id);
                                         }
                                     })
                                     .duration(if toast.permanent { None } else { toast.duration })
                                     .action(toast.action.clone())
                                     .cancel(toast.cancel.clone())
+                                    .removing(toast.removing)
                                     .attributes(vec![])
                                     .build()
                                 )
@@ -393,8 +520,29 @@ pub fn ToastList(props: ToastListProps) -> Element {
 /// A list item wrapper for a rendered toast.
 #[component]
 pub fn ToastListItem(props: ToastListItemProps) -> Element {
+    // The <li> is not transformed (the scale/translate live on the inner toast
+    // div), so its client rect is the toast's true, unscaled layout height —
+    // exactly what the expanded-stack offset math needs.
+    let mut item_ref: Signal<Option<std::rc::Rc<MountedData>>> = use_signal(|| None);
+    let toast_id = props.toast_id;
+    let set_height = try_consume_context::<ToastCtx>().map(|ctx| ctx.set_height);
+
+    let measure = move || async move {
+        let (Some(id), Some(set_height), Some(mounted)) = (toast_id, set_height, item_ref()) else {
+            return;
+        };
+        if let Ok(rect) = mounted.get_client_rect().await {
+            set_height.call((id, rect.height()));
+        }
+    };
+
     rsx! {
         li {
+            onmounted: move |evt| {
+                item_ref.set(Some(evt.data()));
+                measure()
+            },
+            onresize: move |_| measure(),
             ..props.attributes,
             {props.children}
         }
@@ -409,10 +557,9 @@ pub struct ToastProps {
     /// The index of the toast in the list.
     pub index: usize,
     /// The title of the toast.
-    #[props(into)]
-    pub title: String,
+    pub title: ReadSignal<String>,
     /// An optional description for the toast.
-    pub description: Option<String>,
+    pub description: ReadSignal<Option<String>>,
     /// The type of toast.
     pub toast_type: ToastType,
     /// Callback to handle the close action of the toast.
@@ -431,6 +578,11 @@ pub struct ToastProps {
     /// An optional secondary (cancel) action button.
     #[props(default)]
     pub cancel: Option<ToastAction>,
+
+    /// Whether the toast is exiting. When true the `data-removed="true"` attribute
+    /// is emitted so the CSS exit transition plays before the node is removed.
+    #[props(default = false)]
+    pub removing: bool,
 
     /// Additional attributes to apply to the toast element.
     #[props(extends = GlobalAttributes)]
@@ -516,9 +668,9 @@ pub struct ToastActionButtonProps {
 #[derive(Clone)]
 struct ToastRenderCtx {
     label_id: String,
-    description_id: Option<String>,
-    title: String,
-    description: Option<String>,
+    description_id: String,
+    title: ReadSignal<String>,
+    description: ReadSignal<Option<String>>,
     on_close: Callback<MouseEvent>,
     action: Option<ToastAction>,
     cancel: Option<ToastAction>,
@@ -554,7 +706,7 @@ struct ToastRenderCtx {
 ///             onclick: move |_| {
 ///                 toast_api
 ///                     .info(
-///                         "Custom Toast".to_string(),
+///                         "Custom Toast",
 ///                         ToastOptions::new()
 ///                             .description("Some info you need")
 ///                             .duration(Duration::from_secs(60))
@@ -574,6 +726,7 @@ struct ToastRenderCtx {
 /// - `data-toast-even`: Present on even-indexed toasts for alternating styles.
 /// - `data-toast-odd`: Present on odd-indexed toasts for alternating styles.
 /// - `data-top`: Present on the topmost toast.
+/// - `data-entering`: Present until the initial entry animation finishes.
 ///
 /// The [`Toast`] component renders toasts with the following css variables you can use to control styling:
 /// - `--toast-index`: The index of the toast in the list, used for z-indexing and positioning.
@@ -582,18 +735,16 @@ pub fn Toast(props: ToastProps) -> Element {
     let toast_id = use_unique_id();
     let id = use_memo(move || format!("toast-{toast_id}"));
     let label_id = format!("{id}-label");
-    let description_id = props
-        .description
-        .as_ref()
-        .map(|_| format!("{id}-description"));
+    let description_id = format!("{id}-description");
+    let aria_describedby = (props.description)().as_ref().map(|_| description_id.clone());
 
     // Get the context at the top level of the component
     let ctx = use_context::<ToastCtx>();
     let render_ctx = use_context_provider(|| ToastRenderCtx {
         label_id: label_id.clone(),
         description_id: description_id.clone(),
-        title: props.title.clone(),
-        description: props.description.clone(),
+        title: props.title,
+        description: props.description,
         on_close: props.on_close,
         action: props.action.clone(),
         cancel: props.cancel.clone(),
@@ -605,7 +756,7 @@ pub fn Toast(props: ToastProps) -> Element {
     let permanent = props.permanent;
     let duration = props.duration;
     let toast_id = props.id;
-    let remove_toast = ctx.remove_toast;
+    let begin_dismiss = ctx.begin_dismiss;
     let is_hovered = ctx.is_hovered;
     use_hook(|| {
         if !permanent {
@@ -621,7 +772,10 @@ pub fn Toast(props: ToastProps) -> Element {
                         }
                     }
 
-                    remove_toast.call(toast_id);
+                    // Route through `begin_dismiss` so auto-dismiss plays the exit
+                    // transition. Idempotent + by-id: if the toast was already
+                    // dismissed (close button, action) this is a harmless no-op.
+                    begin_dismiss.call(toast_id);
                 });
             }
         }
@@ -630,6 +784,7 @@ pub fn Toast(props: ToastProps) -> Element {
     let action = render_ctx.action.clone();
     let cancel = render_ctx.cancel.clone();
     let has_actions = action.is_some() || cancel.is_some();
+    let mut entering = use_signal(|| true);
 
     let children = props.children.unwrap_or_else(|| {
         rsx! {
@@ -660,7 +815,7 @@ pub fn Toast(props: ToastProps) -> Element {
             id,
             role: "alertdialog",
             aria_labelledby: "{label_id}",
-            aria_describedby: description_id,
+            aria_describedby,
             aria_modal: "false",
             tabindex: "0",
 
@@ -669,7 +824,15 @@ pub fn Toast(props: ToastProps) -> Element {
             "data-toast-even": (props.index % 2 == 0).then_some("true"),
             "data-toast-odd": (props.index % 2 == 1).then_some("true"),
             "data-top": (props.index == 0).then_some("true"),
+            "data-entering": entering().then_some("true"),
+            "data-removed": props.removing.then_some("true"),
             style: "--toast-index: {props.index}",
+            onanimationend: move |_| {
+                entering.set(false);
+            },
+            onmouseenter: move |_| {
+                entering.set(false);
+            },
             ..props.attributes,
 
             {children}
@@ -695,7 +858,7 @@ pub fn ToastContent(props: ToastContentProps) -> Element {
 pub fn ToastTitle(props: ToastTitleProps) -> Element {
     let ctx = use_context::<ToastRenderCtx>();
     let children = props.children.unwrap_or_else(|| {
-        let title = ctx.title.clone();
+        let title = ctx.title.cloned();
         rsx! { {title} }
     });
 
@@ -712,17 +875,16 @@ pub fn ToastTitle(props: ToastTitleProps) -> Element {
 #[component]
 pub fn ToastDescription(props: ToastDescriptionProps) -> Element {
     let ctx = use_context::<ToastRenderCtx>();
-    let Some(id) = ctx.description_id else {
+    let Some(description) = ctx.description.cloned() else {
         return rsx! {};
     };
-    let children = props.children.unwrap_or_else(|| {
-        let description = ctx.description.unwrap_or_default();
-        rsx! { {description} }
-    });
+    let children = props
+        .children
+        .unwrap_or_else(|| rsx! { {description.clone()} });
 
     rsx! {
         div {
-            id,
+            id: ctx.description_id.clone(),
             ..props.attributes,
             {children}
         }
@@ -838,13 +1000,18 @@ impl ToastOptions {
 pub struct Toasts {
     add_toast: AddToastCallback,
     remove_toast: Callback<usize>,
+    begin_dismiss: Callback<usize>,
     remove_all_toasts: Callback,
 }
 
 impl Toasts {
     /// Dismiss a specific toast by its ID.
+    ///
+    /// Routes through the exit lifecycle so the dismissal plays the exit
+    /// transition before the toast is removed (matches close-button / auto
+    /// dismissal).
     pub fn dismiss(&self, id: usize) {
-        self.remove_toast.call(id);
+        self.begin_dismiss.call(id);
     }
 
     /// Dismiss all currently visible toasts.
@@ -855,9 +1022,9 @@ impl Toasts {
     /// Send a toast to the associated [`ToastProvider`] with the given title, type, and options.
     ///
     /// Returns the ID of the created toast, which can be used with [`Toasts::dismiss`].
-    pub fn show(&self, title: String, toast_type: ToastType, options: ToastOptions) -> usize {
+    pub fn show(&self, title: impl Into<String>, toast_type: ToastType, options: ToastOptions) -> usize {
         self.add_toast.call(AddToastArgs {
-            title,
+            title: title.into(),
             description: options.description,
             toast_type,
             duration: if options.permanent {
@@ -872,29 +1039,29 @@ impl Toasts {
     }
 
     /// Create a new success toast. Returns the toast ID.
-    pub fn success(&self, title: String, options: ToastOptions) -> usize {
+    pub fn success(&self, title: impl Into<String>, options: ToastOptions) -> usize {
         self.show(title, ToastType::Success, options)
     }
 
     /// Create a new error toast. Returns the toast ID.
-    pub fn error(&self, title: String, options: ToastOptions) -> usize {
+    pub fn error(&self, title: impl Into<String>, options: ToastOptions) -> usize {
         self.show(title, ToastType::Error, options)
     }
 
     /// Create a new warning toast. Returns the toast ID.
-    pub fn warning(&self, title: String, options: ToastOptions) -> usize {
+    pub fn warning(&self, title: impl Into<String>, options: ToastOptions) -> usize {
         self.show(title, ToastType::Warning, options)
     }
 
     /// Create a new info toast. Returns the toast ID.
-    pub fn info(&self, title: String, options: ToastOptions) -> usize {
+    pub fn info(&self, title: impl Into<String>, options: ToastOptions) -> usize {
         self.show(title, ToastType::Info, options)
     }
 
     /// Create a permanent loading toast. Returns the toast ID.
     ///
     /// Use [`Toasts::dismiss`] with the returned ID to remove it when the operation completes.
-    pub fn loading(&self, title: String, options: ToastOptions) -> usize {
+    pub fn loading(&self, title: impl Into<String>, options: ToastOptions) -> usize {
         self.show(title, ToastType::Loading, options.permanent(true))
     }
 
@@ -926,29 +1093,32 @@ impl Toasts {
     ///     }
     /// }
     /// ```
-    pub fn promise<F, T, E>(
+    pub fn promise<F, T, E, L, S, R>(
         &self,
         future: F,
-        loading: impl ToString,
-        success: impl ToString,
-        error: impl ToString,
+        loading: L,
+        success: S,
+        error: R,
         options: ToastOptions,
     ) where
         F: std::future::Future<Output = Result<T, E>> + 'static,
+        L: Into<String>,
+        S: Into<String>,
+        R: Into<String>,
     {
         let toast = *self;
-        let loading_id = self.loading(loading.to_string(), ToastOptions::new());
-        let success_msg = success.to_string();
-        let error_msg = error.to_string();
+        let loading_id = self.loading(loading, ToastOptions::new());
+        let success_msg = success.into();
+        let error_msg = error.into();
 
         spawn(async move {
             match future.await {
                 Ok(_) => {
-                    toast.dismiss(loading_id);
+                    toast.remove_toast.call(loading_id);
                     toast.success(success_msg, options);
                 }
                 Err(_) => {
-                    toast.dismiss(loading_id);
+                    toast.remove_toast.call(loading_id);
                     toast.error(error_msg, options);
                 }
             }
@@ -978,7 +1148,7 @@ impl Toasts {
 ///             onclick: move |_| {
 ///                 toast_api
 ///                     .info(
-///                         "Custom Toast".to_string(),
+///                         "Custom Toast",
 ///                         ToastOptions::new()
 ///                             .description("Some info you need")
 ///                             .duration(Duration::from_secs(60))
@@ -1002,6 +1172,7 @@ pub fn consume_toast() -> Toasts {
     Toasts {
         add_toast: ctx.add_toast,
         remove_toast: ctx.remove_toast,
+        begin_dismiss: ctx.begin_dismiss,
         remove_all_toasts: ctx.remove_all_toasts,
     }
 }

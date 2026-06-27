@@ -23,7 +23,7 @@ fn ToastButtons() -> Element {
                 r#type: "button",
                 onclick: move |_| {
                     toast.success(
-                        "Event has been created".to_string(),
+                        "Event has been created",
                         ToastOptions::new().description("Monday, January 3rd at 6:00pm"),
                     );
                 },
@@ -34,7 +34,7 @@ fn ToastButtons() -> Element {
                 variant: ButtonVariant::Destructive,
                 onclick: move |_| {
                     toast.error(
-                        "Event has not been created".to_string(),
+                        "Event has not been created",
                         ToastOptions::new()
                             .description("Your session expired. Please sign in and try again."),
                     );
@@ -46,7 +46,7 @@ fn ToastButtons() -> Element {
                 variant: ButtonVariant::Outline,
                 onclick: move |_| {
                     toast.warning(
-                        "Event start time cannot be earlier than 8am".to_string(),
+                        "Event start time cannot be earlier than 8am",
                         ToastOptions::new().description("Set a start time of 8:00am or later."),
                     );
                 },
@@ -57,7 +57,7 @@ fn ToastButtons() -> Element {
                 variant: ButtonVariant::Outline,
                 onclick: move |_| {
                     toast.info(
-                        "App update available".to_string(),
+                        "App update available",
                         ToastOptions::new()
                             .description("Version 2.0 includes performance improvements and new features."),
                     );

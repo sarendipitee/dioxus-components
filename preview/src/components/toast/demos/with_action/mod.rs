@@ -24,7 +24,7 @@ fn ToastButtons() -> Element {
                 variant: ButtonVariant::Outline,
                 onclick: move |_| {
                     toast.success(
-                        "Event has been created".to_string(),
+                        "Event has been created",
                         ToastOptions::new()
                             .description("Monday, January 3rd at 6:00pm")
                             .permanent(true)
@@ -38,7 +38,7 @@ fn ToastButtons() -> Element {
                 variant: ButtonVariant::Outline,
                 onclick: move |_| {
                     toast.warning(
-                        "You have unsaved changes".to_string(),
+                        "You have unsaved changes",
                         ToastOptions::new()
                             .description("Navigating away will discard your edits.")
                             .permanent(true)

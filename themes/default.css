@@ -131,7 +131,7 @@
      validation messages that should not be filled with the strong color. */
   --warning-subtle: var(--is-light, #fffbeb) var(--is-dark, #342203);
   --warning-subtle-fg: var(--is-light, #342203) var(--is-dark, #feeac7);
-  --warning-subtle-border: var(--is-light, #fde68a) var(--is-dark, #f59e09);
+  --warning-subtle-border: var(--is-light, #fde68a) var(--is-dark, #5e3c01);
 
   /* Danger filled recipe. Use for destructive actions and high-emphasis
      error states. */

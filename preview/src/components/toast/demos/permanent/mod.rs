@@ -20,7 +20,7 @@ fn ToastButton() -> Element {
             variant: ButtonVariant::Outline,
             onclick: move |_| {
                 toast.warning(
-                    "You are in offline mode".to_string(),
+                    "You are in offline mode",
                     ToastOptions::new()
                         .description("Changes will sync when your connection is restored.")
                         .permanent(true),

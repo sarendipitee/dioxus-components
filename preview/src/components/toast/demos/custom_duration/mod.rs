@@ -25,7 +25,7 @@ fn ToastButtons() -> Element {
                 variant: ButtonVariant::Outline,
                 onclick: move |_| {
                     toast.success(
-                        "Copied to clipboard".to_string(),
+                        "Copied to clipboard",
                         ToastOptions::new().duration(Duration::from_secs(2)),
                     );
                 },
@@ -36,7 +36,7 @@ fn ToastButtons() -> Element {
                 variant: ButtonVariant::Outline,
                 onclick: move |_| {
                     toast.info(
-                        "Your report is being generated".to_string(),
+                        "Your report is being generated",
                         ToastOptions::new()
                             .description("This may take a moment.")
                             .duration(Duration::from_secs(5)),
@@ -49,7 +49,7 @@ fn ToastButtons() -> Element {
                 variant: ButtonVariant::Outline,
                 onclick: move |_| {
                     toast.warning(
-                        "Scheduled maintenance tonight".to_string(),
+                        "Scheduled maintenance tonight",
                         ToastOptions::new()
                             .description("The service will be unavailable from 2–4am UTC.")
                             .duration(Duration::from_secs(30)),

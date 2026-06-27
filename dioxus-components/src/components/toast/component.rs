@@ -1,8 +1,10 @@
 use crate::component_styles;
 use dioxus::prelude::*;
+use dioxus_icons::lucide::{CircleAlert, CircleCheck, Info, TriangleAlert};
 use dioxus_primitives::toast::{
     self, Toast, ToastActionButtonProps, ToastActionsProps, ToastCloseButtonProps,
     ToastContentProps, ToastDescriptionProps, ToastPosition, ToastProps, ToastTitleProps,
+    ToastType,
 };
 use std::time::Duration;
 
@@ -16,6 +18,15 @@ fn StyledToast(props: ToastProps) -> Element {
     let action = props.action.clone();
     let cancel = props.cancel.clone();
 
+    // Loading toasts convey state through the spinner, so they get no leading icon.
+    let icon = match props.toast_type {
+        ToastType::Success => Some(rsx! { CircleCheck { size: "1.25rem" } }),
+        ToastType::Error => Some(rsx! { CircleAlert { size: "1.25rem" } }),
+        ToastType::Warning => Some(rsx! { TriangleAlert { size: "1.25rem" } }),
+        ToastType::Info => Some(rsx! { Info { size: "1.25rem" } }),
+        ToastType::Loading => None,
+    };
+
     rsx! {
         Toast {
             id: props.id,
@@ -28,8 +39,12 @@ fn StyledToast(props: ToastProps) -> Element {
             duration: props.duration,
             action: props.action,
             cancel: props.cancel,
+            removing: props.removing,
             class: Styles::dx_toast.to_string(),
             attributes: props.attributes,
+            if let Some(icon) = icon {
+                ToastIcon { {icon} }
+            }
             ToastContent {
                 ToastTitle {}
                 ToastDescription {}
@@ -49,6 +64,19 @@ fn StyledToast(props: ToastProps) -> Element {
                 }
             }
             ToastCloseButton {}
+        }
+    }
+}
+
+/// Renders the leading variant icon for a toast.
+#[component]
+fn ToastIcon(children: Element) -> Element {
+    rsx! {
+        div {
+            class: Styles::dx_toast_icon.to_string(),
+            "data-slot": "toast-icon",
+            "aria-hidden": "true",
+            {children}
         }
     }
 }
