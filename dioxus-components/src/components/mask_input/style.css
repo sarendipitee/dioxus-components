@@ -1,0 +1,9 @@
+/*
+ * MaskInput reuses the shared input shell (`.dx_input`) and the native control
+ * styling (`.dx_text_input_control`) from the `input` component, so no extra
+ * field chrome is needed here. The native control is tagged
+ * `data-slot="mask-input-control"` for targeting if a consumer needs it.
+ */
+.dx_text_input_control[data-slot="mask-input-control"] {
+  font-variant-numeric: tabular-nums;
+}

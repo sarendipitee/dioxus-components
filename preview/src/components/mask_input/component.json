@@ -1,0 +1,21 @@
+{
+  "name": "mask_input",
+  "description": "Masked text input that formats values as the user types, built on the shared input shell and the headless use_mask hook. Supports token patterns, custom tokens, character transforms, undo/redo, and raw/masked change reporting.",
+  "authors": [
+    "Saren"
+  ],
+  "exclude": [
+    "demos",
+    "docs.md",
+    "component.json"
+  ],
+  "cargoDependencies": [
+    {
+      "name": "dioxus-primitives",
+      "git": "https://github.com/DioxusLabs/components"
+    }
+  ],
+  "globalAssets": [
+    "../../../../themes/default.css"
+  ]
+}

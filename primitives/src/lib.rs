@@ -33,6 +33,7 @@ mod focus;
 pub mod hover_card;
 pub mod label;
 mod listbox;
+pub mod mask;
 pub mod menu;
 pub mod menubar;
 mod move_interaction;
