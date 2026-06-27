@@ -29,6 +29,7 @@ pub mod disclosure;
 pub mod drag_and_drop_list;
 pub mod dropdown_menu;
 pub mod file_drop_zone;
+mod floating;
 mod focus;
 pub mod hover_card;
 pub mod label;

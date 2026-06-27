@@ -52,18 +52,43 @@
 }
 
 .dx_select_list {
-  position: absolute;
+  /* Position (position/top/left) is owned by the floating-ui hook on web, which
+     emits inline coords plus a `data-floating="true"` marker. The legacy CSS gap
+     (margin-top: var(--space)) is migrated into the offset() middleware. The
+     `:not([data-floating])` block below restores the static placement on native,
+     where the hook is inert. */
   z-index: 1000;
-  top: 100%;
-  left: 0;
-  min-width: 100%;
   box-sizing: border-box;
   padding: var(--space);
-  margin-top: var(--space);
   opacity: 0;
   pointer-events: none;
   transform-origin: top;
   will-change: transform, opacity;
+
+  /* Trigger-width matching: on native the list is `position: absolute` relative to
+     the `position: relative` .dx_select wrapper, so `min-width: 100%` tracks the
+     trigger width (restored in the native block below). On web the list is
+     `position: fixed`, so a percentage width would resolve against the viewport
+     rather than the trigger; floating-ui does not set width (no size middleware in
+     v1), so the list is sized to its content here. See returned notes re: size
+     middleware for exact trigger-width matching on web. */
+  width: max-content;
+  min-width: 12rem;
+  max-width: min(24rem, calc(100vw - 2rem));
+}
+
+/* Native fallback positioning: inert on web (where `data-floating` is present and
+   inline coords win). Restores the legacy static placement and trigger-width match
+   relative to the `position: relative` .dx_select wrapper. The ~8px gap (top + the
+   migrated margin) matches the offset() middleware's DEFAULT_OFFSET_GAP. */
+.dx_select_list:not([data-floating]) {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  width: auto;
+  min-width: 100%;
+  max-width: none;
+  margin-top: var(--space);
 }
 
 .dx_select_list[data-state="open"] {

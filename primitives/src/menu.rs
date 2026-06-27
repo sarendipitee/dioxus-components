@@ -1,13 +1,16 @@
 //! Shared menu primitives used by dropdown menus, context menus, and menubars.
 
+use std::rc::Rc;
+
 use crate::{
+    floating::{style_prop, use_position},
     focus::{
         use_deferred_focus, use_focus_controlled_item_disabled, use_focus_provider, FocusPlacement,
         FocusState,
     },
     merge_attributes,
     selectable::{pointer_select_cancel, pointer_select_commit, pointer_select_start},
-    use_animated_open, use_effect_with_cleanup, use_id_or, use_unique_id,
+    use_animated_open, use_effect_with_cleanup, use_id_or, use_unique_id, ContentAlign, ContentSide,
 };
 use dioxus::prelude::*;
 use dioxus_attributes::attributes;
@@ -25,6 +28,12 @@ pub struct MenuContext {
     pub(crate) focus: FocusState,
     /// Unique id for the trigger that labels this menu.
     pub(crate) trigger_id: Signal<String>,
+    /// Reference (trigger) element shared with the content so the floating-ui hook
+    /// can position the content relative to the trigger. Set by the wrapper trigger
+    /// (e.g. [`crate::dropdown_menu::DropdownMenuTrigger`],
+    /// [`crate::menubar::MenubarTrigger`]) via `onmounted`. Benign for consumers
+    /// that position differently (e.g. context_menu) — they simply never read it.
+    pub(crate) trigger_ref: Signal<Option<Rc<MountedData>>>,
 }
 
 /// Provides shared menu state to descendants in the current component scope.
@@ -37,6 +46,7 @@ pub(crate) fn use_menu_provider(
 ) -> MenuContext {
     let focus = use_focus_provider(roving_loop);
     let trigger_id = use_unique_id();
+    let trigger_ref = use_signal(|| None);
     let disabled = use_memo(move || disabled());
     let ctx = use_context_provider(|| MenuContext {
         open,
@@ -44,6 +54,7 @@ pub(crate) fn use_menu_provider(
         disabled,
         focus,
         trigger_id,
+        trigger_ref,
     });
 
     use_effect(move || {
@@ -236,52 +247,6 @@ pub fn MenuContent(props: MenuContentProps) -> Element {
     }
 }
 
-fn use_submenu_position(
-    content_id: impl Readable<Target = String> + Copy + 'static,
-    trigger_id: impl Readable<Target = String> + Copy + 'static,
-    open: impl Fn() -> bool + Copy + 'static,
-) {
-    use_effect_with_cleanup(move || {
-        let mut eval = if open() {
-            let eval = document::eval(
-                "const contentId = await dioxus.recv();
-                const triggerId = await dioxus.recv();
-                const margin = 4;
-                const position = () => {
-                    const content = document.getElementById(contentId);
-                    const trigger = document.getElementById(triggerId);
-                    if (!content || !trigger) return;
-
-                    content.dataset.side = 'right';
-                    const triggerRect = trigger.getBoundingClientRect();
-                    const contentRect = content.getBoundingClientRect();
-                    const gap = parseFloat(getComputedStyle(content).marginLeft) || 0;
-                    const hasRoomRight = triggerRect.right + gap + contentRect.width <= window.innerWidth - margin;
-                    const hasRoomLeft = triggerRect.left - gap - contentRect.width >= margin;
-                    content.dataset.side = !hasRoomRight && hasRoomLeft ? 'left' : 'right';
-                };
-
-                position();
-                requestAnimationFrame(position);
-                window.addEventListener('resize', position);
-                await dioxus.recv();
-                window.removeEventListener('resize', position);",
-            );
-            let _ = eval.send(content_id.cloned());
-            let _ = eval.send(trigger_id.cloned());
-            Some(eval)
-        } else {
-            None
-        };
-
-        move || {
-            if let Some(eval) = eval.as_mut() {
-                let _ = eval.send(true);
-            }
-        }
-    });
-}
-
 /// Props for [`MenuItem`].
 #[derive(Props, Clone, PartialEq)]
 pub struct MenuItemProps<T: Clone + PartialEq + 'static> {
@@ -302,6 +267,12 @@ pub struct MenuItemProps<T: Clone + PartialEq + 'static> {
     /// Whether the menu should close after the item is selected.
     #[props(default = true)]
     pub close_on_select: bool,
+    /// Optional callback invoked with the item's mounted element data. Used by
+    /// submenu triggers to capture the item as a floating-ui reference element
+    /// without clobbering the internal roving-focus `onmounted`. Benign default for
+    /// all other items.
+    #[props(default)]
+    pub on_mounted: Option<Callback<Rc<MountedData>>>,
     /// Additional attributes for the item element.
     #[props(extends = GlobalAttributes)]
     pub attributes: Vec<Attribute>,
@@ -315,7 +286,14 @@ pub fn MenuItem<T: Clone + PartialEq + 'static>(props: MenuItemProps<T>) -> Elem
     let mut ctx: MenuContext = use_context();
     let disabled = move || (ctx.disabled)() || (props.disabled)();
     let focused = move || ctx.focus.is_focused((props.index)());
-    let onmounted = use_focus_controlled_item_disabled(props.index, disabled);
+    let mut focus_onmounted = use_focus_controlled_item_disabled(props.index, disabled);
+    let forward_mounted = props.on_mounted;
+    let onmounted = move |evt: MountedEvent| {
+        if let Some(cb) = forward_mounted {
+            cb.call(evt.data());
+        }
+        focus_onmounted(evt);
+    };
     let down_pos: Signal<Option<(f64, f64)>> = use_signal(|| None);
     let tab_index = use_memo(move || if focused() { "0" } else { "-1" });
 
@@ -637,6 +615,8 @@ struct MenuSubContext {
     focus: FocusState,
     initial_focus: Signal<Option<FocusPlacement>>,
     trigger_id: Signal<String>,
+    /// Reference (submenu trigger) element used to position the submenu content.
+    trigger_ref: Signal<Option<Rc<MountedData>>>,
 }
 
 /// Props for [`MenuSub`].
@@ -678,6 +658,7 @@ pub fn MenuSub(props: MenuSubProps) -> Element {
     let initial_focus = use_signal(|| None);
     let close_parent_all = use_callback(move |_| parent_ctx.set_open.call(false));
     let trigger_id = use_unique_id();
+    let trigger_ref = use_signal(|| None);
     let sub_id = use_unique_id();
 
     use_effect_with_cleanup(move || {
@@ -733,6 +714,7 @@ pub fn MenuSub(props: MenuSubProps) -> Element {
         focus,
         initial_focus,
         trigger_id,
+        trigger_ref,
     });
 
     rsx! {
@@ -773,6 +755,7 @@ pub struct MenuSubTriggerProps<T: Clone + PartialEq + 'static> {
 pub fn MenuSubTrigger<T: Clone + PartialEq + 'static>(props: MenuSubTriggerProps<T>) -> Element {
     let mut parent_ctx: MenuContext = use_context();
     let mut sub_ctx: MenuSubContext = use_context();
+    let mut trigger_ref = sub_ctx.trigger_ref;
     let open = sub_ctx.open;
     let on_select = props.on_select;
     let open_submenu = use_callback(move |_| {
@@ -820,6 +803,7 @@ pub fn MenuSubTrigger<T: Clone + PartialEq + 'static>(props: MenuSubTriggerProps
                 aria_haspopup: "menu",
                 aria_expanded: open(),
                 "data-state": if open() { "open" } else { "closed" },
+                on_mounted: move |data| trigger_ref.set(Some(data)),
                 attributes,
                 {props.children}
             }
@@ -845,7 +829,6 @@ pub fn MenuSubContent(props: MenuSubContentProps) -> Element {
     use_deferred_focus(sub_ctx.focus, sub_ctx.initial_focus, move || {
         (sub_ctx.open)()
     });
-    use_submenu_position(id, sub_ctx.trigger_id, move || (sub_ctx.open)());
     use_context_provider(|| sub_ctx.focus);
     use_context_provider(|| MenuContext {
         open: sub_ctx.open,
@@ -853,13 +836,52 @@ pub fn MenuSubContent(props: MenuSubContentProps) -> Element {
         disabled: sub_ctx.disabled,
         focus: sub_ctx.focus,
         trigger_id: sub_ctx.trigger_id,
+        trigger_ref: sub_ctx.trigger_ref,
     });
+
+    // Floating-element positioning for the submenu. A submenu naturally opens to the
+    // right of its parent item, aligned to the item's top edge; flip() handles the
+    // left side when there is no room (mirroring the old JS `hasRoomRight ? right :
+    // left` logic). The reference is the parent submenu trigger item; the floating
+    // element is this sub-content. On native the hook is inert and the
+    // `:not([data-floating])` CSS fallback provides the static placement.
+    let mut floating_ref: Signal<Option<Rc<MountedData>>> = use_signal(|| None);
+    let pos = use_position(
+        sub_ctx.trigger_ref,
+        floating_ref,
+        ContentSide::Right,
+        ContentAlign::Start,
+    );
+
+    let style = pos.style;
+    let is_positioned = pos.is_positioned;
+    let resolved_side = pos.side;
+    let resolved_align = pos.align;
+    let floating_active = pos.floating_active;
+
+    let position = use_memo(move || style_prop(&style.read(), "position"));
+    let top = use_memo(move || style_prop(&style.read(), "top"));
+    let left = use_memo(move || style_prop(&style.read(), "left"));
+    let visibility = use_memo(move || if is_positioned() { "visible" } else { "hidden" });
+
+    let floating_attrs = attributes!(div {
+        position: position(),
+        top: top(),
+        left: left(),
+        visibility: visibility(),
+        "data-side": resolved_side.read().as_str(),
+        "data-align": resolved_align.read().as_str(),
+        "data-floating": floating_active.then_some("true"),
+        onmounted: move |evt: MountedEvent| floating_ref.set(Some(evt.data())),
+    });
+    // Floating props must win over user-forwarded coords → place them last.
+    let attributes = merge_attributes(vec![props.attributes, floating_attrs]);
 
     rsx! {
         MenuContent {
             id: Some(id.cloned()),
             role: props.role,
-            attributes: props.attributes,
+            attributes,
             {props.children}
         }
     }
@@ -917,6 +939,7 @@ mod tests {
         let disabled = use_memo(|| false);
         let focus = use_focus_provider(ReadSignal::new(Signal::new(true)));
         let trigger_id = use_signal(|| "test-trigger".to_string());
+        let trigger_ref = use_signal(|| None);
         let checked = use_signal(|| true);
         let radio_value = use_signal(|| Some("one".to_string()));
 
@@ -926,6 +949,7 @@ mod tests {
             disabled,
             focus,
             trigger_id,
+            trigger_ref,
         });
 
         rsx! {

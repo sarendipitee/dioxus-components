@@ -9,15 +9,23 @@
 }
 
 .dx_hover_card_content {
-  position: absolute;
+  /* Position (position/top/left) is owned by the floating-ui hook, which emits inline
+     coords AND a `data-floating="true"` marker on web. The legacy CSS gap now lives in
+     the offset() middleware. On native the hook is inert (no marker, no coords) and the
+     `:not([data-floating])` fallback rules below provide static placement. */
   z-index: 1000;
   min-width: 200px;
   padding: 5px;
   animation: dx-hover-card-fade-in 0.1s ease-out;
 }
 
-/* Positioning based on side */
-.dx_hover_card_content[data-side="top"] {
+/* ── Native fallback positioning ─────────────────────────────────────────────
+   On web, floating-ui owns placement and emits `data-floating="true"`; these
+   `:not([data-floating])` rules are inert there so the inline coords win. On native
+   the marker is absent and these rules provide the legacy static placement relative
+   to the `position: relative` .dx_hover_card wrapper. The gap matches the offset()
+   middleware's DEFAULT_OFFSET_GAP. */
+.dx_hover_card_content:not([data-floating])[data-side="top"] {
   position: absolute;
   bottom: 100%;
   left: 50%;
@@ -25,7 +33,7 @@
   transform: translateX(-50%);
 }
 
-.dx_hover_card_content[data-side="right"] {
+.dx_hover_card_content:not([data-floating])[data-side="right"] {
   position: absolute;
   top: 50%;
   left: 100%;
@@ -33,7 +41,7 @@
   transform: translateY(-50%);
 }
 
-.dx_hover_card_content[data-side="bottom"] {
+.dx_hover_card_content:not([data-floating])[data-side="bottom"] {
   position: absolute;
   top: 100%;
   left: 50%;
@@ -41,7 +49,7 @@
   transform: translateX(-50%);
 }
 
-.dx_hover_card_content[data-side="left"] {
+.dx_hover_card_content:not([data-floating])[data-side="left"] {
   position: absolute;
   top: 50%;
   right: 100%;
@@ -50,40 +58,40 @@
 }
 
 /* Alignment styles for top and bottom */
-.dx_hover_card_content[data-side="top"][data-align="start"],
-.dx_hover_card_content[data-side="bottom"][data-align="start"] {
+.dx_hover_card_content:not([data-floating])[data-side="top"][data-align="start"],
+.dx_hover_card_content:not([data-floating])[data-side="bottom"][data-align="start"] {
   left: 0;
   transform: none;
 }
 
-.dx_hover_card_content[data-side="top"][data-align="center"],
-.dx_hover_card_content[data-side="bottom"][data-align="center"] {
+.dx_hover_card_content:not([data-floating])[data-side="top"][data-align="center"],
+.dx_hover_card_content:not([data-floating])[data-side="bottom"][data-align="center"] {
   left: 50%;
   transform: translateX(-50%);
 }
 
-.dx_hover_card_content[data-side="top"][data-align="end"],
-.dx_hover_card_content[data-side="bottom"][data-align="end"] {
+.dx_hover_card_content:not([data-floating])[data-side="top"][data-align="end"],
+.dx_hover_card_content:not([data-floating])[data-side="bottom"][data-align="end"] {
   right: 0;
   left: auto;
   transform: none;
 }
 
 /* Alignment styles for left and right */
-.dx_hover_card_content[data-side="left"][data-align="start"],
-.dx_hover_card_content[data-side="right"][data-align="start"] {
+.dx_hover_card_content:not([data-floating])[data-side="left"][data-align="start"],
+.dx_hover_card_content:not([data-floating])[data-side="right"][data-align="start"] {
   top: 0;
   transform: none;
 }
 
-.dx_hover_card_content[data-side="left"][data-align="center"],
-.dx_hover_card_content[data-side="right"][data-align="center"] {
+.dx_hover_card_content:not([data-floating])[data-side="left"][data-align="center"],
+.dx_hover_card_content:not([data-floating])[data-side="right"][data-align="center"] {
   top: 50%;
   transform: translateY(-50%);
 }
 
-.dx_hover_card_content[data-side="left"][data-align="end"],
-.dx_hover_card_content[data-side="right"][data-align="end"] {
+.dx_hover_card_content:not([data-floating])[data-side="left"][data-align="end"],
+.dx_hover_card_content:not([data-floating])[data-side="right"][data-align="end"] {
   top: auto;
   bottom: 0;
   transform: none;

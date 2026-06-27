@@ -115,20 +115,28 @@
 }
 
 .dx_menu_sub_content {
+  transform-origin: left top;
+}
+
+.dx_menu_sub_content[data-side="left"] {
+  transform-origin: right top;
+}
+
+/* Native fallback positioning for the submenu (web uses floating-ui inline
+   coords; `:not([data-floating])` keeps these inert on web). */
+.dx_menu_sub_content:not([data-floating]) {
   position: absolute;
   top: calc(var(--space) * -1);
   left: 100%;
   margin-top: 0;
   margin-left: var(--space);
-  transform-origin: left top;
 }
 
-.dx_menu_sub_content[data-side="left"] {
+.dx_menu_sub_content:not([data-floating])[data-side="left"] {
   right: 100%;
   left: auto;
   margin-right: var(--space);
   margin-left: 0;
-  transform-origin: right top;
 }
 
 .dx_menu_sub_content::before {

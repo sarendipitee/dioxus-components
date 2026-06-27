@@ -2475,6 +2475,9 @@ dependencies = [
  "dioxus-attributes",
  "dioxus-sdk-time",
  "dioxus-ssr",
+ "floating-ui-dioxus",
+ "floating-ui-dom",
+ "floating-ui-utils",
  "gloo-timers",
  "gpui-pretext",
  "lazy-js-bundle",
@@ -2829,6 +2832,24 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "92773504d58c093f6de2459af4af33faa518c13451eb8f2b5698ed3d36e7c813"
 
 [[package]]
+name = "dyn_derive"
+version = "0.3.4"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "11bce3f6b5ab55c48928e8b0c960fb63de8aa9756e34ddfafc9720b2731e972e"
+dependencies = [
+ "dyn_std",
+ "proc-macro2",
+ "quote",
+ "syn 2.0.117",
+]
+
+[[package]]
+name = "dyn_std"
+version = "0.3.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "18150a3b95526a6f32f542e74999f7f34607794d2048a105a30474b361474e67"
+
+[[package]]
 name = "either"
 version = "1.15.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -3040,6 +3061,54 @@ name = "float-cmp"
 version = "0.9.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "98de4bbd547a563b716d8dfa9aad1cb19bfab00f4fa09a6a4ed21dbcf44ce9c4"
+
+[[package]]
+name = "floating-ui-core"
+version = "0.6.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "7c9cb2c7fcddeb646e63f25eb953a9aa941da66b5d7d1d4a8834f661aa1a3db2"
+dependencies = [
+ "dyn_derive",
+ "dyn_std",
+ "floating-ui-utils",
+ "serde",
+ "serde_json",
+]
+
+[[package]]
+name = "floating-ui-dioxus"
+version = "0.6.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "413f8e165ffaab5c6aeca2534fde135d8908b2e6a00b6ed9503ac43706c8ec7d"
+dependencies = [
+ "dioxus",
+ "floating-ui-dom",
+ "web-sys",
+]
+
+[[package]]
+name = "floating-ui-dom"
+version = "0.6.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "bee9905ea1dd0f188a06bef6400e3148e2460215d4cc80b68b475e58be6eb55c"
+dependencies = [
+ "floating-ui-core",
+ "floating-ui-utils",
+ "web-sys",
+]
+
+[[package]]
+name = "floating-ui-utils"
+version = "0.6.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "6e6fd107421492cee165af471b445a267db69a4a23dc93a4d1c9fe49060341a8"
+dependencies = [
+ "cfg-if",
+ "dyn_derive",
+ "dyn_std",
+ "serde",
+ "web-sys",
+]
 
 [[package]]
 name = "fluent"

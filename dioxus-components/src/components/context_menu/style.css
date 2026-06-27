@@ -125,14 +125,29 @@
 }
 
 .dx_context_menu_sub_content {
-  position: absolute;
   z-index: 1001;
-  top: calc(var(--space) * -1);
-  left: 100%;
   min-width: 220px;
   padding: var(--space);
-  margin-left: var(--space);
   pointer-events: auto;
+}
+
+/* Native fallback positioning for the submenu. The submenu shares the floating-ui
+   `use_position` hook (menu::MenuSubContent), so on web it emits inline coords +
+   `data-floating="true"` and this rule stays inert. The top-level
+   `.dx_context_menu_content` (cursor-anchored, position:fixed) is intentionally
+   left untouched. */
+.dx_context_menu_sub_content:not([data-floating]) {
+  position: absolute;
+  top: calc(var(--space) * -1);
+  left: 100%;
+  margin-left: var(--space);
+}
+
+.dx_context_menu_sub_content:not([data-floating])[data-side="left"] {
+  right: 100%;
+  left: auto;
+  margin-right: var(--space);
+  margin-left: 0;
 }
 
 .dx_context_menu_sub_content::before {

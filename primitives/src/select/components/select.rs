@@ -140,6 +140,7 @@ fn use_select_root(
     let mut typeahead_buffer = use_signal(String::new);
     let adaptive_keyboard = use_signal(super::super::text_search::AdaptiveKeyboard::new);
     let mut typeahead_clear_task: Signal<Option<Task>> = use_signal(|| None);
+    let trigger_ref = use_signal(|| None);
     let open = selectable.open;
 
     // Clear the typeahead buffer when the select is closed
@@ -157,6 +158,7 @@ fn use_select_root(
         typeahead_buffer,
         typeahead_clear_task,
         typeahead_timeout,
+        trigger_ref,
     });
 
     open

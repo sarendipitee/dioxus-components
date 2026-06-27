@@ -1,8 +1,10 @@
 //! Defines the [`Tooltip`] component and its sub-components, which provide contextual information when hovering or focusing on elements.
 
+use std::rc::Rc;
+
 use crate::{
-    merge_attributes, use_animated_open, use_controlled, use_id_or, use_unique_id, ContentAlign,
-    ContentSide,
+    floating::{style_prop, use_position}, merge_attributes, use_animated_open, use_controlled,
+    use_id_or, use_unique_id, ContentAlign, ContentSide,
 };
 use dioxus::prelude::*;
 use dioxus_attributes::attributes;
@@ -16,6 +18,11 @@ struct TooltipCtx {
 
     // ARIA attributes
     tooltip_id: Signal<String>,
+
+    /// Reference (trigger) element shared with the content so the floating-ui hook can
+    /// position the content relative to the trigger. Set by [`TooltipTrigger`] via
+    /// `onmounted`.
+    trigger_ref: Signal<Option<Rc<MountedData>>>,
 }
 
 /// The props for the [`Tooltip`] component
@@ -83,12 +90,14 @@ pub struct TooltipProps {
 pub fn Tooltip(props: TooltipProps) -> Element {
     let (open, set_open) = use_controlled(props.open, props.default_open, props.on_open_change);
     let tooltip_id = use_unique_id();
+    let trigger_ref = use_signal(|| None);
 
     let _ctx = use_context_provider(|| TooltipCtx {
         open,
         set_open,
         disabled: props.disabled,
         tooltip_id,
+        trigger_ref,
     });
 
     rsx! {
@@ -152,6 +161,7 @@ pub struct TooltipTriggerProps {
 #[component]
 pub fn TooltipTrigger(props: TooltipTriggerProps) -> Element {
     let ctx: TooltipCtx = use_context();
+    let mut trigger_ref = ctx.trigger_ref;
 
     // Handle mouse events
     let handle_mouse_enter = move |_: Event<MouseData>| {
@@ -191,6 +201,7 @@ pub fn TooltipTrigger(props: TooltipTriggerProps) -> Element {
         id: props.id.clone(),
         tabindex: "0",
         "aria-describedby": ctx.tooltip_id.cloned(),
+        onmounted: move |evt: Event<MountedData>| trigger_ref.set(Some(evt.data())),
         onmouseenter: handle_mouse_enter,
         onmouseleave: handle_mouse_leave,
         onfocus: handle_focus,
@@ -285,18 +296,75 @@ pub fn TooltipContent(props: TooltipContentProps) -> Element {
     // Only render if the tooltip is open
     let render = use_animated_open(id, ctx.open);
 
-    // Create the tooltip content
     rsx! {
         if render() {
-            div {
-                id,
-                role: "tooltip",
-                "data-state": if ctx.open.cloned() { "open" } else { "closed" },
-                "data-side": props.side.as_str(),
-                "data-align": props.align.as_str(),
-                ..props.attributes,
-                {props.children}
+            TooltipContentRendered {
+                id: id(),
+                side: props.side,
+                align: props.align,
+                attributes: props.attributes.clone(),
+                children: props.children.clone(),
             }
         }
     }
 }
+
+/// The rendered tooltip content. Separated so floating-ui positioning hooks run only
+/// while the tooltip is mounted (open), letting [`use_position`] be called
+/// unconditionally with both refs settled on first mount.
+#[component]
+fn TooltipContentRendered(
+    id: String,
+    side: ContentSide,
+    align: ContentAlign,
+    attributes: Vec<Attribute>,
+    children: Element,
+) -> Element {
+    let ctx: TooltipCtx = use_context();
+
+    // Floating-element positioning. The content ref is local; the trigger ref is shared
+    // through the context. `use_position` is called unconditionally — this component only
+    // renders while the tooltip is open, so both refs settle on first mount.
+    let mut floating_ref: Signal<Option<Rc<MountedData>>> = use_signal(|| None);
+    let pos = use_position(ctx.trigger_ref, floating_ref, side, align);
+
+    // Split the floating-ui inline coordinates into individual `style:` props so
+    // user-forwarded styles are preserved (see popover for the full rationale). The
+    // floating props are merged LAST so the computed coordinates win.
+    let style = pos.style;
+    let is_positioned = pos.is_positioned;
+    let resolved_side = pos.side;
+    let resolved_align = pos.align;
+    let floating_active = pos.floating_active;
+
+    let position = use_memo(move || style_prop(&style.read(), "position"));
+    let top = use_memo(move || style_prop(&style.read(), "top"));
+    let left = use_memo(move || style_prop(&style.read(), "left"));
+    // R4: keep the element `visibility: hidden` until first compute so it does not flash
+    // at the origin. `visibility` does not suppress the opacity fade-in animation, and the
+    // tooltip's `display:block` open state keeps the element laid out for measurement.
+    let visibility = use_memo(move || if is_positioned() { "visible" } else { "hidden" });
+
+    let floating_attrs = attributes!(div {
+        position: position(),
+        top: top(),
+        left: left(),
+        visibility: visibility(),
+        "data-floating": floating_active.then_some("true"),
+        onmounted: move |evt| floating_ref.set(Some(evt.data())),
+    });
+    let attributes = merge_attributes(vec![attributes, floating_attrs]);
+
+    rsx! {
+        div {
+            id,
+            role: "tooltip",
+            "data-state": if ctx.open.cloned() { "open" } else { "closed" },
+            "data-side": resolved_side.read().as_str(),
+            "data-align": resolved_align.read().as_str(),
+            ..attributes,
+            {children}
+        }
+    }
+}
+

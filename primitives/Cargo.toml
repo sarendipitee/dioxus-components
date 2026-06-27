@@ -16,6 +16,9 @@ tokio = { version = "1.48.0", features = ["time"] }
 
 [target.'cfg(target_family = "wasm")'.dependencies]
 gloo-timers = { version = "0.3.0", features = ["futures"] }
+floating-ui-dioxus = "0.6.0"
+floating-ui-dom = "0.6.0"
+floating-ui-utils = "0.6.0"
 
 [dependencies]
 dioxus.workspace = true
@@ -40,3 +43,5 @@ dioxus-ssr = "0.7.0"
 default = ["router"]
 router = ["dioxus/router"]
 web = ["time/wasm-bindgen", "dioxus/web"]
+desktop = ["dioxus/desktop"]
+mobile = ["dioxus/mobile"]

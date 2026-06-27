@@ -42,10 +42,13 @@
 }
 
 .dx_combobox_list {
-  position: absolute;
+  /* Position (position/top/left) is owned by the floating-ui hook on web, which emits
+     inline coords plus a `data-floating="true"` marker; the legacy gap
+     (top: calc(100% + var(--space))) is migrated into the offset() middleware. The
+     `:not([data-floating])` block below restores the static placement on native. The
+     fixed 200px width matches the `.dx_combobox` trigger width and survives both the
+     native (absolute) and web (fixed) positioning strategies unchanged. */
   z-index: 50;
-  top: calc(100% + var(--space));
-  left: 0;
   display: flex;
   overflow: hidden auto;
   width: 200px;
@@ -53,6 +56,14 @@
   flex-direction: column;
   padding: var(--space);
   transform-origin: top;
+}
+
+/* Native fallback positioning: inert on web (where `data-floating` is present). The
+   ~8px gap matches the offset() middleware's DEFAULT_OFFSET_GAP. */
+.dx_combobox_list:not([data-floating]) {
+  position: absolute;
+  top: calc(100% + var(--space));
+  left: 0;
 }
 
 .dx_combobox_list[data-state="open"] {
@@ -224,7 +235,13 @@
   color: var(--input-fg-muted);
 }
 
-.dx_combobox_pills_root [data-combobox-dropdown-target] {
+/* The inner [role="listbox"] is the floating element on web (it carries the
+   `data-floating` marker and inline coords). The dropdown-target wrapper therefore
+   only needs to position the listbox on native; on web the fixed-positioned listbox
+   ignores the wrapper, so the wrapper's absolute box is suppressed via :has() to
+   avoid a stray positioned box. The gap is migrated into the offset() middleware. */
+.dx_combobox_pills_root
+  [data-combobox-dropdown-target]:not(:has([role="listbox"][data-floating])) {
   position: absolute;
   z-index: 50;
   top: calc(100% + var(--space));
@@ -233,9 +250,9 @@
 }
 
 .dx_combobox_pills_root [data-combobox-dropdown-target] > [role="listbox"] {
+  z-index: 50;
   display: flex;
   overflow: hidden auto;
-  width: 100%;
   max-height: 300px;
   flex-direction: column;
   padding: var(--space);
@@ -249,6 +266,25 @@
   color: var(--overlay-fg);
   border-radius: var(--radius-surface);
   box-shadow: var(--overlay-shadow), inset 0 0 0 1px var(--overlay-border);
+
+  /* Trigger-width matching: on native the wrapper is `position: absolute; width:
+     100%` so `width: 100%` tracks the trigger; restored in the native block below.
+     On web the listbox is `position: fixed`, so a percentage width would resolve
+     against the viewport; floating-ui sets no width (no size middleware in v1), so
+     the listbox is content-sized here. See returned notes re: size middleware. */
+  width: max-content;
+  min-width: 12rem;
+  max-width: min(24rem, calc(100vw - 2rem));
+}
+
+/* Native fallback: restore the trigger-matching percentage width when the listbox is
+   not floating (native, where the wrapper provides the absolute containing block). */
+.dx_combobox_pills_root
+  [data-combobox-dropdown-target]
+  > [role="listbox"]:not([data-floating]) {
+  width: 100%;
+  min-width: 0;
+  max-width: none;
 }
 
 .dx_combobox_pills_root

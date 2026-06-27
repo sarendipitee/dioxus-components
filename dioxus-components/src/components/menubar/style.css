@@ -42,20 +42,29 @@
 }
 
 .dx_menubar_content {
-  position: absolute;
+  /* Position is owned by the floating-ui hook on web (inline coords +
+     `data-floating="true"` marker; the gap lives in offset()). On native the hook
+     is inert and the `:not([data-floating])` fallback below provides static
+     placement. */
   z-index: 1000;
-  top: 100%;
-  left: 0;
   min-width: 200px;
   padding: var(--space);
-  margin-top: calc(var(--space) * 2);
   opacity: 0;
   pointer-events: none;
   transform-origin: top;
   will-change: transform, opacity;
 }
 
-.dx_menubar_menu:first-child .dx_menubar_content {
+/* Native fallback positioning (inert on web via `:not([data-floating])`). Mirrors
+   the legacy `top:100% left:0` geometry; the ~8px gap is owned by offset() on web. */
+.dx_menubar_content:not([data-floating]) {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  margin-top: calc(var(--space) * 2);
+}
+
+.dx_menubar_menu:first-child .dx_menubar_content:not([data-floating]) {
   margin-left: calc(var(--space) * -1);
 }
 
@@ -162,15 +171,28 @@
 }
 
 .dx_menubar_sub_content {
-  position: absolute;
   z-index: 1001;
-  top: calc(var(--space) * -1);
-  left: 100%;
   min-width: 200px;
   padding: var(--space);
+  transform-origin: left top;
+}
+
+.dx_menubar_sub_content[data-side="left"] {
+  transform-origin: right top;
+}
+
+/* Native fallback positioning for the submenu (inert on web). */
+.dx_menubar_sub_content:not([data-floating]) {
+  position: absolute;
+  top: calc(var(--space) * -1);
+  left: 100%;
   margin-top: 0;
   margin-left: 0;
-  transform-origin: left top;
+}
+
+.dx_menubar_sub_content:not([data-floating])[data-side="left"] {
+  right: 100%;
+  left: auto;
 }
 
 .dx_menubar_sub_content::before {

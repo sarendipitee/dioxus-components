@@ -1,9 +1,12 @@
 //! Defines the [`DropdownMenu`] component and its subcomponents.
 
+use std::rc::Rc;
+
 use crate::{
+    floating::{style_prop, use_position},
     focus::{use_deferred_focus, FocusPlacement},
     menu::{self, MenuContext},
-    merge_attributes, use_controlled, use_unique_id,
+    merge_attributes, use_controlled, use_unique_id, ContentAlign, ContentSide,
 };
 use dioxus::prelude::*;
 use dioxus_attributes::attributes;
@@ -128,6 +131,7 @@ pub fn DropdownMenuTrigger(props: DropdownMenuTriggerProps) -> Element {
     let open = ctx.open;
     let disabled = ctx.disabled;
 
+    let mut trigger_ref = ctx.trigger_ref;
     let base = attributes!(span {
         id: ctx.trigger_id,
         "data-state": if open() { "open" } else { "closed" },
@@ -135,6 +139,7 @@ pub fn DropdownMenuTrigger(props: DropdownMenuTriggerProps) -> Element {
         aria_disabled: disabled,
         aria_expanded: open,
         aria_haspopup: "menu",
+        onmounted: move |evt: MountedEvent| trigger_ref.set(Some(evt.data())),
         onclick: move |_| {
             if !disabled() {
                 ctx.set_open.call(!open());
@@ -196,7 +201,7 @@ pub fn DropdownMenuContent(props: DropdownMenuContentProps) -> Element {
     let dropdown_ctx: DropdownMenuContext = use_context();
     let mut menu_ctx: MenuContext = use_context();
     let open = menu_ctx.open;
-    let mut menu_ref: Signal<Option<std::rc::Rc<MountedData>>> = use_signal(|| None);
+    let mut menu_ref: Signal<Option<Rc<MountedData>>> = use_signal(|| None);
     let focused = move || open() && !menu_ctx.focus.any_focused();
 
     use_deferred_focus(menu_ctx.focus, dropdown_ctx.initial_focus, move || {
@@ -213,6 +218,30 @@ pub fn DropdownMenuContent(props: DropdownMenuContentProps) -> Element {
         }
     });
 
+    // Floating-element positioning. The trigger ref is shared via the menu context;
+    // the content ref (`menu_ref`, also used for focus) doubles as the floating
+    // element. A dropdown naturally opens below its trigger, aligned to the left edge
+    // (matching the legacy `top:100% left:0` CSS); flip()/shift() handle viewport
+    // edges. On native the hook is inert and the `:not([data-floating])` CSS fallback
+    // provides the static placement.
+    let pos = use_position(
+        menu_ctx.trigger_ref,
+        menu_ref,
+        ContentSide::Bottom,
+        ContentAlign::Start,
+    );
+
+    let style = pos.style;
+    let is_positioned = pos.is_positioned;
+    let resolved_side = pos.side;
+    let resolved_align = pos.align;
+    let floating_active = pos.floating_active;
+
+    let position = use_memo(move || style_prop(&style.read(), "position"));
+    let top = use_memo(move || style_prop(&style.read(), "top"));
+    let left = use_memo(move || style_prop(&style.read(), "left"));
+    let visibility = use_memo(move || if is_positioned() { "visible" } else { "hidden" });
+
     let base = attributes!(div {
         tabindex: if focused() { "0" } else { "-1" },
         onblur: move |_| {
@@ -220,9 +249,17 @@ pub fn DropdownMenuContent(props: DropdownMenuContentProps) -> Element {
                 menu_ctx.focus.blur();
             }
         },
+        position: position(),
+        top: top(),
+        left: left(),
+        visibility: visibility(),
+        "data-side": resolved_side.read().as_str(),
+        "data-align": resolved_align.read().as_str(),
+        "data-floating": floating_active.then_some("true"),
         onmounted: move |evt| menu_ref.set(Some(evt.data())),
     });
-    let attributes = merge_attributes(vec![base, props.attributes]);
+    // Floating props must win over user-forwarded coords → place `base` last.
+    let attributes = merge_attributes(vec![props.attributes, base]);
 
     rsx! {
         menu::MenuContent {

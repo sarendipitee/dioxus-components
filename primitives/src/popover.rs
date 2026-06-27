@@ -1,12 +1,15 @@
 //! Defines the [`PopoverRoot`] component and its sub-components.
 
+use std::rc::Rc;
+
 use dioxus::document;
 use dioxus::prelude::*;
 use dioxus_attributes::attributes;
 
 use crate::{
-    merge_attributes, use_animated_open, use_controlled, use_global_escape_listener, use_id_or,
-    use_outside_dismiss, use_unique_id, ContentAlign, ContentSide, FOCUS_TRAP_JS,
+    floating::{style_prop, use_position}, merge_attributes, use_animated_open, use_controlled,
+    use_global_escape_listener, use_id_or, use_outside_dismiss, use_unique_id, ContentAlign,
+    ContentSide, FOCUS_TRAP_JS,
 };
 
 #[derive(Clone, Copy)]
@@ -21,6 +24,11 @@ struct PopoverCtx {
     is_modal: ReadSignal<bool>,
     labelledby: Signal<String>,
     root_id: Memo<String>,
+
+    /// Reference (trigger) element shared with the content so the floating-ui hook can
+    /// position the content relative to the trigger. Set by [`PopoverTrigger`] /
+    /// [`PopoverOpenTrigger`] via `onmounted`.
+    trigger_ref: Signal<Option<Rc<MountedData>>>,
 }
 
 /// The props for the [`PopoverRoot`] component.
@@ -109,12 +117,15 @@ pub fn PopoverRoot(props: PopoverRootProps) -> Element {
 
     let (open, set_open) = use_controlled(props.open, props.default_open, props.on_open_change);
 
+    let trigger_ref = use_signal(|| None);
+
     use_context_provider(|| PopoverCtx {
         open,
         set_open,
         is_modal: props.is_modal,
         labelledby,
         root_id,
+        trigger_ref,
     });
 
     rsx! {
@@ -279,6 +290,52 @@ pub fn PopoverContentRendered(
 
     use_outside_dismiss(ctx.root_id, move || set_open.call(false));
 
+    // Floating-element positioning. The content ref is local; the trigger ref is shared
+    // through the context. `use_position` must be called unconditionally (no conditional
+    // hook) — this component only renders while the popover is open, so both refs settle
+    // on first mount.
+    let mut floating_ref: Signal<Option<Rc<MountedData>>> = use_signal(|| None);
+    let pos = use_position(ctx.trigger_ref, floating_ref, side, align);
+
+    // The hook emits a single inline style string (`position: fixed; top: Ypx; left: Xpx;`
+    // on web, empty on native). `merge_attributes` merges CSS by per-property
+    // (name, namespace=style), last-list-wins — a single raw `style` string would
+    // therefore clobber any user-forwarded `style` string entirely. So we split the
+    // floating coordinates into individual `style:` props (`position`/`top`/`left`),
+    // which only override the user's same-named props and leave every other forwarded
+    // style intact. The floating props are merged LAST so the computed coordinates win.
+    //
+    // R4/R5: keep the element `visibility: hidden` until the first compute lands, so it
+    // does not flash at the origin before positioning. The hook makes `is_positioned`
+    // reliable on web (it passes `open(true)` to floating-ui so the signal flips to
+    // `true` after the first compute), so we guard on it directly — no coordinate-presence
+    // fallback. On native `is_positioned` is always true and the coords are empty, so the
+    // element stays visible and keeps the CSS-only placement.
+    let style = pos.style;
+    let is_positioned = pos.is_positioned;
+    let resolved_side = pos.side;
+    let resolved_align = pos.align;
+    // Marker attribute: present (`data-floating="true"`) on web so the native CSS
+    // fallback (scoped under `:not([data-floating])`) stays inert and the inline
+    // coordinates win; absent on native so the fallback positional rules apply.
+    let floating_active = pos.floating_active;
+
+    let position = use_memo(move || style_prop(&style.read(), "position"));
+    let top = use_memo(move || style_prop(&style.read(), "top"));
+    let left = use_memo(move || style_prop(&style.read(), "left"));
+    let visibility = use_memo(move || if is_positioned() { "visible" } else { "hidden" });
+
+    let floating_attrs = attributes!(div {
+        position: position(),
+        top: top(),
+        left: left(),
+        visibility: visibility(),
+        "data-floating": floating_active.then_some("true"),
+        onmounted: move |evt| floating_ref.set(Some(evt.data())),
+    });
+    // Floating props must win over user-forwarded coords → place them in the last list.
+    let attributes = merge_attributes(vec![attributes, floating_attrs]);
+
     rsx! {
         div {
             id,
@@ -287,8 +344,8 @@ pub fn PopoverContentRendered(
             aria_labelledby: ctx.labelledby,
             aria_hidden: (!is_open).then_some("true"),
             "data-state": if is_open { "open" } else { "closed" },
-            "data-side": side.as_str(),
-            "data-align": align.as_str(),
+            "data-side": resolved_side.read().as_str(),
+            "data-align": resolved_align.read().as_str(),
             ..attributes,
             {children}
         }
@@ -373,11 +430,13 @@ fn use_popover_trigger_labelledby(
 #[component]
 pub fn PopoverTrigger(props: PopoverTriggerProps) -> Element {
     let ctx: PopoverCtx = use_context();
+    let mut trigger_ref = ctx.trigger_ref;
     let id = use_popover_trigger_labelledby(ctx.labelledby, &props.attributes);
 
     rsx! {
         div {
             id,
+            onmounted: move |evt| trigger_ref.set(Some(evt.data())),
             onclick: move |e| {
                 e.stop_propagation();
                 ctx.set_open.call(!(ctx.open)());
@@ -397,11 +456,13 @@ pub fn PopoverTrigger(props: PopoverTriggerProps) -> Element {
 #[component]
 pub fn PopoverOpenTrigger(props: PopoverTriggerProps) -> Element {
     let ctx: PopoverCtx = use_context();
+    let mut trigger_ref = ctx.trigger_ref;
     let id = use_popover_trigger_labelledby(ctx.labelledby, &props.attributes);
 
     rsx! {
         div {
             id,
+            onmounted: move |evt| trigger_ref.set(Some(evt.data())),
             onclick: move |e| {
                 e.stop_propagation();
                 ctx.set_open.call(true);

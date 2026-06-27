@@ -1,9 +1,16 @@
 //! Virtualized combobox listbox component.
 
+use std::rc::Rc;
+
 use dioxus::prelude::*;
 
 use super::super::context::ComboboxContext;
-use crate::listbox::{use_listbox_container_with_open, use_listbox_id};
+use crate::{
+    dioxus_attributes::attributes,
+    floating::{style_prop, use_position},
+    listbox::{use_listbox_container_with_open, use_listbox_id},
+    merge_attributes, ContentAlign, ContentSide,
+};
 
 /// Props for [`VirtualizedComboboxOptions`].
 #[derive(Props, Clone, PartialEq)]
@@ -48,6 +55,26 @@ pub fn VirtualizedComboboxOptions(props: VirtualizedComboboxOptionsProps) -> Ele
 
     let mut scroll_offset = use_signal(|| 0u32);
     let mut viewport_size = use_signal(|| 0u32);
+
+    // Floating-element positioning (mirrors `ComboboxOptions`). The reference is the
+    // combobox target registered in the store; the floating element is this listbox
+    // scroll container.
+    let mut floating_ref: Signal<Option<Rc<MountedData>>> = use_signal(|| None);
+    let pos = use_position(
+        ctx.store.target_mount_ref(),
+        floating_ref,
+        ContentSide::Bottom,
+        ContentAlign::Start,
+    );
+    let style = pos.style;
+    let is_positioned = pos.is_positioned;
+    let resolved_side = pos.side;
+    let resolved_align = pos.align;
+    let floating_active = pos.floating_active;
+    let position = use_memo(move || style_prop(&style.read(), "position"));
+    let top = use_memo(move || style_prop(&style.read(), "top"));
+    let left = use_memo(move || style_prop(&style.read(), "left"));
+    let visibility = use_memo(move || if is_positioned() { "visible" } else { "hidden" });
 
     // The total number of visible rows (changes when the filter changes).
     let visible_count = use_memo(move || {
@@ -96,6 +123,7 @@ pub fn VirtualizedComboboxOptions(props: VirtualizedComboboxOptionsProps) -> Ele
     // before the first scroll event fires.
     let on_mounted = move |e: Event<MountedData>| {
         let data = e.data();
+        floating_ref.set(Some(data.clone()));
         spawn(async move {
             if let Ok(rect) = data.get_client_rect().await {
                 viewport_size.set(rect.size.height.round() as u32);
@@ -189,6 +217,17 @@ pub fn VirtualizedComboboxOptions(props: VirtualizedComboboxOptionsProps) -> Ele
     let canvas_height = (count as u32 * e1).max(vp);
     let set_size = count.to_string();
 
+    let floating_attrs = attributes!(div {
+        position: position(),
+        top: top(),
+        left: left(),
+        visibility: visibility(),
+        "data-floating": floating_active.then_some("true"),
+        "data-side": resolved_side.read().as_str(),
+        "data-align": resolved_align.read().as_str(),
+    });
+    let attributes = merge_attributes(vec![props.attributes.clone(), floating_attrs]);
+
     rsx! {
         if render() {
             div {
@@ -200,7 +239,7 @@ pub fn VirtualizedComboboxOptions(props: VirtualizedComboboxOptionsProps) -> Ele
                 onpointerdown: move |event| {
                     event.prevent_default();
                 },
-                ..props.attributes,
+                ..attributes,
                 // Canvas: flex-shrink:0 is critical — the listbox is a flex column container,
                 // and without it the browser compresses this div to fit the max-height,
                 // eliminating overflow and making the list unscrollable.

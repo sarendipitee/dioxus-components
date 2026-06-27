@@ -4,6 +4,7 @@ use dioxus::prelude::*;
 use dioxus_core::Task;
 use dioxus_sdk_time::sleep;
 
+use std::rc::Rc;
 use std::time::Duration;
 
 use super::text_search::AdaptiveKeyboard;
@@ -22,6 +23,10 @@ pub(super) struct SelectContext {
     pub typeahead_clear_task: Signal<Option<Task>>,
     /// Timeout before clearing typeahead buffer
     pub typeahead_timeout: ReadSignal<Duration>,
+    /// Reference (trigger) element shared with the list so the floating-ui hook can
+    /// position the dropdown relative to the trigger. Set by
+    /// [`SelectTrigger`](super::components::SelectTrigger) via `onmounted`.
+    pub trigger_ref: Signal<Option<Rc<MountedData>>>,
 }
 
 impl SelectContext {

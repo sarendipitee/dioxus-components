@@ -103,21 +103,6 @@ pub fn use_combobox_target_attributes() -> Vec<Attribute> {
     use_combobox_target().spread()
 }
 
-#[derive(Clone, Copy)]
-struct ComboboxTargetWrapperHandle {}
-
-impl ComboboxTargetWrapperHandle {
-    fn spread(&self) -> Vec<Attribute> {
-        attributes!(div {
-            "data-combobox-target": true,
-        })
-    }
-}
-
-fn use_combobox_target_wrapper() -> ComboboxTargetWrapperHandle {
-    ComboboxTargetWrapperHandle {}
-}
-
 /// Props for [`ComboboxTarget`].
 #[derive(Props, Clone, PartialEq)]
 pub struct ComboboxTargetProps {
@@ -140,14 +125,16 @@ pub struct ComboboxTargetProps {
 #[component]
 pub fn ComboboxTarget(props: ComboboxTargetProps) -> Element {
     let target = use_combobox_target();
-    let wrapper = use_combobox_target_wrapper();
 
     if let Some(dynamic) = props.r#as {
         let merged = merge_attributes(vec![target.spread(), props.attributes]);
         return dynamic.call(merged);
     }
 
-    let merged = merge_attributes(vec![wrapper.spread(), props.attributes]);
+    // The default wrapper div must register the target mount ref so the dropdown
+    // anchors to the pills/target container (MultiSelect uses this wrapper with a
+    // `ComboboxSearch { register_target: false }`, so nothing else registers it).
+    let merged = merge_attributes(vec![target.spread(), props.attributes]);
 
     rsx! {
         div {

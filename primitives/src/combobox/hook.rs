@@ -334,6 +334,14 @@ impl ComboboxStore {
         target_mount.set(Some(mounted));
     }
 
+    /// Returns the reference (trigger/target) element signal so the floating-ui hook
+    /// can position the dropdown list relative to the combobox target. The target is
+    /// registered via [`Self::register_target_mount_ref`] (the search input or a
+    /// custom target element).
+    pub(crate) fn target_mount_ref(&self) -> Signal<Option<Rc<MountedData>>> {
+        self.target_mount
+    }
+
     pub(crate) fn register_search_mount_ref(&self, mounted: Rc<MountedData>) {
         let mut search_mount = self.search_mount;
         search_mount.set(Some(mounted));

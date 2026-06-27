@@ -14,19 +14,32 @@
 }
 
 .dx_dropdown_menu_content {
-  position: absolute;
+  /* Position (position/top/left) is owned by the floating-ui hook on web, which
+     emits inline coords AND a `data-floating="true"` marker. The legacy CSS gap
+     (margin-top: var(--space)) now lives in the offset() middleware. On native the
+     hook is inert (no marker, no coords) and the `:not([data-floating])` fallback
+     below provides static placement. */
   z-index: 1000;
-  top: 100%;
-  left: 0;
   min-width: 200px;
   padding: var(--space);
-  margin-top: var(--space);
   animation: dx-slideIn 0.1s ease-out;
 
   /* Animation properties */
   opacity: 0;
   transform: translateY(-8px) scale(0.95);
   transition: transform 0.2s ease, opacity 0.2s ease;
+}
+
+/* Native fallback positioning. On web floating-ui owns placement and emits
+   `data-floating="true"`, so this rule is inert there and the inline coords win.
+   On native the marker is absent: mirror the legacy `top:100% left:0` geometry
+   relative to the `position: relative` .dx_dropdown_menu wrapper. The ~8px gap
+   matches offset()'s DEFAULT_OFFSET_GAP. */
+.dx_dropdown_menu_content:not([data-floating]) {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  margin-top: var(--space);
 }
 
 .dx_dropdown_menu_content[data-state="closed"] {
@@ -123,20 +136,29 @@
 }
 
 .dx_dropdown_menu_sub_content {
+  transform-origin: left top;
+}
+
+.dx_dropdown_menu_sub_content[data-side="left"] {
+  transform-origin: right top;
+}
+
+/* Native fallback positioning for the submenu (web uses floating-ui inline
+   coords; `:not([data-floating])` keeps these inert on web). Mirrors the legacy
+   right-of-trigger geometry; the ~8px gap is owned by offset() on web. */
+.dx_dropdown_menu_sub_content:not([data-floating]) {
   position: absolute;
   top: calc(var(--space) * -1);
   left: 100%;
   margin-top: 0;
   margin-left: var(--space);
-  transform-origin: left top;
 }
 
-.dx_dropdown_menu_sub_content[data-side="left"] {
+.dx_dropdown_menu_sub_content:not([data-floating])[data-side="left"] {
   right: 100%;
   left: auto;
   margin-right: var(--space);
   margin-left: 0;
-  transform-origin: right top;
 }
 
 .dx_dropdown_menu_sub_content::before {

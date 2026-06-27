@@ -67,6 +67,7 @@ pub struct SelectTriggerProps {
 pub fn SelectTrigger(props: SelectTriggerProps) -> Element {
     let mut ctx = use_context::<SelectContext>();
     let open = ctx.selectable.open;
+    let mut trigger_ref = ctx.trigger_ref;
 
     rsx! {
         button {
@@ -74,6 +75,7 @@ pub fn SelectTrigger(props: SelectTriggerProps) -> Element {
             disabled: (ctx.selectable.disabled)(),
             type: "button",
 
+            onmounted: move |evt| trigger_ref.set(Some(evt.data())),
             onclick: move |_| {
                 ctx.selectable.toggle_open();
             },

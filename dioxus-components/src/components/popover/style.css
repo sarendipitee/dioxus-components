@@ -4,7 +4,11 @@
 }
 
 .dx_popover_content {
-  position: fixed;
+  /* Position (position/top/left) is owned by the floating-ui hook, which emits
+     inline coords AND a `data-floating="true"` marker on web. The legacy CSS gap
+     (calc(var(--space) * 2)) now lives in the offset() middleware. On native the
+     hook is inert (no marker, no coords) and the `:not([data-floating])` fallback
+     rules below provide static data-side/data-align placement. */
   z-index: 1000;
   display: flex;
   min-width: 200px;
@@ -12,9 +16,7 @@
   box-sizing: border-box;
   flex-direction: column;
   padding: calc(var(--space) * 3);
-  margin-top: calc(var(--space) * 2);
   text-align: center;
-  transform: translate(-50%, -50%);
   transform-origin: top;
   will-change: transform, opacity;
 }
@@ -73,28 +75,90 @@
 
 }
 
-/* Positioning based on side */
-.dx_popover_content[data-side="top"] {
+/* ── Native fallback positioning ─────────────────────────────────────────────
+   On web, floating-ui owns placement and emits `data-floating="true"` on the
+   content; these `:not([data-floating])` rules are therefore inert there and the
+   inline coords win (no double-positioning). On native/desktop the marker is
+   absent, so these rules provide the legacy static data-side/data-align placement
+   relative to the `position: relative` .dx_popover wrapper. The ~8px gap matches
+   the offset() middleware's DEFAULT_OFFSET_GAP. Keep in sync with the web path. */
+.dx_popover_content:not([data-floating]) {
   position: absolute;
+  transform: translate(-50%, -50%);
+}
+
+/* Positioning based on side */
+.dx_popover_content:not([data-floating])[data-side="top"] {
   bottom: 100%;
   left: 50%;
   margin-bottom: calc(var(--space) * 2);
   transform: translateX(-50%);
 }
 
+.dx_popover_content:not([data-floating])[data-side="right"] {
+  top: 50%;
+  left: 100%;
+  margin-left: calc(var(--space) * 2);
+  transform: translateY(-50%);
+}
+
+.dx_popover_content:not([data-floating])[data-side="bottom"] {
+  top: 100%;
+  left: 50%;
+  margin-top: calc(var(--space) * 2);
+  transform: translateX(-50%);
+}
+
+.dx_popover_content:not([data-floating])[data-side="left"] {
+  top: 50%;
+  right: 100%;
+  margin-right: calc(var(--space) * 2);
+  transform: translateY(-50%);
+}
+
+/* Alignment styles for top and bottom */
+.dx_popover_content:not([data-floating])[data-side="top"][data-align="start"],
+.dx_popover_content:not([data-floating])[data-side="bottom"][data-align="start"] {
+  left: 0;
+  transform: none;
+}
+
+.dx_popover_content:not([data-floating])[data-side="top"][data-align="end"],
+.dx_popover_content:not([data-floating])[data-side="bottom"][data-align="end"] {
+  right: 0;
+  left: auto;
+  transform: none;
+}
+
+/* Alignment styles for left and right */
+.dx_popover_content:not([data-floating])[data-side="left"][data-align="start"],
+.dx_popover_content:not([data-floating])[data-side="right"][data-align="start"] {
+  top: 0;
+  transform: none;
+}
+
+.dx_popover_content:not([data-floating])[data-side="left"][data-align="center"],
+.dx_popover_content:not([data-floating])[data-side="right"][data-align="center"] {
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+.dx_popover_content:not([data-floating])[data-side="left"][data-align="end"],
+.dx_popover_content:not([data-floating])[data-side="right"][data-align="end"] {
+  top: auto;
+  bottom: 0;
+  transform: none;
+}
+
+/* Arrow positioning per side. Coordinates/offset are owned by the floating-ui hook
+   (offset + flip + shift); only the ::after arrow geometry remains here, keyed on the
+   resolved data-side. NOTE: after shift() slides the content, the arrow does not track
+   the trigger (no arrow middleware in v1) — acceptable for v1. */
 .dx_popover_content[data-side="top"]::after {
   top: calc(100% - 0.25rem);
   left: 50%;
   border-color: var(--overlay);
   border-radius: 0 0 0.1rem;
-}
-
-.dx_popover_content[data-side="right"] {
-  position: absolute;
-  top: 50%;
-  left: 100%;
-  margin-left: calc(var(--space) * 2);
-  transform: translateY(-50%);
 }
 
 .dx_popover_content[data-side="right"]::after {
@@ -104,14 +168,6 @@
   border-radius: 0 0 0 0.1rem;
 }
 
-.dx_popover_content[data-side="bottom"] {
-  position: absolute;
-  top: 100%;
-  left: 50%;
-  margin-top: calc(var(--space) * 2);
-  transform: translateX(-50%);
-}
-
 .dx_popover_content[data-side="bottom"]::after {
   bottom: calc(100% - 0.25rem);
   left: 50%;
@@ -119,53 +175,11 @@
   border-radius: 0.1rem 0 0;
 }
 
-.dx_popover_content[data-side="left"] {
-  position: absolute;
-  top: 50%;
-  right: 100%;
-  margin-right: calc(var(--space) * 2);
-  transform: translateY(-50%);
-}
-
 .dx_popover_content[data-side="left"]::after {
   top: calc(50% - 0.25rem);
   right: -0.25rem;
   border-color: var(--overlay);
   border-radius: 0 0.1rem 0 0;
-}
-
-/* Alignment styles for top and bottom */
-.dx_popover_content[data-side="top"][data-align="start"],
-.dx_popover_content[data-side="bottom"][data-align="start"] {
-  left: 0;
-  transform: none;
-}
-
-.dx_popover_content[data-side="top"][data-align="end"],
-.dx_popover_content[data-side="bottom"][data-align="end"] {
-  right: 0;
-  left: auto;
-  transform: none;
-}
-
-/* Alignment styles for left and right */
-.dx_popover_content[data-side="left"][data-align="start"],
-.dx_popover_content[data-side="right"][data-align="start"] {
-  top: 0;
-  transform: none;
-}
-
-.dx_popover_content[data-side="left"][data-align="center"],
-.dx_popover_content[data-side="right"][data-align="center"] {
-  top: 50%;
-  transform: translateY(-50%);
-}
-
-.dx_popover_content[data-side="left"][data-align="end"],
-.dx_popover_content[data-side="right"][data-align="end"] {
-  top: auto;
-  bottom: 0;
-  transform: none;
 }
 
 .dx_popover_content_title {

@@ -1,6 +1,9 @@
 //! SelectList component implementation.
 
-use crate::{listbox::use_listbox_container, use_effect};
+use crate::{
+    dioxus_attributes::attributes, floating::{style_prop, use_position},
+    listbox::use_listbox_container, merge_attributes, use_effect, ContentAlign, ContentSide,
+};
 use dioxus::prelude::*;
 
 use super::super::context::SelectContext;
@@ -73,6 +76,26 @@ pub fn SelectList(props: SelectListProps) -> Element {
     let open = ctx.selectable.open;
     let mut listbox_ref: Signal<Option<std::rc::Rc<MountedData>>> = use_signal(|| None);
     let focused = move || open() && !ctx.selectable.focus_state.any_focused();
+
+    // Floating-element positioning. The list drops below the trigger (side=Bottom,
+    // align=Start); flip handles upward placement near the bottom viewport edge and
+    // shift slides it back into view. `use_position` is called unconditionally; the
+    // listbox only mounts while open so both refs settle on first open.
+    let pos = use_position(
+        ctx.trigger_ref,
+        listbox_ref,
+        ContentSide::Bottom,
+        ContentAlign::Start,
+    );
+    let style = pos.style;
+    let is_positioned = pos.is_positioned;
+    let resolved_side = pos.side;
+    let resolved_align = pos.align;
+    let floating_active = pos.floating_active;
+    let position = use_memo(move || style_prop(&style.read(), "position"));
+    let top = use_memo(move || style_prop(&style.read(), "top"));
+    let left = use_memo(move || style_prop(&style.read(), "left"));
+    let visibility = use_memo(move || if is_positioned() { "visible" } else { "hidden" });
 
     use_effect(move || {
         let Some(listbox_ref) = listbox_ref() else {
@@ -147,6 +170,22 @@ pub fn SelectList(props: SelectListProps) -> Element {
     let listbox = use_listbox_container(props.id, ctx.selectable);
     let render = listbox.render;
 
+    // Floating coordinates are split into individual `style:` props (position/top/left)
+    // and merged LAST so the computed coordinates win over any user-forwarded style,
+    // while leaving every other forwarded style intact (see popover for the rationale).
+    // The `data-floating` marker keeps the native `:not([data-floating])` CSS fallback
+    // inert on web.
+    let floating_attrs = attributes!(div {
+        position: position(),
+        top: top(),
+        left: left(),
+        visibility: visibility(),
+        "data-floating": floating_active.then_some("true"),
+        "data-side": resolved_side.read().as_str(),
+        "data-align": resolved_align.read().as_str(),
+    });
+    let attributes = merge_attributes(vec![props.attributes.clone(), floating_attrs]);
+
     rsx! {
         if render() {
             div {
@@ -166,7 +205,7 @@ pub fn SelectList(props: SelectListProps) -> Element {
                     }
                 },
 
-                ..props.attributes,
+                ..attributes,
                 {props.children}
             }
         } else {
@@ -175,3 +214,4 @@ pub fn SelectList(props: SelectListProps) -> Element {
         }
     }
 }
+

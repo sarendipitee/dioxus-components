@@ -1,14 +1,18 @@
 //! Defines the [`Menubar`] component and its sub-components.
 
+use std::rc::Rc;
+
 use dioxus::prelude::*;
+use dioxus_attributes::attributes;
 
 use crate::{
+    floating::{style_prop, use_position},
     focus::{
         use_deferred_focus, use_focus_control, use_focus_entry_disabled, use_focus_provider,
         FocusPlacement, FocusState,
     },
     menu::{self, MenuContext},
-    use_unique_id,
+    merge_attributes, use_unique_id, ContentAlign, ContentSide,
 };
 
 #[derive(Clone, Copy)]
@@ -257,6 +261,7 @@ pub fn MenubarMenu(props: MenubarMenuProps) -> Element {
     let focus = use_focus_provider(ctx.focus.roving_loop);
     let initial_focus = use_signal(|| None);
     let trigger_id = use_unique_id();
+    let trigger_ref = use_signal(|| None);
     let mut menu_ctx = use_context_provider(|| MenubarMenuContext {
         index: props.index,
         focus,
@@ -274,6 +279,7 @@ pub fn MenubarMenu(props: MenubarMenuProps) -> Element {
         disabled: shared_disabled,
         focus,
         trigger_id,
+        trigger_ref,
     });
 
     use_effect(move || {
@@ -407,7 +413,14 @@ pub fn MenubarTrigger(props: MenubarTriggerProps) -> Element {
     let mut ctx: MenubarContext = use_context();
     let menu_ctx: MenubarMenuContext = use_context();
     let shared_menu_ctx: MenuContext = use_context();
-    let onmounted = use_focus_control(ctx.focus, menu_ctx.index);
+    let mut trigger_ref = shared_menu_ctx.trigger_ref;
+    let mut focus_onmounted = use_focus_control(ctx.focus, menu_ctx.index);
+    // Drive both the roving-focus controller and the floating-ui reference ref from
+    // the single element ref (an element can only carry one `onmounted`).
+    let onmounted = move |evt: MountedEvent| {
+        trigger_ref.set(Some(evt.data()));
+        focus_onmounted(evt);
+    };
     let disabled = move || (ctx.disabled)() || (menu_ctx.disabled)();
     let is_open = menu_ctx.is_open;
     let index = menu_ctx.index;
@@ -533,10 +546,46 @@ pub fn MenubarContent(props: MenubarContentProps) -> Element {
         (shared_menu_ctx.open)()
     });
 
+    // Floating-element positioning. Menubar content opens below its trigger, aligned
+    // to the trigger's left edge (matching the legacy `top:100% left:0` CSS);
+    // flip()/shift() handle viewport edges. On native the hook is inert and the
+    // `:not([data-floating])` CSS fallback provides the static placement.
+    let mut floating_ref: Signal<Option<Rc<MountedData>>> = use_signal(|| None);
+    let pos = use_position(
+        shared_menu_ctx.trigger_ref,
+        floating_ref,
+        ContentSide::Bottom,
+        ContentAlign::Start,
+    );
+
+    let style = pos.style;
+    let is_positioned = pos.is_positioned;
+    let resolved_side = pos.side;
+    let resolved_align = pos.align;
+    let floating_active = pos.floating_active;
+
+    let position = use_memo(move || style_prop(&style.read(), "position"));
+    let top = use_memo(move || style_prop(&style.read(), "top"));
+    let left = use_memo(move || style_prop(&style.read(), "left"));
+    let visibility = use_memo(move || if is_positioned() { "visible" } else { "hidden" });
+
+    let floating_attrs = attributes!(div {
+        position: position(),
+        top: top(),
+        left: left(),
+        visibility: visibility(),
+        "data-side": resolved_side.read().as_str(),
+        "data-align": resolved_align.read().as_str(),
+        "data-floating": floating_active.then_some("true"),
+        onmounted: move |evt: MountedEvent| floating_ref.set(Some(evt.data())),
+    });
+    // Floating props must win over user-forwarded coords → place them last.
+    let attributes = merge_attributes(vec![props.attributes, floating_attrs]);
+
     rsx! {
         menu::MenuContent {
             id: props.id,
-            attributes: props.attributes,
+            attributes,
             {props.children}
         }
     }
