@@ -1,5 +1,6 @@
 use crate::component_styles;
 use dioxus::prelude::*;
+use dioxus_icons::lucide::{CircleAlert, CircleCheck, Info, TriangleAlert};
 use dioxus_primitives::dioxus_attributes::attributes;
 use dioxus_primitives::merge_attributes;
 
@@ -36,8 +37,14 @@ impl AlertVariant {
 #[component]
 pub fn Alert(
     #[props(default)] variant: AlertVariant,
+    /// Shorthand alert heading. Renders an `AlertTitle` before children.
+    #[props(default)] title: Option<String>,
+    /// Shorthand alert body. Renders an `AlertDescription` before children.
+    #[props(default)] description: Option<String>,
+    /// Override the default variant icon. Pass `rsx! {}` to suppress the icon.
+    #[props(default)] icon: Option<Element>,
     #[props(extends = GlobalAttributes)] attributes: Vec<Attribute>,
-    children: Element,
+    #[props(default)] children: Element,
 ) -> Element {
     let base = attributes!(div {
         class: Styles::dx_alert,
@@ -47,8 +54,20 @@ pub fn Alert(
     });
     let attributes = merge_attributes(vec![base, attributes]);
 
+    let default_icon = match variant {
+        AlertVariant::Default => rsx! { CircleAlert { size: "1.25rem" } },
+        AlertVariant::Destructive => rsx! { TriangleAlert { size: "1.25rem" } },
+        AlertVariant::Info => rsx! { Info { size: "1.25rem" } },
+        AlertVariant::Success => rsx! { CircleCheck { size: "1.25rem" } },
+    };
+
     rsx! {
-        div { ..attributes, {children} }
+        div { ..attributes,
+            AlertIcon { {icon.unwrap_or(default_icon)} }
+            if let Some(t) = title { AlertTitle { {t} } }
+            if let Some(d) = description { AlertDescription { {d} } }
+            {children}
+        }
     }
 }
 

@@ -120,7 +120,7 @@
      validation messages that should not be filled with the strong color. */
   --success-subtle: var(--is-light, #ecfdf5) var(--is-dark, #02271c);
   --success-subtle-fg: var(--is-light, #02271c) var(--is-dark, #b6fae3);
-  --success-subtle-border: var(--is-light, #a7f3d0) var(--is-dark, #10b981);
+  --success-subtle-border: var(--is-light, #a7f3d0) var(--is-dark, #075f20);
 
   /* Warning filled recipe. Use for high-emphasis cautionary status. */
   --warning: var(--is-light, #fffbeb) var(--is-dark, #342203);
@@ -137,7 +137,7 @@
      error states. */
   --danger: var(--is-light, #dc2626) var(--is-dark, #a22e2e);
   --danger-fg: var(--is-light, #ffffff) var(--is-dark, #ffffff);
-  --danger-border: var(--is-light, #dc2626) var(--is-dark, #a22e2e);
+  --danger-border: var(--is-light, #dc2626) var(--is-dark, #da3d3d);
 
   /* Danger hover recipe. Use for hovered destructive actions. */
   --danger-hover: var(--is-light, #cb0314) var(--is-dark, #b6423f);
