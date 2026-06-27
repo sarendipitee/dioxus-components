@@ -98,6 +98,9 @@ pub struct ColorInputProps {
     /// Shows the required asterisk without native validation.
     #[props(default = false)]
     with_asterisk: bool,
+    /// Shows a loading spinner in the trailing section and marks the field busy.
+    #[props(default = false)]
+    loading: bool,
     /// Visual variant for the shell.
     #[props(default)]
     variant: InputVariant,
@@ -139,6 +142,7 @@ pub fn ColorInput(props: ColorInputProps) -> Element {
         error,
         required,
         with_asterisk,
+        loading,
         variant,
         size,
         radius,
@@ -213,6 +217,7 @@ pub fn ColorInput(props: ColorInputProps) -> Element {
                             radius,
                             disabled: is_disabled,
                             error: error.is_some(),
+                            loading,
                             left_section: rsx! {
                                 ColorSwatch { class: Styles::dx_color_input_color_swatch, color }
                             },

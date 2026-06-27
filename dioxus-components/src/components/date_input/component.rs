@@ -79,6 +79,9 @@ pub fn DateInput(
     /// Shows the required asterisk without native validation.
     #[props(default = false)]
     with_asterisk: bool,
+    /// Shows a loading spinner in the trailing section and marks the field busy.
+    #[props(default = false)]
+    loading: bool,
     /// Visual variant for the shell.
     #[props(default)]
     variant: InputVariant,
@@ -117,6 +120,7 @@ pub fn DateInput(
                     required,
                     with_asterisk,
                     disabled: is_disabled,
+                    loading,
                     variant,
                     size,
                     radius,
@@ -185,6 +189,9 @@ pub fn DateRangePickerInput(
     /// Shows the required asterisk without native validation.
     #[props(default = false)]
     with_asterisk: bool,
+    /// Shows a loading spinner in the trailing section and marks the field busy.
+    #[props(default = false)]
+    loading: bool,
     /// Visual variant for the shell.
     #[props(default)]
     variant: InputVariant,
@@ -226,6 +233,7 @@ pub fn DateRangePickerInput(
                     variant,
                     size,
                     radius,
+                    loading,
                     right_section: rsx! {
                         DateInputPopoverTrigger {
                             disabled: is_disabled,

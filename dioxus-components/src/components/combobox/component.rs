@@ -114,6 +114,10 @@ pub struct ComboboxProps<T: Clone + PartialEq + 'static = String> {
     #[props(default = false)]
     pub with_asterisk: bool,
 
+    /// Shows a loading spinner in the trailing section and marks the field busy.
+    #[props(default = false)]
+    pub loading: bool,
+
     /// Visual variant for the shared input shell.
     #[props(default)]
     pub variant: InputVariant,
@@ -185,6 +189,7 @@ pub fn Combobox<T: Clone + PartialEq + 'static>(props: ComboboxProps<T>) -> Elem
                 required: props.required,
                 with_asterisk: props.with_asterisk,
                 disabled: (props.disabled)(),
+                loading: props.loading,
                 variant: props.variant,
                 size: props.size,
                 radius: props.radius,
@@ -310,6 +315,10 @@ pub struct MultiSelectProps<T: Clone + PartialEq + 'static = String> {
     #[props(default)]
     pub render_value: Option<Callback<T, Element>>,
 
+    /// Shows a loading spinner in the trailing section and marks the field busy.
+    #[props(default = false)]
+    pub loading: bool,
+
     /// Visual variant for the shared input shell.
     #[props(default)]
     pub variant: InputVariant,
@@ -343,6 +352,7 @@ pub fn MultiSelect<T: Clone + PartialEq + 'static>(props: MultiSelectProps<T>) -
             size: props.size,
             radius: props.radius,
             disabled: (props.disabled)(),
+            loading: props.loading,
             right_section: Some(rsx! {
                 ChevronsUpDown {
                     class: Styles::dx_combobox_expand_icon,
@@ -382,6 +392,10 @@ pub struct PillsInputProps {
     #[props(default)]
     pub disabled: ReadSignal<bool>,
 
+    /// Shows a loading spinner in the trailing section and marks the field busy.
+    #[props(default = false)]
+    pub loading: bool,
+
     /// Visual variant for the shared input shell.
     #[props(default)]
     pub variant: InputVariant,
@@ -415,6 +429,7 @@ pub fn PillsInput(props: PillsInputProps) -> Element {
             size: props.size,
             radius: props.radius,
             disabled: (props.disabled)(),
+            loading: props.loading,
             attributes: attributes!(div {
                 class: Styles::dx_combobox_pill_field,
             }),
@@ -454,6 +469,10 @@ pub struct TagsInputProps {
     #[props(default)]
     pub disabled: ReadSignal<bool>,
 
+    /// Shows a loading spinner in the trailing section and marks the field busy.
+    #[props(default = false)]
+    pub loading: bool,
+
     /// Visual variant for the shared input shell.
     #[props(default)]
     pub variant: InputVariant,
@@ -484,6 +503,7 @@ pub fn TagsInput(props: TagsInputProps) -> Element {
             size: props.size,
             radius: props.radius,
             disabled: (props.disabled)(),
+            loading: props.loading,
             attributes: attributes!(div {
                 class: Styles::dx_combobox_pill_field,
             }),

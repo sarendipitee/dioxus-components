@@ -458,6 +458,13 @@ pub fn Input(
     /// Marks the shell invalid.
     #[props(default = false)]
     error: bool,
+    /// Shows a loading spinner in the trailing section and marks the shell busy.
+    ///
+    /// While loading, the spinner replaces any `right_section` content. The control
+    /// stays interactive unless `disabled` is also set, so async validation can run
+    /// without trapping focus.
+    #[props(default = false)]
+    loading: bool,
     /// Optional content rendered before the control slot.
     #[props(default)]
     left_section: Option<Element>,
@@ -475,6 +482,8 @@ pub fn Input(
         "data-radius": radius.as_str(),
         "data-disabled": disabled,
         "data-error": error,
+        "data-loading": loading,
+        "aria-busy": loading,
     });
     let attributes = merge_attributes(vec![base, attributes]);
 
@@ -493,7 +502,18 @@ pub fn Input(
                 "data-slot": "input-control",
                 {children}
             }
-            if let Some(right_section) = right_section {
+            if loading {
+                div {
+                    class: Styles::dx_input_section.to_string(),
+                    "data-slot": "input-loading-section",
+                    "data-position": "right",
+                    span {
+                        class: Styles::dx_input_spinner.to_string(),
+                        "data-slot": "input-spinner",
+                        "aria-hidden": "true",
+                    }
+                }
+            } else if let Some(right_section) = right_section {
                 div {
                     class: Styles::dx_input_section.to_string(),
                     "data-slot": "input-right-section",
@@ -569,6 +589,9 @@ pub fn InputBase(
     /// Marks wrapper and shell disabled.
     #[props(default = false)]
     disabled: bool,
+    /// Shows a loading spinner in the shell's trailing section and marks it busy.
+    #[props(default = false)]
+    loading: bool,
     /// Existing ids to prepend to generated described-by ids.
     #[props(default)]
     described_by: Option<String>,
@@ -612,6 +635,7 @@ pub fn InputBase(
                 radius,
                 disabled,
                 error: error.is_some(),
+                loading,
                 left_section,
                 right_section,
                 attributes: input_attributes,
@@ -639,6 +663,9 @@ pub fn TextInput(
     /// Shows the required asterisk without changing native validation.
     #[props(default = false)]
     with_asterisk: bool,
+    /// Shows a loading spinner in the trailing section and marks the field busy.
+    #[props(default = false)]
+    loading: bool,
     /// Visual variant for the shell.
     #[props(default)]
     variant: InputVariant,
@@ -724,6 +751,7 @@ pub fn TextInput(
             required,
             with_asterisk,
             disabled,
+            loading,
             described_by: user_described_by,
             variant,
             size,

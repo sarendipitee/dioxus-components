@@ -133,6 +133,33 @@
   color: var(--input-fg-faint);
 }
 
+.dx_input[data-loading="true"] {
+  cursor: progress;
+}
+
+.dx_input_spinner {
+  display: inline-block;
+  width: 1rem;
+  height: 1rem;
+  box-sizing: border-box;
+  border: 2px solid var(--input-border);
+  border-top-color: var(--input-fg-muted);
+  border-radius: 50%;
+  animation: dx-input-spin 0.6s linear infinite;
+}
+
+@keyframes dx-input-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .dx_input_spinner {
+    animation: none;
+  }
+}
+
 .dx_input_section[data-position="left"] {
   padding-inline-start: var(--input-padding-x);
 }

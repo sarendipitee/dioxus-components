@@ -1,0 +1,1 @@
+Walks through the wrapper fields `InputBase` exposes — `label`, `description`, `error`, the required asterisk, and the disabled state — and shows how each is wired to the shell and to `aria-describedby`.

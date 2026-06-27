@@ -95,6 +95,9 @@ pub struct SelectProps<T: Clone + PartialEq + 'static = String> {
     /// Shows the required asterisk without changing form validation.
     #[props(default = false)]
     pub with_asterisk: bool,
+    /// Shows a loading spinner in the trailing section and marks the field busy.
+    #[props(default = false)]
+    pub loading: bool,
     /// Visual variant for the shared input shell.
     #[props(default)]
     pub variant: InputVariant,
@@ -174,6 +177,9 @@ pub struct SelectMultiProps<T: Clone + PartialEq + 'static = String> {
     /// Shows the required asterisk without changing form validation.
     #[props(default = false)]
     pub with_asterisk: bool,
+    /// Shows a loading spinner in the trailing section and marks the field busy.
+    #[props(default = false)]
+    pub loading: bool,
     /// Visual variant for the shared input shell.
     #[props(default)]
     pub variant: InputVariant,
@@ -246,6 +252,7 @@ pub fn Select<T: Clone + PartialEq + 'static>(props: SelectProps<T>) -> Element 
                         radius: props.radius,
                         disabled: (props.disabled)(),
                         error: props.error.is_some(),
+                        loading: props.loading,
                         left_section: props.left_section,
                         right_section: props.right_section.unwrap_or_else(|| rsx! {
                             ChevronDown { class: "dx-select-expand-icon", size: "14px", stroke: "currentColor" }
@@ -307,6 +314,7 @@ pub fn SelectMulti<T: Clone + PartialEq + 'static>(props: SelectMultiProps<T>) -
                         radius: props.radius,
                         disabled: (props.disabled)(),
                         error: props.error.is_some(),
+                        loading: props.loading,
                         left_section: props.left_section,
                         right_section: props.right_section.unwrap_or_else(|| rsx! {
                             ChevronDown { class: "dx-select-expand-icon", size: "14px", stroke: "currentColor" }
