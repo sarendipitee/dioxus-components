@@ -17,6 +17,7 @@ pub enum ComponentCategory {
 
 impl ComponentCategory {
     pub const ALL: &'static [Self] = &[
+        Self::DataDisplay,
         Self::Forms,
         Self::Schedule,
         Self::Combobox,
@@ -24,7 +25,6 @@ impl ComponentCategory {
         Self::Overlays,
         Self::Feedback,
         Self::Disclosure,
-        Self::DataDisplay,
     ];
 
     pub const fn label(self) -> &'static str {
