@@ -1,0 +1,15 @@
+{
+  "name": "number_input",
+  "description": "Numeric input with stepper controls, value clamping, prefix/suffix, thousands grouping, and decimal formatting. Mirrors Mantine's NumberInput feature set.",
+  "authors": [
+    "Saren"
+  ],
+  "exclude": [
+    "demos",
+    "docs.md",
+    "component.json"
+  ],
+  "globalAssets": [
+    "../../../../themes/default.css"
+  ]
+}

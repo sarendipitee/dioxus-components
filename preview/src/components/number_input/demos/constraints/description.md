@@ -1,0 +1,1 @@
+Bounds and stepping: `min`/`max` paired with `ClampBehavior::Strict` to block invalid input immediately, `ClampBehavior::Blur` to correct it on blur, and a custom `step` for the steppers and arrow keys.

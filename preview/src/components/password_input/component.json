@@ -1,0 +1,15 @@
+{
+  "name": "password_input",
+  "description": "Password field with a built-in visibility toggle. Built on the shared InputBase shell, with controllable reveal state and the usual label, description, error, variant, size, and loading affordances.",
+  "authors": [
+    "Saren"
+  ],
+  "exclude": [
+    "demos",
+    "docs.md",
+    "component.json"
+  ],
+  "globalAssets": [
+    "../../../../themes/default.css"
+  ]
+}

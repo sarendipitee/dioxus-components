@@ -1,0 +1,119 @@
+/* Prefix / suffix affixes rendered inside the input shell */
+.dx_number_input_affix {
+  display: inline-flex;
+  align-items: center;
+  color: var(--input-fg-muted);
+  font-size: inherit;
+  line-height: 1;
+  white-space: nowrap;
+  user-select: none;
+}
+
+.dx_number_input_affix[data-position="suffix"] {
+  padding-inline-start: calc(var(--input-padding-x) / 4);
+  padding-inline-end: var(--input-padding-x);
+}
+
+/* Remove right-section padding so controls sit flush at the edge */
+.dx_input:has(.dx_number_input_controls) .dx_input_section[data-position="right"] {
+  padding-inline-end: 0;
+}
+
+/* Stepper controls column */
+.dx_number_input_controls {
+  display: flex;
+  flex-direction: column;
+  align-self: stretch;
+  border-inline-start: 1px solid var(--input-border);
+  overflow: hidden;
+}
+
+.dx_input[data-disabled="true"] .dx_number_input_controls {
+  border-color: var(--input-disabled-border);
+}
+
+.dx_input[data-error="true"] .dx_number_input_controls {
+  border-color: var(--danger-border);
+}
+
+/* Individual stepper button */
+.dx_number_input_step_btn {
+  display: inline-flex;
+  flex: 1 1 0;
+  align-items: center;
+  justify-content: center;
+  width: 1.625rem;
+  min-width: 0;
+  box-sizing: border-box;
+  border: 0;
+  padding: 0;
+  background: transparent;
+  color: var(--input-fg-muted);
+  cursor: pointer;
+  font: inherit;
+  line-height: 1;
+  transition: background-color 100ms ease, color 100ms ease;
+}
+
+.dx_number_input_step_btn + .dx_number_input_step_btn {
+  border-top: 1px solid var(--input-border);
+}
+
+.dx_input[data-disabled="true"] .dx_number_input_step_btn + .dx_number_input_step_btn {
+  border-color: var(--input-disabled-border);
+}
+
+.dx_input[data-error="true"] .dx_number_input_step_btn + .dx_number_input_step_btn {
+  border-color: var(--danger-border);
+}
+
+.dx_number_input_step_btn:hover:not(:disabled) {
+  background: var(--surface-hover);
+  color: var(--surface-hover-fg);
+}
+
+.dx_number_input_step_btn:focus-visible {
+  outline: 2px solid var(--input-focus-border);
+  outline-offset: -2px;
+}
+
+.dx_number_input_step_btn:disabled {
+  color: var(--input-disabled-fg);
+  cursor: not-allowed;
+}
+
+/* Chevron icons rendered as CSS shapes */
+.dx_number_input_chevron {
+  display: inline-block;
+  width: 0.3rem;
+  height: 0.3rem;
+  border-inline-start: 1px solid currentColor;
+  border-block-start: 1px solid currentColor;
+}
+
+.dx_number_input_chevron[data-direction="up"] {
+  transform: rotate(45deg) translate(1px, 1px);
+}
+
+.dx_number_input_chevron[data-direction="down"] {
+  transform: rotate(225deg) translate(1px, 1px);
+}
+
+/* Size adjustments */
+.dx_input[data-size="sm"] .dx_number_input_step_btn {
+  width: 1.375rem;
+}
+
+.dx_input[data-size="lg"] .dx_number_input_step_btn {
+  width: 1.875rem;
+}
+
+/* Hide browser-native number spinners */
+input[data-slot="number-input-control"]::-webkit-outer-spin-button,
+input[data-slot="number-input-control"]::-webkit-inner-spin-button {
+  appearance: none;
+}
+
+input[data-slot="number-input-control"][type="number"] {
+  appearance: textfield;
+}

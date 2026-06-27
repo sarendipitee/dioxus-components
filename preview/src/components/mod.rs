@@ -43,8 +43,9 @@ impl ComponentCategory {
 
 pub fn category_of(name: &str) -> ComponentCategory {
     match name {
-        "button" | "input" | "text_input" | "mask_input" | "textarea" | "label" | "checkbox"
-        | "switch"
+        "button" | "input" | "text_input" | "mask_input" | "number_input" | "password_input"
+        | "textarea" | "label"
+        | "checkbox" | "switch"
         | "radio_group" | "toggle" | "toggle_group" | "select" | "slider" | "calendar"
         | "date_picker" | "date_input" | "color_picker" | "color_input" | "time_picker"
         | "time_input" | "file_drop_zone" => ComponentCategory::Forms,
@@ -312,6 +313,8 @@ examples!(
     item[variant, size, image, group],
     label,
     mask_input[tokens, behavior],
+    number_input[formatting, constraints, controls, states],
+    password_input[controlled, states],
     menubar,
     multi_select,
     navbar,
