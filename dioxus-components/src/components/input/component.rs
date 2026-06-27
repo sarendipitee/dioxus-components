@@ -3,6 +3,7 @@ use std::sync::atomic::{AtomicUsize, Ordering};
 use crate::component_styles;
 use dioxus::core::AttributeValue;
 use dioxus::prelude::*;
+use dioxus_icons::lucide::X;
 use dioxus_primitives::{dioxus_attributes::attributes, merge_attributes, TextOrElement};
 
 use crate::components::label::Label;
@@ -559,7 +560,7 @@ pub fn InputClearButton(
             if let Some(icon) = icon {
                 {icon}
             } else {
-                span { "aria-hidden": "true", "x" }
+                X { "aria-hidden": "true" }
             }
         }
     }
