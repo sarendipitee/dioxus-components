@@ -13,13 +13,7 @@
   z-index: 1000;
   min-width: 200px;
   padding: 5px;
-  border: 1px solid var(--overlay-border);
-  border-radius: var(--radius-surface);
   animation: dx-hover-card-fade-in 0.1s ease-out;
-  background: var(--overlay);
-
-  /* Semi transparent shadow effect in light mode */
-  box-shadow: 0 2px 10px rgb(0 0 0 / 10%);
 }
 
 /* Positioning based on side */

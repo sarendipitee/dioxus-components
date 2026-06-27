@@ -19,11 +19,25 @@
   will-change: transform, opacity;
 }
 
-.dx_popover_surface {
-  border-radius: var(--radius-surface);
+/* Canonical dropdown surface: single source of truth for all dropdown panel
+   visuals (background, foreground, border-radius, hairline border, elevation).
+   Defined here in the overlay primitive; referenced by other components via the
+   literal class string "dx_dropdown" per the global-class architecture. */
+.dx_dropdown {
   background: var(--overlay);
-  box-shadow: inset 0 0 0 1px var(--overlay-border);
   color: var(--overlay-fg);
+  border-radius: var(--radius-surface);
+  box-shadow: var(--overlay-shadow), inset 0 0 0 1px var(--overlay-border);
+}
+
+/* When a calendar is nested inside a dropdown panel, the dropdown is the only
+   visible card — suppress the calendar's own surface so there is no double
+   border or mismatched background. The standalone calendar (not inside a
+   dropdown) keeps its background/border/radius unchanged. */
+.dx_dropdown .dx_calendar {
+  background: transparent;
+  border: none;
+  border-radius: 0;
 }
 
 .dx_popover_content[data-state="open"] {

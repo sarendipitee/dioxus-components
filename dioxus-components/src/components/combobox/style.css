@@ -52,10 +52,6 @@
   max-height: 300px;
   flex-direction: column;
   padding: var(--space);
-  border-radius: var(--radius-surface);
-  background: var(--overlay);
-  box-shadow: inset 0 0 0 1px var(--overlay-border);
-  color: var(--overlay-fg);
   transform-origin: top;
 }
 
@@ -243,11 +239,16 @@
   max-height: 300px;
   flex-direction: column;
   padding: var(--space);
-  border-radius: var(--radius-surface);
-  background: var(--overlay);
-  box-shadow: inset 0 0 0 1px var(--overlay-border);
-  color: var(--overlay-fg);
   transform-origin: top;
+
+  /* Surface visuals mirror the canonical .dx_dropdown class. This inner
+     listbox is emitted by the combobox primitive and is not directly
+     class-controllable from the styled wrapper, so the same theme tokens
+     are applied here to keep a single source of truth. */
+  background: var(--overlay);
+  color: var(--overlay-fg);
+  border-radius: var(--radius-surface);
+  box-shadow: var(--overlay-shadow), inset 0 0 0 1px var(--overlay-border);
 }
 
 .dx_combobox_pills_root

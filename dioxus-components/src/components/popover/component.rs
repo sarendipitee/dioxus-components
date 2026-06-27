@@ -55,11 +55,7 @@ pub fn PopoverOpenTrigger(props: PopoverTriggerProps) -> Element {
 #[component]
 pub fn PopoverContent(props: PopoverContentProps) -> Element {
     let base = attributes!(div {
-        class: format!(
-            "{} {}",
-            Styles::dx_popover_content,
-            Styles::dx_popover_surface
-        )
+        class: format!("{} dx_dropdown", Styles::dx_popover_content)
     });
     let attributes = merge_attributes(vec![base, props.attributes]);
 

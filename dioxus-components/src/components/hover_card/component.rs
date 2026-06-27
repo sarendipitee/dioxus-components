@@ -37,7 +37,7 @@ pub fn HoverCardTrigger(props: HoverCardTriggerProps) -> Element {
 pub fn HoverCardContent(props: HoverCardContentProps) -> Element {
     rsx! {
         hover_card::HoverCardContent {
-            class: Styles::dx_hover_card_content.to_string(),
+            class: format!("{} dx_dropdown", Styles::dx_hover_card_content),
             side: props.side,
             align: props.align,
             id: props.id,

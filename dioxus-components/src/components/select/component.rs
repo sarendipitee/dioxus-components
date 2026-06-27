@@ -262,7 +262,7 @@ pub fn Select<T: Clone + PartialEq + 'static>(props: SelectProps<T>) -> Element 
                     }
                 }
             }
-            select::SelectList { class: Styles::dx_select_list.to_string(), {props.children} }
+            select::SelectList { class: format!("{} dx_dropdown", Styles::dx_select_list), {props.children} }
         }
     }
 }
@@ -324,7 +324,7 @@ pub fn SelectMulti<T: Clone + PartialEq + 'static>(props: SelectMultiProps<T>) -
                     }
                 }
             }
-            select::SelectList { class: Styles::dx_select_list.to_string(), {props.children} }
+            select::SelectList { class: format!("{} dx_dropdown", Styles::dx_select_list), {props.children} }
         }
     }
 }

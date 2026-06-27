@@ -84,6 +84,7 @@
   --overlay: var(--is-light, #ffffff) var(--is-dark, #111111);
   --overlay-fg: var(--is-light, #111111) var(--is-dark, #d4d4d4);
   --overlay-border: var(--is-light, #e5e5e5) var(--is-dark, #3e3e3e);
+  --overlay-shadow: var(--is-light, 0 2px 10px rgb(0 0 0 / 10%)) var(--is-dark, 0 2px 10px rgb(0 0 0 / 40%));
 
   /* Accent recipe. Use for primary actions, selected accent controls, brand
      highlights, and links that are intentionally accent-colored. */

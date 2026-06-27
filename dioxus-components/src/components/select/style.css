@@ -59,11 +59,7 @@
   min-width: 100%;
   box-sizing: border-box;
   padding: var(--space);
-  border-radius: var(--radius-surface);
   margin-top: var(--space);
-  background: var(--overlay);
-  box-shadow: inset 0 0 0 1px var(--overlay-border);
-  color: var(--overlay-fg);
   opacity: 0;
   pointer-events: none;
   transform-origin: top;

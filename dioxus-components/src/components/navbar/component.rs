@@ -57,7 +57,7 @@ pub fn NavbarTrigger(props: NavbarTriggerProps) -> Element {
 pub fn NavbarContent(props: NavbarContentProps) -> Element {
     rsx! {
         navbar::NavbarContent {
-            class: Styles::dx_navbar_content.to_string(),
+            class: format!("{} dx_dropdown", Styles::dx_navbar_content),
             id: props.id,
             attributes: props.attributes,
             {props.children}

@@ -4,7 +4,7 @@ use crate::component_styles;
 use dioxus::prelude::*;
 use dioxus_icons::lucide::{Check, ChevronsUpDown};
 use dioxus_primitives::combobox::{
-    self, default_combobox_filter, AutocompleteProps, ComboboxEmptyProps, ComboboxOptionProps,
+    self, default_combobox_filter, ComboboxEmptyProps, ComboboxOptionProps,
 };
 use dioxus_primitives::{dioxus_attributes::attributes, merge_attributes};
 
@@ -218,7 +218,7 @@ pub fn Combobox<T: Clone + PartialEq + 'static>(props: ComboboxProps<T>) -> Elem
             }
             if props.with_list {
                 combobox::ComboboxList {
-                    class: Styles::dx_combobox_list,
+                    class: format!("{} dx_dropdown", Styles::dx_combobox_list),
                     aria_label: props.list_aria_label.clone(),
                     {props.children}
                 }
@@ -229,10 +229,139 @@ pub fn Combobox<T: Clone + PartialEq + 'static>(props: ComboboxProps<T>) -> Elem
     }
 }
 
+/// Props for the styled [`Autocomplete`] adapter.
+///
+/// Mirrors [`ComboboxProps`] for the string-valued case so the autocomplete exposes the same
+/// shared input shell surface (label, description, error, sections, sizing, and loading state).
+#[derive(Props, Clone, PartialEq)]
+pub struct AutocompleteProps {
+    /// Id shared by the label and search input.
+    #[props(default)]
+    pub id: Option<String>,
+
+    /// The controlled input value.
+    #[props(default)]
+    pub value: Option<ReadSignal<Option<String>>>,
+
+    /// The initial uncontrolled input value.
+    #[props(default)]
+    pub default_value: Option<String>,
+
+    /// Callback fired when the input value changes.
+    #[props(default)]
+    pub on_value_change: Callback<Option<String>>,
+
+    /// Whether the autocomplete is disabled.
+    #[props(default)]
+    pub disabled: ReadSignal<bool>,
+
+    /// The controlled open state of the popup.
+    #[props(default)]
+    pub open: ReadSignal<Option<bool>>,
+
+    /// The initial open state when uncontrolled.
+    #[props(default)]
+    pub default_open: ReadSignal<bool>,
+
+    /// Callback fired when the popup open state changes.
+    #[props(default)]
+    pub on_open_change: Callback<bool>,
+
+    /// The controlled text query used to filter options.
+    #[props(default)]
+    pub query: ReadSignal<Option<String>>,
+
+    /// The initial text query when uncontrolled.
+    #[props(default)]
+    pub default_query: ReadSignal<String>,
+
+    /// Callback fired when the text query changes.
+    #[props(default)]
+    pub on_query_change: Callback<String>,
+
+    /// Whether arrow-key navigation should wrap.
+    #[props(default = ReadSignal::new(Signal::new(true)))]
+    pub roving_loop: ReadSignal<bool>,
+
+    /// Custom filter callback. Receives `(query, option_text_value)`.
+    #[props(default = Callback::new(|(q, t): (String, String)| default_combobox_filter(&q, &t)))]
+    pub filter: Callback<(String, String), bool>,
+
+    /// Search placeholder.
+    #[props(default)]
+    pub placeholder: ReadSignal<String>,
+
+    /// Accessible label for the search input.
+    #[props(default)]
+    pub aria_label: Option<String>,
+
+    /// Accessible label for the option list.
+    #[props(default)]
+    pub list_aria_label: Option<String>,
+
+    /// Label rendered by the shared input wrapper.
+    #[props(default)]
+    pub label: Option<Element>,
+
+    /// Description rendered by the shared input wrapper.
+    #[props(default)]
+    pub description: Option<Element>,
+
+    /// Error rendered by the shared input wrapper and reflected on the shell.
+    #[props(default)]
+    pub error: Option<Element>,
+
+    /// Marks the field as required.
+    #[props(default = false)]
+    pub required: bool,
+
+    /// Shows the required asterisk without changing native validation.
+    #[props(default = false)]
+    pub with_asterisk: bool,
+
+    /// Shows a loading spinner in the trailing section and marks the field busy.
+    #[props(default = false)]
+    pub loading: bool,
+
+    /// Visual variant for the shared input shell.
+    #[props(default)]
+    pub variant: InputVariant,
+
+    /// Size preset for the shared input shell.
+    #[props(default)]
+    pub size: InputSize,
+
+    /// Radius preset for the shared input shell.
+    #[props(default)]
+    pub radius: InputRadius,
+
+    /// Optional content rendered before the search input.
+    #[props(default)]
+    pub left_section: Option<Element>,
+
+    /// Optional content rendered after the search input.
+    #[props(default)]
+    pub right_section: Option<Element>,
+
+    /// Wraps children in the styled listbox container.
+    #[props(default = true)]
+    pub with_list: bool,
+
+    /// Existing ids to prepend to generated description and error ids.
+    #[props(default)]
+    pub described_by: Option<String>,
+
+    #[props(extends = GlobalAttributes)]
+    pub attributes: Vec<Attribute>,
+
+    pub children: Element,
+}
+
 #[component]
 pub fn Autocomplete(props: AutocompleteProps) -> Element {
     rsx! {
         Combobox::<String> {
+            id: props.id,
             value: props.value,
             default_value: props.default_value,
             on_value_change: props.on_value_change,
@@ -246,6 +375,21 @@ pub fn Autocomplete(props: AutocompleteProps) -> Element {
             roving_loop: props.roving_loop,
             filter: props.filter,
             placeholder: props.placeholder,
+            aria_label: props.aria_label,
+            list_aria_label: props.list_aria_label,
+            label: props.label,
+            description: props.description,
+            error: props.error,
+            required: props.required,
+            with_asterisk: props.with_asterisk,
+            loading: props.loading,
+            variant: props.variant,
+            size: props.size,
+            radius: props.radius,
+            left_section: props.left_section,
+            right_section: props.right_section,
+            with_list: props.with_list,
+            described_by: props.described_by,
             attributes: props.attributes,
             {props.children}
         }
