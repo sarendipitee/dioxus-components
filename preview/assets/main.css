@@ -6,7 +6,7 @@
   --highlight-color-main: #dd7230;
   --highlight-color-secondary: #eb5160;
   --highlight-color-tertiary: var(--accent);
-  --dx-content-width: 1360px;
+  --dx-content-width: 1660px;
 }
 
 html,
@@ -245,7 +245,6 @@ body {
 
 .dx-docs-sidebar-heading {
   margin: 0 0 0.5rem;
-  color: var(--fg-faint);
   font-size: 0.75rem;
   font-weight: 700;
   text-transform: uppercase;
@@ -278,7 +277,6 @@ body {
 .dx-docs-page,
 .dx-component-page {
   min-width: 0;
-  max-width: 840px;
   box-sizing: border-box;
   padding: 3rem 0 5rem 4.25rem;
 }
@@ -792,8 +790,8 @@ body {
 }
 
 .dx-component-props-table-cell-docs {
-  color: var(--fg-faint);
   line-height: 1.45;
+  text-wrap: nowrap;
 }
 
 .dx-component-demo + .dx-component-demo {
