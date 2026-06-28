@@ -244,6 +244,14 @@
      items, command rows, and similar list actions. */
   --list-item-padding-x: calc(var(--space) * 1.5);
   --list-item-padding-y: calc(var(--space) * 1);
+
+  /* Overlay manager z-index scale. The overlay manager assigns each live
+     overlay a `--overlay-z` of `calc(--z-overlay-base + slot * --z-overlay-step)`
+     by open order, so modal/sheet/floating/hint layer correctly without any
+     hardcoded per-component z-index. Toasts ride above modal layers. */
+  --z-overlay-base: 1000;
+  --z-overlay-step: 10;
+  --z-toast-base: 9000;
 }
 
 @media (prefers-color-scheme: dark) {
