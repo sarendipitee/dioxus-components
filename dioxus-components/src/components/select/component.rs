@@ -7,7 +7,9 @@ use dioxus_icons::lucide::{Check, ChevronDown};
 use dioxus_primitives::select::{self, SelectGroupLabelProps, SelectOptionProps};
 use dioxus_primitives::{dioxus_attributes::attributes, merge_attributes};
 
-use crate::input::{Input, InputContent, InputLabel, InputRadius, InputSize, InputVariant, InputWrapper};
+use crate::input::{
+    Input, InputContent, InputLabel, InputRadius, InputSize, InputVariant, InputWrapper,
+};
 
 pub use dioxus_primitives::select::SelectGroup;
 
@@ -207,6 +209,12 @@ pub struct SelectMultiProps<T: Clone + PartialEq + 'static = String> {
 
 #[component]
 pub fn Select<T: Clone + PartialEq + 'static>(props: SelectProps<T>) -> Element {
+    // Re-anchor these ReadSignals in this component's scope so child scopes (which
+    // are not descendants of the caller's scope) can safely read them.
+    let roving_loop = ReadSignal::new(use_memo(move || (props.roving_loop)()));
+    let typeahead_timeout = ReadSignal::new(use_memo(move || (props.typeahead_timeout)()));
+    let placeholder = ReadSignal::new(use_memo(move || props.placeholder.read().clone()));
+
     let base = attributes!(div {
         class: Styles::dx_select.to_string()
     });
@@ -229,8 +237,8 @@ pub fn Select<T: Clone + PartialEq + 'static>(props: SelectProps<T>) -> Element 
             default_open: props.default_open,
             on_open_change: props.on_open_change,
             name: props.name,
-            roving_loop: props.roving_loop,
-            typeahead_timeout: props.typeahead_timeout,
+            roving_loop,
+            typeahead_timeout,
             attributes: merged,
             InputWrapper {
                 id: input_id.clone(),
@@ -258,7 +266,7 @@ pub fn Select<T: Clone + PartialEq + 'static>(props: SelectProps<T>) -> Element 
                             ChevronDown { class: "dx-select-expand-icon", size: "14px", stroke: "currentColor" }
                         }),
                         attributes: attributes!(div { class : Styles::dx_select_input.to_string(), }),
-                        select::SelectValue { placeholder: props.placeholder }
+                        select::SelectValue { placeholder }
                     }
                 }
             }
@@ -269,6 +277,9 @@ pub fn Select<T: Clone + PartialEq + 'static>(props: SelectProps<T>) -> Element 
 
 #[component]
 pub fn SelectMulti<T: Clone + PartialEq + 'static>(props: SelectMultiProps<T>) -> Element {
+    let roving_loop = ReadSignal::new(use_memo(move || (props.roving_loop)()));
+    let typeahead_timeout = ReadSignal::new(use_memo(move || (props.typeahead_timeout)()));
+
     let base = attributes!(div {
         class: Styles::dx_select.to_string()
     });
@@ -291,8 +302,8 @@ pub fn SelectMulti<T: Clone + PartialEq + 'static>(props: SelectMultiProps<T>) -
             default_open: props.default_open,
             on_open_change: props.on_open_change,
             name: props.name,
-            roving_loop: props.roving_loop,
-            typeahead_timeout: props.typeahead_timeout,
+            roving_loop,
+            typeahead_timeout,
             attributes: merged,
             InputWrapper {
                 id: input_id.clone(),
