@@ -14,6 +14,14 @@ use std::time::Duration;
 /// (`--space` is `0.25rem` → 4px).
 const TOAST_EXPAND_GAP_PX: f64 = 12.0;
 
+/// Gap (in CSS pixels) between visible toast edges in the collapsed stack.
+/// Kept in sync with the styled component's `--toast-gap` default.
+const TOAST_COLLAPSED_GAP_PX: f64 = 15.0;
+
+/// Scale reduction per stack level in the collapsed stack.
+/// Kept in sync with the styled component's `--toast-scale-step` default.
+const TOAST_COLLAPSED_SCALE_STEP: f64 = 0.05;
+
 /// Fallback height (in CSS pixels) used for a toast whose real height has not
 /// been measured yet (first paint, before `onmounted` fires). Equals the CSS
 /// `min-height: 4rem` so the pre-measurement layout matches the old fixed-step
@@ -297,7 +305,10 @@ pub fn ToastProvider(props: ToastProviderProps) -> Element {
     let begin_dismiss = use_callback(move |id: usize| {
         {
             let mut toasts_vec = toasts.write();
-            let Some(toast) = toasts_vec.iter_mut().find(|t: &&mut ToastRecord| t.id == id) else {
+            let Some(toast) = toasts_vec
+                .iter_mut()
+                .find(|t: &&mut ToastRecord| t.id == id)
+            else {
                 return;
             };
             if toast.removing {
@@ -429,7 +440,7 @@ pub fn ToastProvider(props: ToastProviderProps) -> Element {
                     // The removing toast still receives a stable index (its last
                     // visual slot) but its transform is overridden by the exit
                     // rule, so the value only matters for z-ordering.
-                    for (stack_index, offset, toast) in {
+                    for (stack_index, offset, collapsed_offset, toast) in {
                         // Accumulate each toast's measured height (plus a gap) into
                         // a running pixel offset. A toast's `--toast-offset` is the
                         // sum of the heights of every toast in front of it (lower
@@ -438,6 +449,13 @@ pub fn ToastProvider(props: ToastProviderProps) -> Element {
                         // Unmeasured toasts fall back to the CSS min-height so the
                         // first paint matches the old fixed-step spacing.
                         let heights_map = heights.read();
+                        let front_height = toast_list
+                            .read()
+                            .iter()
+                            .rev()
+                            .find(|t| !t.removing)
+                            .and_then(|t| heights_map.get(&t.id).copied())
+                            .unwrap_or(TOAST_FALLBACK_HEIGHT_PX);
                         let mut counter = 0usize;
                         let mut offset_acc = 0f64;
                         toast_list
@@ -447,15 +465,21 @@ pub fn ToastProvider(props: ToastProviderProps) -> Element {
                             .map(|t| {
                                 let assigned = counter;
                                 let this_offset = offset_acc;
+                                let h = heights_map
+                                    .get(&t.id)
+                                    .copied()
+                                    .unwrap_or(TOAST_FALLBACK_HEIGHT_PX);
+                                let scale = (1.0
+                                    - assigned as f64 * TOAST_COLLAPSED_SCALE_STEP)
+                                    .max(0.0);
+                                let collapsed_offset = front_height
+                                    + assigned as f64 * TOAST_COLLAPSED_GAP_PX
+                                    - h * scale;
                                 if !t.removing {
                                     counter += 1;
-                                    let h = heights_map
-                                        .get(&t.id)
-                                        .copied()
-                                        .unwrap_or(TOAST_FALLBACK_HEIGHT_PX);
                                     offset_acc += h + TOAST_EXPAND_GAP_PX;
                                 }
-                                (assigned, this_offset, t.clone())
+                                (assigned, this_offset, collapsed_offset, t.clone())
                             })
                             .collect::<Vec<_>>()
                             .into_iter()
@@ -472,7 +496,7 @@ pub fn ToastProvider(props: ToastProviderProps) -> Element {
                             // sibling toasts. --toast-offset is the cumulative
                             // height of the toasts in front, used by the expanded
                             // (hover/focus) layout to avoid overlap.
-                            style: "--toast-index: {stack_index}; --toast-offset: {offset}px",
+                            style: "--toast-index: {stack_index}; --toast-offset: {offset}px; --toast-collapsed-offset: {collapsed_offset}px; --toast-collapsed-gap: {TOAST_COLLAPSED_GAP_PX}px",
                             {
                                 props.render_toast.call(ToastProps::builder().id(toast.id)
                                     .index(stack_index)
@@ -736,7 +760,9 @@ pub fn Toast(props: ToastProps) -> Element {
     let id = use_memo(move || format!("toast-{toast_id}"));
     let label_id = format!("{id}-label");
     let description_id = format!("{id}-description");
-    let aria_describedby = (props.description)().as_ref().map(|_| description_id.clone());
+    let aria_describedby = (props.description)()
+        .as_ref()
+        .map(|_| description_id.clone());
 
     // Get the context at the top level of the component
     let ctx = use_context::<ToastCtx>();
@@ -1022,7 +1048,12 @@ impl Toasts {
     /// Send a toast to the associated [`ToastProvider`] with the given title, type, and options.
     ///
     /// Returns the ID of the created toast, which can be used with [`Toasts::dismiss`].
-    pub fn show(&self, title: impl Into<String>, toast_type: ToastType, options: ToastOptions) -> usize {
+    pub fn show(
+        &self,
+        title: impl Into<String>,
+        toast_type: ToastType,
+        options: ToastOptions,
+    ) -> usize {
         self.add_toast.call(AddToastArgs {
             title: title.into(),
             description: options.description,

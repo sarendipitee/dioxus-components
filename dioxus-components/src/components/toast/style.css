@@ -116,7 +116,6 @@
   --toast-scale: calc(1 - var(--toast-index) * var(--toast-scale-step));
 
   display: flex;
-  overflow: hidden;
   width: 18rem;
   min-height: 4rem;
   box-sizing: border-box;
@@ -150,14 +149,6 @@
 .dx_toast_container[data-position^="top"] .dx_toast {
   --toast-dir: 1;
   --toast-origin: top;
-}
-
-.dx_toast_container:not(:hover, :focus-within)[data-position^="bottom"] .dx_toast:not([data-top]) {
-  clip-path: inset(0 0 calc(100% - var(--toast-gap)) 0 round var(--radius-surface));
-}
-
-.dx_toast_container:not(:hover, :focus-within)[data-position^="top"] .dx_toast:not([data-top]) {
-  clip-path: inset(calc(100% - var(--toast-gap)) 0 0 0 round var(--radius-surface));
 }
 
 /* ── Entry animation ──────────────────────────────────────────────────────
@@ -198,6 +189,35 @@
   --toast-scale: 1;
   --toast-hidden: 0;
   opacity: 1;
+}
+
+/* ── Gap bridge ────────────────────────────────────────────────────────────
+   In expanded mode there is a 12 px gap (TOAST_EXPAND_GAP_PX) between each
+   pair of toasts. Because the hit area is the painted bounding box of each
+   transformed .dx_toast, the mouse fires mouseleave on the container as it
+   crosses the gap, collapsing the stack mid-hover.
+   Fix: a transparent ::before pseudo-element extends each toast's hit area
+   into the gap toward the next toast. The direction depends on which edge the
+   stack grows from: upward stacks (bottom-*) need the bridge above the toast;
+   downward stacks (top-*) need it below. */
+.dx_toast_container[data-position^="bottom"]:hover .dx_toast::before,
+.dx_toast_container[data-position^="bottom"]:focus-within .dx_toast::before {
+  content: '';
+  position: absolute;
+  bottom: 100%;
+  left: 0;
+  right: 0;
+  height: 12px;
+}
+
+.dx_toast_container[data-position^="top"]:hover .dx_toast::before,
+.dx_toast_container[data-position^="top"]:focus-within .dx_toast::before {
+  content: '';
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  height: 12px;
 }
 
 /* ── Exit animation (Sonner-style) ────────────────────────────────────────
