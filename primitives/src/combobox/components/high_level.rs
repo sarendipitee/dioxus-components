@@ -258,7 +258,12 @@ pub fn MultiSelect<T: Clone + PartialEq + 'static>(props: MultiSelectProps<T>) -
                 }
             }
             ComboboxDropdownTarget {
+                // The listbox is portaled out of the `data-combobox-dropdown-target`
+                // wrapper by the overlay manager, so styling can no longer reach it
+                // via ancestor descent. This stable marker rides with the portaled
+                // panel itself so themes can target it directly.
                 ComboboxOptions {
+                    "data-combobox-pills-list": true,
                     {props.children}
                 }
             }

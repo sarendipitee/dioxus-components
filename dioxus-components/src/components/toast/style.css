@@ -1,7 +1,15 @@
 .dx_toast_container {
   position: fixed;
-  z-index: 9999;
+  /* Toasts ride above the modal/overlay band (overlay manager, plan §4.4 / D1).
+     `--z-toast-base` (themes/default.css :root, 9000) sits above the shared
+     `--z-overlay-base` (1000) so toasts paint over dialogs/sheets. */
+  z-index: var(--z-toast-base);
   max-width: 350px;
+
+  /* The container spans the corner but must never swallow clicks meant for a
+     modal underneath it (plan R-POINTER): the region is click-through; only the
+     individual toasts opt back into pointer events below. */
+  pointer-events: none;
 
   /* default: bottom-right */
   right: 20px;
@@ -96,13 +104,15 @@
 
 .dx_toast {
   /* Per-step peek (how much each deeper toast shows) and per-step shrink. */
-  --toast-gap: 0.9375rem;
+  --toast-gap: var(--toast-collapsed-gap, 0.9375rem);
   --toast-scale-step: 0.05;
   /* Direction the stack grows: up (-1) for bottom positions, down (+1) for top.
      Overridden for top positions below. */
   --toast-dir: -1;
-  /* Collapsed offset: each toast behind the front peeks by --toast-gap. */
-  --toast-y: calc(var(--toast-dir) * var(--toast-index) * var(--toast-gap));
+  /* Collapsed offset: measured so variable-height toasts only expose the edge peek. */
+  --toast-y: calc(
+    var(--toast-dir) * var(--toast-collapsed-offset, var(--toast-index) * var(--toast-gap))
+  );
   --toast-scale: calc(1 - var(--toast-index) * var(--toast-scale-step));
 
   display: flex;
@@ -110,6 +120,9 @@
   width: 18rem;
   min-height: 4rem;
   box-sizing: border-box;
+  /* Re-enable interaction on the toast itself; the container is click-through
+     (pointer-events: none) so it never blocks a modal beneath the toast band. */
+  pointer-events: auto;
   align-items: flex-start;
   justify-content: space-between;
   padding: calc(var(--space) * 4);
@@ -139,9 +152,19 @@
   --toast-origin: top;
 }
 
+.dx_toast_container:not(:hover, :focus-within)[data-position^="bottom"] .dx_toast:not([data-top]) {
+  clip-path: inset(0 0 calc(100% - var(--toast-gap)) 0 round var(--radius-surface));
+}
+
+.dx_toast_container:not(:hover, :focus-within)[data-position^="top"] .dx_toast:not([data-top]) {
+  clip-path: inset(calc(100% - var(--toast-gap)) 0 0 0 round var(--radius-surface));
+}
+
 /* ── Entry animation ──────────────────────────────────────────────────────
-   The newest toast (data-top) animates in from beyond the anchor edge. */
-.dx_toast[data-top] {
+   Freshly mounted toasts animate in from beyond the anchor edge. `data-top`
+   is persistent stack state, so using `data-entering` keeps hover/collapse from
+   replaying the intro animation on an existing top toast. */
+.dx_toast[data-entering="true"] {
   animation: dx-toast-slide-in 0.4s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
@@ -157,9 +180,9 @@
   }
 }
 
-/* Don't replay the entry animation while the stack is expanded (hover/focus). */
-.dx_toast_container:hover .dx_toast[data-top],
-.dx_toast_container:focus-within .dx_toast[data-top] {
+/* Don't run the entry animation while the stack is expanded (hover/focus). */
+.dx_toast_container:hover .dx_toast[data-entering="true"],
+.dx_toast_container:focus-within .dx_toast[data-entering="true"] {
   animation: none;
 }
 
@@ -350,7 +373,7 @@ html[data-theme="dark"] .dx_toast_container:not(:hover, :focus-within) .dx_toast
   }
 
   /* Drop the entry slide; keep the spinner (it conveys ongoing state). */
-  .dx_toast[data-top] {
+  .dx_toast[data-entering="true"] {
     animation: none;
   }
 }

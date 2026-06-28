@@ -709,6 +709,12 @@ struct MenuSubContext {
     trigger_id: Signal<String>,
     /// Reference (submenu trigger) element used to position the submenu content.
     trigger_ref: Signal<Option<Rc<MountedData>>>,
+    /// Id of the submenu's portaled content panel. The panel is portaled OUT of
+    /// the `MenuSub` subtree (rendered through the shared overlay outlet), so the
+    /// hover-leave detection in [`MenuSub`] can no longer find it by querying
+    /// descendants of `sub_id`. [`MenuSubContent`] writes its content root id here
+    /// so the hover predicate can resolve the portaled panel via `getElementById`.
+    content_id: Signal<String>,
 }
 
 /// Props for [`MenuSub`].
@@ -752,20 +758,36 @@ pub fn MenuSub(props: MenuSubProps) -> Element {
     let trigger_id = use_unique_id();
     let trigger_ref = use_signal(|| None);
     let sub_id = use_unique_id();
+    // The portaled submenu panel's content root id, written by `MenuSubContent`.
+    let content_id = use_signal(String::new);
 
     use_effect_with_cleanup(move || {
+        // The trigger still lives inside `sub_id`, but the submenu content panel is
+        // portaled OUT to the shared overlay outlet — so it can no longer be found
+        // by querying descendants of `sub_id`. Resolve the trigger from the sub
+        // subtree and the content from the registered portaled panel id. Reading
+        // `content_id` here makes this effect re-run (tearing down and recreating
+        // the listener) once `MenuSubContent` publishes the panel id, so the
+        // hover-leave predicate picks up the portaled panel.
+        let panel_id = content_id();
         let mut eval = document::eval(
-            "const id = await dioxus.recv();
+            "const ids = await dioxus.recv();
+            const subId = ids[0];
+            const contentId = ids[1];
             const pointInRect = (x, y, rect, padding) =>
                 x >= rect.left - padding &&
                 x <= rect.right + padding &&
                 y >= rect.top - padding &&
                 y <= rect.bottom + padding;
             const onMove = e => {
-                const root = document.getElementById(id);
+                const root = document.getElementById(subId);
                 if (!root) return;
                 const trigger = root.querySelector('[aria-haspopup=\"menu\"]');
-                const content = root.querySelector('[role=\"menu\"]');
+                // The panel is portaled out of `subId`; resolve it by its own id.
+                // Fall back to a descendant lookup for the inline/native path where
+                // the panel is not portaled.
+                const content = (contentId && document.getElementById(contentId))
+                    ?? root.querySelector('[role=\"menu\"]');
                 const padding = 8;
                 const pointTarget = document.elementFromPoint(e.clientX, e.clientY) ?? e.target;
                 const insideTrigger = trigger && (
@@ -784,7 +806,7 @@ pub fn MenuSub(props: MenuSubProps) -> Element {
             document.removeEventListener('pointermove', onMove, true);
             document.removeEventListener('mousemove', onMove, true);",
         );
-        let _ = eval.send(sub_id.cloned());
+        let _ = eval.send(vec![sub_id.cloned(), panel_id]);
         spawn(async move {
             while let Ok(true) = eval.recv().await {
                 if open() {
@@ -807,6 +829,7 @@ pub fn MenuSub(props: MenuSubProps) -> Element {
         initial_focus,
         trigger_id,
         trigger_ref,
+        content_id,
     });
 
     rsx! {
@@ -912,6 +935,15 @@ pub fn MenuSubContent(props: MenuSubContentProps) -> Element {
     let sub_ctx: MenuSubContext = use_context();
     let unique_id = use_unique_id();
     let id = use_id_or(unique_id, props.id);
+    // Publish the portaled panel's root id so `MenuSub`'s hover-leave predicate can
+    // resolve the panel via `getElementById` (it lives outside `sub_id` now).
+    let mut content_id = sub_ctx.content_id;
+    use_effect(move || {
+        let next = id();
+        if *content_id.peek() != next {
+            content_id.set(next);
+        }
+    });
     let set_open = use_callback(move |next: bool| {
         sub_ctx.set_open.call(next);
         if !next {

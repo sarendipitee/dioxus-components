@@ -237,26 +237,20 @@
   color: var(--input-fg-muted);
 }
 
-/* The inner [role="listbox"] is the floating element on web (it carries the
-   `data-floating` marker and inline coords). The dropdown-target wrapper therefore
-   only needs to position the listbox on native; on web the fixed-positioned listbox
-   ignores the wrapper, so the wrapper's absolute box is suppressed via :has() to
-   avoid a stray positioned box. The gap is migrated into the offset() middleware. */
-.dx_combobox_pills_root
-  [data-combobox-dropdown-target]:not(:has([role="listbox"][data-floating])) {
-  position: absolute;
-  z-index: 50;
-  top: calc(100% + var(--space));
-  left: 0;
-  width: 100%;
+/* The listbox is portaled to the shared overlay outlet (overlay manager), so it is
+   no longer a child of this wrapper and the wrapper would otherwise paint a stray
+   empty positioned box. Collapse it so it occupies no layout/stacking space; the
+   portaled listbox positions itself off the combobox target ref. */
+.dx_combobox_pills_root [data-combobox-dropdown-target] {
+  display: contents;
 }
 
-.dx_combobox_pills_root [data-combobox-dropdown-target] > [role="listbox"] {
-  /* NOTE (overlay manager / Wave 4): the listbox is now portaled to the shared
-     outlet, so it is no longer a descendant of `[data-combobox-dropdown-target]`
-     and this scoped rule will not match the portaled panel on web. Kept for the
-     native/inline fallback. The portaled panel's z-index comes from the overlay
-     manager via `--overlay-z` on `.dx_combobox_list`. */
+[data-combobox-pills-list][role="listbox"] {
+  /* The MultiSelect listbox is portaled to the shared overlay outlet, so it is no
+     longer a descendant of `.dx_combobox_pills_root [data-combobox-dropdown-target]`.
+     It is targeted by its own `data-combobox-pills-list` marker (which rides with
+     the portaled panel) instead of by ancestor descent. z-index comes from the
+     overlay manager via `--overlay-z`. */
   z-index: var(--overlay-z);
   display: flex;
   overflow: hidden auto;
@@ -286,23 +280,17 @@
 
 /* Native fallback: restore the trigger-matching percentage width when the listbox is
    not floating (native, where the wrapper provides the absolute containing block). */
-.dx_combobox_pills_root
-  [data-combobox-dropdown-target]
-  > [role="listbox"]:not([data-floating]) {
+[data-combobox-pills-list][role="listbox"]:not([data-floating]) {
   width: 100%;
   min-width: 0;
   max-width: none;
 }
 
-.dx_combobox_pills_root
-  [data-combobox-dropdown-target][data-state="open"]
-  > [role="listbox"] {
+[data-combobox-pills-list][role="listbox"][data-state="open"] {
   animation: dx-picker-in 150ms ease-out forwards;
 }
 
-.dx_combobox_pills_root
-  [data-combobox-dropdown-target][data-state="closed"]
-  > [role="listbox"] {
+[data-combobox-pills-list][role="listbox"][data-state="closed"] {
   animation: dx-picker-out 100ms ease-in forwards;
   pointer-events: none;
 }
