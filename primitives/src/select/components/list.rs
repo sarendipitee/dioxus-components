@@ -151,12 +151,18 @@ fn SelectListPortaled(props: SelectListPortaledProps) -> Element {
         reg.set_closing(!open());
     });
 
+    // Subscribe to `open` HERE, in the non-portaled (Root-descendant) scope, and
+    // forward the snapshot into the portaled body as a plain bool so the body
+    // never reads the Root-owned `open` Memo across the portal boundary.
+    let is_open = open();
+
     rsx! {
         PortalIn { portal,
             SelectListRendered {
                 ctx,
                 listbox_ctx: props.listbox_ctx,
                 reg,
+                is_open,
                 id,
                 attributes: props.attributes.clone(),
                 children: props.children,
@@ -171,6 +177,9 @@ struct SelectListRenderedProps {
     ctx: SelectContext,
     listbox_ctx: ListboxContext,
     reg: OverlayRegistration,
+    /// Open snapshot threaded from the non-portaled parent — see the matching
+    /// note on `DialogPortalBodyProps::is_open`.
+    is_open: bool,
     id: Memo<String>,
     attributes: Vec<Attribute>,
     children: Element,
@@ -191,9 +200,9 @@ fn SelectListRendered(props: SelectListRenderedProps) -> Element {
     use_context_provider(|| ctx);
     use_context_provider(|| props.listbox_ctx);
 
-    let open = ctx.selectable.open;
+    let is_open = props.is_open;
     let mut listbox_ref: Signal<Option<std::rc::Rc<MountedData>>> = use_signal(|| None);
-    let focused = move || open() && !ctx.selectable.focus_state.any_focused();
+    let focused = move || is_open && !ctx.selectable.focus_state.any_focused();
 
     // Floating-element positioning. The list drops below the trigger (side=Bottom,
     // align=Start); flip handles upward placement near the bottom viewport edge and
@@ -313,7 +322,7 @@ fn SelectListRendered(props: SelectListRenderedProps) -> Element {
             aria_multiselectable: ctx.multi(),
 
             // Data attributes
-            "data-state": if open() { "open" } else { "closed" },
+            "data-state": if is_open { "open" } else { "closed" },
 
             onmounted: move |evt| listbox_ref.set(Some(evt.data())),
             onkeydown,

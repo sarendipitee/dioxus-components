@@ -422,15 +422,40 @@ fn DialogPortaled(props: DialogPortaledProps) -> Element {
     // the only place a portaled consumer resolves it. Re-providing here, in the
     // component that merely *contains* `PortalIn`, would NOT cover the portaled
     // children (context resolves up the render tree, where `PortalOut` sits).
+    //
+    // Subscribe to ALL cross-scope signals HERE, in the non-portaled
+    // (DialogRoot-descendant) scope, and forward snapshots as plain values.
+    // This keeps signals owned by `DialogRoot`, `DialogContent`, or any nested
+    // scope from being read across the portal boundary in `DialogPortalBody`.
+    //
+    // In particular: when a Dialog/Sheet is rendered inside another Dialog/Sheet's
+    // children prop, the inner `DialogRoot` lives inside the outer
+    // `DialogPortalBody`'s subtree.  Closing the outer overlay unmounts that
+    // subtree — freeing the inner `DialogRoot`'s signals — while the inner
+    // `DialogPortalBody` may still be mounted (animating out).  Any reactive read
+    // of those freed signals from the portaled scope causes a use-after-free
+    // (manifests as dlmalloc heap corruption in WASM).  Snapshotting here is safe
+    // because `DialogPortaled` is always a scope descendant of the owning
+    // `DialogRoot`, so the signals are guaranteed live while this scope renders.
+    let is_open = open();
+    let aria_labelledby = ctx.dialog_labelledby.cloned();
+    let aria_describedby = ctx.dialog_describedby.cloned();
+    let content_id_str = content_id.cloned();
+    let backdrop_id_str = props.backdrop_id.cloned();
+
     rsx! {
         PortalIn { portal,
             DialogPortalBody {
                 ctx,
                 reg,
-                content_id,
-                backdrop_id: props.backdrop_id,
+                is_open,
+                content_id: content_id_str,
+                backdrop_id: backdrop_id_str,
+                aria_labelledby,
+                aria_describedby,
                 backdrop_class: props.backdrop_class.clone(),
                 close_on_backdrop_click,
+                overlay_kind,
                 dialog_role: props.dialog_role.clone(),
                 attributes: props.attributes.clone(),
                 {props.children}
@@ -444,10 +469,29 @@ fn DialogPortaled(props: DialogPortaledProps) -> Element {
 struct DialogPortalBodyProps {
     ctx: DialogCtx,
     reg: OverlayRegistration,
-    content_id: Memo<String>,
-    backdrop_id: Signal<String>,
+    /// Open state, snapshotted in the non-portaled parent each render and passed
+    /// in as a plain `bool`. The body must NOT read the Root-owned `ctx.open`
+    /// Memo directly: the portaled subtree lives under the root `OverlayOutlet`,
+    /// not under `DialogRoot`, so a reactive read there is a cross-scope
+    /// `CopyValue` read (warns, and can fault if the Root unmounts first). The
+    /// parent re-renders synchronously when `open` flips, so this snapshot stays
+    /// in lockstep with the open animation (unlike the effect-driven `closing`
+    /// flag, which lags a flush and would race the exit-animation poll).
+    is_open: bool,
+    /// Snapshotted in the non-portaled parent. The body must NOT hold a
+    /// `Memo<String>` or `Signal<String>` handle whose owner lives in a
+    /// nested `DialogRoot` (e.g. a Sheet rendered inside another Sheet's
+    /// children prop). That `DialogRoot` scope is inside the enclosing
+    /// `DialogPortalBody`'s subtree; when the outer dialog closes it is
+    /// freed while the inner portaled body may still be mounted, causing a
+    /// use-after-free on any reactive read of those signals.
+    content_id: String,
+    backdrop_id: String,
+    aria_labelledby: String,
+    aria_describedby: String,
     backdrop_class: String,
     close_on_backdrop_click: bool,
+    overlay_kind: OverlayKind,
     dialog_role: String,
     attributes: Vec<Attribute>,
     children: Element,
@@ -462,22 +506,55 @@ struct DialogPortalBodyProps {
 fn DialogPortalBody(props: DialogPortalBodyProps) -> Element {
     let ctx = props.ctx;
     let reg = props.reg;
-    let open = ctx.open;
+    let is_open = props.is_open;
     let set_open = ctx.set_open;
     let close_on_backdrop_click = props.close_on_backdrop_click;
-    let content_id = props.content_id;
-    let backdrop_id = props.backdrop_id;
+    let content_id = props.content_id.clone();
+    let backdrop_id = props.backdrop_id.clone();
+    let aria_labelledby = props.aria_labelledby.clone();
+    let aria_describedby = props.aria_describedby.clone();
 
-    // Re-provide a CLONE of the Root's ctx at the top of the portaled subtree.
-    // Same signals as the Root provider (nearest-wins), so consumers inside the
-    // portal stay in sync with the Root.
-    use_context_provider(|| ctx);
+    // Re-provide a modified DialogCtx at the top of the portaled subtree.
+    //
+    // `dialog_labelledby` and `dialog_describedby` are replaced with LOCAL
+    // signals owned by THIS scope (DialogPortalBody), seeded from the already-
+    // snapshotted plain strings forwarded by DialogPortaled.  This breaks the
+    // cross-scope reactive dependency: `DialogTitle` and `DialogDescription`
+    // call `use_id_or(ctx.dialog_labelledby, ...)` which subscribes to whatever
+    // signal is in the ctx.  If we forwarded the original Root-owned signals,
+    // those subscriptions would touch freed storage once an outer dialog closes
+    // and tears down the inner `DialogRoot` scope (use-after-free / dlmalloc
+    // abort in WASM).  Local signals are freed together with this portaled scope,
+    // so teardown is always safe.
+    //
+    // The ID values themselves are stable (generated once via `use_unique_id`),
+    // so copying the snapshotted string into a local signal is correct — the
+    // value won't change after mount.  Accessibility wiring is preserved: the
+    // same ID string is used both here (for the dialog's aria-labelledby attr,
+    // set in `aria_labelledby` above) and in the local signal (read by
+    // `DialogTitle`/`DialogDescription` to set their element's `id`).
+    let local_labelledby = use_signal(|| props.aria_labelledby.clone());
+    let local_describedby = use_signal(|| props.aria_describedby.clone());
+    use_context_provider(|| DialogCtx {
+        dialog_labelledby: local_labelledby,
+        dialog_describedby: local_describedby,
+        ..ctx
+    });
 
     let base = attributes!(div { class: "dx-dialog" });
     let attributes = merge_attributes(vec![base, props.attributes.clone()]);
 
     let depth = reg.depth();
     let stack_size = reg.stack_size();
+    let is_bottommost = stack_size == 0 || depth == stack_size - 1;
+    let overlay_kind = props.overlay_kind;
+    let kind_str = match overlay_kind {
+        OverlayKind::Sheet => "sheet",
+        OverlayKind::Modal => "modal",
+        OverlayKind::Floating => "floating",
+        OverlayKind::Hint => "hint",
+        OverlayKind::Toast => "toast",
+    };
 
     rsx! {
         div {
@@ -486,8 +563,10 @@ fn DialogPortalBody(props: DialogPortalBodyProps) -> Element {
                 id: backdrop_id,
                 class: props.backdrop_class.clone(),
                 style: reg.z().map(|z| format!("--overlay-z: {z};")),
-                aria_hidden: (!open()).then_some("true"),
-                "data-state": if open() { "open" } else { "closed" },
+                aria_hidden: (!is_open).then_some("true"),
+                "data-state": if is_open { "open" } else { "closed" },
+                "data-overlay-kind": kind_str,
+                "data-overlay-is-bottommost": if is_bottommost { "true" } else { "false" },
                 onclick: move |_| {
                     if close_on_backdrop_click {
                         set_open.call(false);
@@ -500,11 +579,11 @@ fn DialogPortalBody(props: DialogPortalBodyProps) -> Element {
                 id: content_id,
                 role: props.dialog_role.clone(),
                 aria_modal: "true",
-                aria_labelledby: ctx.dialog_labelledby,
-                aria_describedby: ctx.dialog_describedby,
+                aria_labelledby,
+                aria_describedby,
                 tabindex: "-1",
                 style: reg.z().map(|z| format!("--overlay-z: {z}; --overlay-depth: {depth};")),
-                "data-state": if open() { "open" } else { "closed" },
+                "data-state": if is_open { "open" } else { "closed" },
                 "data-overlay-depth": "{depth}",
                 "data-overlay-stack-size": "{stack_size}",
                 onclick: move |e| e.stop_propagation(),

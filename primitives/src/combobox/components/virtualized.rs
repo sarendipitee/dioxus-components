@@ -124,6 +124,11 @@ fn VirtualizedComboboxOptionsPortaled(props: VirtualizedComboboxOptionsPortaledP
         reg.set_closing(!open());
     });
 
+    // Subscribe to `open` HERE, in the non-portaled (Root-descendant) scope, and
+    // forward the snapshot into the portaled body as a plain bool so the body
+    // never reads the Root-owned store across the portal boundary.
+    let is_open = open();
+
     rsx! {
         PortalIn { portal,
             VirtualizedComboboxOptionsRendered {
@@ -131,6 +136,7 @@ fn VirtualizedComboboxOptionsPortaled(props: VirtualizedComboboxOptionsPortaledP
                 listbox_ctx: props.listbox_ctx,
                 reg,
                 id,
+                is_open,
                 inner: props.props,
             }
         }
@@ -151,6 +157,9 @@ struct VirtualizedComboboxOptionsRenderedProps {
     listbox_ctx: ListboxContext,
     reg: OverlayRegistration,
     id: Memo<String>,
+    /// Open snapshot threaded from the non-portaled parent — see the matching
+    /// note on `DialogPortalBodyProps::is_open`.
+    is_open: bool,
     inner: VirtualizedComboboxOptionsProps,
 }
 
@@ -164,6 +173,7 @@ fn VirtualizedComboboxOptionsRendered(props: VirtualizedComboboxOptionsRenderedP
     let ctx = props.ctx;
     let reg = props.reg;
     let id = props.id;
+    let is_open = props.is_open;
     let listbox_ctx = props.listbox_ctx;
     // Re-provide both contexts INSIDE the portal (the load-bearing rule).
     use_context_provider(|| ctx);
@@ -171,7 +181,6 @@ fn VirtualizedComboboxOptionsRendered(props: VirtualizedComboboxOptionsRenderedP
 
     // Reconstruct the original prop bindings used throughout the body.
     let props = props.inner;
-    let open = use_memo(move || ctx.store.dropdown_opened());
     let render = listbox_ctx.render;
     // Local handle mirroring the old `listbox.id` usage in scroll helpers.
     let listbox = ListboxIdHandle { id };
@@ -360,7 +369,7 @@ fn VirtualizedComboboxOptionsRendered(props: VirtualizedComboboxOptionsRenderedP
             div {
                 id: listbox.id,
                 role: "listbox",
-                "data-state": if open() { "open" } else { "closed" },
+                "data-state": if is_open { "open" } else { "closed" },
                 onmounted: on_mounted,
                 onscroll: on_scroll,
                 onpointerdown: move |event| {

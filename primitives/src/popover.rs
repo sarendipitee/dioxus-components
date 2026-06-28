@@ -333,6 +333,13 @@ fn PopoverPortaled(props: PopoverPortaledProps) -> Element {
         reg.set_closing(!open());
     });
 
+    // Subscribe to `open` HERE, in the non-portaled (Root-descendant) scope, and
+    // forward the snapshot into the portaled body as a plain bool so the body
+    // never reads the Root-owned `open` Memo across the portal boundary. The
+    // parent re-renders synchronously when `open` flips, keeping data-state in
+    // lockstep with the open/close animation.
+    let is_open = open();
+
     // The body is a CHILD of `PortalIn` so the re-provide lands on the *portaled*
     // render chain — the only place a portaled consumer resolves it.
     rsx! {
@@ -340,6 +347,7 @@ fn PopoverPortaled(props: PopoverPortaledProps) -> Element {
             PopoverContentRendered {
                 ctx,
                 reg,
+                is_open,
                 id,
                 side: props.side,
                 align: props.align,
@@ -355,6 +363,10 @@ fn PopoverPortaled(props: PopoverPortaledProps) -> Element {
 pub struct PopoverContentRenderedProps {
     ctx: PopoverCtx,
     reg: OverlayRegistration,
+    /// Open snapshot threaded from the non-portaled parent — see the matching
+    /// note on `DialogPortalBodyProps::is_open`. The body must not read the
+    /// Root-owned `ctx.open` Memo across the portal boundary.
+    is_open: bool,
     id: Memo<String>,
     side: ContentSide,
     align: ContentAlign,
@@ -381,8 +393,7 @@ pub fn PopoverContentRendered(props: PopoverContentRenderedProps) -> Element {
     // in-panel consumers resolve PopoverCtx up THIS (portaled) render chain.
     use_context_provider(|| ctx);
 
-    let open = ctx.open;
-    let is_open = open();
+    let is_open = props.is_open;
 
     // Floating-element positioning. The content ref is local; the trigger ref is shared
     // through the context. `use_position` must be called unconditionally (no conditional

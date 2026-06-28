@@ -359,6 +359,11 @@ fn HoverCardPortaled(props: HoverCardPortaledProps) -> Element {
         content_root_id: Some(id.peek().clone()),
     });
 
+    // Subscribe to `open` HERE, in the non-portaled (Root-descendant) scope, and
+    // forward the snapshot into the portaled body as a plain bool so the body
+    // never reads the Root-owned `open` Memo across the portal boundary.
+    let is_open = (ctx.open)();
+
     // The body is a CHILD of `PortalIn` so the re-provide lands on the portaled
     // render chain.
     rsx! {
@@ -366,6 +371,7 @@ fn HoverCardPortaled(props: HoverCardPortaledProps) -> Element {
             HoverCardContentRendered {
                 ctx,
                 reg,
+                is_open,
                 id,
                 side: props.side,
                 align: props.align,
@@ -381,6 +387,9 @@ fn HoverCardPortaled(props: HoverCardPortaledProps) -> Element {
 struct HoverCardContentRenderedProps {
     ctx: HoverCardCtx,
     reg: OverlayRegistration,
+    /// Open snapshot threaded from the non-portaled parent — see the matching
+    /// note on `DialogPortalBodyProps::is_open`.
+    is_open: bool,
     id: Memo<String>,
     side: ContentSide,
     align: ContentAlign,
@@ -396,6 +405,7 @@ struct HoverCardContentRenderedProps {
 fn HoverCardContentRendered(props: HoverCardContentRenderedProps) -> Element {
     let ctx = props.ctx;
     let reg = props.reg;
+    let is_open = props.is_open;
     let id = props.id;
     let side = props.side;
     let align = props.align;
@@ -453,7 +463,7 @@ fn HoverCardContentRendered(props: HoverCardContentRenderedProps) -> Element {
         div {
             id,
             role: "tooltip",
-            "data-state": if (ctx.open)() { "open" } else { "closed" },
+            "data-state": if is_open { "open" } else { "closed" },
             "data-side": resolved_side.read().as_str(),
             "data-align": resolved_align.read().as_str(),
 

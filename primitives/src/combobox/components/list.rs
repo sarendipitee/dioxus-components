@@ -105,6 +105,11 @@ fn ComboboxOptionsPortaled(props: ComboboxOptionsPortaledProps) -> Element {
         reg.set_closing(!open());
     });
 
+    // Subscribe to `open` HERE, in the non-portaled (Root-descendant) scope, and
+    // forward the snapshot into the portaled body as a plain bool so the body
+    // never reads the Root-owned `open` Memo across the portal boundary.
+    let is_open = open();
+
     rsx! {
         PortalIn { portal,
             ComboboxOptionsRendered {
@@ -112,7 +117,7 @@ fn ComboboxOptionsPortaled(props: ComboboxOptionsPortaledProps) -> Element {
                 listbox_ctx: props.listbox_ctx,
                 reg,
                 id,
-                open,
+                is_open,
                 attributes: props.attributes.clone(),
                 children: props.children,
             }
@@ -127,7 +132,9 @@ struct ComboboxOptionsRenderedProps {
     listbox_ctx: ListboxContext,
     reg: OverlayRegistration,
     id: Memo<String>,
-    open: Memo<bool>,
+    /// Open snapshot threaded from the non-portaled parent — see the matching
+    /// note on `DialogPortalBodyProps::is_open`.
+    is_open: bool,
     attributes: Vec<Attribute>,
     children: Element,
 }
@@ -142,7 +149,7 @@ fn ComboboxOptionsRendered(props: ComboboxOptionsRenderedProps) -> Element {
     let ctx = props.ctx;
     let reg = props.reg;
     let id = props.id;
-    let open = props.open;
+    let is_open = props.is_open;
 
     // Re-provide both contexts INSIDE the portal (the load-bearing rule).
     use_context_provider(|| ctx);
@@ -192,7 +199,7 @@ fn ComboboxOptionsRendered(props: ComboboxOptionsRenderedProps) -> Element {
         div {
             id,
             role: "listbox",
-            "data-state": if open() { "open" } else { "closed" },
+            "data-state": if is_open { "open" } else { "closed" },
             onpointerdown: move |event| {
                 event.prevent_default();
             },
