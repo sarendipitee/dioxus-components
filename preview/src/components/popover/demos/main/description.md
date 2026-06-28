@@ -1,1 +1,1 @@
-Uses a popover as a lightweight confirmation surface for deleting an item, then closes the overlay and reveals a confirmed outcome inline.
+Minimal controlled popover. `open` + `on_open_change` wire the open state; a button inside the content closes it explicitly. Click outside or press Escape also closes.

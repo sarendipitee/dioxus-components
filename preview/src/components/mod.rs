@@ -44,11 +44,11 @@ impl ComponentCategory {
 pub fn category_of(name: &str) -> ComponentCategory {
     match name {
         "button" | "input" | "text_input" | "mask_input" | "number_input" | "password_input"
-        | "textarea" | "label"
-        | "checkbox" | "switch"
-        | "radio_group" | "toggle" | "toggle_group" | "select" | "slider" | "calendar"
-        | "date_picker" | "date_input" | "color_picker" | "color_input" | "time_picker"
-        | "time_input" | "file_drop_zone" => ComponentCategory::Forms,
+        | "textarea" | "label" | "checkbox" | "switch" | "radio_group" | "toggle"
+        | "toggle_group" | "select" | "slider" | "calendar" | "date_picker" | "date_input"
+        | "color_picker" | "color_input" | "time_picker" | "time_input" | "file_drop_zone" => {
+            ComponentCategory::Forms
+        }
         "schedule"
         | "schedule_day_view"
         | "schedule_week_view"
@@ -294,7 +294,7 @@ examples!(
     date_input,
     date_picker[internationalized, range, multi_month, unavailable_dates],
     data_table[controlled, server_backed, expansion, virtualized, density, selectable],
-    dialog[scrollable, form],
+    dialog[scrollable, nested],
     drag_and_drop_list[removable],
     dropdown_menu[checkable, structure, presentation, nested_submenus],
     file_drop_zone[
@@ -320,7 +320,7 @@ examples!(
     navbar,
     pagination[controlled],
     pills_input,
-    popover,
+    popover[positioning],
     progress,
     radio_group,
     scroll_area,
@@ -346,7 +346,7 @@ examples!(
     schedule_events,
     select[multi],
     separator,
-    sheet,
+    sheet[nested],
     sidebar(block)[floating, inset],
     skeleton,
     split_pane[
