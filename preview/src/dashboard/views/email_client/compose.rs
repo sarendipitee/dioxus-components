@@ -3,12 +3,12 @@ use dioxus_primitives::toast::{use_toast, ToastOptions};
 
 use crate::components::button::{Button, ButtonVariant};
 use crate::components::dialog::Dialog;
-use dioxus_primitives::dialog::{DialogDescription, DialogTitle};
 use crate::components::input::TextInput;
 use crate::components::label::Label;
 use crate::components::separator::Separator;
 use crate::components::textarea::{Textarea, TextareaVariant};
 use crate::dashboard::common::{IconKind, LucideIcon};
+use dioxus_primitives::dialog::{DialogDescription, DialogTitle};
 
 use super::state::{EmailClientState, EmailClientStateStoreExt, EmailClientStateStoreImplExt};
 

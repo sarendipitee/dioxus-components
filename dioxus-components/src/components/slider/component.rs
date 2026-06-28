@@ -21,18 +21,24 @@ pub fn Slider(
     #[props(default)] inverted: bool,
     #[props(default)] on_value_change: Callback<f64>,
     /// Thumb tooltip label callback.
-    #[props(default)] label: ReadSignal<Option<String>>,
+    #[props(default)]
+    label: ReadSignal<Option<String>>,
     #[props(extends = GlobalAttributes)] attributes: Vec<Attribute>,
     /// Field label rendered above the slider.
-    #[props(default, into)] field_label: InputLabel,
+    #[props(default, into)]
+    field_label: InputLabel,
     /// Description rendered below the field label.
-    #[props(default, into)] description: InputContent,
+    #[props(default, into)]
+    description: InputContent,
     /// Error rendered below the slider.
-    #[props(default, into)] error: InputContent,
+    #[props(default, into)]
+    error: InputContent,
     /// Marks the field as required.
-    #[props(default = false)] required: bool,
+    #[props(default = false)]
+    required: bool,
     /// Shows the required asterisk without native validation.
-    #[props(default = false)] with_asterisk: bool,
+    #[props(default = false)]
+    with_asterisk: bool,
 ) -> Element {
     let is_disabled = (disabled)();
     rsx! {
@@ -77,18 +83,24 @@ pub fn RangeSlider(
     #[props(default)] inverted: bool,
     #[props(default)] on_value_change: Callback<Range<f64>>,
     /// Thumb tooltip label callback.
-    #[props(default)] label: ReadSignal<Option<String>>,
+    #[props(default)]
+    label: ReadSignal<Option<String>>,
     #[props(extends = GlobalAttributes)] attributes: Vec<Attribute>,
     /// Field label rendered above the slider.
-    #[props(default, into)] field_label: InputLabel,
+    #[props(default, into)]
+    field_label: InputLabel,
     /// Description rendered below the field label.
-    #[props(default, into)] description: InputContent,
+    #[props(default, into)]
+    description: InputContent,
     /// Error rendered below the slider.
-    #[props(default, into)] error: InputContent,
+    #[props(default, into)]
+    error: InputContent,
     /// Marks the field as required.
-    #[props(default = false)] required: bool,
+    #[props(default = false)]
+    required: bool,
     /// Shows the required asterisk without native validation.
-    #[props(default = false)] with_asterisk: bool,
+    #[props(default = false)]
+    with_asterisk: bool,
 ) -> Element {
     let is_disabled = (disabled)();
     rsx! {

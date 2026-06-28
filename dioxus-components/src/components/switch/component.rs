@@ -18,18 +18,21 @@ pub fn Switch(
     #[props(default)] disabled: ReadSignal<bool>,
     #[props(default)] required: ReadSignal<bool>,
     #[props(default)] name: ReadSignal<String>,
-    #[props(default = ReadSignal::new(Signal::new(String::from("on"))))]
-    value: ReadSignal<String>,
+    #[props(default = ReadSignal::new(Signal::new(String::from("on"))))] value: ReadSignal<String>,
     #[props(default)] on_checked_change: Callback<bool>,
     #[props(extends = GlobalAttributes)] attributes: Vec<Attribute>,
     /// Label rendered inline beside the switch.
-    #[props(default, into)] label: InputLabel,
+    #[props(default, into)]
+    label: InputLabel,
     /// Description rendered below the label.
-    #[props(default, into)] description: InputContent,
+    #[props(default, into)]
+    description: InputContent,
     /// Error rendered below the switch.
-    #[props(default, into)] error: InputContent,
+    #[props(default, into)]
+    error: InputContent,
     /// Shows the required asterisk without changing native validation.
-    #[props(default = false)] with_asterisk: bool,
+    #[props(default = false)]
+    with_asterisk: bool,
 ) -> Element {
     let generated_id = use_input_id("dx-switch");
     let field = build_input_field_text_state(

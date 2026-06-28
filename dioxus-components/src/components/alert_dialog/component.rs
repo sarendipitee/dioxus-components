@@ -102,7 +102,9 @@ pub fn AlertDialog(props: AlertDialogProps) -> Element {
     let cancel_el = cancel_has.then(|| props.cancel.into_element());
 
     let content_attributes = merge_attributes(vec![
-        attributes!(div { class: DialogStyles::dx_dialog.to_string() }),
+        attributes!(div {
+            class: DialogStyles::dx_dialog.to_string()
+        }),
         props.attributes,
     ]);
 
@@ -170,9 +172,7 @@ fn AlertDialogButton(
             cb.call(evt);
         }
     });
-    let attrs = attributes!(button {
-        tabindex: tabindex,
-    });
+    let attrs = attributes!(button { tabindex: tabindex });
 
     rsx! {
         Button {

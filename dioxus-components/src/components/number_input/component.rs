@@ -23,7 +23,12 @@ pub enum ClampBehavior {
     None,
 }
 
-fn do_format(v: f64, decimal_scale: Option<usize>, decimal_sep: &str, thousands_sep: &str) -> String {
+fn do_format(
+    v: f64,
+    decimal_scale: Option<usize>,
+    decimal_sep: &str,
+    thousands_sep: &str,
+) -> String {
     let raw = match decimal_scale {
         Some(scale) => format!("{:.prec$}", v, prec = scale),
         None => v.to_string(),
@@ -67,7 +72,11 @@ fn do_parse(s: &str, decimal_sep: &str, thousands_sep: &str) -> Option<f64> {
     } else {
         s.to_string()
     };
-    let s = if decimal_sep != "." { s.replace(decimal_sep, ".") } else { s };
+    let s = if decimal_sep != "." {
+        s.replace(decimal_sep, ".")
+    } else {
+        s
+    };
     s.parse::<f64>().ok()
 }
 
@@ -205,7 +214,9 @@ pub fn NumberInput(
     let user_described_by = attribute_text(&attributes, "aria-describedby")
         .or_else(|| attribute_text(&attributes, "aria_describedby"))
         .or(described_by);
-    let description_id = description.is_some().then(|| format!("{input_id}-description"));
+    let description_id = description
+        .is_some()
+        .then(|| format!("{input_id}-description"));
     let error_id = error.is_some().then(|| format!("{input_id}-error"));
     let aria_describedby = merge_described_by(
         description_id.as_deref(),

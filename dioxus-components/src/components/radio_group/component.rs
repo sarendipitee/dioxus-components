@@ -21,13 +21,17 @@ pub fn RadioGroup(
     #[props(extends = GlobalAttributes)] attributes: Vec<Attribute>,
     children: Element,
     /// Label rendered above the radio group.
-    #[props(default, into)] label: InputLabel,
+    #[props(default, into)]
+    label: InputLabel,
     /// Description rendered below the label.
-    #[props(default, into)] description: InputContent,
+    #[props(default, into)]
+    description: InputContent,
     /// Error rendered below the group.
-    #[props(default, into)] error: InputContent,
+    #[props(default, into)]
+    error: InputContent,
     /// Shows the required asterisk without changing native validation.
-    #[props(default = false)] with_asterisk: bool,
+    #[props(default = false)]
+    with_asterisk: bool,
 ) -> Element {
     let is_disabled = (disabled)();
     let is_required = (required)();

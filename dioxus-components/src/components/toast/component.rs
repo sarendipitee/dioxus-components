@@ -40,7 +40,7 @@ fn StyledToast(props: ToastProps) -> Element {
             action: props.action,
             cancel: props.cancel,
             removing: props.removing,
-            class: Styles::dx_toast.to_string(),
+            class: Styles::dx_toast,
             attributes: props.attributes,
             if let Some(icon) = icon {
                 ToastIcon { {icon} }
@@ -96,7 +96,7 @@ fn ToastContent(props: ToastContentProps) -> Element {
 fn ToastTitle(props: ToastTitleProps) -> Element {
     rsx! {
         toast::ToastTitle {
-            class: Styles::dx_toast_title.to_string(),
+            class: Styles::dx_toast_title,
             attributes: props.attributes,
             children: props.children,
         }
@@ -107,7 +107,7 @@ fn ToastTitle(props: ToastTitleProps) -> Element {
 fn ToastDescription(props: ToastDescriptionProps) -> Element {
     rsx! {
         toast::ToastDescription {
-            class: Styles::dx_toast_description.to_string(),
+            class: Styles::dx_toast_description,
             attributes: props.attributes,
             children: props.children,
         }
@@ -118,7 +118,7 @@ fn ToastDescription(props: ToastDescriptionProps) -> Element {
 fn ToastCloseButton(props: ToastCloseButtonProps) -> Element {
     rsx! {
         toast::ToastCloseButton {
-            class: Styles::dx_toast_close.to_string(),
+            class: Styles::dx_toast_close,
             attributes: props.attributes,
             children: props.children,
         }
@@ -129,7 +129,7 @@ fn ToastCloseButton(props: ToastCloseButtonProps) -> Element {
 fn ToastActions(props: ToastActionsProps) -> Element {
     rsx! {
         toast::ToastActions {
-            class: Styles::dx_toast_actions.to_string(),
+            class: Styles::dx_toast_actions,
             attributes: props.attributes,
             {props.children}
         }
@@ -141,7 +141,7 @@ fn ToastActionButton(props: ToastActionButtonProps) -> Element {
     rsx! {
         toast::ToastActionButton {
             on_click: props.on_click,
-            class: Styles::dx_toast_action.to_string(),
+            class: Styles::dx_toast_action,
             attributes: props.attributes,
             {props.children}
         }
@@ -164,7 +164,7 @@ pub fn ToastProvider(
 
     rsx! {
         toast::ToastProvider {
-            class: Styles::dx_toast_container.to_string(),
+            class: Styles::dx_toast_container,
             default_duration,
             max_toasts,
             position,
@@ -185,7 +185,7 @@ mod tests {
         let toast_api = use_toast();
         use_hook(move || {
             toast_api.success(
-                "Saved".to_string(),
+                "Saved",
                 ToastOptions::new()
                     .description("Everything synced")
                     .permanent(true),
@@ -199,7 +199,7 @@ mod tests {
         let toast_api = use_toast();
         use_hook(move || {
             toast_api.info(
-                "File deleted".to_string(),
+                "File deleted",
                 ToastOptions::new()
                     .permanent(true)
                     .action("Undo", move |_| {})
@@ -213,7 +213,7 @@ mod tests {
     fn ToastLoading() -> Element {
         let toast_api = use_toast();
         use_hook(move || {
-            toast_api.loading("Uploading\u{2026}".to_string(), ToastOptions::new());
+            toast_api.loading("Uploading\u{2026}", ToastOptions::new());
         });
         rsx! {}
     }

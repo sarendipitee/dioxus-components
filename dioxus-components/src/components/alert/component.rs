@@ -38,11 +38,14 @@ impl AlertVariant {
 pub fn Alert(
     #[props(default)] variant: AlertVariant,
     /// Shorthand alert heading. Renders an `AlertTitle` before children.
-    #[props(default)] title: Option<String>,
+    #[props(default)]
+    title: Option<String>,
     /// Shorthand alert body. Renders an `AlertDescription` before children.
-    #[props(default)] description: Option<String>,
+    #[props(default)]
+    description: Option<String>,
     /// Override the default variant icon. Pass `rsx! {}` to suppress the icon.
-    #[props(default)] icon: Option<Element>,
+    #[props(default)]
+    icon: Option<Element>,
     #[props(extends = GlobalAttributes)] attributes: Vec<Attribute>,
     #[props(default)] children: Element,
 ) -> Element {

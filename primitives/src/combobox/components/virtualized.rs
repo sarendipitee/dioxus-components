@@ -100,9 +100,7 @@ struct VirtualizedComboboxOptionsPortaledProps {
 /// Registers the virtualized listbox as a Floating overlay entry and renders it
 /// through the shared outlet.
 #[component]
-fn VirtualizedComboboxOptionsPortaled(
-    props: VirtualizedComboboxOptionsPortaledProps,
-) -> Element {
+fn VirtualizedComboboxOptionsPortaled(props: VirtualizedComboboxOptionsPortaledProps) -> Element {
     let id = props.id;
     let open = props.open;
     let portal = props.portal;
@@ -162,9 +160,7 @@ struct VirtualizedComboboxOptionsRenderedProps {
 /// and the shared listbox id directly so option-state registration is not
 /// duplicated.
 #[component]
-fn VirtualizedComboboxOptionsRendered(
-    props: VirtualizedComboboxOptionsRenderedProps,
-) -> Element {
+fn VirtualizedComboboxOptionsRendered(props: VirtualizedComboboxOptionsRenderedProps) -> Element {
     let ctx = props.ctx;
     let reg = props.reg;
     let id = props.id;

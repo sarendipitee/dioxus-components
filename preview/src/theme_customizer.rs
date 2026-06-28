@@ -419,7 +419,9 @@ fn token_display_value(token: &ThemeToken, is_dark: bool) -> String {
 }
 
 fn default_token_by_name(name: &str) -> Option<&'static ThemeToken> {
-    default_theme_tokens().iter().find(|token| token.name == name)
+    default_theme_tokens()
+        .iter()
+        .find(|token| token.name == name)
 }
 
 /// Returns whether a token's current value differs from the shipped default after normalization.
@@ -561,7 +563,10 @@ fn ThemeStudio() -> Element {
     let mut query = use_signal(String::new);
     let needle = query().trim().to_ascii_lowercase();
 
-    let modified_count = tokens.iter().filter(|token| token_is_modified(token)).count();
+    let modified_count = tokens
+        .iter()
+        .filter(|token| token_is_modified(token))
+        .count();
     let has_matches = needle.is_empty()
         || tokens
             .iter()

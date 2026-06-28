@@ -63,17 +63,23 @@ pub fn Textarea(
     #[props(default = 16.0)] autosize_vertical_chrome_px: f64,
     #[props(default)] variant: TextareaVariant,
     /// Label rendered above the textarea.
-    #[props(default, into)] label: InputLabel,
+    #[props(default, into)]
+    label: InputLabel,
     /// Description rendered below the label.
-    #[props(default, into)] description: InputContent,
+    #[props(default, into)]
+    description: InputContent,
     /// Error rendered below the textarea.
-    #[props(default, into)] error: InputContent,
+    #[props(default, into)]
+    error: InputContent,
     /// Marks the field as required.
-    #[props(default = false)] required: bool,
+    #[props(default = false)]
+    required: bool,
     /// Shows the required asterisk without native validation.
-    #[props(default = false)] with_asterisk: bool,
+    #[props(default = false)]
+    with_asterisk: bool,
     /// Marks the field as disabled.
-    #[props(default = false)] disabled: bool,
+    #[props(default = false)]
+    disabled: bool,
     #[props(extends = GlobalAttributes)]
     #[props(extends = textarea)]
     attributes: Vec<Attribute>,

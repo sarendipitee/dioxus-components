@@ -128,13 +128,13 @@ pub fn Dialog(props: DialogProps) -> Element {
                     header { class: Styles::dx_dialog_header,
                         if let Some(t) = title_el {
                             dialog::DialogTitle {
-                                class: Styles::dx_dialog_title.to_string(),
+                                class: Styles::dx_dialog_title,
                                 {t}
                             }
                         }
                         if let Some(d) = desc_el {
                             dialog::DialogDescription {
-                                class: Styles::dx_dialog_title.to_string(),
+                                class: Styles::dx_dialog_description,
                                 {d}
                             }
                         }

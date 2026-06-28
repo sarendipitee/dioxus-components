@@ -795,8 +795,7 @@ pub fn use_mask(options: UseMaskOptions) -> UseMask {
 
         let mut suffix = 0;
         let max_suffix = (prev.len() - prefix).min(curr.len() - prefix);
-        while suffix < max_suffix
-            && prev[prev.len() - 1 - suffix] == curr[curr.len() - 1 - suffix]
+        while suffix < max_suffix && prev[prev.len() - 1 - suffix] == curr[curr.len() - 1 - suffix]
         {
             suffix += 1;
         }

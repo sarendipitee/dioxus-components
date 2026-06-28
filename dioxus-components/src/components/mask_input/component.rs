@@ -1,8 +1,6 @@
 use dioxus::prelude::*;
 use dioxus_primitives::mask::{use_mask, MaskPattern, UseMaskOptions};
-pub use dioxus_primitives::mask::{
-    CharPredicate, MaskItem, MaskModify, UseMask,
-};
+pub use dioxus_primitives::mask::{CharPredicate, MaskItem, MaskModify, UseMask};
 
 use crate::components::input::{
     attribute_text, merge_described_by, use_input_id, InputBase, InputContent, InputLabel,
