@@ -979,7 +979,33 @@ pub fn MenuSubContent(props: MenuSubContentProps) -> Element {
     let set_open = use_callback(move |next: bool| {
         sub_ctx.set_open.call(next);
         if !next {
-            sub_ctx.close_parent_all.call(());
+            // Close the submenu now, but defer closing the PARENT menu until the
+            // submenu's portaled panel has actually left the DOM.
+            //
+            // Selecting a nested item closes the submenu (above) AND the whole
+            // parent menu (`close_parent_all`). The submenu's panel is portaled
+            // through the shared overlay outlet but its content re-provides the
+            // submenu's `MenuContext` whose signals are OWNED by the `MenuSub` /
+            // `MenuSubContent` definition-tree scopes. Closing the parent menu
+            // unmounts that whole definition subtree (`MenuSub` lives inside the
+            // parent's `MenuContent`), freeing those `use_unique_id` /
+            // `MenuContext` signals. If the submenu's portaled body is still
+            // mounted at that moment (its 150ms exit animation has not settled),
+            // its live read-guards (`SignalSubscriberDrop`) drop against the
+            // freed signal storage → `ValueDroppedError` (`signal.rs:540`) and a
+            // corrupted heap that aborts the wasm runtime.
+            //
+            // Gating the parent close on the submenu panel's removal from the
+            // DOM guarantees the submenu's portaled subtree (and every cross
+            // scope subscription it holds) has fully unmounted before the parent
+            // close frees the `MenuSub` scope. Spawned on `ScopeId::ROOT` so the
+            // wait survives this component's own unmount; the panel id is
+            // snapshotted so the task never reads a freed signal.
+            let close_parent_all = sub_ctx.close_parent_all;
+            let panel_id = id.peek().clone();
+            crate::defer_close_after_removed(panel_id, move || {
+                close_parent_all.call(());
+            });
         }
     });
     use_deferred_focus(sub_ctx.focus, sub_ctx.initial_focus, move || {

@@ -198,6 +198,49 @@ fn use_global_keydown_listener(key: &'static str, on_escape: impl FnMut() + Clon
     });
 }
 
+/// Run `action` once the DOM element with id `element_id` has been removed from
+/// the document, on the root scope so it survives the unmount of the calling
+/// component.
+///
+/// This sequences a multi-level overlay close so an inner portaled subtree fully
+/// unmounts before an outer close frees the scope that owns the inner subtree's
+/// signals. Concretely: a submenu's panel is portaled through the shared overlay
+/// outlet but its content re-provides a `MenuContext` whose signals are owned by
+/// the `MenuSub` definition-tree scope. Closing the parent menu unmounts that
+/// scope (and frees those `use_unique_id` / context signals). If the submenu's
+/// portaled body is still mounted (its exit animation has not settled), its live
+/// read-guards (`SignalSubscriberDrop`) drop against the freed signal storage →
+/// `ValueDroppedError` (`signal.rs:540`) and a corrupted heap that aborts the
+/// wasm runtime.
+///
+/// Polling the actual DOM for the inner panel's removal is robust to the exit
+/// animation duration and to flush timing (unlike a fixed sleep, which races the
+/// 150ms menu exit animation). `element_id` is taken as an owned `String` so the
+/// spawned task never reads a freed signal. On non-DOM targets the eval is a
+/// runtime no-op and the action runs after the first poll.
+fn defer_close_after_removed<F: FnOnce() + 'static>(element_id: String, action: F) {
+    let runtime = crate::dioxus_core::Runtime::current();
+    runtime.spawn(ScopeId::ROOT, async move {
+        let mut eval = dioxus::document::eval(
+            "const id = await dioxus.recv();
+            // Resolve once the element with this id is gone from the document, or
+            // after a bounded number of animation frames as a safety cap so a
+            // stuck animation can never wedge the parent menu permanently open.
+            let frames = 0;
+            const tick = () => {
+                const el = document.getElementById(id);
+                if (!el || frames > 30) { dioxus.send(true); return; }
+                frames++;
+                requestAnimationFrame(tick);
+            };
+            requestAnimationFrame(tick);",
+        );
+        let _ = eval.send(element_id);
+        let _ = eval.recv::<bool>().await;
+        action();
+    });
+}
+
 fn use_animated_open(
     id: impl Readable<Target = String> + Copy + 'static,
     open: impl Readable<Target = bool> + Copy + 'static,
