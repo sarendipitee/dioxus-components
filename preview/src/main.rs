@@ -34,6 +34,7 @@ use unic_langid::{langid, LanguageIdentifier};
 
 mod components;
 mod dashboard;
+mod overlay_nesting;
 mod theme;
 mod theme_customizer;
 
@@ -144,7 +145,14 @@ pub fn App() -> Element {
 
     rsx! {
         DioxusComponentsStyles {}
-        Router::<Route> {}
+        // Mount the unified overlay manager once at the app root. Every migrated
+        // overlay (Dialog, Sheet, AlertDialog, Popover, Tooltip, HoverCard, Menu,
+        // DropdownMenu, Menubar, ContextMenu, Select, Combobox) portals its
+        // content through the single `OverlayOutlet` this provider mounts; without
+        // it those overlays render nothing.
+        dioxus_primitives::overlay::OverlayProvider {
+            Router::<Route> {}
+        }
     }
 }
 
@@ -176,6 +184,13 @@ pub enum Route {
         iframe: Option<bool>,
         dark_mode: Option<bool>,
     },
+    /// Dev/test-only route exercising the overlay-manager nesting matrix under a
+    /// CSS-`transform`ed ancestor (the GPU-compositing stacking-context trap).
+    /// Not in the install catalog; reachable at `/overlay-nesting` for Playwright.
+    /// Inside `NavigationLayout` so the theme stylesheets (z-band tokens) load;
+    /// the demo's own transformed container is the dominant test surface.
+    #[route("/overlay-nesting")]
+    OverlayNesting {},
     #[end_layout]
     #[route("/components/:name/block?:dark_mode#:demo")]
     ComponentBlockDemo {
@@ -206,6 +221,7 @@ impl Route {
             Route::ComponentBlockDemo { .. } => None,
             Route::LegacyComponentBlockDemo { .. } => None,
             Route::EmailClientDashboard { .. } => None,
+            Route::OverlayNesting { .. } => None,
         }
     }
 
@@ -225,6 +241,7 @@ impl Route {
             Route::ComponentBlockDemo { dark_mode, .. } => *dark_mode,
             Route::LegacyComponentBlockDemo { dark_mode, .. } => *dark_mode,
             Route::EmailClientDashboard { dark_mode, .. } => *dark_mode,
+            Route::OverlayNesting { .. } => None,
         }
     }
 
@@ -1315,6 +1332,13 @@ fn BlockComponentDemoHighlight(
                 }
             }
         }
+    }
+}
+
+#[component]
+fn OverlayNesting() -> Element {
+    rsx! {
+        overlay_nesting::OverlayNestingDemo {}
     }
 }
 
