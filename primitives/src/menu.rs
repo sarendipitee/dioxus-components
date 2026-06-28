@@ -270,11 +270,17 @@ fn MenuContentPortaled(props: MenuContentPortaledProps) -> Element {
         reg.set_closing(!open());
     });
 
+    // Subscribe to `open` HERE, in the non-portaled (Root-descendant) scope, and
+    // forward the snapshot into the portaled body as a plain bool so the body
+    // never reads the Root-owned `open` Memo across the portal boundary.
+    let is_open = open();
+
     rsx! {
         PortalIn { portal,
             MenuContentRendered {
                 ctx,
                 reg,
+                is_open,
                 id,
                 role: props.role,
                 attributes: props.attributes.clone(),
@@ -289,6 +295,9 @@ fn MenuContentPortaled(props: MenuContentPortaledProps) -> Element {
 struct MenuContentRenderedProps {
     ctx: MenuContext,
     reg: OverlayRegistration,
+    /// Open snapshot threaded from the non-portaled parent — see the matching
+    /// note on `DialogPortalBodyProps::is_open`.
+    is_open: bool,
     id: Memo<String>,
     role: &'static str,
     attributes: Vec<Attribute>,
@@ -304,6 +313,7 @@ fn MenuContentRendered(props: MenuContentRenderedProps) -> Element {
     let mut ctx = props.ctx;
     let reg = props.reg;
     let id = props.id;
+    let is_open = props.is_open;
 
     // Re-provide a clone of the menu ctx INSIDE the portal (the load-bearing rule).
     use_context_provider(|| ctx);
@@ -332,7 +342,7 @@ fn MenuContentRendered(props: MenuContentRenderedProps) -> Element {
             role: props.role,
             aria_orientation: "vertical",
             aria_labelledby: labelledby,
-            "data-state": if (ctx.open)() { "open" } else { "closed" },
+            "data-state": if is_open { "open" } else { "closed" },
             onkeydown: move |event: Event<KeyboardData>| {
                 match event.key() {
                     Key::Escape => {
@@ -1002,9 +1012,20 @@ pub fn MenuSubContent(props: MenuSubContentProps) -> Element {
             // wait survives this component's own unmount; the panel id is
             // snapshotted so the task never reads a freed signal.
             let close_parent_all = sub_ctx.close_parent_all;
+            // Liveness probe owned by the SAME scope as `close_parent_all` (both
+            // created in `MenuSub`): `open` is the submenu's `Memo`. If the whole
+            // overlay subtree tears down first (e.g. the enclosing Dialog closes)
+            // the `MenuSub` scope is dropped before this deferred action fires,
+            // freeing `close_parent_all`'s backing store. `Callback::call` has no
+            // dropped-tolerant path — it panics on freed storage, aborting the
+            // wasm runtime. Probing the co-owned `Memo` detects that teardown; the
+            // parent is already closing, so there is nothing left to do.
+            let alive = sub_ctx.open;
             let panel_id = id.peek().clone();
             crate::defer_close_after_removed(panel_id, move || {
-                close_parent_all.call(());
+                if alive.try_peek().is_ok() {
+                    close_parent_all.call(());
+                }
             });
         }
     });
