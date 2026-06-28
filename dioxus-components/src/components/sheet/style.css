@@ -12,7 +12,9 @@
   color: var(--overlay-fg);
   box-shadow: 0 2px 10px rgb(0 0 0 / 18%);
   gap: calc(var(--space) * 4);
+  opacity: 1;
   padding: calc(var(--space) * 8) calc(var(--space) * 6) calc(var(--space) * 6);
+  transition: opacity 200ms ease-out, transform 200ms ease-out;
   will-change: transform;
 }
 
@@ -90,44 +92,42 @@
   animation: dx-slide-out-bottom 150ms ease-in forwards;
 }
 
-/* Edge-docked push-aside: when a layer is stacked above this sheet
-   (`data-overlay-depth >= 1`) the covered sheet slides partly off-screen toward
-   its own dock edge and scales down a touch, so a Sheet-on-Sheet reads as a
-   stack and a Dialog-on-Sheet recedes the sheet beneath. Driven by the manager's
-   `data-overlay-depth` (closing entries are excluded from depth math, so an
-   exiting layer does not push the sheet beneath it). Transform/opacity only.
-   Dedicated `forwards` animations so the fill wins over the slide-in resting
-   transform. */
+/* Edge-docked push-aside: when one or more layers are stacked above this sheet
+   the covered sheet slides progressively toward its own dock edge and scales
+   down, so nested sheets read as a physical stack. Each depth level compounds:
+   depth=1 pushes 8%, depth=2 pushes 16%, etc. `--overlay-depth` is the integer
+   set inline by the dialog primitive from the manager's `depth_above()`. Driven
+   by `data-overlay-depth != 0` guard so the topmost sheet is unaffected.
+
+   Keep as normal (non-animation) properties so closing a nested layer snaps the
+   push-aside away without overriding the slide-in animation-name. Transition on
+   `.dx_sheet` handles the smooth re-stack when an upper layer closes. */
 .dx_sheet[data-state="open"][data-side="right"]:not([data-overlay-depth="0"]) {
-  animation: dx-sheet-push-right 200ms ease-out forwards;
+  opacity: calc(1 - var(--overlay-depth, 1) * 0.15);
+  transform:
+    translateX(calc(var(--overlay-depth, 1) * 8%))
+    scale(calc(1 - var(--overlay-depth, 1) * 0.04));
 }
 
 .dx_sheet[data-state="open"][data-side="left"]:not([data-overlay-depth="0"]) {
-  animation: dx-sheet-push-left 200ms ease-out forwards;
+  opacity: calc(1 - var(--overlay-depth, 1) * 0.15);
+  transform:
+    translateX(calc(var(--overlay-depth, 1) * -8%))
+    scale(calc(1 - var(--overlay-depth, 1) * 0.04));
 }
 
 .dx_sheet[data-state="open"][data-side="top"]:not([data-overlay-depth="0"]) {
-  animation: dx-sheet-push-top 200ms ease-out forwards;
+  opacity: calc(1 - var(--overlay-depth, 1) * 0.15);
+  transform:
+    translateY(calc(var(--overlay-depth, 1) * -8%))
+    scale(calc(1 - var(--overlay-depth, 1) * 0.04));
 }
 
 .dx_sheet[data-state="open"][data-side="bottom"]:not([data-overlay-depth="0"]) {
-  animation: dx-sheet-push-bottom 200ms ease-out forwards;
-}
-
-@keyframes dx-sheet-push-right {
-  to { transform: translateX(12%) scale(0.96); opacity: 0.6; }
-}
-
-@keyframes dx-sheet-push-left {
-  to { transform: translateX(-12%) scale(0.96); opacity: 0.6; }
-}
-
-@keyframes dx-sheet-push-top {
-  to { transform: translateY(-12%) scale(0.96); opacity: 0.6; }
-}
-
-@keyframes dx-sheet-push-bottom {
-  to { transform: translateY(12%) scale(0.96); opacity: 0.6; }
+  opacity: calc(1 - var(--overlay-depth, 1) * 0.15);
+  transform:
+    translateY(calc(var(--overlay-depth, 1) * 8%))
+    scale(calc(1 - var(--overlay-depth, 1) * 0.04));
 }
 
 @media (prefers-reduced-motion: reduce) {

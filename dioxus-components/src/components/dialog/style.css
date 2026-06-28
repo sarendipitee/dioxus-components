@@ -67,13 +67,15 @@
   box-shadow: 0 2px 10px rgb(0 0 0 / 18%);
   color: var(--overlay-fg);
   gap: calc(var(--space) * 4);
+  opacity: 1;
   text-align: center;
   transform: translate(-50%, -50%);
+  transition: opacity 222ms var(--timing-function), transform 222ms var(--timing-function);
   will-change: opacity, transform;
 }
 
 .dx_dialog[data-state="open"] {
-  animation: dx-dialog-animate-in 333ms forwards;
+  animation: dx-dialog-animate-in 333ms;
   animation-timing-function: var(--timing-function);
 }
 
@@ -116,28 +118,17 @@
    slight upward translate) so the topmost layer reads as in front, iOS-style.
    Driven entirely by the manager's `data-overlay-depth` (exit-phase entries are
    excluded from the depth math, so a closing dialog does not push siblings).
-   Transform/opacity only (GPU-friendly). A dedicated animation is used so its
-   `forwards` fill wins over the open-state animation's resting transform. */
+   Transform/opacity only (GPU-friendly). Keep push-aside as normal properties,
+   not animations: depth changes must not swap `animation-name` back to the
+   entry animation when a nested dialog closes. */
 .dx_dialog[data-state="open"][data-overlay-depth="1"] {
-  animation: dx-dialog-push-1 222ms var(--timing-function) forwards;
+  opacity: 0.6;
+  transform: translate(-50%, -58%) scale(0.93);
 }
 
 .dx_dialog[data-state="open"]:not([data-overlay-depth="0"]):not([data-overlay-depth="1"]) {
-  animation: dx-dialog-push-2 222ms var(--timing-function) forwards;
-}
-
-@keyframes dx-dialog-push-1 {
-  to {
-    opacity: 0.6;
-    transform: translate(-50%, -58%) scale(0.93);
-  }
-}
-
-@keyframes dx-dialog-push-2 {
-  to {
-    opacity: 0.4;
-    transform: translate(-50%, -62%) scale(0.88);
-  }
+  opacity: 0.4;
+  transform: translate(-50%, -62%) scale(0.88);
 }
 
 @media (prefers-reduced-motion: reduce) {

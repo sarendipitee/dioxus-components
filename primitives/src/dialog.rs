@@ -503,7 +503,7 @@ fn DialogPortalBody(props: DialogPortalBodyProps) -> Element {
                 aria_labelledby: ctx.dialog_labelledby,
                 aria_describedby: ctx.dialog_describedby,
                 tabindex: "-1",
-                style: reg.z().map(|z| format!("--overlay-z: {z};")),
+                style: reg.z().map(|z| format!("--overlay-z: {z}; --overlay-depth: {depth};")),
                 "data-state": if open() { "open" } else { "closed" },
                 "data-overlay-depth": "{depth}",
                 "data-overlay-stack-size": "{stack_size}",
