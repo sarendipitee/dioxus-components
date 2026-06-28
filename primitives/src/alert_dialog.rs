@@ -189,3 +189,56 @@ pub fn AlertDialogCancel(props: AlertDialogCancelProps) -> Element {
         }
     }
 }
+
+#[cfg(test)]
+mod tests {
+    //! Proves AlertDialog inherits Dialog's portal + §4.2 re-provide path:
+    //! `AlertDialogAction`/`AlertDialogCancel` (which `use_context::<DialogCtx>()`)
+    //! resolve their context inside the portal. Renders an open alert dialog and
+    //! asserts the in-portal, context-dependent buttons render without panic.
+    use super::*;
+    use crate::overlay::OverlayProvider;
+    use dioxus::prelude::*;
+
+    #[component]
+    fn OpenAlertApp() -> Element {
+        rsx! {
+            OverlayProvider {
+                AlertDialogRoot {
+                    open: Some(true),
+                    AlertDialogContent {
+                        AlertDialogActions {
+                            AlertDialogCancel { "cancel-marker" }
+                            AlertDialogAction { "action-marker" }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    #[test]
+    fn open_alert_dialog_resolves_dialog_ctx_inside_portal() {
+        let mut dom = VirtualDom::new(OpenAlertApp);
+        dom.rebuild_in_place();
+        // `use_animated_open` defers the portaled mount to a later flush.
+        for _ in 0..8 {
+            let _ = dom.render_immediate_to_vec();
+        }
+        let html = dioxus_ssr::render(&dom);
+
+        assert!(
+            html.contains("cancel-marker"),
+            "AlertDialogCancel did not resolve DialogCtx through the portal: {html}"
+        );
+        assert!(
+            html.contains("action-marker"),
+            "AlertDialogAction did not resolve DialogCtx through the portal: {html}"
+        );
+        // role="alertdialog" carried through to the portaled content.
+        assert!(
+            html.contains(r#"role="alertdialog""#),
+            "alertdialog role missing on portaled content: {html}"
+        );
+    }
+}

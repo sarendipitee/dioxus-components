@@ -887,8 +887,7 @@ body {
   gap: 0.75rem;
 }
 
-.dx-theme-page-note,
-.dx-theme-studio-summary {
+.dx-theme-page-note {
   margin: 0;
   color: var(--fg-muted);
   line-height: 1.6;
@@ -902,69 +901,90 @@ body {
   box-shadow: 0 18px 40px -24px rgb(0 0 0 / 45%);
 }
 
-.dx-theme-studio-panel {
-  position: fixed;
-  z-index: 45;
-  top: 5rem;
-  right: 1rem;
-  bottom: 1rem;
-  overflow: auto;
-  width: min(40rem, calc(100vw - 2rem));
-  box-sizing: border-box;
-  padding: 1rem;
-  border: 1px solid var(--overlay-border);
-  border-radius: var(--radius-surface);
-  background: var(--overlay);
-  box-shadow: 0 30px 80px -40px rgb(0 0 0 / 55%);
-  color: var(--overlay-fg);
+/* Theme studio sheet: widen the default sheet and let the body own the scroll.
+   The selector matches the component's own `.dx_sheet[data-side="right"]`
+   specificity so the width override actually wins. */
+.dx-theme-studio-sheet {
+  padding: 1.25rem 0 0;
+  gap: 0.5rem;
 }
 
-.dx-theme-studio-content,
-.dx-theme-studio-heading,
-.dx-theme-section-list,
-.dx-theme-section-card,
-.dx-theme-token-list,
-.dx-theme-token-field,
-.dx-theme-token-controls,
-.dx-theme-token-picker-group {
-  display: grid;
+.dx_sheet.dx-theme-studio-sheet[data-side="right"] {
+  width: 46rem;
+  max-width: 46rem;
 }
 
-.dx-theme-studio-content {
-  gap: 1rem;
+.dx-theme-studio-sheet .dx_dialog_header {
+  padding-inline: 1.25rem;
 }
 
-.dx-theme-studio-header,
-.dx-theme-token-header,
-.dx-theme-token-picker-row {
+/* Non-modal: no backdrop. Keep the live page visible and scrollable behind the
+   sheet. `animation: none` is required because the dialog's open animation fills
+   `backdrop-filter`, which would otherwise re-apply the blur. */
+[data-slot="sheet-root"]:has(.dx-theme-studio-sheet) .dx_dialog_backdrop {
+  background: transparent;
+  backdrop-filter: none;
+  animation: none;
+  pointer-events: none;
+}
+
+.dx-theme-studio-body {
+  flex: 1;
+  min-height: 0;
+  overflow-x: hidden;
+  overflow-y: auto;
+}
+
+/* Pinned controls: actions, search, and tab switcher. */
+.dx-theme-studio-topbar {
+  position: sticky;
+  z-index: 3;
+  top: 0;
   display: flex;
-}
-
-.dx-theme-studio-header {
-  align-items: flex-start;
-  justify-content: space-between;
+  flex-direction: column;
   gap: 0.75rem;
+  padding: 0.75rem 1.25rem;
+  border-bottom: 1px solid var(--overlay-border);
+  background: var(--overlay);
 }
 
-.dx-theme-studio-heading {
-  gap: 0.35rem;
+.dx-theme-studio-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
 }
 
-.dx-theme-studio-title,
-.dx-theme-section-title {
-  margin: 0;
-}
-
-.dx-theme-studio-title {
-  font-size: 1.05rem;
+.dx-theme-studio-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.1rem 0.55rem;
+  border-radius: 999px;
+  background: var(--accent-subtle);
+  color: var(--accent-subtle-fg);
+  font-size: 0.75rem;
+  font-weight: 600;
 }
 
 .dx-theme-section-list {
-  gap: 1.25rem;
+  display: grid;
+  gap: 1rem;
+  padding: 1rem 1.25rem 1.5rem;
+}
+
+.dx-theme-css-panel {
+  padding: 1rem 1.25rem 1.5rem;
+}
+
+.dx-theme-empty {
+  margin: 0;
+  padding: 1.5rem 0.5rem;
+  color: var(--fg-muted);
+  text-align: center;
 }
 
 .dx-theme-css-output {
-  min-height: 30rem;
+  min-height: 28rem;
   font-family: "Geist Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
   font-size: 0.84rem;
   line-height: 1.6;
@@ -972,31 +992,109 @@ body {
 }
 
 .dx-theme-section-card {
-  padding: 1rem;
+  display: grid;
   gap: 0.85rem;
+  padding: 0.85rem 1rem 1rem;
+  border: 1px solid var(--surface-border);
+  border-radius: var(--radius-surface);
+  background: var(--surface);
+}
+
+.dx-theme-section-header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
 }
 
 .dx-theme-section-title {
-  font-size: 0.95rem;
+  margin: 0;
+  color: var(--fg-muted);
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.dx-theme-section-count {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 1.3rem;
+  height: 1.3rem;
+  padding: 0 0.35rem;
+  border-radius: 999px;
+  background: var(--surface-muted);
+  color: var(--fg-muted);
+  font-size: 0.7rem;
+  font-weight: 600;
 }
 
 .dx-theme-token-list {
-  gap: 0.9rem;
+  display: grid;
+  gap: 0.85rem;
 }
 
 .dx-theme-token-field {
-  gap: 0.55rem;
+  display: grid;
+  gap: 0.4rem;
 }
 
 .dx-theme-token-header {
-  align-items: baseline;
+  display: flex;
+  align-items: center;
   justify-content: space-between;
   gap: 0.75rem;
 }
 
+.dx-theme-token-name-cell {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: 0.35rem;
+}
+
 .dx-theme-token-name {
-  flex: 0 0 33%;
-  font-weight: 600;
+  text-overflow: ellipsis;
+  font-family: Geist Mono, ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: .875rem;
+  overflow: hidden;
+  margin-top: 1.5rem;
+  text-align: right;
+  width: 100%;
+  display: table;
+  padding-right: 1rem;
+}
+
+.dx-theme-token-dot {
+  flex: none;
+  width: 0.45rem;
+  height: 0.45rem;
+  border-radius: 50%;
+  background: var(--accent);
+  display: block;
+  position: absolute;
+}
+
+.dx-theme-token-revert {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  width: 1.4rem;
+  height: 1.4rem;
+  padding: 0;
+  border: none;
+  border-radius: var(--radius-control);
+  background: transparent;
+  color: var(--fg-muted);
+  line-height: 1;
+  cursor: pointer;
+  transform: rotate(-90deg);
+}
+
+.dx-theme-token-revert:hover {
+  background: var(--surface-hover);
+  color: var(--fg);
 }
 
 .dx-theme-token-meta {
@@ -1004,60 +1102,44 @@ body {
   font-size: 0.82rem;
 }
 
-.dx-theme-token-controls {
-  gap: 0.75rem;
-}
-
 .dx-theme-token-controls-dual {
-  display: flex;
-  flex-wrap: nowrap;
-  align-items: center;
-  gap: 0.75rem;
+  display: grid;
+  grid-template-columns: minmax(6rem, 0.9fr) minmax(0, 1fr) minmax(0, 1fr);
+  align-items: end;
+  gap: 0.6rem;
 }
 
-.dx-theme-token-name-dual {
-  flex: 1 1 12rem;
+.dx-theme-token-controls-dual .dx-theme-token-name-cell {
+  align-self: center;
 }
 
 .dx-theme-token-branch {
-  display: flex;
+  display: block;
   min-width: 0;
-  align-items: center;
-  gap: 0.5rem;
 }
 
-.dx-theme-token-picker-group {
-  gap: 0.5rem;
-}
-
-.dx-theme-token-picker-row {
-  align-items: center;
-  gap: 0.5rem;
-}
-
-.dx-theme-token-swatch {
-  width: 1rem;
-  height: 1rem;
-  color: var(--surface-border);
-}
-
-.dx-theme-token-swatch circle {
-  stroke: currentcolor;
-  stroke-width: 1;
+/* Tighten the repeated Light/Dark field labels into quiet column markers. */
+.dx-theme-token-branch [data-slot="input-label"] {
+  margin-bottom: 0.15rem;
+  color: var(--fg-muted);
+  font-size: 0.7rem;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
 }
 
 @media (width <= 720px) {
-  .dx-theme-studio-panel {
-    top: 4.5rem;
-    right: 0.5rem;
-    bottom: 0.5rem;
-    width: calc(100vw - 1rem);
+  .dx_sheet.dx-theme-studio-sheet[data-side="right"] {
+    width: 100vw;
+    max-width: 100vw;
   }
 
-  .dx-theme-studio-header,
-  .dx-theme-token-header {
-    flex-direction: column;
-    align-items: flex-start;
+  .dx-theme-token-controls-dual {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .dx-theme-token-controls-dual .dx-theme-token-name-cell {
+    grid-column: 1 / -1;
   }
 }
 

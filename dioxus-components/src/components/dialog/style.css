@@ -1,9 +1,11 @@
-/* Dialog Backdrop */
+/* Dialog Backdrop. z-index comes from the overlay manager via `--overlay-z`
+   (assigned by open order) so nested dialogs layer correctly with no hardcoded
+   value. */
 .dx_dialog_backdrop {
   will-change: opacity, backdrop-filter;
   background: rgba(0, 0, 0, .3);
   position: fixed;
-  z-index: 110;
+  z-index: var(--overlay-z);
   inset: 0;
   backdrop-filter: blur(0px);
   transition: opacity, backdrop-filter;
@@ -47,7 +49,9 @@
 
 .dx_dialog {
   position: fixed;
-  z-index: 111;
+  /* One above this entry's backdrop (`--overlay-z`); the manager spaces entries
+     by `--z-overlay-step` so +1 never collides with the next entry's band. */
+  z-index: calc(var(--overlay-z) + 1);
   top: 50%;
   left: 50%;
   display: flex;
@@ -107,10 +111,54 @@
 }
 
 
+/* Push-aside: when one or more modal layers are stacked above this dialog
+   (`data-overlay-depth >= 1`), push the covered dialog back (scale down +
+   slight upward translate) so the topmost layer reads as in front, iOS-style.
+   Driven entirely by the manager's `data-overlay-depth` (exit-phase entries are
+   excluded from the depth math, so a closing dialog does not push siblings).
+   Transform/opacity only (GPU-friendly). A dedicated animation is used so its
+   `forwards` fill wins over the open-state animation's resting transform. */
+.dx_dialog[data-state="open"][data-overlay-depth="1"] {
+  animation: dx-dialog-push-1 222ms var(--timing-function) forwards;
+}
+
+.dx_dialog[data-state="open"]:not([data-overlay-depth="0"]):not([data-overlay-depth="1"]) {
+  animation: dx-dialog-push-2 222ms var(--timing-function) forwards;
+}
+
+@keyframes dx-dialog-push-1 {
+  to {
+    opacity: 0.6;
+    transform: translate(-50%, -58%) scale(0.93);
+  }
+}
+
+@keyframes dx-dialog-push-2 {
+  to {
+    opacity: 0.4;
+    transform: translate(-50%, -62%) scale(0.88);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .dx_dialog[data-state="open"][data-overlay-depth="1"],
+  .dx_dialog[data-state="open"]:not([data-overlay-depth="0"]):not([data-overlay-depth="1"]) {
+    animation: none;
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+  }
+}
+
 .dx_dialog_header {
   display: flex;
   flex-direction: column;
   gap: calc(var(--space) * 1.5);
+}
+
+.dx_dialog_header h2 {
+	/* Any browser-default margin on the h2 title will likely double up 
+	 * with padding and look out of place */
+	margin-block: 0
 }
 
 .dx_dialog_body {

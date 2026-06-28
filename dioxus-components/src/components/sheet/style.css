@@ -1,6 +1,9 @@
 .dx_sheet {
   position: fixed;
-  z-index: 111;
+  /* z-index from the overlay manager (assigned by open order). +1 lifts the
+     sheet above its own backdrop; the manager spaces entries by
+     `--z-overlay-step` so this never collides with the next entry's band. */
+  z-index: calc(var(--overlay-z) + 1);
   display: flex;
   box-sizing: border-box;
   flex-direction: column;
@@ -51,36 +54,91 @@
   transform: translateY(100%);
 }
 
-[data-slot="sheet-root"][data-state="open"] .dx_sheet[data-side="right"] {
+/* The sheet content is now portaled to the overlay outlet, so the
+   `[data-slot="sheet-root"]` element (which stays in the main tree) is no longer
+   an ancestor of `.dx_sheet`. Key the open/close animations off the `data-state`
+   the manager writes directly on the content element instead. */
+.dx_sheet[data-state="open"][data-side="right"] {
   animation: dx-slide-in-right 200ms ease-out forwards;
 }
 
-[data-slot="sheet-root"][data-state="open"] .dx_sheet[data-side="left"] {
+.dx_sheet[data-state="open"][data-side="left"] {
   animation: dx-slide-in-left 200ms ease-out forwards;
 }
 
-[data-slot="sheet-root"][data-state="open"] .dx_sheet[data-side="top"] {
+.dx_sheet[data-state="open"][data-side="top"] {
   animation: dx-slide-in-top 200ms ease-out forwards;
 }
 
-[data-slot="sheet-root"][data-state="open"] .dx_sheet[data-side="bottom"] {
+.dx_sheet[data-state="open"][data-side="bottom"] {
   animation: dx-slide-in-bottom 200ms ease-out forwards;
 }
 
-[data-slot="sheet-root"][data-state="closed"] .dx_sheet[data-side="right"] {
+.dx_sheet[data-state="closed"][data-side="right"] {
   animation: dx-slide-out-right 150ms ease-in forwards;
 }
 
-[data-slot="sheet-root"][data-state="closed"] .dx_sheet[data-side="left"] {
+.dx_sheet[data-state="closed"][data-side="left"] {
   animation: dx-slide-out-left 150ms ease-in forwards;
 }
 
-[data-slot="sheet-root"][data-state="closed"] .dx_sheet[data-side="top"] {
+.dx_sheet[data-state="closed"][data-side="top"] {
   animation: dx-slide-out-top 150ms ease-in forwards;
 }
 
-[data-slot="sheet-root"][data-state="closed"] .dx_sheet[data-side="bottom"] {
+.dx_sheet[data-state="closed"][data-side="bottom"] {
   animation: dx-slide-out-bottom 150ms ease-in forwards;
+}
+
+/* Edge-docked push-aside: when a layer is stacked above this sheet
+   (`data-overlay-depth >= 1`) the covered sheet slides partly off-screen toward
+   its own dock edge and scales down a touch, so a Sheet-on-Sheet reads as a
+   stack and a Dialog-on-Sheet recedes the sheet beneath. Driven by the manager's
+   `data-overlay-depth` (closing entries are excluded from depth math, so an
+   exiting layer does not push the sheet beneath it). Transform/opacity only.
+   Dedicated `forwards` animations so the fill wins over the slide-in resting
+   transform. */
+.dx_sheet[data-state="open"][data-side="right"]:not([data-overlay-depth="0"]) {
+  animation: dx-sheet-push-right 200ms ease-out forwards;
+}
+
+.dx_sheet[data-state="open"][data-side="left"]:not([data-overlay-depth="0"]) {
+  animation: dx-sheet-push-left 200ms ease-out forwards;
+}
+
+.dx_sheet[data-state="open"][data-side="top"]:not([data-overlay-depth="0"]) {
+  animation: dx-sheet-push-top 200ms ease-out forwards;
+}
+
+.dx_sheet[data-state="open"][data-side="bottom"]:not([data-overlay-depth="0"]) {
+  animation: dx-sheet-push-bottom 200ms ease-out forwards;
+}
+
+@keyframes dx-sheet-push-right {
+  to { transform: translateX(12%) scale(0.96); opacity: 0.6; }
+}
+
+@keyframes dx-sheet-push-left {
+  to { transform: translateX(-12%) scale(0.96); opacity: 0.6; }
+}
+
+@keyframes dx-sheet-push-top {
+  to { transform: translateY(-12%) scale(0.96); opacity: 0.6; }
+}
+
+@keyframes dx-sheet-push-bottom {
+  to { transform: translateY(12%) scale(0.96); opacity: 0.6; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .dx_sheet[data-state="open"][data-side="right"]:not([data-overlay-depth="0"]),
+  .dx_sheet[data-state="open"][data-side="left"]:not([data-overlay-depth="0"]),
+  .dx_sheet[data-state="open"][data-side="top"]:not([data-overlay-depth="0"]),
+  .dx_sheet[data-state="open"][data-side="bottom"]:not([data-overlay-depth="0"]) {
+    animation: none;
+    transform: translate(0, 0) scale(1);
+    opacity: 1;
+  }
 }
 
 @keyframes dx-slide-in-right {

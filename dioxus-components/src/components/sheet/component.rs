@@ -3,6 +3,7 @@ use crate::components::dialog::DialogStyles;
 use dioxus::prelude::*;
 use dioxus_icons::lucide::X;
 use dioxus_primitives::dialog;
+use dioxus_primitives::overlay::OverlayKind;
 use dioxus_primitives::{dioxus_attributes::attributes, merge_attributes, TextOrElement};
 
 #[component_styles("./style.css")]
@@ -124,6 +125,7 @@ pub fn Sheet(props: SheetProps) -> Element {
                 close_on_backdrop_click: props.close_on_backdrop_click,
                 close_on_escape: props.close_on_escape,
                 backdrop_class: DialogStyles::dx_dialog_backdrop,
+                overlay_kind: OverlayKind::Sheet,
                 attributes: content_attributes,
 
                 if props.with_close_button {

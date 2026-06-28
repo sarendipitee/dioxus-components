@@ -2,6 +2,7 @@ use crate::components::{
     button::{Button, ButtonSize, ButtonVariant},
     color_input::ColorInput,
     input::TextInput,
+    sheet::{Sheet, SheetSide},
     slider::Slider,
     tabs::{TabContent, TabList, TabTrigger, Tabs, TabsVariant},
     textarea::{Textarea, TextareaVariant},
@@ -417,6 +418,18 @@ fn token_display_value(token: &ThemeToken, is_dark: bool) -> String {
     }
 }
 
+fn default_token_by_name(name: &str) -> Option<&'static ThemeToken> {
+    default_theme_tokens().iter().find(|token| token.name == name)
+}
+
+/// Returns whether a token's current value differs from the shipped default after normalization.
+fn token_is_modified(token: &ThemeToken) -> bool {
+    match default_token_by_name(&token.name) {
+        Some(default) => normalize_theme_token(default) != normalize_theme_token(token),
+        None => true,
+    }
+}
+
 /// Provides preview-wide structured theme editor state and applies overrides at the document root.
 #[component]
 pub(crate) fn ThemeCustomizerProvider(children: Element) -> Element {
@@ -545,6 +558,15 @@ fn ThemeStudio() -> Element {
     let css_output = build_theme_css(&tokens);
     let copy_css = css_output.clone();
 
+    let mut query = use_signal(String::new);
+    let needle = query().trim().to_ascii_lowercase();
+
+    let modified_count = tokens.iter().filter(|token| token_is_modified(token)).count();
+    let has_matches = needle.is_empty()
+        || tokens
+            .iter()
+            .any(|token| token.name.to_ascii_lowercase().contains(&needle));
+
     rsx! {
       Button {
         size: ButtonSize::Lg,
@@ -557,63 +579,81 @@ fn ThemeStudio() -> Element {
         }
       }
 
-      if (ctx.open)() {
-        aside {
-          aria_label: "Theme studio",
-          class: "dx-theme-studio-panel",
-          div { class: "dx-theme-studio-content",
-            div { class: "dx-theme-studio-header",
-              div { class: "dx-theme-studio-heading",
-                h2 { class: "dx-theme-studio-title", "Theme studio" }
-                p { class: "dx-theme-studio-summary",
-                  "Color pickers and sliders are used where the token type supports them. Derived expressions stay editable as text."
+      Sheet {
+        open: (ctx.open)(),
+        on_open_change: move |value: bool| ctx.open.set(value),
+        is_modal: false,
+        close_on_backdrop_click: false,
+        side: SheetSide::Right,
+        title: "Theme studio",
+        description: "Edit every token with pickers, sliders, and text. Light and dark stay paired.",
+        class: "dx-theme-studio-sheet",
+
+        div { class: "dx-theme-studio-body",
+          Tabs {
+            default_value: "tokens",
+            variant: TabsVariant::Ghost,
+            width: "100%",
+
+            div { class: "dx-theme-studio-topbar",
+              div { class: "dx-theme-studio-toolbar",
+                Button {
+                  variant: ButtonVariant::Outline,
+                  size: ButtonSize::Sm,
+                  disabled: modified_count == 0,
+                  onclick: move |_| ctx.tokens.set(default_theme_tokens().to_vec()),
+                  "Reset all"
+                }
+                Button {
+                  variant: ButtonVariant::Secondary,
+                  size: ButtonSize::Sm,
+                  onclick: move |_| {
+                      let eval = document::eval(
+                          "let value = await dioxus.recv(); navigator.clipboard.writeText(value);",
+                      );
+                      let _ = eval.send(copy_css.clone());
+                  },
+                  "Copy CSS"
+                }
+                if modified_count > 0 {
+                  span { class: "dx-theme-studio-badge",
+                    "{modified_count} changed"
+                  }
                 }
               }
-              Button {
-                variant: ButtonVariant::Ghost,
-                size: ButtonSize::Sm,
-                onclick: move |_| ctx.open.set(false),
-                "Close"
-              }
-            }
 
-            div { class: "dx-theme-studio-toolbar",
-              Button {
-                variant: ButtonVariant::Outline,
-                onclick: move |_| ctx.tokens.set(default_theme_tokens().to_vec()),
-                "Reset theme"
+              TextInput {
+                size: InputSize::Sm,
+                value: "{query}",
+                placeholder: "Search tokens…",
+                aria_label: "Search tokens",
+                oninput: move |event: FormEvent| query.set(event.value()),
               }
-              Button {
-                variant: ButtonVariant::Secondary,
-                onclick: move |_| {
-                    let eval = document::eval(
-                        "let value = await dioxus.recv(); navigator.clipboard.writeText(value);",
-                    );
-                    let _ = eval.send(copy_css.clone());
-                },
-                "Copy CSS"
-              }
-            }
 
-            Tabs {
-              default_value: "tokens",
-              variant: TabsVariant::Ghost,
-              width: "100%",
               TabList { aria_label: "Theme studio panels",
                 TabTrigger { value: "tokens", index: 0usize, "Tokens" }
                 TabTrigger { value: "css", index: 1usize, "CSS" }
               }
-              TabContent { value: "tokens", index: 0usize,
-                div { class: "dx-theme-section-list",
-                  for section in THEME_SECTIONS {
-                    ThemeSection {
-                      section,
-                      tokens: tokens.clone(),
-                    }
+            }
+
+            TabContent { value: "tokens", index: 0usize,
+              div { class: "dx-theme-section-list",
+                for section in THEME_SECTIONS {
+                  ThemeSection {
+                    section,
+                    tokens: tokens.clone(),
+                    query: needle.clone(),
+                  }
+                }
+                if !has_matches {
+                  p { class: "dx-theme-empty",
+                    "No tokens match “{query}”."
                   }
                 }
               }
-              TabContent { value: "css", index: 1usize,
+            }
+            TabContent { value: "css", index: 1usize,
+              div { class: "dx-theme-css-panel",
                 Textarea {
                   variant: TextareaVariant::Default,
                   value: css_output,
@@ -629,17 +669,53 @@ fn ThemeStudio() -> Element {
 }
 
 #[component]
-fn ThemeSection(section: &'static str, tokens: Vec<ThemeToken>) -> Element {
+fn RevertButton(index: usize, name: String, tokens_signal: Signal<Vec<ThemeToken>>) -> Element {
+    rsx! {
+      button {
+        r#type: "button",
+        class: "dx-theme-token-revert",
+        title: "Revert to default",
+        aria_label: "Revert --{name} to default value",
+        onclick: move |_| {
+            let mut signal = tokens_signal;
+            if let Some(default) = default_token_by_name(&name) {
+                update_token(&mut signal, index, default.mode.clone());
+            }
+        },
+        "↺"
+      }
+    }
+}
+
+#[component]
+fn ThemeSection(section: &'static str, tokens: Vec<ThemeToken>, query: String) -> Element {
     let ctx = use_theme_customizer();
+    let matches: Vec<(usize, ThemeToken)> = tokens
+        .iter()
+        .enumerate()
+        .filter(|(_, token)| {
+            token.section == section && token.name.to_ascii_lowercase().contains(&query)
+        })
+        .map(|(index, token)| (index, token.clone()))
+        .collect();
+
+    if matches.is_empty() {
+        return rsx! {};
+    }
+
+    let count = matches.len();
 
     rsx! {
       section { class: "dx-theme-section-card",
-        h3 { class: "dx-theme-section-title", "{section}" }
+        div { class: "dx-theme-section-header",
+          h3 { class: "dx-theme-section-title", "{section}" }
+          span { class: "dx-theme-section-count", "{count}" }
+        }
         div { class: "dx-theme-token-list",
-          for (index , token) in tokens.iter().enumerate().filter(|(_, token)| token.section == section) {
+          for (index , token) in matches {
             ThemeTokenField {
               index,
-              token: token.clone(),
+              token,
               tokens_signal: ctx.tokens,
             }
           }
@@ -655,6 +731,7 @@ fn ThemeTokenField(
     tokens_signal: Signal<Vec<ThemeToken>>,
 ) -> Element {
     let name = token.name.clone();
+    let modified = token_is_modified(&token);
     let current_light = token_display_value(&token, false);
     let current_dark = token_display_value(&token, true);
     let mut light_draft = use_signal(|| current_light.clone());
@@ -687,11 +764,20 @@ fn ThemeTokenField(
             rsx! {
               div { class: "dx-theme-token-field",
                 div { class: "dx-theme-token-controls-dual",
-                  span { class: "dx-theme-token-name", "--{name}" }
+                  div { class: "dx-theme-token-name-cell",
+                    span { class: "dx-theme-token-name",
+                      if modified {
+                        span { class: "dx-theme-token-dot", aria_hidden: "true" }
+                      }
+                      "--{name}"
+                    }
+                    if modified {
+                      RevertButton { index, name: name.clone(), tokens_signal }
+                    }
+                  }
                   div { class: "dx-theme-token-branch",
                     if light_is_picker {
                       ColorInput {
-                        size: InputSize::Sm,
                         label: rsx! { "Light" },
                         color: color_from_hex(&light)
                             .unwrap_or_else(|| Color::new(43, 127, 255).into_format::<f64>().into_color()),
@@ -749,7 +835,17 @@ fn ThemeTokenField(
                 rsx! {
                   div { class: "dx-theme-token-field",
                     div { class: "dx-theme-token-header",
-                      span { class: "dx-theme-token-name", "--{name}" }
+                      div { class: "dx-theme-token-name-cell",
+                        span { class: "dx-theme-token-name",
+                          if modified {
+                            span { class: "dx-theme-token-dot", aria_hidden: "true" }
+                          }
+                          "--{name}"
+                        }
+                        if modified {
+                          RevertButton { index, name: name.clone(), tokens_signal }
+                        }
+                      }
                       span { class: "dx-theme-token-meta", "{current:.2}{suffix}" }
                     }
                     Slider {
@@ -764,6 +860,7 @@ fn ThemeTokenField(
                       },
                     }
                     TextInput {
+                      aria_label: "--{name}",
                       value: "{light_draft}",
                       oninput: move |event: FormEvent| {
                           light_draft.set(event.value());
@@ -777,16 +874,31 @@ fn ThemeTokenField(
                 }
             } else {
                 rsx! {
-                  TextInput {
-                    label: rsx! { "--{name}" },
-                    value: "{light_draft}",
-                    oninput: move |event: FormEvent| {
-                        light_draft.set(event.value());
-                    },
-                    onchange: move |event: FormEvent| {
-                        let mut signal = tokens_signal;
-                        update_single_value(&mut signal, index, event.value());
-                    },
+                  div { class: "dx-theme-token-field",
+                    div { class: "dx-theme-token-header",
+                      div { class: "dx-theme-token-name-cell",
+                        span { class: "dx-theme-token-name",
+                          if modified {
+                            span { class: "dx-theme-token-dot", aria_hidden: "true" }
+                          }
+                          "--{name}"
+                        }
+                        if modified {
+                          RevertButton { index, name: name.clone(), tokens_signal }
+                        }
+                      }
+                    }
+                    TextInput {
+                      aria_label: "--{name}",
+                      value: "{light_draft}",
+                      oninput: move |event: FormEvent| {
+                          light_draft.set(event.value());
+                      },
+                      onchange: move |event: FormEvent| {
+                          let mut signal = tokens_signal;
+                          update_single_value(&mut signal, index, event.value());
+                      },
+                    }
                   }
                 }
             }
