@@ -758,6 +758,41 @@ fn Docs(dark_mode: Option<bool>) -> Element {
                     }
                 }
                 section { class: "dx-docs-section",
+                    h2 { "Set up the overlay manager" }
+                    p {
+                        "Every overlay component — Dialog, Sheet, AlertDialog, Popover, Tooltip, HoverCard, Menu, DropdownMenu, Menubar, ContextMenu, Select, and Combobox — renders its content through a single portal mounted at the root of your app. Wrap your app once in "
+                        code { "OverlayProvider" }
+                        ". Without it, those components register nothing to render and stay invisible."
+                    }
+                    p {
+                        "This escapes any ancestor that establishes a stacking context or containing block (a transformed page shell, a "
+                        code { "filter" }
+                        ", "
+                        code { "contain: paint" }
+                        ", etc.), so overlays are never clipped, mispositioned, or painted behind your layout. Open order also drives z-index automatically, so nested Dialogs, Sheets, and dropdowns layer correctly with no hardcoded values."
+                    }
+                    pre {
+                        code {
+                            r#"use dioxus::prelude::*;
+use dioxus_primitives::overlay::OverlayProvider;
+
+fn App() -> Element {{
+    rsx! {{
+        DioxusComponentsStyles {{}}
+        // Wrap once at the root. Every Dialog/Sheet/Popover/Select
+        // anywhere below here portals out to a single root outlet.
+        OverlayProvider {{
+            // ... rest of your app
+        }}
+    }}
+}}"#
+                        }
+                    }
+                    p { class: "dx-docs-muted",
+                        "OverlayProvider lives in the primitives library, so it is available whether you copy components with the CLI or depend on the crate. If you also use toasts, keep ToastProvider as well — it can sit inside OverlayProvider."
+                    }
+                }
+                section { class: "dx-docs-section",
                     h2 { "Add a component" }
                     p {
                         "Run the add command from your Dioxus app. Swap the final name for any component in the sidebar."
