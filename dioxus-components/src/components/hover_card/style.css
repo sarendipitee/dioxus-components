@@ -13,7 +13,8 @@
      coords AND a `data-floating="true"` marker on web. The legacy CSS gap now lives in
      the offset() middleware. On native the hook is inert (no marker, no coords) and the
      `:not([data-floating])` fallback rules below provide static placement. */
-  z-index: 1000;
+  /* z-index assigned by the overlay manager via `--overlay-z`, now portaled. */
+  z-index: var(--overlay-z);
   min-width: 200px;
   padding: 5px;
   animation: dx-hover-card-fade-in 0.1s ease-out;

@@ -6,13 +6,15 @@ use dioxus::document;
 use dioxus::prelude::*;
 use dioxus_attributes::attributes;
 
+use crate::overlay::{use_overlay_registration, OverlayKind, OverlayRegistration, RegisterArgs};
+use crate::portal::{use_portal, PortalIn};
 use crate::{
-    floating::{style_prop, use_position}, merge_attributes, use_animated_open, use_controlled,
-    use_global_escape_listener, use_id_or, use_outside_dismiss, use_unique_id, ContentAlign,
+    floating::{style_prop, use_position},
+    merge_attributes, use_animated_open, use_controlled, use_id_or, use_unique_id, ContentAlign,
     ContentSide, FOCUS_TRAP_JS,
 };
 
-#[derive(Clone, Copy)]
+#[derive(Clone, Copy, PartialEq)]
 struct PopoverCtx {
     #[allow(unused)]
     open: Memo<bool>,
@@ -257,7 +259,8 @@ pub fn PopoverContent(props: PopoverContentProps) -> Element {
     rsx! {
         document::Script { src: FOCUS_TRAP_JS, defer: true }
         if render() {
-            PopoverContentRendered {
+            PopoverPortaled {
+                ctx,
                 id,
                 side: props.side,
                 align: props.align,
@@ -268,27 +271,118 @@ pub fn PopoverContent(props: PopoverContentProps) -> Element {
     }
 }
 
-/// The rendered content of the popover. This is separated out so the global event listener
-/// is only added when the popover is actually rendered.
-#[component]
-pub fn PopoverContentRendered(
-    id: String,
+/// Props for [`PopoverPortaled`], the in-portal half of [`PopoverContent`].
+#[derive(Props, Clone, PartialEq)]
+struct PopoverPortaledProps {
+    ctx: PopoverCtx,
+    id: Memo<String>,
     side: ContentSide,
     align: ContentAlign,
     attributes: Vec<Attribute>,
     children: Element,
-) -> Element {
-    let ctx: PopoverCtx = use_context();
+}
+
+/// The portaled half of a popover: registers the overlay entry as
+/// [`OverlayKind::Floating`], renders the panel through the shared
+/// [`OverlayOutlet`], and re-provides [`PopoverCtx`] inside the portal so any
+/// in-panel consumers resolve their context up the *portaled* render chain
+/// (context does not inherit through the portal).
+///
+/// The Escape + outside-click dismissal that the popover used to own
+/// (`use_global_escape_listener` / `use_outside_dismiss`) is now handled by the
+/// manager's central dismiss stack. This entry registers its trigger id
+/// (`ctx.labelledby`, the trigger element's id) and content root id (the panel
+/// `id`) so the union "inside" predicate treats clicks on the portaled panel —
+/// which now lives in a different DOM subtree than the trigger — as inside.
+#[component]
+fn PopoverPortaled(props: PopoverPortaledProps) -> Element {
+    let ctx = props.ctx;
+    let set_open = ctx.set_open;
+    let open = ctx.open;
+    let id = props.id;
+    // The trigger element carries `id = ctx.labelledby` (see PopoverTrigger), so
+    // the union "inside" predicate can test the trigger subtree by that id.
+    let trigger_id = ctx.labelledby;
+
+    let portal = use_portal();
+
+    let on_dismiss = use_callback(move |_| {
+        set_open.call(false);
+    });
+
+    let reg: OverlayRegistration = use_overlay_registration(move || RegisterArgs {
+        kind: OverlayKind::Floating,
+        portal,
+        modal: false,
+        dismissable: true,
+        on_dismiss,
+        parent: None,
+        trigger_id: Some(trigger_id.peek().clone()),
+        content_root_id: Some(id.peek().clone()),
+    });
+
+    // Keep the manager's "inside" predicate pointed at the live trigger + content
+    // ids (the unique ids may resolve after first mount).
+    use_effect(move || {
+        reg.set_dom_ids(Some(trigger_id()), Some(id()));
+    });
+
+    // Exit-phase exclusion: mark `closing` while open == false but still
+    // rendering (animating out).
+    use_effect(move || {
+        reg.set_closing(!open());
+    });
+
+    // The body is a CHILD of `PortalIn` so the re-provide lands on the *portaled*
+    // render chain — the only place a portaled consumer resolves it.
+    rsx! {
+        PortalIn { portal,
+            PopoverContentRendered {
+                ctx,
+                reg,
+                id,
+                side: props.side,
+                align: props.align,
+                attributes: props.attributes.clone(),
+                children: props.children,
+            }
+        }
+    }
+}
+
+/// Props for [`PopoverContentRendered`], the portaled DOM body.
+#[derive(Props, Clone, PartialEq)]
+pub struct PopoverContentRenderedProps {
+    ctx: PopoverCtx,
+    reg: OverlayRegistration,
+    id: Memo<String>,
+    side: ContentSide,
+    align: ContentAlign,
+    attributes: Vec<Attribute>,
+    children: Element,
+}
+
+/// The rendered content of the popover, rendered as a child of `PortalIn` (so
+/// this is where [`PopoverCtx`] is re-provided). Floating positioning runs here
+/// off the trigger ref shared through the ctx — reference-based, so portaling the
+/// panel does not break positioning. Keeps the `visibility:hidden until
+/// is_positioned` gate verbatim.
+#[component]
+pub fn PopoverContentRendered(props: PopoverContentRenderedProps) -> Element {
+    let ctx = props.ctx;
+    let reg = props.reg;
+    let id = props.id;
+    let side = props.side;
+    let align = props.align;
+    let attributes = props.attributes;
+    let children = props.children;
+
+    // Re-provide a CLONE of the Root's ctx at the top of the portaled subtree so
+    // in-panel consumers resolve PopoverCtx up THIS (portaled) render chain.
+    use_context_provider(|| ctx);
+
     let open = ctx.open;
     let is_open = open();
-    let set_open = ctx.set_open;
-
-    // Add a escape key listener to the document when the popover is open. We can't
-    // just add this to the popover itself because it might not be focused if the user
-    // is highlighting text or interacting with another element.
-    use_global_escape_listener(move || set_open.call(false));
-
-    use_outside_dismiss(ctx.root_id, move || set_open.call(false));
 
     // Floating-element positioning. The content ref is local; the trigger ref is shared
     // through the context. `use_position` must be called unconditionally (no conditional
@@ -297,7 +391,7 @@ pub fn PopoverContentRendered(
     let mut floating_ref: Signal<Option<Rc<MountedData>>> = use_signal(|| None);
     let pos = use_position(ctx.trigger_ref, floating_ref, side, align);
 
-    // The hook emits a single inline style string (`position: fixed; top: Ypx; left: Xpx;`
+    // The hook emits a single inline style string (`position: absolute; top: Ypx; left: Xpx;`
     // on web, empty on native). `merge_attributes` merges CSS by per-property
     // (name, namespace=style), last-list-wins — a single raw `style` string would
     // therefore clobber any user-forwarded `style` string entirely. So we split the
@@ -325,11 +419,17 @@ pub fn PopoverContentRendered(
     let left = use_memo(move || style_prop(&style.read(), "left"));
     let visibility = use_memo(move || if is_positioned() { "visible" } else { "hidden" });
 
+    // z-index assigned by the overlay manager via open order. Emitted as a raw
+    // `style` string (name=""), so it coexists with the per-property
+    // position/top/left styles under `merge_attributes` (merged by name).
+    let z_style = reg.z().map(|z| format!("--overlay-z: {z};"));
+
     let floating_attrs = attributes!(div {
         position: position(),
         top: top(),
         left: left(),
         visibility: visibility(),
+        style: z_style,
         "data-floating": floating_active.then_some("true"),
         onmounted: move |evt| floating_ref.set(Some(evt.data())),
     });
@@ -470,5 +570,71 @@ pub fn PopoverOpenTrigger(props: PopoverTriggerProps) -> Element {
             ..props.attributes,
             {props.children}
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    //! Proves the §4.2 re-provide is correctly wired for Popover: an open popover
+    //! portals its panel through the overlay outlet, an in-panel consumer resolves
+    //! `PopoverCtx` up the *portaled* render chain, and the panel carries the
+    //! manager-assigned `--overlay-z`.
+    use super::*;
+    use crate::overlay::OverlayProvider;
+
+    /// A test-only consumer that resolves `PopoverCtx` from inside the portaled
+    /// panel. If the re-provide were on the wrong scope, `use_context` would panic
+    /// during render and fail this test.
+    #[component]
+    fn PopoverCtxProbe() -> Element {
+        let ctx: PopoverCtx = use_context();
+        let open = (ctx.open)();
+        rsx! {
+            span { class: "popover-ctx-probe", "open={open}" }
+        }
+    }
+
+    #[component]
+    fn OpenPopoverApp() -> Element {
+        rsx! {
+            OverlayProvider {
+                PopoverRoot {
+                    open: Some(true),
+                    PopoverTrigger { "trigger" }
+                    PopoverContent {
+                        PopoverCtxProbe {}
+                        "panel-marker"
+                    }
+                }
+            }
+        }
+    }
+
+    #[test]
+    fn open_popover_portals_and_resolves_popover_ctx_inside_portal() {
+        let mut dom = VirtualDom::new(OpenPopoverApp);
+        dom.rebuild_in_place();
+        // `use_animated_open` flips `show_in_dom` in an effect, so the portaled
+        // content mounts on a subsequent flush. Drain pending effect-driven work.
+        for _ in 0..8 {
+            let _ = dom.render_immediate_to_vec();
+        }
+        let html = dioxus_ssr::render(&dom);
+
+        // The panel rendered through the outlet.
+        assert!(
+            html.contains("panel-marker"),
+            "popover panel not rendered via outlet: {html}"
+        );
+        // The in-panel consumer resolved the re-provided PopoverCtx in the portal.
+        assert!(
+            html.contains("popover-ctx-probe"),
+            "in-panel consumer did not resolve PopoverCtx through the portal: {html}"
+        );
+        // The panel carries the manager-assigned --overlay-z.
+        assert!(
+            html.contains("--overlay-z: calc(var(--z-overlay-base)"),
+            "popover panel did not receive manager --overlay-z: {html}"
+        );
     }
 }

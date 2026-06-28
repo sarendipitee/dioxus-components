@@ -2,14 +2,17 @@
 
 use std::rc::Rc;
 
+use crate::overlay::{use_overlay_registration, OverlayKind, OverlayRegistration, RegisterArgs};
+use crate::portal::{use_portal, PortalIn};
 use crate::{
-    floating::{style_prop, use_position}, merge_attributes, use_animated_open, use_controlled,
-    use_id_or, use_unique_id, ContentAlign, ContentSide,
+    floating::{style_prop, use_position},
+    merge_attributes, use_animated_open, use_controlled, use_id_or, use_unique_id, ContentAlign,
+    ContentSide,
 };
 use dioxus::prelude::*;
 use dioxus_attributes::attributes;
 
-#[derive(Clone, Copy)]
+#[derive(Clone, Copy, PartialEq)]
 struct TooltipCtx {
     // State
     open: Memo<bool>,
@@ -298,8 +301,9 @@ pub fn TooltipContent(props: TooltipContentProps) -> Element {
 
     rsx! {
         if render() {
-            TooltipContentRendered {
-                id: id(),
+            TooltipPortaled {
+                ctx,
+                id,
                 side: props.side,
                 align: props.align,
                 attributes: props.attributes.clone(),
@@ -309,18 +313,89 @@ pub fn TooltipContent(props: TooltipContentProps) -> Element {
     }
 }
 
-/// The rendered tooltip content. Separated so floating-ui positioning hooks run only
-/// while the tooltip is mounted (open), letting [`use_position`] be called
-/// unconditionally with both refs settled on first mount.
-#[component]
-fn TooltipContentRendered(
-    id: String,
+/// Props for [`TooltipPortaled`], the in-portal half of [`TooltipContent`].
+#[derive(Props, Clone, PartialEq)]
+struct TooltipPortaledProps {
+    ctx: TooltipCtx,
+    id: Memo<String>,
     side: ContentSide,
     align: ContentAlign,
     attributes: Vec<Attribute>,
     children: Element,
-) -> Element {
-    let ctx: TooltipCtx = use_context();
+}
+
+/// The portaled half of a tooltip: registers the overlay entry as
+/// [`OverlayKind::Hint`] (`modal: false`, `dismissable: false` — hints never
+/// participate in the manager's dismiss stack), renders the panel through the
+/// shared [`OverlayOutlet`], and re-provides [`TooltipCtx`] inside the portal.
+///
+/// The tooltip keeps its own hover / focus / Escape open-close logic on the
+/// trigger (which stays in the main tree); it does NOT route through the manager
+/// dismiss stack.
+#[component]
+fn TooltipPortaled(props: TooltipPortaledProps) -> Element {
+    let ctx = props.ctx;
+    let id = props.id;
+
+    let portal = use_portal();
+    let on_dismiss = use_callback(|_| {});
+
+    let reg: OverlayRegistration = use_overlay_registration(move || RegisterArgs {
+        kind: OverlayKind::Hint,
+        portal,
+        modal: false,
+        dismissable: false,
+        on_dismiss,
+        parent: None,
+        trigger_id: None,
+        content_root_id: Some(id.peek().clone()),
+    });
+
+    // The body is a CHILD of `PortalIn` so the re-provide lands on the portaled
+    // render chain.
+    rsx! {
+        PortalIn { portal,
+            TooltipContentRendered {
+                ctx,
+                reg,
+                id,
+                side: props.side,
+                align: props.align,
+                attributes: props.attributes.clone(),
+                children: props.children,
+            }
+        }
+    }
+}
+
+/// Props for [`TooltipContentRendered`], the portaled DOM body.
+#[derive(Props, Clone, PartialEq)]
+struct TooltipContentRenderedProps {
+    ctx: TooltipCtx,
+    reg: OverlayRegistration,
+    id: Memo<String>,
+    side: ContentSide,
+    align: ContentAlign,
+    attributes: Vec<Attribute>,
+    children: Element,
+}
+
+/// The rendered tooltip content, rendered as a child of `PortalIn` (so this is
+/// where [`TooltipCtx`] is re-provided). Floating positioning runs here off the
+/// trigger ref shared through the ctx. Keeps the `visibility:hidden until
+/// is_positioned` gate verbatim.
+#[component]
+fn TooltipContentRendered(props: TooltipContentRenderedProps) -> Element {
+    let ctx = props.ctx;
+    let reg = props.reg;
+    let id = props.id;
+    let side = props.side;
+    let align = props.align;
+    let attributes = props.attributes;
+    let children = props.children;
+
+    // Re-provide a CLONE of the Root's ctx at the top of the portaled subtree.
+    use_context_provider(|| ctx);
 
     // Floating-element positioning. The content ref is local; the trigger ref is shared
     // through the context. `use_position` is called unconditionally — this component only
@@ -345,11 +420,15 @@ fn TooltipContentRendered(
     // tooltip's `display:block` open state keeps the element laid out for measurement.
     let visibility = use_memo(move || if is_positioned() { "visible" } else { "hidden" });
 
+    // z-index assigned by the overlay manager via open order.
+    let z_style = reg.z().map(|z| format!("--overlay-z: {z};"));
+
     let floating_attrs = attributes!(div {
         position: position(),
         top: top(),
         left: left(),
         visibility: visibility(),
+        style: z_style,
         "data-floating": floating_active.then_some("true"),
         onmounted: move |evt| floating_ref.set(Some(evt.data())),
     });
@@ -365,6 +444,66 @@ fn TooltipContentRendered(
             ..attributes,
             {children}
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    //! Proves the §4.2 re-provide is correctly wired for Tooltip: an open tooltip
+    //! portals its panel through the overlay outlet, an in-panel consumer resolves
+    //! `TooltipCtx` up the *portaled* render chain, and the panel carries the
+    //! manager-assigned `--overlay-z`.
+    use super::*;
+    use crate::overlay::OverlayProvider;
+
+    /// A test-only consumer that resolves `TooltipCtx` from inside the portaled
+    /// panel. If the re-provide were on the wrong scope, `use_context` would panic.
+    #[component]
+    fn TooltipCtxProbe() -> Element {
+        let ctx: TooltipCtx = use_context();
+        let open = (ctx.open)();
+        rsx! {
+            span { class: "tooltip-ctx-probe", "open={open}" }
+        }
+    }
+
+    #[component]
+    fn OpenTooltipApp() -> Element {
+        rsx! {
+            OverlayProvider {
+                Tooltip {
+                    open: Some(true),
+                    TooltipTrigger { "trigger" }
+                    TooltipContent {
+                        TooltipCtxProbe {}
+                        "panel-marker"
+                    }
+                }
+            }
+        }
+    }
+
+    #[test]
+    fn open_tooltip_portals_and_resolves_tooltip_ctx_inside_portal() {
+        let mut dom = VirtualDom::new(OpenTooltipApp);
+        dom.rebuild_in_place();
+        for _ in 0..8 {
+            let _ = dom.render_immediate_to_vec();
+        }
+        let html = dioxus_ssr::render(&dom);
+
+        assert!(
+            html.contains("panel-marker"),
+            "tooltip panel not rendered via outlet: {html}"
+        );
+        assert!(
+            html.contains("tooltip-ctx-probe"),
+            "in-panel consumer did not resolve TooltipCtx through the portal: {html}"
+        );
+        assert!(
+            html.contains("--overlay-z: calc(var(--z-overlay-base)"),
+            "tooltip panel did not receive manager --overlay-z: {html}"
+        );
     }
 }
 

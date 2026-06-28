@@ -2,14 +2,17 @@
 
 use std::rc::Rc;
 
+use crate::overlay::{use_overlay_registration, OverlayKind, OverlayRegistration, RegisterArgs};
+use crate::portal::{use_portal, PortalIn};
 use crate::{
-    floating::{style_prop, use_position}, merge_attributes, use_animated_open, use_controlled,
-    use_id_or, use_unique_id, ContentAlign, ContentSide,
+    floating::{style_prop, use_position},
+    merge_attributes, use_animated_open, use_controlled, use_id_or, use_unique_id, ContentAlign,
+    ContentSide,
 };
 use dioxus::prelude::*;
 use dioxus_attributes::attributes;
 
-#[derive(Clone, Copy)]
+#[derive(Clone, Copy, PartialEq)]
 struct HoverCardCtx {
     // State
     open: Memo<bool>,
@@ -306,8 +309,9 @@ pub fn HoverCardContent(props: HoverCardContentProps) -> Element {
 
     rsx! {
         if render() {
-            HoverCardContentRendered {
-                id: id(),
+            HoverCardPortaled {
+                ctx,
+                id,
                 side: props.side,
                 align: props.align,
                 attributes: props.attributes.clone(),
@@ -317,18 +321,89 @@ pub fn HoverCardContent(props: HoverCardContentProps) -> Element {
     }
 }
 
-/// The rendered hover card content. Separated so floating-ui positioning hooks run only
-/// while the card is mounted (open), letting [`use_position`] be called unconditionally
-/// with both refs settled on first mount.
-#[component]
-fn HoverCardContentRendered(
-    id: String,
+/// Props for [`HoverCardPortaled`], the in-portal half of [`HoverCardContent`].
+#[derive(Props, Clone, PartialEq)]
+struct HoverCardPortaledProps {
+    ctx: HoverCardCtx,
+    id: Memo<String>,
     side: ContentSide,
     align: ContentAlign,
     attributes: Vec<Attribute>,
     children: Element,
-) -> Element {
-    let ctx: HoverCardCtx = use_context();
+}
+
+/// The portaled half of a hover card: registers the overlay entry as
+/// [`OverlayKind::Hint`] (`modal: false`, `dismissable: false` — hints never
+/// participate in the manager's dismiss stack), renders the panel through the
+/// shared [`OverlayOutlet`], and re-provides [`HoverCardCtx`] inside the portal.
+///
+/// The hover card keeps its own hover / focus open-close logic (on the trigger,
+/// which stays in the main tree, and on the panel's own mouse handlers); it does
+/// NOT route through the manager dismiss stack.
+#[component]
+fn HoverCardPortaled(props: HoverCardPortaledProps) -> Element {
+    let ctx = props.ctx;
+    let id = props.id;
+
+    let portal = use_portal();
+    let on_dismiss = use_callback(|_| {});
+
+    let reg: OverlayRegistration = use_overlay_registration(move || RegisterArgs {
+        kind: OverlayKind::Hint,
+        portal,
+        modal: false,
+        dismissable: false,
+        on_dismiss,
+        parent: None,
+        trigger_id: None,
+        content_root_id: Some(id.peek().clone()),
+    });
+
+    // The body is a CHILD of `PortalIn` so the re-provide lands on the portaled
+    // render chain.
+    rsx! {
+        PortalIn { portal,
+            HoverCardContentRendered {
+                ctx,
+                reg,
+                id,
+                side: props.side,
+                align: props.align,
+                attributes: props.attributes.clone(),
+                children: props.children,
+            }
+        }
+    }
+}
+
+/// Props for [`HoverCardContentRendered`], the portaled DOM body.
+#[derive(Props, Clone, PartialEq)]
+struct HoverCardContentRenderedProps {
+    ctx: HoverCardCtx,
+    reg: OverlayRegistration,
+    id: Memo<String>,
+    side: ContentSide,
+    align: ContentAlign,
+    attributes: Vec<Attribute>,
+    children: Element,
+}
+
+/// The rendered hover card content, rendered as a child of `PortalIn` (so this is
+/// where [`HoverCardCtx`] is re-provided). Floating positioning runs here off the
+/// trigger ref shared through the ctx. Keeps the `visibility:hidden until
+/// is_positioned` gate verbatim.
+#[component]
+fn HoverCardContentRendered(props: HoverCardContentRenderedProps) -> Element {
+    let ctx = props.ctx;
+    let reg = props.reg;
+    let id = props.id;
+    let side = props.side;
+    let align = props.align;
+    let attributes = props.attributes;
+    let children = props.children;
+
+    // Re-provide a CLONE of the Root's ctx at the top of the portaled subtree.
+    use_context_provider(|| ctx);
 
     // Handle mouse events to keep the hover card open when hovered
     let handle_mouse_enter = move |_: Event<MouseData>| {
@@ -360,11 +435,15 @@ fn HoverCardContentRendered(
     let left = use_memo(move || style_prop(&style.read(), "left"));
     let visibility = use_memo(move || if is_positioned() { "visible" } else { "hidden" });
 
+    // z-index assigned by the overlay manager via open order.
+    let z_style = reg.z().map(|z| format!("--overlay-z: {z};"));
+
     let floating_attrs = attributes!(div {
         position: position(),
         top: top(),
         left: left(),
         visibility: visibility(),
+        style: z_style,
         "data-floating": floating_active.then_some("true"),
         onmounted: move |evt| floating_ref.set(Some(evt.data())),
     });
@@ -385,6 +464,66 @@ fn HoverCardContentRendered(
             ..attributes,
             {children}
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    //! Proves the §4.2 re-provide is correctly wired for HoverCard: an open hover
+    //! card portals its panel through the overlay outlet, an in-panel consumer
+    //! resolves `HoverCardCtx` up the *portaled* render chain, and the panel
+    //! carries the manager-assigned `--overlay-z`.
+    use super::*;
+    use crate::overlay::OverlayProvider;
+
+    /// A test-only consumer that resolves `HoverCardCtx` from inside the portaled
+    /// panel. If the re-provide were on the wrong scope, `use_context` would panic.
+    #[component]
+    fn HoverCardCtxProbe() -> Element {
+        let ctx: HoverCardCtx = use_context();
+        let open = (ctx.open)();
+        rsx! {
+            span { class: "hover-card-ctx-probe", "open={open}" }
+        }
+    }
+
+    #[component]
+    fn OpenHoverCardApp() -> Element {
+        rsx! {
+            OverlayProvider {
+                HoverCard {
+                    open: Some(true),
+                    HoverCardTrigger { "trigger" }
+                    HoverCardContent {
+                        HoverCardCtxProbe {}
+                        "panel-marker"
+                    }
+                }
+            }
+        }
+    }
+
+    #[test]
+    fn open_hover_card_portals_and_resolves_hover_card_ctx_inside_portal() {
+        let mut dom = VirtualDom::new(OpenHoverCardApp);
+        dom.rebuild_in_place();
+        for _ in 0..8 {
+            let _ = dom.render_immediate_to_vec();
+        }
+        let html = dioxus_ssr::render(&dom);
+
+        assert!(
+            html.contains("panel-marker"),
+            "hover card panel not rendered via outlet: {html}"
+        );
+        assert!(
+            html.contains("hover-card-ctx-probe"),
+            "in-panel consumer did not resolve HoverCardCtx through the portal: {html}"
+        );
+        assert!(
+            html.contains("--overlay-z: calc(var(--z-overlay-base)"),
+            "hover card panel did not receive manager --overlay-z: {html}"
+        );
     }
 }
 
