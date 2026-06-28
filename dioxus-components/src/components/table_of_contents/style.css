@@ -27,18 +27,8 @@
 }
 
 .dx_table_of_contents a[data-active="true"] {
-  background: var(--accent-subtle);
-  color: var(--accent-subtle-fg);
+  background: var(--surface-active);
+  color: var(--surface-active-fg);
+  border-radius: calc(var(--radius) / 2);
   font-weight: 500;
-}
-
-.dx_table_of_contents a[data-active="true"]::before {
-  content: "";
-  position: absolute;
-  left: 0;
-  top: 0.25rem;
-  bottom: 0.25rem;
-  width: 2px;
-  background: var(--accent);
-  border-radius: 1px;
 }
