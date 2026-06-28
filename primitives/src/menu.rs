@@ -9,7 +9,9 @@ use crate::{
         FocusState,
     },
     merge_attributes,
-    overlay::{use_overlay_registration, OverlayId, OverlayKind, OverlayRegistration, RegisterArgs},
+    overlay::{
+        use_overlay_registration, OverlayId, OverlayKind, OverlayRegistration, RegisterArgs,
+    },
     portal::{use_portal, PortalIn},
     selectable::{pointer_select_cancel, pointer_select_commit, pointer_select_start},
     use_animated_open, use_effect_with_cleanup, use_id_or, use_unique_id, ContentAlign,
@@ -240,13 +242,26 @@ fn MenuContentPortaled(props: MenuContentPortaledProps) -> Element {
     // its `parent`). Stored on the ctx so the re-provided clone inside the portal
     // carries it.
     use_effect(move || {
-        ctx.overlay_id.set(reg.id());
+        let next = reg.id();
+        // Dropped-tolerant write: this can re-run during teardown.
+        let _ = ctx.overlay_id.try_write().map(|mut w| *w = next);
     });
 
     // Keep the manager's "inside" predicate pointed at the live trigger + content
-    // ids once the elements have mounted.
+    // ids once the elements have mounted. Read with `try_peek` (non-subscribing):
+    // a reactive read of these `use_unique_id`-backed signals leaves a
+    // `SignalSubscriberDrop` guard whose `update_subscribers` drop runs during
+    // teardown against the already-freed signal storage, panicking with
+    // `ValueDroppedError` (signal.rs:540). The ids are assigned once at mount, so
+    // a non-reactive read is sufficient; bail if either is already gone.
     use_effect(move || {
-        reg.set_dom_ids(Some(trigger_id()), Some(id()));
+        // Subscribe to `open` only, so this effect re-runs while the menu is live.
+        let _ = (ctx.open)();
+        use dioxus::prelude::Readable;
+        let (Ok(t), Ok(i)) = (trigger_id.try_peek(), id.try_peek()) else {
+            return;
+        };
+        reg.set_dom_ids(Some(t.clone()), Some(i.clone()));
     });
 
     // Exit-phase exclusion: mark `closing` while the menu is animating out.
@@ -298,17 +313,25 @@ fn MenuContentRendered(props: MenuContentRenderedProps) -> Element {
     use_context_provider(|| ctx.focus);
 
     let z_style = reg.z().map(|z| format!("--overlay-z: {z};"));
-    let base = attributes!(div {
-        style: z_style,
-    });
+    let base = attributes!(div { style: z_style });
     let attributes = merge_attributes(vec![base, props.attributes]);
+
+    // Snapshot the panel id and trigger id NON-reactively. These are
+    // `use_unique_id`-backed signals owned by the menu root (a different scope
+    // than this portaled body). Reading them reactively in the rsx leaves a
+    // `SignalSubscriberDrop` read-guard whose `update_subscribers` drop runs
+    // during teardown against the freed signal storage, panicking with
+    // `ValueDroppedError` (signal.rs:540). The ids are assigned once at mount, so
+    // a one-shot snapshot is both correct and crash-safe across the portal hop.
+    let panel_id = id.peek().clone();
+    let labelledby = ctx.trigger_id.peek().clone();
 
     rsx! {
         div {
-            id,
+            id: panel_id,
             role: props.role,
             aria_orientation: "vertical",
-            aria_labelledby: "{ctx.trigger_id}",
+            aria_labelledby: labelledby,
             "data-state": if (ctx.open)() { "open" } else { "closed" },
             onkeydown: move |event: Event<KeyboardData>| {
                 match event.key() {
@@ -770,6 +793,13 @@ pub fn MenuSub(props: MenuSubProps) -> Element {
         // the listener) once `MenuSubContent` publishes the panel id, so the
         // hover-leave predicate picks up the portaled panel.
         let panel_id = content_id();
+        // Dropped-tolerant: this effect re-runs when `content_id` changes, which
+        // happens as `MenuSubContent` unmounts during a close cascade — at which
+        // point `sub_id` (a `use_unique_id` signal) may already be freed. Bail
+        // rather than panic on a read of a dropped signal.
+        let Some(sub_id_value) = sub_id.try_peek().ok().map(|v| v.clone()) else {
+            return Box::new(|| {}) as Box<dyn FnOnce()>;
+        };
         let mut eval = document::eval(
             "const ids = await dioxus.recv();
             const subId = ids[0];
@@ -806,7 +836,7 @@ pub fn MenuSub(props: MenuSubProps) -> Element {
             document.removeEventListener('pointermove', onMove, true);
             document.removeEventListener('mousemove', onMove, true);",
         );
-        let _ = eval.send(vec![sub_id.cloned(), panel_id]);
+        let _ = eval.send(vec![sub_id_value, panel_id]);
         spawn(async move {
             while let Ok(true) = eval.recv().await {
                 if open() {
@@ -815,9 +845,9 @@ pub fn MenuSub(props: MenuSubProps) -> Element {
                 }
             }
         });
-        move || {
+        Box::new(move || {
             let _ = eval.send(true);
-        }
+        }) as Box<dyn FnOnce()>
     });
 
     use_context_provider(|| MenuSubContext {
@@ -940,8 +970,10 @@ pub fn MenuSubContent(props: MenuSubContentProps) -> Element {
     let mut content_id = sub_ctx.content_id;
     use_effect(move || {
         let next = id();
-        if *content_id.peek() != next {
-            content_id.set(next);
+        // Dropped-tolerant: on submenu close the whole subtree unmounts and this
+        // effect can re-run after `content_id`'s backing store is freed.
+        if content_id.try_peek().map(|v| *v != next).unwrap_or(false) {
+            let _ = content_id.try_write().map(|mut w| *w = next);
         }
     });
     let set_open = use_callback(move |next: bool| {
@@ -964,7 +996,9 @@ pub fn MenuSubContent(props: MenuSubContentProps) -> Element {
     let parent_overlay = parent_menu_ctx.overlay_id;
     let mut overlay_id: Signal<Option<OverlayId>> = use_signal(move || *parent_overlay.peek());
     use_effect(move || {
-        overlay_id.set(parent_overlay());
+        let next = parent_overlay();
+        // Dropped-tolerant: this effect can re-run while the submenu unmounts.
+        let _ = overlay_id.try_write().map(|mut w| *w = next);
     });
     use_context_provider(|| MenuContext {
         open: sub_ctx.open,

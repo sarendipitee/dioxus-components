@@ -88,7 +88,7 @@ fn use_unique_id() -> Signal<String> {
 }
 
 // Elements can only have one id so if the user provides their own, we must use it as the aria id.
-fn use_id_or<T: Clone + PartialEq + 'static>(
+fn use_id_or<T: Clone + PartialEq + Default + 'static>(
     mut gen_id: Signal<T>,
     user_id: ReadSignal<Option<T>>,
 ) -> Memo<T> {
@@ -98,7 +98,13 @@ fn use_id_or<T: Clone + PartialEq + 'static>(
     // If we have a user ID, update the gen_id in an effect
     use_effect(move || {
         if let Some(id) = user_id() {
-            gen_id.set(id);
+            // `gen_id` is a component-scoped `use_unique_id` signal. When the
+            // component (or its portaled host) tears down, this effect can re-run
+            // after the signal is freed; `try_write` degrades to a no-op rather
+            // than panicking with `ValueDroppedError` (which aborts the runtime).
+            if let Ok(mut w) = gen_id.try_write() {
+                *w = id;
+            }
         }
     });
 
@@ -107,7 +113,13 @@ fn use_id_or<T: Clone + PartialEq + 'static>(
         if has_user_id() {
             user_id().unwrap()
         } else {
-            gen_id.peek().clone()
+            // Dropped-tolerant: this memo can recompute while the owning
+            // component (and its `use_unique_id` `gen_id` signal) is being torn
+            // down — e.g. a portaled submenu's `content_id`-publishing effect
+            // reads this memo on unmount. A plain `peek()` would panic with
+            // `ValueDroppedError`; fall back to an empty id, which is harmless on
+            // a node that is itself unmounting.
+            gen_id.try_peek().map(|v| v.clone()).unwrap_or_default()
         }
     })
 }
@@ -202,7 +214,15 @@ fn use_animated_open(
             show_in_dom.set(open);
         } else {
             spawn(async move {
-                let id = id.cloned();
+                // Fallible read: when the overlay's host (e.g. an enclosing
+                // Dialog) tears down, the whole subtree — including the component
+                // that owns this `id` signal — can unmount before/while this
+                // close-animation task runs. A plain `id.cloned()` would then
+                // panic with `ValueDroppedError`, aborting the wasm runtime.
+                // Nothing to animate out on a dropped element, so bail.
+                let Some(id) = id.try_peek().ok().map(|v| v.clone()) else {
+                    return;
+                };
                 let mut eval = dioxus::document::eval(
                     "const id = await dioxus.recv();
                     const element = document.getElementById(id);
@@ -216,7 +236,11 @@ fn use_animated_open(
                 );
                 let _ = eval.send(id);
                 _ = eval.recv::<bool>().await;
-                show_in_dom.set(open);
+                // The component may have unmounted across the await; `try_write`
+                // degrades to a no-op instead of panicking on a freed signal.
+                if let Ok(mut w) = show_in_dom.try_write() {
+                    *w = open;
+                }
             });
         }
     });

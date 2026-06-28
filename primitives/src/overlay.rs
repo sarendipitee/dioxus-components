@@ -333,9 +333,7 @@ fn topmost_dismissable(entries: &[OverlayEntry]) -> Option<OverlayId> {
     entries
         .iter()
         .filter(|e| {
-            e.dismissable
-                && !e.closing
-                && !matches!(e.kind, OverlayKind::Hint | OverlayKind::Toast)
+            e.dismissable && !e.closing && !matches!(e.kind, OverlayKind::Hint | OverlayKind::Toast)
         })
         .max_by_key(|e| e.order)
         .map(|e| e.id)
@@ -443,7 +441,9 @@ pub fn OverlayOutlet() -> Element {
             .collect();
         drop(guard);
         list.sort_by_key(|(_, _, band, order)| (*band, *order));
-        list.into_iter().map(|(id, portal, _, _)| (id, portal)).collect::<Vec<_>>()
+        list.into_iter()
+            .map(|(id, portal, _, _)| (id, portal))
+            .collect::<Vec<_>>()
     });
 
     rsx! {
@@ -470,9 +470,8 @@ fn use_overlay_dismiss_stack() {
     crate::use_global_keydown_listener("Escape", move || {
         let cb = {
             let list = entries.read();
-            topmost_dismissable(&list).and_then(|id| {
-                list.iter().find(|e| e.id == id).map(|e| e.on_dismiss)
-            })
+            topmost_dismissable(&list)
+                .and_then(|id| list.iter().find(|e| e.id == id).map(|e| e.on_dismiss))
             // read guard drops here
         };
         if let Some(cb) = cb {
@@ -538,9 +537,7 @@ fn use_overlay_outside_dismiss(ctx: OverlayCtx) {
                     if is_inside {
                         None
                     } else {
-                        list.iter()
-                            .find(|e| e.id == target)
-                            .map(|e| e.on_dismiss)
+                        list.iter().find(|e| e.id == target).map(|e| e.on_dismiss)
                     }
                     // read guard drops here
                 };
@@ -606,8 +603,17 @@ pub struct OverlayRegistration {
 
 impl OverlayRegistration {
     /// This entry's id, once registered.
+    ///
+    /// Uses a fallible peek: the backing signal is component-scoped, and the
+    /// portaled content (which lives in the outlet's scope, not the registering
+    /// component's) can render/read this handle once more *after* the registering
+    /// component has unmounted and freed its signal. A plain read would then hit
+    /// `ValueDroppedError` and panic the runtime. Degrading to `None` post-drop
+    /// is correct: z/depth simply stop being applied to a node that is itself
+    /// being torn down.
     pub fn id(&self) -> Option<OverlayId> {
-        (self.id)()
+        use dioxus::prelude::Readable;
+        self.id.try_peek().ok().and_then(|v| *v)
     }
 
     /// The computed `--overlay-z` value for this entry, reactive.
@@ -653,23 +659,34 @@ impl OverlayRegistration {
 /// docs / the R-CTX smoke demo).
 pub fn use_overlay_registration(make_args: impl FnOnce() -> RegisterArgs) -> OverlayRegistration {
     let ctx = use_overlay();
-    // Use component-scoped signal so it frees on unmount. The previous
-    // Signal::new_in_scope(None, ScopeId::ROOT) lived for the whole program,
-    // leaking one signal per call and requiring a manual `manually_drop`.
+    // Component-scoped signal so it frees on unmount (the previous
+    // `Signal::new_in_scope(None, ScopeId::ROOT)` lived for the whole program,
+    // leaking one signal per call). The id is *also* mirrored into a plain
+    // `Rc<Cell<..>>` below so the unmount cleanup never has to read this signal:
+    // by the time `use_drop` fires the signal may already be freed.
     let mut id_sig: Signal<Option<OverlayId>> = use_signal(|| None);
+
+    // Non-reactive, signal-runtime-independent mirror of the id. Cloned into the
+    // cleanup closure so unregister is guaranteed even after the component's
+    // signals are dropped — preventing a stale entry leak in `entries`.
+    let id_cell: std::rc::Rc<std::cell::Cell<Option<OverlayId>>> =
+        use_hook(|| std::rc::Rc::new(std::cell::Cell::new(None)));
 
     use_hook(|| {
         let id = ctx.register(make_args());
         id_sig.set(Some(id));
+        id_cell.set(Some(id));
     });
 
-    use_effect_cleanup(move || {
-        if let Some(id) = id_sig.peek().as_ref().copied() {
-            ctx.unregister(id);
-        }
-        // No manually_drop needed: component-scoped signal is freed automatically
-        // when the component unmounts.
-    });
+    {
+        let id_cell = id_cell.clone();
+        use_effect_cleanup(move || {
+            // Read the plain Cell, never the (possibly-freed) signal.
+            if let Some(id) = id_cell.get() {
+                ctx.unregister(id);
+            }
+        });
+    }
 
     OverlayRegistration { ctx, id: id_sig }
 }

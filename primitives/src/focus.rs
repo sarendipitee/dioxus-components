@@ -131,6 +131,17 @@ impl FocusState {
     }
 
     pub(crate) fn set_focus(&mut self, index: Option<usize>) {
+        use dioxus::prelude::Readable;
+        // These signals are scoped to the menu component. When a menu/submenu is
+        // portaled through the overlay outlet and closes, an `onblur`/focus-sync
+        // handler can call `set_focus`/`blur` *after* the component (and its
+        // signals) have been torn down. A plain `peek()`/`set()` then panics with
+        // `ValueDroppedError`, taking down the whole runtime. Bail out if the
+        // backing store is already gone — a focus update on a dead menu is a
+        // no-op by definition.
+        if self.items.try_peek().is_err() || self.current_focus.try_peek().is_err() {
+            return;
+        }
         // Resolve the effective target: an index pointing at a disabled item
         // collapses to None.
         let target = match index {
@@ -217,19 +228,30 @@ impl FocusState {
     }
 
     pub(crate) fn any_focused(&self) -> bool {
-        self.current_focus.read().is_some()
+        // Dropped-tolerant: the `current_focus` signal is scoped to the menu
+        // component. The dropdown/menu open-sync effect reads `any_focused()`
+        // reactively; when the menu is portaled and its host (e.g. an enclosing
+        // Dialog) tears down, this effect can re-run after the signal is freed.
+        // A plain `read()` would panic with `ValueDroppedError`, aborting the
+        // wasm runtime. A dead menu has nothing focused.
+        self.current_focus.try_read().map(|v| v.is_some()).unwrap_or(false)
     }
 
     pub(crate) fn is_focused(&self, id: usize) -> bool {
-        (self.current_focus)().map(|x| x == id).unwrap_or(false)
+        self.current_focus
+            .try_read()
+            .ok()
+            .and_then(|x| *x)
+            .map(|x| x == id)
+            .unwrap_or(false)
     }
 
     pub(crate) fn current_focus(&self) -> Option<usize> {
-        (self.current_focus)()
+        self.current_focus.try_read().ok().and_then(|x| *x)
     }
 
     pub(crate) fn recent_focus(&self) -> Option<usize> {
-        (self.recent_focus)()
+        self.recent_focus.try_read().ok().and_then(|x| *x)
     }
 
     pub(crate) fn recent_focus_or_default(&self) -> usize {
