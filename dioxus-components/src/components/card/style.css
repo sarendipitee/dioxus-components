@@ -1,18 +1,18 @@
 .dx_card {
   display: flex;
   flex-direction: column;
-  padding: calc(var(--space) * 6) 0;
+  padding-block: var(--surface-padding);
   border: 1px solid var(--surface-border);
   border-radius: var(--radius-surface);
   background: var(--surface);
   color: var(--surface-fg);
-  gap: calc(var(--space) * 6);
+  gap: var(--surface-gap);
 }
 
 .dx_card_header {
   display: grid;
   align-items: start;
-  padding: 0 calc(var(--space) * 6);
+  padding-inline: var(--surface-padding);
   gap: var(--content-gap);
   grid-auto-rows: min-content;
   grid-template-rows: auto auto;
@@ -41,11 +41,11 @@
 }
 
 .dx_card_content {
-  padding: 0 calc(var(--space) * 6);
+  padding: 0 var(--surface-padding);
 }
 
 .dx_card_footer {
   display: flex;
   align-items: center;
-  padding: 0 calc(var(--space) * 6);
+  padding: 0 var(--surface-padding);
 }
