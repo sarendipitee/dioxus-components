@@ -1050,7 +1050,7 @@ fn ComponentHighlight(demo: ComponentDemoData) -> Element {
                     }
                     p { "{description}" }
                 }
-                section { id: "main", class: "dx-component-section",
+                section { id: "overview", class: "dx-component-section",
                     match r#type {
                         ComponentType::Normal => rsx! {
                             ComponentDemoHighlight { demo: main.clone(), main_demo: true, component_name: None }
