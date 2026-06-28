@@ -27,9 +27,17 @@ test("sheet basic interactions", async ({ page }) => {
   const usernameInput = dialog.locator("#sheet-demo-username");
   const saveButton = dialog.getByRole("button", { name: "Save changes" });
   const cancelButton = dialog.getByRole("button", { name: "Cancel" });
-  const closeButton = dialog.locator(".dx_sheet_close");
+  // After unifying Dialog/Sheet sub-components (1ed84d44), the close button
+  // is the first child of DialogContent and therefore the first focusable
+  // element in the focus trap. The class is now dx_dialog_close (not
+  // dx_sheet_close which was removed in that unification).
+  const closeButton = dialog.locator(".dx_dialog_close");
 
   await expect(sheetContent).toHaveAttribute("data-side", "right");
+  // Focus trap starts at the first focusable element: the close button.
+  await expect(closeButton).toBeFocused();
+
+  await page.keyboard.press("Tab");
   await expect(nameInput).toBeFocused();
 
   await page.keyboard.press("Tab");
@@ -44,14 +52,11 @@ test("sheet basic interactions", async ({ page }) => {
   await page.keyboard.press("Tab");
   await expect(closeButton).toBeFocused();
 
-  await page.keyboard.press("Tab");
-  await expect(nameInput).toBeFocused();
-
   await page.keyboard.press("Escape");
   await expect(dialog).toBeHidden();
 
   const reopenedDialog = await openSheet(page, "Right");
-  const reopenedCloseButton = reopenedDialog.locator(".dx_sheet_close");
+  const reopenedCloseButton = reopenedDialog.locator(".dx_dialog_close");
   await reopenedCloseButton.focus();
   await expect(reopenedCloseButton).toBeFocused();
   await page.keyboard.press("Enter");
@@ -148,4 +153,86 @@ test("sheet backdrop covers viewport and catches clicks", async ({ page }) => {
   // Click far left of the sheet panel — on the backdrop
   await page.mouse.click(5, 200);
   await expect(page.getByRole("dialog", { name: "Sheet Title" })).toBeHidden();
+});
+
+test("closing a nested sheet does not crash the page", async ({ page }) => {
+  await page.goto("/components/sheet/block#nested", {
+    timeout: 20 * 60 * 1000,
+    waitUntil: "load",
+  });
+
+  // Open the first sheet
+  await page.getByRole("button", { name: "Open Sheet" }).click();
+  const sheet1 = page.getByRole("dialog", { name: "Sheet 1" });
+  await expect(sheet1).toBeVisible();
+
+  // Open the nested sheet from inside sheet 1
+  await sheet1.getByRole("button", { name: "Open Sheet 2" }).click();
+  const sheet2 = page.getByRole("dialog", { name: "Sheet 2" });
+  await expect(sheet2).toBeVisible();
+
+  // Close the inner sheet first — should not crash
+  await page.keyboard.press("Escape");
+  await expect(sheet2).toHaveCount(0);
+
+  // The outer sheet must still be usable
+  await expect(sheet1).toBeVisible();
+
+  // Close the outer sheet
+  await page.keyboard.press("Escape");
+  await expect(sheet1).toHaveCount(0);
+});
+
+test("tearing down outer scope while inner is still animating does not crash", async ({ page }) => {
+  // This test exercises the UAF window: the inner DialogRoot and its signals
+  // live inside the outer DialogPortalBody's children subtree. When the outer
+  // scope is torn down (outer sheet closes), those signals are freed. If the
+  // inner portaled body is still mounted (exit animation in progress) and reads
+  // those signals reactively, that is a use-after-free — manifesting as a WASM
+  // dlmalloc abort that kills the page.
+  //
+  // The inner sheet is modal and renders a pointer-blocking backdrop. Clicking
+  // the outer sheet's close button through that backdrop is not possible (even
+  // with Playwright's `force: true`, which moves the mouse to coordinates and
+  // the backing element at that position intercepts). Instead, the correct
+  // sequence to trigger the UAF window is:
+  //   1. Close the INNER sheet (Escape) — starts its 150ms exit animation.
+  //   2. Immediately close the OUTER sheet (Escape again) — tears down the
+  //      outer scope while the inner portaled body is still mounted/animating.
+  // The inner portaled body survives through the outer teardown. Without the
+  // snapshot fix in dialog.rs, any reactive read of the freed inner DialogRoot
+  // signals from the portaled body causes a heap-corruption abort.
+  await page.goto("/components/sheet/block#nested", {
+    timeout: 20 * 60 * 1000,
+    waitUntil: "load",
+  });
+
+  const sheet1 = page.getByRole("dialog", { name: "Sheet 1" });
+  const sheet2 = page.getByRole("dialog", { name: "Sheet 2" });
+
+  // Open both sheets
+  await page.getByRole("button", { name: "Open Sheet" }).click();
+  await expect(sheet1).toBeVisible();
+  await sheet1.getByRole("button", { name: "Open Sheet 2" }).click();
+  await expect(sheet2).toBeVisible();
+
+  // Close inner (sheet2) — its 150ms exit animation begins.
+  await page.keyboard.press("Escape");
+  // Immediately close outer (sheet1) — sheet2's portaled body is still mounted
+  // and animating. Without the snapshot fix, WASM aborts here.
+  await page.keyboard.press("Escape");
+
+  // Both dialogs must disappear once animations finish (≤ 500ms).
+  await expect(sheet1).toHaveCount(0, { timeout: 2000 });
+  await expect(sheet2).toHaveCount(0, { timeout: 2000 });
+
+  // Page-health assertion: interact with the WASM runtime after the close
+  // sequence. A crashed runtime would leave the page unresponsive — reopening
+  // the sheet and asserting it appears proves the runtime is still alive.
+  await page.getByRole("button", { name: "Open Sheet" }).click();
+  await expect(sheet1).toBeVisible({ timeout: 5000 });
+
+  // Clean up
+  await page.keyboard.press("Escape");
+  await expect(sheet1).toHaveCount(0);
 });

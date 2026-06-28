@@ -1,5 +1,5 @@
 use dioxus::prelude::*;
-use dioxus_components::button::{Button, ButtonVariant};
+use dioxus_components::button::Button;
 use dioxus_components::sheet::{Sheet, SheetSide};
 
 const MAX_DEPTH: usize = 10;
@@ -12,14 +12,7 @@ fn SheetLevel(level: usize, depth: Signal<usize>) -> Element {
             on_open_change: move |v: bool| { if !v { depth.set(level - 1); } },
             side: SheetSide::Right,
             title: "Sheet {level}",
-            description: "This is sheet level {level}. Open another to go deeper.",
-            footer: rsx! {
-                Button {
-                    variant: ButtonVariant::Outline,
-                    onclick: move |_| depth.set(level - 1),
-                    "Close"
-                }
-            },
+            description: "This is sheet level {level}.",
             Button {
                 onclick: move |_| depth.set(level + 1),
                 "Open Sheet {level + 1}"

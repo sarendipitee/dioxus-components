@@ -1,3 +1,13 @@
+/* In a nested sheet stack, only the bottommost sheet's backdrop should be
+   visible — it dims the page content. Upper sheets' backdrops are hidden so
+   peeking sheets behind them remain visible. The `data-overlay-is-bottommost`
+   attribute is injected by the dialog primitive from the overlay manager. */
+.dx_dialog_backdrop[data-overlay-kind="sheet"][data-overlay-is-bottommost="false"] {
+  animation: none;
+  opacity: 0;
+  pointer-events: none;
+}
+
 .dx_sheet {
   position: fixed;
   /* z-index from the overlay manager (assigned by open order). +1 lifts the
@@ -14,7 +24,7 @@
   gap: calc(var(--space) * 4);
   opacity: 1;
   padding: calc(var(--space) * 8) calc(var(--space) * 6) calc(var(--space) * 6);
-  transition: opacity 200ms ease-out, transform 200ms ease-out;
+  transition: opacity 200ms ease-out, transform 200ms ease-out, translate 200ms ease-out, scale 200ms ease-out;
   will-change: transform;
 }
 
@@ -92,42 +102,41 @@
   animation: dx-slide-out-bottom 150ms ease-in forwards;
 }
 
-/* Edge-docked push-aside: when one or more layers are stacked above this sheet
-   the covered sheet slides progressively toward its own dock edge and scales
-   down, so nested sheets read as a physical stack. Each depth level compounds:
-   depth=1 pushes 8%, depth=2 pushes 16%, etc. `--overlay-depth` is the integer
-   set inline by the dialog primitive from the manager's `depth_above()`. Driven
-   by `data-overlay-depth != 0` guard so the topmost sheet is unaffected.
+/* Stack peek: buried sheets slide toward the center so their edge remains
+   visible behind the front sheet, reading as a physical card stack.
+   Uses CSS Level 2 individual `translate`/`scale` properties — the keyframe
+   animations only animate `transform`, so these compose on top without being
+   overridden by animation forwards fill.
 
-   Keep as normal (non-animation) properties so closing a nested layer snaps the
-   push-aside away without overriding the slide-in animation-name. Transition on
-   `.dx_sheet` handles the smooth re-stack when an upper layer closes. */
+   `--sheet-stack-peek`: how many px of each buried sheet peeks out per depth
+   level. Override on a parent element to tune the stack density.
+   `--overlay-depth` is the integer injected inline by the dialog primitive. */
+.dx_sheet {
+  --sheet-stack-peek: 24px;
+}
+
 .dx_sheet[data-state="open"][data-side="right"]:not([data-overlay-depth="0"]) {
-  opacity: calc(1 - var(--overlay-depth, 1) * 0.15);
-  transform:
-    translateX(calc(var(--overlay-depth, 1) * 8%))
-    scale(calc(1 - var(--overlay-depth, 1) * 0.04));
+  opacity: calc(1 - var(--overlay-depth, 1) * 0.12);
+  translate: calc(var(--overlay-depth, 1) * var(--sheet-stack-peek) * -1) 0;
+  scale: calc(1 - var(--overlay-depth, 1) * 0.03);
 }
 
 .dx_sheet[data-state="open"][data-side="left"]:not([data-overlay-depth="0"]) {
-  opacity: calc(1 - var(--overlay-depth, 1) * 0.15);
-  transform:
-    translateX(calc(var(--overlay-depth, 1) * -8%))
-    scale(calc(1 - var(--overlay-depth, 1) * 0.04));
+  opacity: calc(1 - var(--overlay-depth, 1) * 0.12);
+  translate: calc(var(--overlay-depth, 1) * var(--sheet-stack-peek)) 0;
+  scale: calc(1 - var(--overlay-depth, 1) * 0.03);
 }
 
 .dx_sheet[data-state="open"][data-side="top"]:not([data-overlay-depth="0"]) {
-  opacity: calc(1 - var(--overlay-depth, 1) * 0.15);
-  transform:
-    translateY(calc(var(--overlay-depth, 1) * -8%))
-    scale(calc(1 - var(--overlay-depth, 1) * 0.04));
+  opacity: calc(1 - var(--overlay-depth, 1) * 0.12);
+  translate: 0 calc(var(--overlay-depth, 1) * var(--sheet-stack-peek));
+  scale: calc(1 - var(--overlay-depth, 1) * 0.03);
 }
 
 .dx_sheet[data-state="open"][data-side="bottom"]:not([data-overlay-depth="0"]) {
-  opacity: calc(1 - var(--overlay-depth, 1) * 0.15);
-  transform:
-    translateY(calc(var(--overlay-depth, 1) * 8%))
-    scale(calc(1 - var(--overlay-depth, 1) * 0.04));
+  opacity: calc(1 - var(--overlay-depth, 1) * 0.12);
+  translate: 0 calc(var(--overlay-depth, 1) * var(--sheet-stack-peek) * -1);
+  scale: calc(1 - var(--overlay-depth, 1) * 0.03);
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -136,7 +145,8 @@
   .dx_sheet[data-state="open"][data-side="top"]:not([data-overlay-depth="0"]),
   .dx_sheet[data-state="open"][data-side="bottom"]:not([data-overlay-depth="0"]) {
     animation: none;
-    transform: translate(0, 0) scale(1);
+    translate: none;
+    scale: none;
     opacity: 1;
   }
 }
