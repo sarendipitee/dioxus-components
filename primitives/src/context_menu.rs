@@ -2,8 +2,7 @@
 
 use crate::{
     menu::{self, MenuContext},
-    merge_attributes, pointer, use_controlled, use_effect_with_cleanup, use_outside_dismiss,
-    use_unique_id,
+    merge_attributes, pointer, use_controlled, use_effect_with_cleanup, use_id_or, use_unique_id,
 };
 use dioxus::prelude::*;
 use dioxus_attributes::attributes;
@@ -37,10 +36,6 @@ async fn visual_viewport_offset() -> (f64, f64) {
 struct ContextMenuCtx {
     // Position of the context menu
     position: Signal<(i32, i32)>,
-
-    // Id on the root wrapper — covers both trigger and content, so
-    // `use_outside_dismiss` treats them as "inside".
-    root_id: Signal<String>,
 
     // Set briefly after a touch long-press opens the menu. Used to (a) swallow
     // Android Chrome's spurious `contextmenu` ~500ms later, and (b) ignore the
@@ -138,7 +133,6 @@ pub fn ContextMenu(props: ContextMenuProps) -> Element {
     menu::use_menu_provider(open, set_open, props.disabled, props.roving_loop);
     use_context_provider(|| ContextMenuCtx {
         position,
-        root_id,
         long_press_just_fired,
     });
 
@@ -394,6 +388,12 @@ pub fn ContextMenuContent(props: ContextMenuContentProps) -> Element {
     let (x, y) = position();
     let open = menu_ctx.open;
 
+    // The panel is portaled to the overlay outlet, so it no longer lives inside the
+    // `root_id` wrapper. Give it a stable id of its own so the scroll-block eval can
+    // test containment against the portaled panel directly.
+    let generated_id = use_unique_id();
+    let content_id = use_id_or(generated_id, props.id);
+
     let mut menu_ref: Signal<Option<std::rc::Rc<MountedData>>> = use_signal(|| None);
     let focused = move || open() && !menu_ctx.focus.any_focused();
     // If the menu is open, but no item is focused, focus the div itself to capture events
@@ -409,20 +409,20 @@ pub fn ContextMenuContent(props: ContextMenuContentProps) -> Element {
         }
     });
 
-    use_outside_dismiss(ctx.root_id, move || {
-        menu_ctx.focus.blur();
-        menu_ctx.set_open.call(false);
-    });
+    // Outside-click / Escape dismissal is now owned by the overlay manager's central
+    // dismiss stack (the panel registers as a Floating entry via MenuContent with
+    // `dismissable: true`), so the per-component `use_outside_dismiss` is removed.
 
     // A `position: fixed` menu pinned to a click point drifts away from the
     // click target as soon as the page scrolls. Native context menus block
     // scroll while open; match that by suppressing wheel/touchmove outside
-    // the menu without mutating page-level overflow styles.
+    // the menu without mutating page-level overflow styles. Containment is now
+    // tested against the portaled panel (`content_id`), since the panel no longer
+    // lives inside `root_id`.
     use_effect_with_cleanup(move || {
         if !open() {
             return Box::new(|| {}) as Box<dyn FnOnce()>;
         }
-        let root = ctx.root_id;
         let eval = dioxus::document::eval(
             "const id = await dioxus.recv(); \
              const f = (e) => { \
@@ -435,7 +435,7 @@ pub fn ContextMenuContent(props: ContextMenuContentProps) -> Element {
              window.removeEventListener('wheel', f, true); \
              window.removeEventListener('touchmove', f, true);",
         );
-        let _ = eval.send(root.cloned());
+        let _ = eval.send(content_id.cloned());
         Box::new(move || {
             let _ = eval.send(true);
         })
@@ -458,7 +458,7 @@ pub fn ContextMenuContent(props: ContextMenuContentProps) -> Element {
 
     rsx! {
         menu::MenuContent {
-            id: props.id,
+            id: Some(content_id.cloned()),
             attributes,
             {props.children}
         }

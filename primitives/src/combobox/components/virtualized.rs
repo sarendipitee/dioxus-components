@@ -8,8 +8,11 @@ use super::super::context::ComboboxContext;
 use crate::{
     dioxus_attributes::attributes,
     floating::{style_prop, use_position},
-    listbox::{use_listbox_container_with_open, use_listbox_id},
-    merge_attributes, ContentAlign, ContentSide,
+    listbox::{use_listbox_container_with_open, use_listbox_id, ListboxContext},
+    merge_attributes,
+    overlay::{use_overlay_registration, OverlayKind, OverlayRegistration, RegisterArgs},
+    portal::{use_portal, PortalIn},
+    ContentAlign, ContentSide,
 };
 
 /// Props for [`VirtualizedComboboxOptions`].
@@ -45,6 +48,10 @@ pub struct VirtualizedComboboxOptionsProps {
 }
 
 /// A virtualized combobox listbox that preserves listbox/option semantics.
+///
+/// Root-tree half: provides `ListboxContext` and portals the open listbox through
+/// the overlay manager. The virtualization state + DOM live in
+/// [`VirtualizedComboboxOptionsRendered`], the portaled body.
 #[component]
 pub fn VirtualizedComboboxOptions(props: VirtualizedComboboxOptionsProps) -> Element {
     let ctx = use_context::<ComboboxContext>();
@@ -52,6 +59,126 @@ pub fn VirtualizedComboboxOptions(props: VirtualizedComboboxOptionsProps) -> Ele
     let id = use_listbox_id(props.id, ctx.selectable.list_id);
     let listbox = use_listbox_container_with_open(id, ctx.selectable, open);
     let render = listbox.render;
+    let listbox_ctx: ListboxContext = use_context();
+
+    let portal = use_portal();
+    let mut ctx_dismiss = ctx;
+    let on_dismiss = use_callback(move |_| {
+        ctx_dismiss.set_open(false);
+    });
+
+    if !render() {
+        return rsx! {};
+    }
+
+    rsx! {
+        VirtualizedComboboxOptionsPortaled {
+            ctx,
+            listbox_ctx,
+            id: listbox.id,
+            open,
+            portal,
+            on_dismiss,
+            props,
+        }
+    }
+}
+
+/// Props for [`VirtualizedComboboxOptionsPortaled`], the in-portal registration
+/// + portal-mount half.
+#[derive(Props, Clone, PartialEq)]
+struct VirtualizedComboboxOptionsPortaledProps {
+    ctx: ComboboxContext,
+    listbox_ctx: ListboxContext,
+    id: Memo<String>,
+    open: Memo<bool>,
+    portal: crate::portal::PortalId,
+    on_dismiss: Callback<()>,
+    props: VirtualizedComboboxOptionsProps,
+}
+
+/// Registers the virtualized listbox as a Floating overlay entry and renders it
+/// through the shared outlet.
+#[component]
+fn VirtualizedComboboxOptionsPortaled(
+    props: VirtualizedComboboxOptionsPortaledProps,
+) -> Element {
+    let id = props.id;
+    let open = props.open;
+    let portal = props.portal;
+    let on_dismiss = props.on_dismiss;
+
+    let reg: OverlayRegistration = use_overlay_registration(move || RegisterArgs {
+        kind: OverlayKind::Floating,
+        portal,
+        modal: false,
+        dismissable: true,
+        on_dismiss,
+        parent: None,
+        trigger_id: None,
+        content_root_id: Some(id.peek().clone()),
+    });
+
+    use_effect(move || {
+        reg.set_dom_ids(None, Some(id()));
+    });
+    use_effect(move || {
+        reg.set_closing(!open());
+    });
+
+    rsx! {
+        PortalIn { portal,
+            VirtualizedComboboxOptionsRendered {
+                ctx: props.ctx,
+                listbox_ctx: props.listbox_ctx,
+                reg,
+                id,
+                inner: props.props,
+            }
+        }
+    }
+}
+
+/// A tiny `Copy` handle exposing the listbox id, mirroring the field access
+/// (`listbox.id`) the virtualization body uses for scroll helpers.
+#[derive(Clone, Copy)]
+struct ListboxIdHandle {
+    id: Memo<String>,
+}
+
+/// Props for [`VirtualizedComboboxOptionsRendered`], the portaled DOM body.
+#[derive(Props, Clone, PartialEq)]
+struct VirtualizedComboboxOptionsRenderedProps {
+    ctx: ComboboxContext,
+    listbox_ctx: ListboxContext,
+    reg: OverlayRegistration,
+    id: Memo<String>,
+    inner: VirtualizedComboboxOptionsProps,
+}
+
+/// The portaled DOM body: re-provides `ComboboxContext` + `ListboxContext` and
+/// owns all virtualization state. Emits `--overlay-z`. The listbox container hook
+/// stays in the Root-tree wrapper — here we read the re-provided `ListboxContext`
+/// and the shared listbox id directly so option-state registration is not
+/// duplicated.
+#[component]
+fn VirtualizedComboboxOptionsRendered(
+    props: VirtualizedComboboxOptionsRenderedProps,
+) -> Element {
+    let ctx = props.ctx;
+    let reg = props.reg;
+    let id = props.id;
+    let listbox_ctx = props.listbox_ctx;
+    // Re-provide both contexts INSIDE the portal (the load-bearing rule).
+    use_context_provider(|| ctx);
+    use_context_provider(|| listbox_ctx);
+
+    // Reconstruct the original prop bindings used throughout the body.
+    let props = props.inner;
+    let open = use_memo(move || ctx.store.dropdown_opened());
+    let render = listbox_ctx.render;
+    // Local handle mirroring the old `listbox.id` usage in scroll helpers.
+    let listbox = ListboxIdHandle { id };
 
     let mut scroll_offset = use_signal(|| 0u32);
     let mut viewport_size = use_signal(|| 0u32);
@@ -217,11 +344,15 @@ pub fn VirtualizedComboboxOptions(props: VirtualizedComboboxOptionsProps) -> Ele
     let canvas_height = (count as u32 * e1).max(vp);
     let set_size = count.to_string();
 
+    // z-index assigned by the overlay manager via open order.
+    let z_style = reg.z().map(|z| format!("--overlay-z: {z};"));
+
     let floating_attrs = attributes!(div {
         position: position(),
         top: top(),
         left: left(),
         visibility: visibility(),
+        style: z_style,
         "data-floating": floating_active.then_some("true"),
         "data-side": resolved_side.read().as_str(),
         "data-align": resolved_align.read().as_str(),

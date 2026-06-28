@@ -8,7 +8,7 @@ use crate::{
     use_animated_open, use_effect, use_effect_cleanup, use_id_or, use_unique_id,
 };
 
-#[derive(Clone, Copy)]
+#[derive(Clone, Copy, PartialEq)]
 pub(crate) struct ListboxContext {
     pub(crate) render: ReadSignal<bool>,
 }

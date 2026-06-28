@@ -57,7 +57,9 @@
      (margin-top: var(--space)) is migrated into the offset() middleware. The
      `:not([data-floating])` block below restores the static placement on native,
      where the hook is inert. */
-  z-index: 1000;
+  /* z-index assigned by the overlay manager via `--overlay-z` (open order), now
+     that the listbox is portaled to the shared outlet. */
+  z-index: var(--overlay-z);
   box-sizing: border-box;
   padding: var(--space);
   opacity: 0;

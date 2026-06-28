@@ -48,7 +48,9 @@
      `:not([data-floating])` block below restores the static placement on native. The
      fixed 200px width matches the `.dx_combobox` trigger width and survives both the
      native (absolute) and web (fixed) positioning strategies unchanged. */
-  z-index: 50;
+  /* z-index assigned by the overlay manager via `--overlay-z` (open order), now
+     that the listbox is portaled to the shared outlet. */
+  z-index: var(--overlay-z);
   display: flex;
   overflow: hidden auto;
   width: 200px;
@@ -250,7 +252,12 @@
 }
 
 .dx_combobox_pills_root [data-combobox-dropdown-target] > [role="listbox"] {
-  z-index: 50;
+  /* NOTE (overlay manager / Wave 4): the listbox is now portaled to the shared
+     outlet, so it is no longer a descendant of `[data-combobox-dropdown-target]`
+     and this scoped rule will not match the portaled panel on web. Kept for the
+     native/inline fallback. The portaled panel's z-index comes from the overlay
+     manager via `--overlay-z` on `.dx_combobox_list`. */
+  z-index: var(--overlay-z);
   display: flex;
   overflow: hidden auto;
   max-height: 300px;

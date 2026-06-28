@@ -262,6 +262,7 @@ pub fn MenubarMenu(props: MenubarMenuProps) -> Element {
     let initial_focus = use_signal(|| None);
     let trigger_id = use_unique_id();
     let trigger_ref = use_signal(|| None);
+    let overlay_id = use_signal(|| None);
     let mut menu_ctx = use_context_provider(|| MenubarMenuContext {
         index: props.index,
         focus,
@@ -280,6 +281,7 @@ pub fn MenubarMenu(props: MenubarMenuProps) -> Element {
         focus,
         trigger_id,
         trigger_ref,
+        overlay_id,
     });
 
     use_effect(move || {

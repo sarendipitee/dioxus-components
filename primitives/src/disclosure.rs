@@ -26,7 +26,7 @@ impl Default for UseDisclosureOptions {
 }
 
 /// A cloneable handle for disclosure state.
-#[derive(Clone, Copy)]
+#[derive(Clone, Copy, PartialEq)]
 pub struct Disclosure {
     opened: Memo<bool>,
     set_opened: Callback<bool>,

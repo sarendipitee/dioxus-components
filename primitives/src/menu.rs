@@ -9,14 +9,17 @@ use crate::{
         FocusState,
     },
     merge_attributes,
+    overlay::{use_overlay_registration, OverlayId, OverlayKind, OverlayRegistration, RegisterArgs},
+    portal::{use_portal, PortalIn},
     selectable::{pointer_select_cancel, pointer_select_commit, pointer_select_start},
-    use_animated_open, use_effect_with_cleanup, use_id_or, use_unique_id, ContentAlign, ContentSide,
+    use_animated_open, use_effect_with_cleanup, use_id_or, use_unique_id, ContentAlign,
+    ContentSide,
 };
 use dioxus::prelude::*;
 use dioxus_attributes::attributes;
 
 /// Shared menu state provided to menu triggers, content, and items.
-#[derive(Clone, Copy)]
+#[derive(Clone, Copy, PartialEq)]
 pub struct MenuContext {
     /// Whether this menu is open.
     pub(crate) open: Memo<bool>,
@@ -34,6 +37,13 @@ pub struct MenuContext {
     /// [`crate::menubar::MenubarTrigger`]) via `onmounted`. Benign for consumers
     /// that position differently (e.g. context_menu) — they simply never read it.
     pub(crate) trigger_ref: Signal<Option<Rc<MountedData>>>,
+    /// The overlay manager id of this menu's portaled panel, once registered. Set
+    /// only inside the re-provided context within the portaled `MenuContent` body
+    /// (see [`MenuContentPortaled`]). A nested [`MenuSubContent`] reads this so it
+    /// can register itself as a CHILD overlay entry (`parent = Some(this)`), which
+    /// keeps the submenu inside the parent's union dismiss predicate and stacks it
+    /// above the parent. `None` in the Root tree (before the panel is portaled).
+    pub(crate) overlay_id: Signal<Option<OverlayId>>,
 }
 
 /// Provides shared menu state to descendants in the current component scope.
@@ -47,6 +57,7 @@ pub(crate) fn use_menu_provider(
     let focus = use_focus_provider(roving_loop);
     let trigger_id = use_unique_id();
     let trigger_ref = use_signal(|| None);
+    let overlay_id = use_signal(|| None);
     let disabled = use_memo(move || disabled());
     let ctx = use_context_provider(|| MenuContext {
         open,
@@ -55,6 +66,7 @@ pub(crate) fn use_menu_provider(
         focus,
         trigger_id,
         trigger_ref,
+        overlay_id,
     });
 
     use_effect(move || {
@@ -65,59 +77,6 @@ pub(crate) fn use_menu_provider(
     });
 
     ctx
-}
-
-/// Light-dismisses an open menu when pointerdown or focus moves outside `id`.
-pub(crate) fn use_menu_outside_dismiss(
-    id: impl Readable<Target = String> + Copy + 'static,
-    mut ctx: MenuContext,
-    prevent_pointer_default: bool,
-) {
-    use_effect_with_cleanup(move || {
-        let mut eval = if (ctx.open)() {
-            let mut eval = document::eval(
-                "const id = await dioxus.recv();
-                const preventPointerDefault = await dioxus.recv();
-                const onPointer = e => {
-                    const root = document.getElementById(id);
-                    if (root && !root.contains(e.target)) {
-                        if (preventPointerDefault) {
-                            e.preventDefault();
-                            e.stopPropagation();
-                            e.stopImmediatePropagation();
-                        }
-                        dioxus.send(true);
-                    }
-                };
-                const onFocus = e => {
-                    const root = document.getElementById(id);
-                    if (root && !root.contains(e.target) && !e.target.contains(root)) dioxus.send(true);
-                };
-                document.addEventListener('pointerdown', onPointer, true);
-                document.addEventListener('focusin', onFocus, true);
-                await dioxus.recv();
-                document.removeEventListener('pointerdown', onPointer, true);
-                document.removeEventListener('focusin', onFocus, true);",
-            );
-            let _ = eval.send(id.cloned());
-            let _ = eval.send(prevent_pointer_default);
-            spawn(async move {
-                while let Ok(true) = eval.recv().await {
-                    ctx.focus.blur();
-                    ctx.set_open.call(false);
-                }
-            });
-            Some(eval)
-        } else {
-            None
-        };
-
-        move || {
-            if let Some(eval) = eval.as_mut() {
-                let _ = eval.send(true);
-            }
-        }
-    });
 }
 
 /// Props for [`MenuRoot`].
@@ -200,49 +159,182 @@ pub struct MenuContentProps {
 }
 
 /// Shared popup content for a menu.
+///
+/// This is the Root-tree half: it keeps the component's own [`MenuContext`] (for
+/// the trigger that stays in the tree), drives `use_animated_open`, and while open
+/// renders the panel through the shared overlay outlet via [`MenuContentPortaled`].
+/// The panel DOM and the `MenuContext` re-provide live in the portaled body — see
+/// [`MenuContentRendered`] (context does NOT inherit through the portal, plan
+/// §4.2).
 #[component]
 pub fn MenuContent(props: MenuContentProps) -> Element {
-    let mut ctx: MenuContext = use_context();
+    let ctx: MenuContext = use_context();
     let unique_id = use_unique_id();
     let id = use_id_or(unique_id, props.id);
     let render = use_animated_open(id, ctx.open);
 
-    let onkeydown = move |event: Event<KeyboardData>| {
-        match event.key() {
-            Key::Escape => {
-                ctx.focus.blur();
-                ctx.set_open.call(false);
-            }
-            Key::ArrowDown => ctx.focus.focus_next(),
-            Key::ArrowUp => {
-                if (ctx.open)() {
-                    ctx.focus.focus_prev();
-                }
-            }
-            Key::Home => ctx.focus.focus_first(),
-            Key::End => ctx.focus.focus_last(),
-            _ => return,
-        }
-        event.prevent_default();
-        event.stop_propagation();
-    };
-
     rsx! {
         if render() {
-            div {
+            MenuContentPortaled {
+                ctx,
                 id,
                 role: props.role,
-                aria_orientation: "vertical",
-                aria_labelledby: "{ctx.trigger_id}",
-                "data-state": if (ctx.open)() { "open" } else { "closed" },
-                onkeydown,
-                onpointerdown: move |event| {
-                    event.prevent_default();
-                    event.stop_propagation();
-                },
-                ..props.attributes,
-                {props.children}
+                attributes: props.attributes,
+                children: props.children,
             }
+        }
+    }
+}
+
+/// Props for [`MenuContentPortaled`], the in-portal half of [`MenuContent`].
+#[derive(Props, Clone, PartialEq)]
+struct MenuContentPortaledProps {
+    ctx: MenuContext,
+    id: Memo<String>,
+    role: &'static str,
+    attributes: Vec<Attribute>,
+    children: Element,
+}
+
+/// Registers the menu panel as an [`OverlayKind::Floating`] entry and renders it
+/// through the shared [`crate::overlay::OverlayOutlet`].
+///
+/// Parent linkage: the incoming [`MenuContext::overlay_id`] carries the *parent*
+/// menu's overlay id when this content is a submenu (set by [`MenuSubContent`]),
+/// or `None` for a top-level menu. We register with `parent` = that id so the
+/// union dismiss predicate and z-stacking treat a submenu as inside its parent.
+///
+/// The trigger id (`ctx.trigger_id`) and the panel content root id (`id`) are
+/// registered so the manager's union "inside" predicate treats clicks on either
+/// subtree as inside — the trigger now lives in a different DOM subtree than the
+/// portaled panel.
+#[component]
+fn MenuContentPortaled(props: MenuContentPortaledProps) -> Element {
+    let mut ctx = props.ctx;
+    let id = props.id;
+    let trigger_id = ctx.trigger_id;
+    // The parent menu's overlay id (if this content is a submenu).
+    let parent = *ctx.overlay_id.peek();
+
+    let portal = use_portal();
+
+    let set_open = ctx.set_open;
+    let mut focus = ctx.focus;
+    let on_dismiss = use_callback(move |_| {
+        focus.blur();
+        set_open.call(false);
+    });
+
+    let reg: OverlayRegistration = use_overlay_registration(move || RegisterArgs {
+        kind: OverlayKind::Floating,
+        portal,
+        modal: false,
+        dismissable: true,
+        on_dismiss,
+        parent,
+        trigger_id: Some(trigger_id.peek().clone()),
+        content_root_id: Some(id.peek().clone()),
+    });
+
+    // Expose this entry's id to descendants (a nested MenuSubContent reads it as
+    // its `parent`). Stored on the ctx so the re-provided clone inside the portal
+    // carries it.
+    use_effect(move || {
+        ctx.overlay_id.set(reg.id());
+    });
+
+    // Keep the manager's "inside" predicate pointed at the live trigger + content
+    // ids once the elements have mounted.
+    use_effect(move || {
+        reg.set_dom_ids(Some(trigger_id()), Some(id()));
+    });
+
+    // Exit-phase exclusion: mark `closing` while the menu is animating out.
+    let open = ctx.open;
+    use_effect(move || {
+        reg.set_closing(!open());
+    });
+
+    rsx! {
+        PortalIn { portal,
+            MenuContentRendered {
+                ctx,
+                reg,
+                id,
+                role: props.role,
+                attributes: props.attributes.clone(),
+                children: props.children,
+            }
+        }
+    }
+}
+
+/// Props for [`MenuContentRendered`], the portaled DOM body.
+#[derive(Props, Clone, PartialEq)]
+struct MenuContentRenderedProps {
+    ctx: MenuContext,
+    reg: OverlayRegistration,
+    id: Memo<String>,
+    role: &'static str,
+    attributes: Vec<Attribute>,
+    children: Element,
+}
+
+/// The rendered menu panel, a direct child of `PortalIn`. Re-provides a CLONE of
+/// the menu's [`MenuContext`] (with `overlay_id` now set) so in-panel consumers
+/// (`MenuItem`, `MenuSub`, `MenuSubContent`, the focus state, …) resolve their
+/// context up the *portaled* render chain. Emits `--overlay-z` from the manager.
+#[component]
+fn MenuContentRendered(props: MenuContentRenderedProps) -> Element {
+    let mut ctx = props.ctx;
+    let reg = props.reg;
+    let id = props.id;
+
+    // Re-provide a clone of the menu ctx INSIDE the portal (the load-bearing rule).
+    use_context_provider(|| ctx);
+    // MenuItem consumes the roving-focus `FocusState` from context
+    // (`use_focus_controlled_item_disabled`), which the menu root provides outside
+    // the portal. Re-provide it here so portaled items resolve it up THIS chain.
+    use_context_provider(|| ctx.focus);
+
+    let z_style = reg.z().map(|z| format!("--overlay-z: {z};"));
+    let base = attributes!(div {
+        style: z_style,
+    });
+    let attributes = merge_attributes(vec![base, props.attributes]);
+
+    rsx! {
+        div {
+            id,
+            role: props.role,
+            aria_orientation: "vertical",
+            aria_labelledby: "{ctx.trigger_id}",
+            "data-state": if (ctx.open)() { "open" } else { "closed" },
+            onkeydown: move |event: Event<KeyboardData>| {
+                match event.key() {
+                    Key::Escape => {
+                        ctx.focus.blur();
+                        ctx.set_open.call(false);
+                    }
+                    Key::ArrowDown => ctx.focus.focus_next(),
+                    Key::ArrowUp => {
+                        if (ctx.open)() {
+                            ctx.focus.focus_prev();
+                        }
+                    }
+                    Key::Home => ctx.focus.focus_first(),
+                    Key::End => ctx.focus.focus_last(),
+                    _ => return,
+                }
+                event.prevent_default();
+                event.stop_propagation();
+            },
+            onpointerdown: move |event| {
+                event.prevent_default();
+                event.stop_propagation();
+            },
+            ..attributes,
+            {props.children}
         }
     }
 }
@@ -830,6 +922,18 @@ pub fn MenuSubContent(props: MenuSubContentProps) -> Element {
         (sub_ctx.open)()
     });
     use_context_provider(|| sub_ctx.focus);
+    // The parent menu's portaled MenuContext exposes its overlay id; mirror it into
+    // this submenu's MenuContext so the inner MenuContentPortaled registers with
+    // `parent = Some(parent menu id)` (CHILD entry — union dismiss + z-stacking).
+    // A plain Signal kept in sync via effect; the parent menu is already open and
+    // registered by the time this submenu's panel mounts, so the id is available at
+    // registration time.
+    let parent_menu_ctx: MenuContext = use_context();
+    let parent_overlay = parent_menu_ctx.overlay_id;
+    let mut overlay_id: Signal<Option<OverlayId>> = use_signal(move || *parent_overlay.peek());
+    use_effect(move || {
+        overlay_id.set(parent_overlay());
+    });
     use_context_provider(|| MenuContext {
         open: sub_ctx.open,
         set_open,
@@ -837,6 +941,7 @@ pub fn MenuSubContent(props: MenuSubContentProps) -> Element {
         focus: sub_ctx.focus,
         trigger_id: sub_ctx.trigger_id,
         trigger_ref: sub_ctx.trigger_ref,
+        overlay_id,
     });
 
     // Floating-element positioning for the submenu. A submenu naturally opens to the
@@ -940,6 +1045,7 @@ mod tests {
         let focus = use_focus_provider(ReadSignal::new(Signal::new(true)));
         let trigger_id = use_signal(|| "test-trigger".to_string());
         let trigger_ref = use_signal(|| None);
+        let overlay_id = use_signal(|| None);
         let checked = use_signal(|| true);
         let radio_value = use_signal(|| Some("one".to_string()));
 
@@ -950,6 +1056,7 @@ mod tests {
             focus,
             trigger_id,
             trigger_ref,
+            overlay_id,
         });
 
         rsx! {
@@ -979,5 +1086,141 @@ mod tests {
         assert!(html.contains("role=\"menuitemcheckbox\""));
         assert!(html.contains("role=\"menuitemradio\""));
         assert!(html.contains("data-state=\"checked\""));
+    }
+
+    /// Overlay-manager migration proof for the menu core (plan §4.2): an open
+    /// menu portals its panel through the shared outlet, an in-panel consumer
+    /// resolves the re-provided `MenuContext` up the *portaled* render chain, and
+    /// the panel carries the manager-assigned `--overlay-z`. Mirrors
+    /// `popover::tests::open_popover_portals_and_resolves_popover_ctx_inside_portal`.
+    mod overlay {
+        use super::super::*;
+        use crate::overlay::OverlayProvider;
+
+        /// Resolves `MenuContext` from inside the portaled panel. If the re-provide
+        /// were on the wrong scope, `use_context` would panic during render.
+        #[component]
+        fn MenuCtxProbe() -> Element {
+            let ctx: MenuContext = use_context();
+            let open = (ctx.open)();
+            rsx! {
+                span { class: "menu-ctx-probe", "open={open}" }
+            }
+        }
+
+        #[component]
+        fn OpenMenuApp() -> Element {
+            let open = use_memo(|| true);
+            let set_open = use_callback(|_| {});
+            rsx! {
+                OverlayProvider {
+                    MenuRoot {
+                        open,
+                        set_open,
+                        disabled: ReadSignal::new(Signal::new(false)),
+                        roving_loop: ReadSignal::new(Signal::new(true)),
+                        MenuContent {
+                            MenuCtxProbe {}
+                            "panel-marker"
+                        }
+                    }
+                }
+            }
+        }
+
+        #[test]
+        fn open_menu_portals_and_resolves_menu_ctx_inside_portal() {
+            let mut dom = VirtualDom::new(OpenMenuApp);
+            dom.rebuild_in_place();
+            // `use_animated_open` flips `show_in_dom` in an effect, so the portaled
+            // content mounts on a subsequent flush. Drain pending effect work.
+            for _ in 0..8 {
+                let _ = dom.render_immediate_to_vec();
+            }
+            let html = dioxus_ssr::render(&dom);
+
+            assert!(
+                html.contains("panel-marker"),
+                "menu panel not rendered via outlet: {html}"
+            );
+            assert!(
+                html.contains("menu-ctx-probe"),
+                "in-panel consumer did not resolve MenuContext through the portal: {html}"
+            );
+            assert!(
+                html.contains("--overlay-z: calc(var(--z-overlay-base)"),
+                "menu panel did not receive manager --overlay-z: {html}"
+            );
+        }
+
+        /// A probe that reads the overlay manager's entries and renders a marker
+        /// only when some Floating entry registered with a `parent` that points at
+        /// another live entry (the parent menu) — i.e. a submenu CHILD entry.
+        #[component]
+        fn SubmenuParentProbe() -> Element {
+            let ctx = crate::overlay::use_overlay();
+            let entries = ctx.entries();
+            let list = entries.read();
+            let has_child = list
+                .iter()
+                .any(|e| e.parent.is_some() && list.iter().any(|p| Some(p.id) == e.parent));
+            rsx! {
+                if has_child {
+                    span { class: "submenu-has-parent" }
+                }
+            }
+        }
+
+        /// A submenu registered inside an open parent menu must register as a CHILD
+        /// overlay entry (`parent = Some(parent menu id)`). This proves the parent
+        /// linkage is wired through `MenuContext::overlay_id`.
+        #[component]
+        fn OpenSubmenuApp() -> Element {
+            let open = use_memo(|| true);
+            let set_open = use_callback(|_| {});
+            rsx! {
+                OverlayProvider {
+                    SubmenuParentProbe {}
+                    MenuRoot {
+                        open,
+                        set_open,
+                        disabled: ReadSignal::new(Signal::new(false)),
+                        roving_loop: ReadSignal::new(Signal::new(true)),
+                        MenuContent {
+                            MenuSub {
+                                open: Some(true),
+                                MenuSubTrigger::<String> {
+                                    value: "sub".to_string(),
+                                    index: 0usize,
+                                    "Submenu"
+                                }
+                                MenuSubContent {
+                                    "submenu-panel-marker"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        #[test]
+        fn submenu_registers_with_parent_overlay_entry() {
+            let mut dom = VirtualDom::new(OpenSubmenuApp);
+            dom.rebuild_in_place();
+            for _ in 0..16 {
+                let _ = dom.render_immediate_to_vec();
+            }
+            let html = dioxus_ssr::render(&dom);
+
+            assert!(
+                html.contains("submenu-panel-marker"),
+                "submenu panel not rendered via outlet: {html}"
+            );
+            assert!(
+                html.contains("submenu-has-parent"),
+                "no submenu entry registered with a parent overlay id: {html}"
+            );
+        }
     }
 }

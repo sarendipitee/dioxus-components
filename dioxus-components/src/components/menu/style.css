@@ -8,7 +8,9 @@
 }
 
 .dx_menu_content {
-  z-index: 1000;
+  /* z-index assigned by the overlay manager via `--overlay-z` (open order), now
+     that the panel is portaled to the shared outlet. */
+  z-index: var(--overlay-z);
   min-width: 200px;
   padding: var(--space);
   animation: dx-menu-content-animate-in 150ms ease-out forwards;

@@ -31,7 +31,7 @@ impl SelectionMode {
 }
 
 /// Shared context for components built around a selectable listbox.
-#[derive(Clone, Copy)]
+#[derive(Clone, Copy, PartialEq)]
 pub(crate) struct SelectableContext {
     pub(crate) open: Memo<bool>,
     pub(crate) set_open: Callback<bool>,

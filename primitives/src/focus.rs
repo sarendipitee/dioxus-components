@@ -112,7 +112,7 @@ fn prev_index(indices: &[usize], current: Option<usize>, roving_loop: bool) -> O
     }
 }
 
-#[derive(Clone, Copy)]
+#[derive(Clone, Copy, PartialEq)]
 pub(crate) struct FocusState {
     pub(crate) roving_loop: ReadSignal<bool>,
     pub(crate) recent_focus: Signal<Option<usize>>,

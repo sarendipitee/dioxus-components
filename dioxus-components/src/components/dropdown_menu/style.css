@@ -19,7 +19,9 @@
      (margin-top: var(--space)) now lives in the offset() middleware. On native the
      hook is inert (no marker, no coords) and the `:not([data-floating])` fallback
      below provides static placement. */
-  z-index: 1000;
+  /* z-index assigned by the overlay manager via `--overlay-z` (open order), now
+     that the panel is portaled to the shared outlet. */
+  z-index: var(--overlay-z);
   min-width: 200px;
   padding: var(--space);
   animation: dx-slideIn 0.1s ease-out;

@@ -23,7 +23,11 @@
 }
 
 .dx_context_menu_content {
-  z-index: 1000;
+  /* z-index assigned by the overlay manager via `--overlay-z` (open order), now
+     that the panel is portaled to the shared outlet. The panel stays
+     cursor-anchored (position:fixed at the click point); only WHERE it renders
+     changed. */
+  z-index: var(--overlay-z);
   min-width: 220px;
   padding: var(--space);
   opacity: 0;
@@ -125,7 +129,9 @@
 }
 
 .dx_context_menu_sub_content {
-  z-index: 1001;
+  /* Submenu z-index assigned by the overlay manager via `--overlay-z`; registers
+     as a CHILD entry of its parent menu, so it stacks above the parent. */
+  z-index: var(--overlay-z);
   min-width: 220px;
   padding: var(--space);
   pointer-events: auto;

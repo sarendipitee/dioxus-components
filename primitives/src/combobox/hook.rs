@@ -105,7 +105,7 @@ impl ComboboxOptionState {
 }
 
 /// A cloneable combobox store handle.
-#[derive(Clone, Copy)]
+#[derive(Clone, Copy, PartialEq)]
 pub struct ComboboxStore {
     disclosure: Disclosure,
     options: Signal<Vec<ComboboxOptionState>>,

@@ -50,7 +50,9 @@ pub fn DropdownMenu(props: DropdownMenuProps) -> Element {
 
     use_context_provider(|| DropdownMenuContext { initial_focus });
 
-    menu::use_menu_outside_dismiss(root_id, ctx, true);
+    // Outside-click / Escape dismissal is now owned by the overlay manager's central
+    // dismiss stack (the menu panel registers as a Floating entry via MenuContent),
+    // so the per-component `use_menu_outside_dismiss` is no longer needed.
 
     let handle_keydown = move |event: Event<KeyboardData>| {
         if (props.disabled)() {

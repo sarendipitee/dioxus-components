@@ -10,7 +10,7 @@ pub fn default_combobox_filter(query: &str, text: &str) -> bool {
     query.is_empty() || text.to_lowercase().contains(&query)
 }
 
-#[derive(Clone, Copy)]
+#[derive(Clone, Copy, PartialEq)]
 pub(super) struct ComboboxContext {
     pub selectable: SelectableContext,
     pub store: ComboboxStore,

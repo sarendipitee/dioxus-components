@@ -11,7 +11,7 @@ use super::text_search::AdaptiveKeyboard;
 use crate::selectable::SelectableContext;
 
 /// Main context for the select component containing all shared state
-#[derive(Clone, Copy)]
+#[derive(Clone, Copy, PartialEq)]
 pub(super) struct SelectContext {
     /// Shared selectable listbox state.
     pub selectable: SelectableContext,
