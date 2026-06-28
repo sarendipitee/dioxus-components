@@ -2108,9 +2108,8 @@ fn DataTableVirtualBody<T: Clone + PartialEq + 'static>(
     let on_row_resize = use_callback({
         let container_id = container_id.clone();
         move |(index, measured): (usize, u32)| {
-            let m = measurements.peek();
-            let adjustment = resize_item(&state_store, &m, index, measured);
-            drop(m);
+            let measurement_snapshot = measurements.peek().clone();
+            let adjustment = resize_item(&state_store, &measurement_snapshot, index, measured);
 
             if let Some(delta) = adjustment {
                 let current = *state_store.scroll_offset().peek();

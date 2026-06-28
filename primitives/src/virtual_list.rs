@@ -189,9 +189,11 @@ pub fn VirtualList(props: VirtualListProps) -> Element {
             let rect = event.data().get_content_box_size().unwrap_or_default();
             let measured = rect.height.max(1.0).round() as u32;
 
-            let m = measurements.peek();
-            let adjustment = resize_item(&state, &m, idx, measured);
-            drop(m);
+            // Snapshot measurements before mutating item_size_cache. Holding the
+            // memo guard across resize_item invalidates the same memo and can
+            // recurse into the underlying lock during pane resizes.
+            let measurement_snapshot = measurements.peek().clone();
+            let adjustment = resize_item(&state, &measurement_snapshot, idx, measured);
 
             if let Some(delta) = adjustment {
                 let current = *state.scroll_offset().peek();
