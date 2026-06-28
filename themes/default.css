@@ -242,8 +242,8 @@
 
   /* Option/menu row padding. Use for select options, combobox options, menu
      items, command rows, and similar list actions. */
-  --list-item-padding-x: calc(var(--space) * 1.5);
-  --list-item-padding-y: calc(var(--space) * 1);
+  --list-item-padding-x: calc(var(--space) * 2);
+  --list-item-padding-y: calc(var(--space) * 1.5);
 
   /* Overlay manager z-index scale. The overlay manager assigns each live
      overlay a `--overlay-z` of `calc(--z-overlay-base + slot * --z-overlay-step)`
