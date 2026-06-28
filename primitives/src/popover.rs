@@ -319,6 +319,7 @@ fn PopoverPortaled(props: PopoverPortaledProps) -> Element {
         parent: None,
         trigger_id: Some(trigger_id.peek().clone()),
         content_root_id: Some(id.peek().clone()),
+        stack_key: None,
     });
 
     // Keep the manager's "inside" predicate pointed at the live trigger + content

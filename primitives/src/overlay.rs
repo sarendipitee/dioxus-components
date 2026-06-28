@@ -120,6 +120,8 @@ pub struct OverlayEntry {
     pub trigger_id: Option<String>,
     /// DOM id of the portaled content root (for the union "inside" predicate).
     pub content_root_id: Option<String>,
+    /// Optional grouping key for kind-specific stack effects.
+    pub stack_key: Option<String>,
 }
 
 /// Arguments to [`OverlayCtx::register`]. Bundles the immutable registration
@@ -143,6 +145,8 @@ pub struct RegisterArgs {
     pub trigger_id: Option<String>,
     /// Portaled content root DOM id, if known at registration.
     pub content_root_id: Option<String>,
+    /// Optional grouping key for kind-specific stack effects.
+    pub stack_key: Option<String>,
 }
 
 /// Root-scope overlay manager state. Provided once by [`OverlayProvider`] (or
@@ -159,6 +163,7 @@ pub struct OverlayCtx {
     unregister: Callback<OverlayId>,
     set_closing: Callback<(OverlayId, bool)>,
     set_dom_ids: Callback<(OverlayId, Option<String>, Option<String>)>,
+    set_stack_key: Callback<(OverlayId, Option<String>)>,
 }
 
 impl OverlayCtx {
@@ -188,6 +193,11 @@ impl OverlayCtx {
         content_root_id: Option<String>,
     ) {
         self.set_dom_ids.call((id, trigger_id, content_root_id));
+    }
+
+    /// Update the optional grouping key used by kind-specific stack effects.
+    pub fn set_stack_key(&self, id: OverlayId, stack_key: Option<String>) {
+        self.set_stack_key.call((id, stack_key));
     }
 
     /// A reactive read of all entries (subscribes the caller).
@@ -233,6 +243,30 @@ impl OverlayCtx {
         entries
             .iter()
             .filter(|e| e.kind.is_layered() && !e.closing && e.order > entry.order)
+            .count()
+    }
+
+    /// Number of live sheets stacked above this sheet with the same stack key.
+    /// Used by direction-aware sheet depth styling.
+    pub fn same_stack_sheet_depth_above(&self, id: OverlayId) -> usize {
+        let entries = self.entries.read();
+        let Some(entry) = entries.iter().find(|e| e.id == id) else {
+            return 0;
+        };
+        if entry.kind != OverlayKind::Sheet {
+            return 0;
+        }
+        let Some(stack_key) = entry.stack_key.as_deref() else {
+            return 0;
+        };
+        entries
+            .iter()
+            .filter(|e| {
+                e.kind == OverlayKind::Sheet
+                    && !e.closing
+                    && e.order > entry.order
+                    && e.stack_key.as_deref() == Some(stack_key)
+            })
             .count()
     }
 
@@ -292,6 +326,7 @@ fn provide_root_overlay() -> OverlayCtx {
             closing: false,
             trigger_id: args.trigger_id,
             content_root_id: args.content_root_id,
+            stack_key: args.stack_key,
         });
         id
     });
@@ -315,6 +350,12 @@ fn provide_root_overlay() -> OverlayCtx {
         },
     );
 
+    let set_stack_key = Callback::new(move |(id, stack_key): (OverlayId, Option<String>)| {
+        if let Some(e) = entries.write().iter_mut().find(|e| e.id == id) {
+            e.stack_key = stack_key;
+        }
+    });
+
     provide_root_context(OverlayCtx {
         entries,
         next_order,
@@ -322,6 +363,7 @@ fn provide_root_overlay() -> OverlayCtx {
         unregister,
         set_closing,
         set_dom_ids,
+        set_stack_key,
     })
 }
 
@@ -631,6 +673,13 @@ impl OverlayRegistration {
         self.ctx.layered_stack_size()
     }
 
+    /// `data-overlay-sheet-depth`: same-direction sheets stacked above this one.
+    pub fn sheet_depth(&self) -> usize {
+        self.id()
+            .map(|id| self.ctx.same_stack_sheet_depth_above(id))
+            .unwrap_or(0)
+    }
+
     /// Mark / clear the exit (`closing`) phase.
     pub fn set_closing(&self, closing: bool) {
         if let Some(id) = self.id() {
@@ -642,6 +691,13 @@ impl OverlayRegistration {
     pub fn set_dom_ids(&self, trigger_id: Option<String>, content_root_id: Option<String>) {
         if let Some(id) = self.id() {
             self.ctx.set_dom_ids(id, trigger_id, content_root_id);
+        }
+    }
+
+    /// Update the kind-specific stack grouping key.
+    pub fn set_stack_key(&self, stack_key: Option<String>) {
+        if let Some(id) = self.id() {
+            self.ctx.set_stack_key(id, stack_key);
         }
     }
 }
@@ -833,6 +889,7 @@ mod tests {
             parent: None,
             trigger_id: None,
             content_root_id: Some("smoke-content".to_string()),
+            stack_key: None,
         });
 
         rsx! {

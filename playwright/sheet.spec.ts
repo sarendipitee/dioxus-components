@@ -183,6 +183,56 @@ test("closing a nested sheet does not crash the page", async ({ page }) => {
   await expect(sheet1).toHaveCount(0);
 });
 
+test("same-side nested sheets get sheet depth styling", async ({ page }) => {
+  await page.goto("/components/sheet/block#nested", {
+    timeout: 20 * 60 * 1000,
+    waitUntil: "load",
+  });
+
+  await page.getByRole("button", { name: "Open Sheet" }).click();
+  const sheet1 = page.getByRole("dialog", { name: "Sheet 1" });
+  await expect(sheet1).toBeVisible();
+
+  await sheet1.getByRole("button", { name: "Open Sheet 2" }).click();
+  const sheet2 = page.getByRole("dialog", { name: "Sheet 2" });
+  await expect(sheet2).toBeVisible();
+
+  await expect(sheet1).toHaveAttribute("data-overlay-depth", "1");
+  await expect(sheet1).toHaveAttribute("data-overlay-sheet-depth", "1");
+  await expect(sheet2).toHaveAttribute("data-overlay-sheet-depth", "0");
+
+  await page.waitForTimeout(300);
+  const outerOpacity = await sheet1.evaluate((element) =>
+    Number.parseFloat(getComputedStyle(element).opacity)
+  );
+  expect(outerOpacity).toBeCloseTo(0.88, 2);
+});
+
+test("opposite-side nested sheets do not get sheet depth styling", async ({ page }) => {
+  await page.goto("/overlay-nesting", {
+    timeout: 20 * 60 * 1000,
+    waitUntil: "load",
+  });
+
+  await page.getByTestId("open-sheet-1").click();
+  const outer = page.getByTestId("sheet-outer");
+  await expect(outer).toBeVisible();
+
+  await outer.getByTestId("open-sheet-2").click();
+  const inner = page.getByTestId("sheet-inner");
+  await expect(inner).toBeVisible();
+
+  await expect(outer).toHaveAttribute("data-overlay-depth", "1");
+  await expect(outer).toHaveAttribute("data-overlay-sheet-depth", "0");
+  await expect(inner).toHaveAttribute("data-overlay-sheet-depth", "0");
+
+  await page.waitForTimeout(300);
+  const outerOpacity = await outer.evaluate((element) =>
+    Number.parseFloat(getComputedStyle(element).opacity)
+  );
+  expect(outerOpacity).toBe(1);
+});
+
 test("tearing down outer scope while inner is still animating does not crash", async ({ page }) => {
   // This test exercises the UAF window: the inner DialogRoot and its signals
   // live inside the outer DialogPortalBody's children subtree. When the outer

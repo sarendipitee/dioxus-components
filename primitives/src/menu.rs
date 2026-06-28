@@ -236,6 +236,7 @@ fn MenuContentPortaled(props: MenuContentPortaledProps) -> Element {
         parent,
         trigger_id: Some(trigger_id.peek().clone()),
         content_root_id: Some(id.peek().clone()),
+        stack_key: None,
     });
 
     // Expose this entry's id to descendants (a nested MenuSubContent reads it as

@@ -357,6 +357,7 @@ fn HoverCardPortaled(props: HoverCardPortaledProps) -> Element {
         parent: None,
         trigger_id: None,
         content_root_id: Some(id.peek().clone()),
+        stack_key: None,
     });
 
     // Subscribe to `open` HERE, in the non-portaled (Root-descendant) scope, and

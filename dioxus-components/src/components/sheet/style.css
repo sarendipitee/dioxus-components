@@ -1,3 +1,5 @@
+/* stylelint-disable selector-class-pattern */
+
 /* In a nested sheet stack, only the bottommost sheet's backdrop should be
    visible — it dims the page content. Upper sheets' backdrops are hidden so
    peeking sheets behind them remain visible. The `data-overlay-is-bottommost`
@@ -9,7 +11,10 @@
 }
 
 .dx_sheet {
+  --sheet-stack-peek: 24px;
+
   position: fixed;
+
   /* z-index from the overlay manager (assigned by open order). +1 lifts the
      sheet above its own backdrop; the manager spaces entries by
      `--z-overlay-step` so this never collides with the next entry's band. */
@@ -17,13 +22,13 @@
   display: flex;
   box-sizing: border-box;
   flex-direction: column;
+  padding: calc(var(--space) * 8) calc(var(--space) * 6) calc(var(--space) * 6);
   border: none;
   background: var(--overlay);
-  color: var(--overlay-fg);
   box-shadow: 0 2px 10px rgb(0 0 0 / 18%);
+  color: var(--overlay-fg);
   gap: calc(var(--space) * 4);
   opacity: 1;
-  padding: calc(var(--space) * 8) calc(var(--space) * 6) calc(var(--space) * 6);
   transition: opacity 200ms ease-out, transform 200ms ease-out, translate 200ms ease-out, scale 200ms ease-out;
   will-change: transform;
 }
@@ -110,44 +115,41 @@
 
    `--sheet-stack-peek`: how many px of each buried sheet peeks out per depth
    level. Override on a parent element to tune the stack density.
-   `--overlay-depth` is the integer injected inline by the dialog primitive. */
-.dx_sheet {
-  --sheet-stack-peek: 24px;
+   `--overlay-sheet-depth` counts only sheets above this sheet with the same
+   side, so opposite-edge sheets and dialogs do not push sheets back. */
+.dx_sheet[data-state="open"][data-side="right"]:not([data-overlay-sheet-depth="0"]) {
+  opacity: calc(1 - var(--overlay-sheet-depth, 1) * 0.12);
+  scale: calc(1 - var(--overlay-sheet-depth, 1) * 0.03);
+  translate: calc(var(--overlay-sheet-depth, 1) * var(--sheet-stack-peek) * -1) 0;
 }
 
-.dx_sheet[data-state="open"][data-side="right"]:not([data-overlay-depth="0"]) {
-  opacity: calc(1 - var(--overlay-depth, 1) * 0.12);
-  translate: calc(var(--overlay-depth, 1) * var(--sheet-stack-peek) * -1) 0;
-  scale: calc(1 - var(--overlay-depth, 1) * 0.03);
+.dx_sheet[data-state="open"][data-side="left"]:not([data-overlay-sheet-depth="0"]) {
+  opacity: calc(1 - var(--overlay-sheet-depth, 1) * 0.12);
+  scale: calc(1 - var(--overlay-sheet-depth, 1) * 0.03);
+  translate: calc(var(--overlay-sheet-depth, 1) * var(--sheet-stack-peek)) 0;
 }
 
-.dx_sheet[data-state="open"][data-side="left"]:not([data-overlay-depth="0"]) {
-  opacity: calc(1 - var(--overlay-depth, 1) * 0.12);
-  translate: calc(var(--overlay-depth, 1) * var(--sheet-stack-peek)) 0;
-  scale: calc(1 - var(--overlay-depth, 1) * 0.03);
+.dx_sheet[data-state="open"][data-side="top"]:not([data-overlay-sheet-depth="0"]) {
+  opacity: calc(1 - var(--overlay-sheet-depth, 1) * 0.12);
+  scale: calc(1 - var(--overlay-sheet-depth, 1) * 0.03);
+  translate: 0 calc(var(--overlay-sheet-depth, 1) * var(--sheet-stack-peek));
 }
 
-.dx_sheet[data-state="open"][data-side="top"]:not([data-overlay-depth="0"]) {
-  opacity: calc(1 - var(--overlay-depth, 1) * 0.12);
-  translate: 0 calc(var(--overlay-depth, 1) * var(--sheet-stack-peek));
-  scale: calc(1 - var(--overlay-depth, 1) * 0.03);
-}
-
-.dx_sheet[data-state="open"][data-side="bottom"]:not([data-overlay-depth="0"]) {
-  opacity: calc(1 - var(--overlay-depth, 1) * 0.12);
-  translate: 0 calc(var(--overlay-depth, 1) * var(--sheet-stack-peek) * -1);
-  scale: calc(1 - var(--overlay-depth, 1) * 0.03);
+.dx_sheet[data-state="open"][data-side="bottom"]:not([data-overlay-sheet-depth="0"]) {
+  opacity: calc(1 - var(--overlay-sheet-depth, 1) * 0.12);
+  scale: calc(1 - var(--overlay-sheet-depth, 1) * 0.03);
+  translate: 0 calc(var(--overlay-sheet-depth, 1) * var(--sheet-stack-peek) * -1);
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .dx_sheet[data-state="open"][data-side="right"]:not([data-overlay-depth="0"]),
-  .dx_sheet[data-state="open"][data-side="left"]:not([data-overlay-depth="0"]),
-  .dx_sheet[data-state="open"][data-side="top"]:not([data-overlay-depth="0"]),
-  .dx_sheet[data-state="open"][data-side="bottom"]:not([data-overlay-depth="0"]) {
+  .dx_sheet[data-state="open"][data-side="right"]:not([data-overlay-sheet-depth="0"]),
+  .dx_sheet[data-state="open"][data-side="left"]:not([data-overlay-sheet-depth="0"]),
+  .dx_sheet[data-state="open"][data-side="top"]:not([data-overlay-sheet-depth="0"]),
+  .dx_sheet[data-state="open"][data-side="bottom"]:not([data-overlay-sheet-depth="0"]) {
     animation: none;
-    translate: none;
-    scale: none;
     opacity: 1;
+    scale: none;
+    translate: none;
   }
 }
 

@@ -250,6 +250,10 @@ pub struct DialogContentProps {
     #[props(default = OverlayKind::Modal)]
     pub overlay_kind: OverlayKind,
 
+    /// Optional grouping key for kind-specific depth effects. Sheet wrappers pass
+    /// their side here so only same-side sheets push each other back.
+    pub overlay_stack_key: ReadSignal<Option<String>>,
+
     /// Additional attributes to apply to the dialog content element.
     #[props(extends = GlobalAttributes)]
     pub attributes: Vec<Attribute>,
@@ -336,6 +340,7 @@ pub fn DialogContent(props: DialogContentProps) -> Element {
                 close_on_escape: props.close_on_escape,
                 dialog_role: props.dialog_role.clone(),
                 overlay_kind: props.overlay_kind,
+                overlay_stack_key: props.overlay_stack_key,
                 attributes: props.attributes.clone(),
                 {props.children}
             }
@@ -354,6 +359,7 @@ struct DialogPortaledProps {
     close_on_escape: bool,
     dialog_role: String,
     overlay_kind: OverlayKind,
+    overlay_stack_key: ReadSignal<Option<String>>,
     attributes: Vec<Attribute>,
     children: Element,
 }
@@ -387,6 +393,7 @@ fn DialogPortaled(props: DialogPortaledProps) -> Element {
     let dismissable = close_on_escape || close_on_backdrop_click;
     let modal = is_modal();
     let overlay_kind = props.overlay_kind;
+    let overlay_stack_key = props.overlay_stack_key;
     let on_dismiss = use_callback(move |_| {
         set_open.call(false);
     });
@@ -402,12 +409,18 @@ fn DialogPortaled(props: DialogPortaledProps) -> Element {
         parent: None,
         trigger_id: None,
         content_root_id: Some(content_id.peek().clone()),
+        stack_key: overlay_stack_key.peek().clone(),
     });
 
     // Keep the manager's "inside" predicate + focus trap pointed at the live
     // content-root id (the unique id may resolve after first mount).
     use_effect(move || {
         reg.set_dom_ids(None, Some(content_id()));
+    });
+
+    // Keep kind-specific stack grouping reactive while the overlay stays open.
+    use_effect(move || {
+        reg.set_stack_key(overlay_stack_key());
     });
 
     // Drive exit-phase exclusion: while closing (open == false but still
@@ -443,16 +456,32 @@ fn DialogPortaled(props: DialogPortaledProps) -> Element {
     let content_id_str = content_id.cloned();
     let backdrop_id_str = props.backdrop_id.cloned();
 
+    // Overlay z/depth metadata is derived from `reg`, whose backing id signal is
+    // owned by THIS scope (`use_overlay_registration` above). Compute it here,
+    // not in `DialogPortalBody`: the body lives under the root `OverlayOutlet`,
+    // not under `DialogPortaled`, so reading `reg` there is a cross-scope
+    // `CopyValue` access (warns, and can fault once this scope unmounts first).
+    // These reads still subscribe to the manager's `entries` (owned by the common
+    // `OverlayProvider` ancestor), so `DialogPortaled` re-renders and forwards
+    // fresh values whenever the stack changes.
+    let overlay_z = reg.z();
+    let depth = reg.depth();
+    let sheet_depth = reg.sheet_depth();
+    let stack_size = reg.stack_size();
+
     rsx! {
         PortalIn { portal,
             DialogPortalBody {
                 ctx,
-                reg,
                 is_open,
                 content_id: content_id_str,
                 backdrop_id: backdrop_id_str,
                 aria_labelledby,
                 aria_describedby,
+                overlay_z,
+                depth,
+                sheet_depth,
+                stack_size,
                 backdrop_class: props.backdrop_class.clone(),
                 close_on_backdrop_click,
                 overlay_kind,
@@ -468,7 +497,6 @@ fn DialogPortaled(props: DialogPortaledProps) -> Element {
 #[derive(Props, Clone, PartialEq)]
 struct DialogPortalBodyProps {
     ctx: DialogCtx,
-    reg: OverlayRegistration,
     /// Open state, snapshotted in the non-portaled parent each render and passed
     /// in as a plain `bool`. The body must NOT read the Root-owned `ctx.open`
     /// Memo directly: the portaled subtree lives under the root `OverlayOutlet`,
@@ -489,6 +517,14 @@ struct DialogPortalBodyProps {
     backdrop_id: String,
     aria_labelledby: String,
     aria_describedby: String,
+    /// Overlay z/depth metadata, snapshotted in the non-portaled parent
+    /// (`DialogPortaled`) where the backing `OverlayRegistration` id signal is
+    /// owned. Forwarded as plain values so the body never reads `reg` across the
+    /// portal boundary.
+    overlay_z: Option<String>,
+    depth: usize,
+    sheet_depth: usize,
+    stack_size: usize,
     backdrop_class: String,
     close_on_backdrop_click: bool,
     overlay_kind: OverlayKind,
@@ -505,7 +541,6 @@ struct DialogPortalBodyProps {
 #[component]
 fn DialogPortalBody(props: DialogPortalBodyProps) -> Element {
     let ctx = props.ctx;
-    let reg = props.reg;
     let is_open = props.is_open;
     let set_open = ctx.set_open;
     let close_on_backdrop_click = props.close_on_backdrop_click;
@@ -544,8 +579,10 @@ fn DialogPortalBody(props: DialogPortalBodyProps) -> Element {
     let base = attributes!(div { class: "dx-dialog" });
     let attributes = merge_attributes(vec![base, props.attributes.clone()]);
 
-    let depth = reg.depth();
-    let stack_size = reg.stack_size();
+    let depth = props.depth;
+    let sheet_depth = props.sheet_depth;
+    let stack_size = props.stack_size;
+    let overlay_z = props.overlay_z.clone();
     let is_bottommost = stack_size == 0 || depth == stack_size - 1;
     let overlay_kind = props.overlay_kind;
     let kind_str = match overlay_kind {
@@ -562,7 +599,7 @@ fn DialogPortalBody(props: DialogPortalBodyProps) -> Element {
             div {
                 id: backdrop_id,
                 class: props.backdrop_class.clone(),
-                style: reg.z().map(|z| format!("--overlay-z: {z};")),
+                style: overlay_z.as_ref().map(|z| format!("--overlay-z: {z};")),
                 aria_hidden: (!is_open).then_some("true"),
                 "data-state": if is_open { "open" } else { "closed" },
                 "data-overlay-kind": kind_str,
@@ -582,9 +619,14 @@ fn DialogPortalBody(props: DialogPortalBodyProps) -> Element {
                 aria_labelledby,
                 aria_describedby,
                 tabindex: "-1",
-                style: reg.z().map(|z| format!("--overlay-z: {z}; --overlay-depth: {depth};")),
+                style: overlay_z.as_ref().map(|z| {
+                    format!(
+                        "--overlay-z: {z}; --overlay-depth: {depth}; --overlay-sheet-depth: {sheet_depth};"
+                    )
+                }),
                 "data-state": if is_open { "open" } else { "closed" },
                 "data-overlay-depth": "{depth}",
+                "data-overlay-sheet-depth": "{sheet_depth}",
                 "data-overlay-stack-size": "{stack_size}",
                 onclick: move |e| e.stop_propagation(),
                 ..attributes,

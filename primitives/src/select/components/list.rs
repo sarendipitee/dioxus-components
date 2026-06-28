@@ -138,6 +138,7 @@ fn SelectListPortaled(props: SelectListPortaledProps) -> Element {
         parent: None,
         trigger_id: None,
         content_root_id: Some(id.peek().clone()),
+        stack_key: None,
     });
 
     // Keep the manager's "inside" predicate pointed at the live listbox content id.

@@ -126,6 +126,7 @@ pub fn Sheet(props: SheetProps) -> Element {
                 close_on_escape: props.close_on_escape,
                 backdrop_class: DialogStyles::dx_dialog_backdrop,
                 overlay_kind: OverlayKind::Sheet,
+                overlay_stack_key: Some(props.side.as_str().to_string()),
                 attributes: content_attributes,
 
                 if props.with_close_button {

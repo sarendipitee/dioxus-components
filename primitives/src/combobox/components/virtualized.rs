@@ -115,6 +115,7 @@ fn VirtualizedComboboxOptionsPortaled(props: VirtualizedComboboxOptionsPortaledP
         parent: None,
         trigger_id: None,
         content_root_id: Some(id.peek().clone()),
+        stack_key: None,
     });
 
     use_effect(move || {
