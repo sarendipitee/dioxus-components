@@ -10,13 +10,13 @@ test('pointer navigation', async ({ page }) => {
   const contextMenu = page.getByRole('menu').first();
   await page.waitForTimeout(600);
   await expect(contextMenu).toHaveAttribute('data-state', 'open');
-  await expect(page.locator('.dx_context_menu_label', { hasText: 'Canvas' }).first()).toBeVisible();
+  await expect(page.locator('.dx_menu_label', { hasText: 'Canvas' }).first()).toBeVisible();
   await expect(page.getByRole('menuitem', { name: 'Edit' }).first()).toContainText('⌘E');
   await expect(page.getByRole('separator')).toHaveCount(2);
   await expect(page.getByRole('menuitemcheckbox', { name: 'Show line numbers' }).first()).toHaveAttribute('data-state', 'checked');
   const arrangeItem = page.getByRole('menuitem', { name: 'Arrange' }).first();
   await arrangeItem.hover();
-  const submenu = page.locator('.dx_context_menu_sub_content').first();
+  const submenu = page.locator('.dx_menu_sub_content').first();
   await expect(submenu).toHaveAttribute('data-state', 'open');
   await expect(submenu.getByRole('menuitem', { name: 'Bring to front' })).toBeVisible();
   await expect(arrangeItem).toHaveCSS('background-color', 'rgb(247, 247, 247)');

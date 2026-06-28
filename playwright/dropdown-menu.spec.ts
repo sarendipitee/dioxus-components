@@ -5,7 +5,7 @@ test('dropdown menu shared wrappers', async ({ page }) => {
   const mainDemo = page.locator('.dx-component-section').first();
   const menuButton = mainDemo.getByRole('button', { name: 'Open Menu' });
   const menuElement = menuButton.locator('xpath=..');
-  const mainMenuContent = page.getByRole('menu').filter({ has: page.locator('.dx_dropdown_menu_label', { hasText: 'Actions' }) }).first();
+  const mainMenuContent = page.getByRole('menu').filter({ has: page.locator('.dx_menu_label', { hasText: 'Actions' }) }).first();
   const nestedDemo = page
     .locator('.dx-component-demo')
     .filter({ has: page.locator('.dx-component-demo-title', { hasText: 'nested_submenus' }) });
@@ -18,7 +18,7 @@ test('dropdown menu shared wrappers', async ({ page }) => {
   await menuButton.click();
   await expect(menuElement).toHaveAttribute('data-state', 'open');
   await expect(mainMenuContent).toHaveAttribute('data-state', 'open');
-  await expect(mainMenuContent.locator('.dx_dropdown_menu_label', { hasText: 'Actions' })).toBeVisible();
+  await expect(mainMenuContent.locator('.dx_menu_label', { hasText: 'Actions' })).toBeVisible();
   await expect(mainMenuContent.getByRole('menuitem', { name: 'Edit' })).toContainText('⌘E');
   await expect(mainMenuContent.getByRole('separator')).toHaveCount(2);
   await expect(mainMenuContent.getByRole('menuitemcheckbox', { name: 'Show Toolbar' })).toHaveAttribute('data-state', 'checked');
@@ -42,7 +42,7 @@ test('dropdown menu shared wrappers', async ({ page }) => {
   const shareItem = mainMenuContent.getByRole('menuitem', { name: 'Share' });
   await shareItem.hover();
   const submenu = page
-    .locator('.dx_dropdown_menu_sub_content')
+    .locator('.dx_menu_sub_content')
     .filter({ has: page.getByRole('menuitem', { name: 'Copy link' }).first() })
     .first();
   await expect(submenu).toHaveAttribute('data-state', 'open');
@@ -103,19 +103,19 @@ test('dropdown menu shared wrappers', async ({ page }) => {
   await expect(nestedMenuElement).toHaveAttribute('data-state', 'closed');
   await nestedMenuButton.click();
   await expect(nestedMenuElement).toHaveAttribute('data-state', 'open');
-  const workspaceAlpha = page.locator('.dx_dropdown_menu_sub_trigger').filter({ hasText: /^Workspace Alpha$/ });
+  const workspaceAlpha = page.locator('.dx_menu_sub_trigger').filter({ hasText: /^Workspace Alpha$/ });
   await workspaceAlpha.press('ArrowRight');
   const alphaSubmenu = page
-    .locator('.dx_dropdown_menu_sub_content')
-    .filter({ has: page.locator('.dx_dropdown_menu_sub_trigger').filter({ hasText: /^Workspace Alpha \/ Projects$/ }) })
+    .locator('.dx_menu_sub_content')
+    .filter({ has: page.locator('.dx_menu_sub_trigger').filter({ hasText: /^Workspace Alpha \/ Projects$/ }) })
     .first();
   await expect(alphaSubmenu).toHaveAttribute('data-side', 'left');
   const workspaceAlphaBox = await workspaceAlpha.boundingBox();
   const alphaSubmenuBox = await alphaSubmenu.boundingBox();
   if (!workspaceAlphaBox || !alphaSubmenuBox) throw new Error('flipped submenu geometry unavailable');
   expect(alphaSubmenuBox.x + alphaSubmenuBox.width).toBeLessThanOrEqual(workspaceAlphaBox.x + 8);
-  await page.locator('.dx_dropdown_menu_sub_trigger').filter({ hasText: /^Workspace Alpha \/ Projects$/ }).press('ArrowRight');
-  await page.locator('.dx_dropdown_menu_sub_trigger').filter({ hasText: /^Workspace Alpha \/ Projects \/ Q3$/ }).press('ArrowRight');
+  await page.locator('.dx_menu_sub_trigger').filter({ hasText: /^Workspace Alpha \/ Projects$/ }).press('ArrowRight');
+  await page.locator('.dx_menu_sub_trigger').filter({ hasText: /^Workspace Alpha \/ Projects \/ Q3$/ }).press('ArrowRight');
   await page.getByRole('menuitem', { name: 'Workspace Alpha / Projects / Q3 / Launch' }).press('Enter');
   await expect(nestedDemo.getByText('Selected destination: Workspace Alpha / Projects / Q3 / Launch')).toBeVisible();
 });

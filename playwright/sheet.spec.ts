@@ -79,7 +79,10 @@ test("sheet opens from different sides", async ({ page }) => {
 test("sheet root wrapper exists and reflects open state", async ({ page }) => {
   await gotoSheetDemo(page);
 
-  const root = page.locator('[data-slot="sheet-root"]');
+  // The block demo renders inside #dx-preview-block-root; scope to it so the
+  // live instance is targeted rather than the component definition-tree copy
+  // that also mounts a [data-slot="sheet-root"] elsewhere on the page.
+  const root = page.locator('#dx-preview-block-root [data-slot="sheet-root"]');
 
   // Root wrapper should always exist in DOM, initially closed
   await expect(root).toHaveAttribute("data-state", "closed");
@@ -132,13 +135,15 @@ test("sheet backdrop covers viewport and catches clicks", async ({ page }) => {
 
   await openSheet(page, "Right");
 
-  // The root wrapper should be fixed and cover the viewport
-  const root = page.locator('[data-slot="sheet-root"]');
-  await expect(root).toHaveCSS("position", "fixed");
-  await expect(root).toHaveCSS("top", "0px");
-  await expect(root).toHaveCSS("right", "0px");
-  await expect(root).toHaveCSS("bottom", "0px");
-  await expect(root).toHaveCSS("left", "0px");
+  // The backdrop should be fixed and cover the viewport. Sheet now renders its
+  // dismiss backdrop through the shared dialog backdrop element, so assert
+  // against that fixed, inset-0 layer rather than the (now static) root wrapper.
+  const backdrop = page.locator(".dx_dialog_backdrop");
+  await expect(backdrop).toHaveCSS("position", "fixed");
+  await expect(backdrop).toHaveCSS("top", "0px");
+  await expect(backdrop).toHaveCSS("right", "0px");
+  await expect(backdrop).toHaveCSS("bottom", "0px");
+  await expect(backdrop).toHaveCSS("left", "0px");
 
   // Click far left of the sheet panel — on the backdrop
   await page.mouse.click(5, 200);

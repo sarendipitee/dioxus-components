@@ -7,13 +7,13 @@ test("pointer navigation", async ({ page }) => {
   // Assert the menu is open
   const fileMenuContent = page.getByRole("menu").filter({ has: page.getByRole("menuitem", { name: "New" }).first() }).first();
   await expect(fileMenuContent).toHaveAttribute("data-state", "open");
-  await expect(fileMenuContent.locator('.dx_menubar_label', { hasText: "File" }).first()).toBeVisible();
+  await expect(fileMenuContent.locator('.dx_menu_label', { hasText: "File" }).first()).toBeVisible();
   await expect(fileMenuContent.getByRole("menuitem", { name: "New" })).toContainText("⌘N");
   await expect(fileMenuContent.getByRole("separator")).toHaveCount(1);
   await expect(fileMenuContent.getByRole("menuitemcheckbox", { name: "Status bar" })).toHaveAttribute("data-state", "checked");
   const shareItem = fileMenuContent.getByRole("menuitem", { name: "Share" });
   await shareItem.hover();
-  const submenu = page.locator(".dx_menubar_sub_content").first();
+  const submenu = page.locator(".dx_menu_sub_content").first();
   await expect(submenu).toHaveAttribute("data-state", "open");
   await expect(submenu.getByRole("menuitem", { name: "Copy link" })).toBeVisible();
   await expect(shareItem).toHaveCSS("background-color", "rgb(247, 247, 247)");

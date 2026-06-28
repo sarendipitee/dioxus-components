@@ -53,6 +53,29 @@ test('toasts can be opened and dismissed individually', async ({ page }) => {
   await expect(closeButtons).toHaveCount(0);
 });
 
+test('collapsed stack keeps variable-height toasts at measured edge offsets', async ({ page }) => {
+  await page.goto('/components/toast/block#main');
+
+  await page.getByRole('button', { name: 'Info', exact: true }).click();
+  await page.waitForTimeout(100);
+  await page.getByRole('button', { name: 'Success', exact: true }).click();
+  await page.waitForTimeout(500);
+
+  const frontToast = page.getByRole('alertdialog').first();
+  await expect(frontToast).toHaveAttribute('data-type', 'success');
+
+  const frontBox = await frontToast.boundingBox();
+  expect(frontBox).not.toBeNull();
+
+  const olderToast = page.getByRole('alertdialog').nth(1);
+  await expect(olderToast).toHaveAttribute('data-type', 'info');
+  const olderBox = await olderToast.boundingBox();
+  expect(olderBox).not.toBeNull();
+
+  expect(olderBox!.height).toBeGreaterThan(0);
+  expect(Math.abs((frontBox!.y - olderBox!.y) - 15)).toBeLessThanOrEqual(2);
+});
+
 test('expanded stack collapses without replaying entry animation', async ({ page }) => {
   await page.goto('/components/toast/block#permanent');
 
