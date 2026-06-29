@@ -336,8 +336,8 @@ pub struct DatePickerPopoverProps {
     pub children: Element,
 
     /// The popover root component to use.
-    #[props(default = PopoverRoot)]
-    pub popover_root: fn(PopoverRootProps) -> Element,
+    #[props(default = Popover)]
+    pub popover_root: fn(PopoverProps) -> Element,
 }
 
 /// # DatePickerPopover
@@ -410,10 +410,10 @@ pub fn DatePickerPopover(props: DatePickerPopoverProps) -> Element {
         }
     });
 
-    let PopoverRoot = props.popover_root;
+    let Popover = props.popover_root;
 
     rsx! {
-        PopoverRoot {
+        Popover {
             is_modal: props.is_modal,
             open: open(),
             on_open_change: move |v| open.set(v),

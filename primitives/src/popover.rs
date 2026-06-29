@@ -1,4 +1,4 @@
-//! Defines the [`PopoverRoot`] component and its sub-components.
+//! Defines the [`Popover`] component and its sub-components.
 
 use std::rc::Rc;
 
@@ -33,9 +33,9 @@ struct PopoverCtx {
     trigger_ref: Signal<Option<Rc<MountedData>>>,
 }
 
-/// The props for the [`PopoverRoot`] component.
+/// The props for the [`Popover`] component.
 #[derive(Props, Clone, PartialEq)]
-pub struct PopoverRootProps {
+pub struct PopoverProps {
     /// Whether the popover is a modal and should capture focus.
     #[props(default = ReadSignal::new(Signal::new(true)))]
     pub is_modal: ReadSignal<bool>,
@@ -62,9 +62,9 @@ pub struct PopoverRootProps {
     pub children: Element,
 }
 
-/// # PopoverRoot
+/// # Popover
 ///
-/// The `PopoverRoot` component wraps all the popover components and manages the state. You can define a
+/// The `Popover` component wraps all the popover components and manages the state. You can define a
 /// [`PopoverTrigger`] component to toggle the popover's open state, and a [`PopoverContent`] component
 /// to define the content that appears when the popover is open under this component.
 ///
@@ -79,7 +79,7 @@ pub struct PopoverRootProps {
 ///     let mut open = use_signal(|| false);
 ///
 ///     rsx! {
-///         PopoverRoot {
+///         Popover {
 ///             open: open(),
 ///             on_open_change: move |v| open.set(v),
 ///             PopoverTrigger {
@@ -109,10 +109,10 @@ pub struct PopoverRootProps {
 ///
 /// ## Styling
 ///
-/// The [`PopoverRoot`] component defines the following data attributes you can use to control styling:
+/// The [`Popover`] component defines the following data attributes you can use to control styling:
 /// - `data-state`: Indicates if the popover is open or closed. Values are `open` or `closed`.
 #[component]
-pub fn PopoverRoot(props: PopoverRootProps) -> Element {
+pub fn Popover(props: PopoverProps) -> Element {
     let labelledby = use_unique_id();
     let gen_root_id = use_unique_id();
     let root_id = use_id_or(gen_root_id, props.id);
@@ -167,7 +167,7 @@ pub struct PopoverContentProps {
 /// The `PopoverContent` component defines the content of the popover. This component will
 /// only be rendered if the popover is open, and it will handle focus trapping if the popover is modal.
 ///
-/// This must be used inside a [`PopoverRoot`] component.
+/// This must be used inside a [`Popover`] component.
 ///
 /// ## Example
 ///
@@ -180,7 +180,7 @@ pub struct PopoverContentProps {
 ///     let mut open = use_signal(|| false);
 ///
 ///     rsx! {
-///         PopoverRoot {
+///         Popover {
 ///             open: open(),
 ///             on_open_change: move |v| open.set(v),
 ///             PopoverTrigger {
@@ -504,7 +504,7 @@ fn use_popover_trigger_labelledby(
 ///
 /// The `PopoverTrigger` toggles the visibility of the [`PopoverContent`].
 ///
-/// This must be used inside a [`PopoverRoot`] component.
+/// This must be used inside a [`Popover`] component.
 ///
 /// ## Example
 ///
@@ -517,7 +517,7 @@ fn use_popover_trigger_labelledby(
 ///     let mut open = use_signal(|| false);
 ///
 ///     rsx! {
-///         PopoverRoot {
+///         Popover {
 ///             open: open(),
 ///             on_open_change: move |v| open.set(v),
 ///             PopoverTrigger {
@@ -615,7 +615,7 @@ mod tests {
     fn OpenPopoverApp() -> Element {
         rsx! {
             OverlayProvider {
-                PopoverRoot {
+                Popover {
                     open: Some(true),
                     PopoverTrigger { "trigger" }
                     PopoverContent {

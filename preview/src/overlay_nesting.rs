@@ -255,7 +255,7 @@ fn FloatingInsideModal() -> Element {
                     }
                 }
 
-                PopoverRoot {
+                Popover {
                     open: popover(),
                     on_open_change: move |v| popover.set(v),
                     PopoverTrigger {
@@ -304,7 +304,7 @@ fn FloatingInsideModal() -> Element {
                 div {
                     style: "display: flex; flex-direction: column; gap: 0.75rem;",
                     FruitSelect { testid: "select-in-nested-dialog" }
-                    PopoverRoot {
+                    Popover {
                         open: nested_popover(),
                         on_open_change: move |v| nested_popover.set(v),
                         PopoverTrigger {

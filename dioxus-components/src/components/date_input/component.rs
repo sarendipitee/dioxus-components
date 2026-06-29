@@ -1,7 +1,7 @@
 use crate::component_styles;
 use dioxus::prelude::*;
 use dioxus_icons::lucide::ChevronDown;
-use dioxus_primitives::popover::PopoverRootProps;
+use dioxus_primitives::popover::PopoverProps;
 use dioxus_primitives::{
     calendar::DateRange, date_picker, dioxus_attributes::attributes, merge_attributes, ContentAlign,
 };
@@ -16,7 +16,7 @@ use crate::components::input::{
     use_input_control_context, InputBase, InputContent, InputLabel, InputRadius, InputSize,
     InputVariant,
 };
-use crate::components::popover::{PopoverContent, PopoverOpenTrigger, PopoverRoot};
+use crate::components::popover::{Popover, PopoverContent, PopoverOpenTrigger};
 
 #[component_styles("./style.css")]
 struct Styles;
@@ -110,7 +110,7 @@ pub fn DateInput(
             roving_loop,
             attributes,
             date_picker::DatePickerPopover {
-                popover_root: DateInputPopoverRoot,
+                popover_root: DateInputPopover,
                 open: None,
                 close_on_input_focus: false,
                 InputBase {
@@ -220,7 +220,7 @@ pub fn DateRangePickerInput(
             roving_loop,
             attributes,
             date_picker::DatePickerPopover {
-                popover_root: DateInputPopoverRoot,
+                popover_root: DateInputPopover,
                 open: None,
                 close_on_input_focus: false,
                 InputBase {
@@ -252,14 +252,14 @@ pub fn DateRangePickerInput(
 }
 
 #[component]
-fn DateInputPopoverRoot(props: PopoverRootProps) -> Element {
+fn DateInputPopover(props: PopoverProps) -> Element {
     let base = attributes!(div {
         class: Styles::dx_date_input_popover_root.to_string()
     });
     let attributes = merge_attributes(vec![base, props.attributes]);
 
     rsx! {
-        PopoverRoot {
+        Popover {
             id: props.id,
             is_modal: props.is_modal,
             open: props.open,

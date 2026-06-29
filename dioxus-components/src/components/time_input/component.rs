@@ -15,7 +15,7 @@ use crate::components::input::{
     use_input_control_context, InputBase, InputClearButton, InputContent, InputLabel, InputRadius,
     InputSize, InputVariant,
 };
-use crate::components::popover::{PopoverContent, PopoverRoot};
+use crate::components::popover::{Popover, PopoverContent};
 
 #[component_styles("./style.css")]
 struct Styles;
@@ -233,7 +233,7 @@ pub fn TimeInput(
             right_section,
             wrapper_attributes,
             input_attributes,
-            PopoverRoot {
+            Popover {
                 is_modal: false,
                 open: Some(open()),
                 on_open_change: move |value| open.set(value),

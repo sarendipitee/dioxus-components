@@ -106,7 +106,7 @@ pub fn Dialog(props: DialogProps) -> Element {
     ]);
 
     rsx! {
-        dialog::DialogRoot {
+        dialog::Dialog {
             id: props.id,
             is_modal: props.is_modal,
             open: props.open,

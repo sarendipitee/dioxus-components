@@ -85,9 +85,9 @@ pub(crate) fn use_menu_provider(
     ctx
 }
 
-/// Props for [`MenuRoot`].
+/// Props for [`Menu`].
 #[derive(Props, Clone, PartialEq)]
-pub struct MenuRootProps {
+pub struct MenuProps {
     /// Whether the menu is open.
     pub open: Memo<bool>,
     /// Callback to set the open state.
@@ -105,7 +105,7 @@ pub struct MenuRootProps {
 
 /// Shared root for a single menu surface.
 #[component]
-pub fn MenuRoot(props: MenuRootProps) -> Element {
+pub fn Menu(props: MenuProps) -> Element {
     let mut ctx = use_menu_provider(
         props.open,
         props.set_open,
@@ -1340,7 +1340,7 @@ mod tests {
             let set_open = use_callback(|_| {});
             rsx! {
                 OverlayProvider {
-                    MenuRoot {
+                    Menu {
                         open,
                         set_open,
                         disabled: ReadSignal::new(Signal::new(false)),
@@ -1407,7 +1407,7 @@ mod tests {
             rsx! {
                 OverlayProvider {
                     SubmenuParentProbe {}
-                    MenuRoot {
+                    Menu {
                         open,
                         set_open,
                         disabled: ReadSignal::new(Signal::new(false)),

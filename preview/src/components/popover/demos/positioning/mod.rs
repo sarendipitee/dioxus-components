@@ -79,7 +79,7 @@ pub fn Demo() -> Element {
 
                 div {
                     style: "width: 140px; height: 96px; display: flex; align-items: center; justify-content: center; border: 1px dashed var(--surface-border); border-radius: var(--radius);",
-                    PopoverRoot {
+                    Popover {
                         open: open(),
                         on_open_change: move |v| open.set(v),
                         PopoverTrigger {

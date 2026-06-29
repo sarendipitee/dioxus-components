@@ -17,9 +17,9 @@ use dioxus_primitives::TextOrElement;
 use crate::components::{
     Button, ButtonSize, ButtonVariant, Checkbox, ComboboxEmpty, ComboboxOption,
     MultiSelect as ComboboxMultiSelect, Pagination, PaginationContent, PaginationFirst,
-    PaginationItem, PaginationLast, PaginationNext, PaginationPrevious, PopoverContent,
-    PopoverRoot, PopoverTrigger, Select, SelectOption, Skeleton, TextInput, Tooltip,
-    TooltipContent, TooltipTrigger,
+    PaginationItem, PaginationLast, PaginationNext, PaginationPrevious, Popover, PopoverContent,
+    PopoverTrigger, Select, SelectOption, Skeleton, TextInput, Tooltip, TooltipContent,
+    TooltipTrigger,
 };
 use crate::input::InputWrapper;
 
@@ -2558,7 +2558,7 @@ fn render_filter_menu<T: Clone + PartialEq + 'static>(
     actions: &DataTableActions,
 ) -> Element {
     rsx! {
-        PopoverRoot { class: Styles::dx_data_table_filter_menu,
+        Popover { class: Styles::dx_data_table_filter_menu,
             PopoverTrigger { class: "dx--trigger", "aria-label": "Add filter",
                 Button { variant: ButtonVariant::Outline,
                     Plus { size: "14", "aria-hidden": "true" }
@@ -2666,7 +2666,7 @@ fn render_table_settings<T: Clone + PartialEq + 'static>(
     has_visibility_controls: bool,
 ) -> Element {
     rsx! {
-        PopoverRoot { class: Styles::dx_data_table_column_menu,
+        Popover { class: Styles::dx_data_table_column_menu,
             Tooltip {
                 TooltipTrigger {
                     r#as: move |tooltip_attrs: Vec<Attribute>| {

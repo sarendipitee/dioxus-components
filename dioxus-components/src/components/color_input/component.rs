@@ -12,7 +12,7 @@ use crate::components::input::{
     use_input_control_context, Input, InputClearButton, InputContent, InputLabel, InputRadius,
     InputSize, InputVariant, InputWrapper,
 };
-use crate::components::popover::{PopoverContent, PopoverRoot};
+use crate::components::popover::{Popover, PopoverContent};
 
 #[component_styles("./style.css")]
 struct Styles;
@@ -198,7 +198,7 @@ pub fn ColorInput(props: ColorInputProps) -> Element {
             required,
             with_asterisk,
             disabled: is_disabled,
-            PopoverRoot {
+            Popover {
                 is_modal: false,
                 open: Some(popover_open()),
                 on_open_change: move |v| set_popover_open.call(v),

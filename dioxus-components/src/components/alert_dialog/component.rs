@@ -111,7 +111,7 @@ pub fn AlertDialog(props: AlertDialogProps) -> Element {
     ]);
 
     rsx! {
-        alert_dialog::AlertDialogRoot {
+        alert_dialog::AlertDialog {
             id: props.id,
             is_modal: props.is_modal,
             open: props.open,

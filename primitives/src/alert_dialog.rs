@@ -13,7 +13,7 @@ use crate::dialog::{self, DialogCtx};
 
 // Re-export root/trigger/title/description props so callers don't need to import both modules.
 pub use dialog::{
-    DialogDescriptionProps as AlertDialogDescriptionProps, DialogRootProps as AlertDialogRootProps,
+    DialogDescriptionProps as AlertDialogDescriptionProps, DialogProps as AlertDialogProps,
     DialogTitleProps as AlertDialogTitleProps, DialogTriggerProps as AlertDialogTriggerProps,
 };
 
@@ -92,18 +92,18 @@ fn AlertDialogPortalState(is_open: bool, children: Element) -> Element {
     rsx! { {children} }
 }
 
-/// The root alert dialog component. Thin alias of [`dialog::DialogRoot`].
+/// The root alert dialog component. Thin alias of [`dialog::Dialog`].
 ///
 /// Provides state, scroll-lock, and focus-trap context to child components.
 /// Place [`AlertDialogContent`] as a child.
 #[component]
-pub fn AlertDialogRoot(props: AlertDialogRootProps) -> Element {
-    rsx! { dialog::DialogRoot { ..props } }
+pub fn AlertDialog(props: AlertDialogProps) -> Element {
+    rsx! { dialog::Dialog { ..props } }
 }
 
 /// A button that opens the alert dialog. Thin alias of [`dialog::DialogTrigger`].
 ///
-/// Must be used inside an [`AlertDialogRoot`].
+/// Must be used inside an [`AlertDialog`].
 #[component]
 pub fn AlertDialogTrigger(props: AlertDialogTriggerProps) -> Element {
     rsx! { dialog::DialogTrigger { ..props } }
@@ -116,7 +116,7 @@ pub fn AlertDialogTrigger(props: AlertDialogTriggerProps) -> Element {
 /// - `close_on_escape: false`
 /// - `role="alertdialog"`
 ///
-/// Must be used inside an [`AlertDialogRoot`].
+/// Must be used inside an [`AlertDialog`].
 #[component]
 pub fn AlertDialogContent(props: AlertDialogContentProps) -> Element {
     let ctx: DialogCtx = use_context();
@@ -140,7 +140,7 @@ pub fn AlertDialogContent(props: AlertDialogContentProps) -> Element {
 
 /// Groups title and description inside an alert dialog.
 ///
-/// Thin alias of [`dialog::DialogTitle`]. Must be inside an [`AlertDialogRoot`].
+/// Thin alias of [`dialog::DialogTitle`]. Must be inside an [`AlertDialog`].
 #[component]
 pub fn AlertDialogTitle(props: AlertDialogTitleProps) -> Element {
     rsx! { dialog::DialogTitle { ..props } }
@@ -148,7 +148,7 @@ pub fn AlertDialogTitle(props: AlertDialogTitleProps) -> Element {
 
 /// Describes the alert dialog content for accessibility.
 ///
-/// Thin alias of [`dialog::DialogDescription`]. Must be inside an [`AlertDialogRoot`].
+/// Thin alias of [`dialog::DialogDescription`]. Must be inside an [`AlertDialog`].
 #[component]
 pub fn AlertDialogDescription(props: AlertDialogDescriptionProps) -> Element {
     rsx! { dialog::DialogDescription { ..props } }
@@ -164,7 +164,7 @@ pub fn AlertDialogActions(props: AlertDialogActionsProps) -> Element {
 
 /// A confirm button that fires `on_click` then closes the alert dialog.
 ///
-/// Must be used inside an [`AlertDialogRoot`].
+/// Must be used inside an [`AlertDialog`].
 #[component]
 pub fn AlertDialogAction(props: AlertDialogActionProps) -> Element {
     let ctx: DialogCtx = use_context();
@@ -192,7 +192,7 @@ pub fn AlertDialogAction(props: AlertDialogActionProps) -> Element {
 
 /// A cancel button that fires `on_click` then closes the alert dialog.
 ///
-/// Must be used inside an [`AlertDialogRoot`].
+/// Must be used inside an [`AlertDialog`].
 #[component]
 pub fn AlertDialogCancel(props: AlertDialogCancelProps) -> Element {
     let ctx: DialogCtx = use_context();
@@ -231,7 +231,7 @@ mod tests {
     fn OpenAlertApp() -> Element {
         rsx! {
             OverlayProvider {
-                AlertDialogRoot {
+                AlertDialog {
                     open: Some(true),
                     AlertDialogContent {
                         AlertDialogActions {

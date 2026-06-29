@@ -1,4 +1,4 @@
-//! Defines the [`DialogRoot`] component and its sub-components.
+//! Defines the [`Dialog`] component and its sub-components.
 
 use dioxus::prelude::*;
 use dioxus_attributes::attributes;
@@ -7,7 +7,7 @@ use crate::overlay::{use_overlay_registration, OverlayKind, OverlayRegistration,
 use crate::portal::{use_portal, PortalIn};
 use crate::{merge_attributes, use_animated_open, use_controlled, use_id_or, use_unique_id};
 
-/// Context for the [`DialogRoot`] component
+/// Context for the [`Dialog`] component
 #[derive(Clone, Copy, PartialEq)]
 pub struct DialogCtx {
     #[allow(unused)]
@@ -40,9 +40,9 @@ impl DialogCtx {
     }
 }
 
-/// The props for the [`DialogRoot`] component
+/// The props for the [`Dialog`] component
 #[derive(Props, Clone, PartialEq)]
-pub struct DialogRootProps {
+pub struct DialogProps {
     /// The ID of the dialog root element.
     pub id: ReadSignal<Option<String>>,
 
@@ -69,7 +69,7 @@ pub struct DialogRootProps {
     pub children: Element,
 }
 
-/// # DialogRoot
+/// # Dialog
 ///
 /// The entry point for the dialog. It manages the open state of the dialog and provides context to its children. You
 /// can use it to create a backdrop for the dialog if needed. The contents will only be rendered when the dialog is open.
@@ -78,7 +78,7 @@ pub struct DialogRootProps {
 ///
 /// ```rust
 /// use dioxus::prelude::*;
-/// use dioxus_primitives::dialog::{DialogContent, DialogDescription, DialogRoot, DialogTitle};
+/// use dioxus_primitives::dialog::{DialogContent, DialogDescription, Dialog, DialogTitle};
 ///
 /// #[component]
 /// fn Demo() -> Element {
@@ -89,7 +89,7 @@ pub struct DialogRootProps {
 ///             onclick: move |_| open.set(true),
 ///             "Show Dialog"
 ///         }
-///         DialogRoot {
+///         Dialog {
 ///             open: open(),
 ///             on_open_change: move |v| open.set(v),
 ///             DialogContent {
@@ -113,10 +113,10 @@ pub struct DialogRootProps {
 ///
 /// ## Styling
 ///
-/// The [`DialogRoot`] component defines the following data attributes you can use to control styling:
+/// The [`Dialog`] component defines the following data attributes you can use to control styling:
 /// - `data-state`: Indicates if the dialog is open or closed. It can be either "open" or "closed".
 #[component]
-pub fn DialogRoot(props: DialogRootProps) -> Element {
+pub fn Dialog(props: DialogProps) -> Element {
     let dialog_labelledby = use_unique_id();
     let dialog_describedby = use_unique_id();
 
@@ -162,9 +162,9 @@ pub struct DialogTriggerProps {
 /// # DialogTrigger
 ///
 /// A button that opens the dialog when clicked. It reads the dialog open state from the
-/// surrounding [`DialogRoot`] context.
+/// surrounding [`Dialog`] context.
 ///
-/// This must be used inside an [`DialogRoot`] component.
+/// This must be used inside an [`Dialog`] component.
 #[component]
 pub fn DialogTrigger(props: DialogTriggerProps) -> Element {
     let ctx: DialogCtx = use_context();
@@ -196,9 +196,9 @@ pub struct DialogCloseProps {
 /// # DialogClose
 ///
 /// A button that closes the dialog when clicked. It reads the dialog open state from the
-/// surrounding [`DialogRoot`] context.
+/// surrounding [`Dialog`] context.
 ///
-/// This must be used inside an [`DialogRoot`] component and should be placed inside an
+/// This must be used inside an [`Dialog`] component and should be placed inside an
 /// [`DialogContent`] component.
 #[component]
 pub fn DialogClose(props: DialogCloseProps) -> Element {
@@ -266,13 +266,13 @@ pub struct DialogContentProps {
 /// The content of the dialog. Any interactive content in the dialog should be placed
 /// inside this component. It will trap focus within the dialog while it is open
 ///
-/// This must be used inside an [`DialogRoot`] component.
+/// This must be used inside an [`Dialog`] component.
 ///
 /// ## Example
 ///
 /// ```rust
 /// use dioxus::prelude::*;
-/// use dioxus_primitives::dialog::{DialogContent, DialogDescription, DialogRoot, DialogTitle};
+/// use dioxus_primitives::dialog::{DialogContent, DialogDescription, Dialog, DialogTitle};
 ///
 /// #[component]
 /// fn Demo() -> Element {
@@ -283,7 +283,7 @@ pub struct DialogContentProps {
 ///             onclick: move |_| open.set(true),
 ///             "Show Dialog"
 ///         }
-///         DialogRoot {
+///         Dialog {
 ///             open: open(),
 ///             on_open_change: move |v| open.set(v),
 ///             DialogContent {
@@ -307,7 +307,7 @@ pub struct DialogContentProps {
 ///
 /// ## Styling
 ///
-/// The [`DialogRoot`] component defines the following data attributes you can use to control styling:
+/// The [`Dialog`] component defines the following data attributes you can use to control styling:
 /// - `data-state`: Indicates if the dialog is open or closed. It can be either "open" or "closed".
 #[component]
 pub fn DialogContent(props: DialogContentProps) -> Element {
@@ -437,19 +437,19 @@ fn DialogPortaled(props: DialogPortaledProps) -> Element {
     // children (context resolves up the render tree, where `PortalOut` sits).
     //
     // Subscribe to ALL cross-scope signals HERE, in the non-portaled
-    // (DialogRoot-descendant) scope, and forward snapshots as plain values.
-    // This keeps signals owned by `DialogRoot`, `DialogContent`, or any nested
+    // (Dialog-descendant) scope, and forward snapshots as plain values.
+    // This keeps signals owned by `Dialog`, `DialogContent`, or any nested
     // scope from being read across the portal boundary in `DialogPortalBody`.
     //
     // In particular: when a Dialog/Sheet is rendered inside another Dialog/Sheet's
-    // children prop, the inner `DialogRoot` lives inside the outer
+    // children prop, the inner `Dialog` lives inside the outer
     // `DialogPortalBody`'s subtree.  Closing the outer overlay unmounts that
-    // subtree — freeing the inner `DialogRoot`'s signals — while the inner
+    // subtree — freeing the inner `Dialog`'s signals — while the inner
     // `DialogPortalBody` may still be mounted (animating out).  Any reactive read
     // of those freed signals from the portaled scope causes a use-after-free
     // (manifests as dlmalloc heap corruption in WASM).  Snapshotting here is safe
     // because `DialogPortaled` is always a scope descendant of the owning
-    // `DialogRoot`, so the signals are guaranteed live while this scope renders.
+    // `Dialog`, so the signals are guaranteed live while this scope renders.
     let is_open = open();
     let aria_labelledby = ctx.dialog_labelledby.cloned();
     let aria_describedby = ctx.dialog_describedby.cloned();
@@ -501,7 +501,7 @@ struct DialogPortalBodyProps {
     /// Open state, snapshotted in the non-portaled parent each render and passed
     /// in as a plain `bool`. The body must NOT read the Root-owned `ctx.open`
     /// Memo directly: the portaled subtree lives under the root `OverlayOutlet`,
-    /// not under `DialogRoot`, so a reactive read there is a cross-scope
+    /// not under `Dialog`, so a reactive read there is a cross-scope
     /// `CopyValue` read (warns, and can fault if the Root unmounts first). The
     /// parent re-renders synchronously when `open` flips, so this snapshot stays
     /// in lockstep with the open animation (unlike the effect-driven `closing`
@@ -512,8 +512,8 @@ struct DialogPortalBodyProps {
     is_modal: bool,
     /// Snapshotted in the non-portaled parent. The body must NOT hold a
     /// `Memo<String>` or `Signal<String>` handle whose owner lives in a
-    /// nested `DialogRoot` (e.g. a Sheet rendered inside another Sheet's
-    /// children prop). That `DialogRoot` scope is inside the enclosing
+    /// nested `Dialog` (e.g. a Sheet rendered inside another Sheet's
+    /// children prop). That `Dialog` scope is inside the enclosing
     /// `DialogPortalBody`'s subtree; when the outer dialog closes it is
     /// freed while the inner portaled body may still be mounted, causing a
     /// use-after-free on any reactive read of those signals.
@@ -561,7 +561,7 @@ fn DialogPortalBody(props: DialogPortalBodyProps) -> Element {
     // call `use_id_or(ctx.dialog_labelledby, ...)` which subscribes to whatever
     // signal is in the ctx.  If we forwarded the original Root-owned signals,
     // those subscriptions would touch freed storage once an outer dialog closes
-    // and tears down the inner `DialogRoot` scope (use-after-free / dlmalloc
+    // and tears down the inner `Dialog` scope (use-after-free / dlmalloc
     // abort in WASM).  Local signals are freed together with this portaled scope,
     // so teardown is always safe.
     //
@@ -663,13 +663,13 @@ pub struct DialogTitleProps {
 ///
 /// The title of the dialog. This will be used to label the dialog for accessibility purposes.
 ///
-/// This must be used inside an [`DialogRoot`] component and should be placed inside an [`DialogContent`] component.
+/// This must be used inside an [`Dialog`] component and should be placed inside an [`DialogContent`] component.
 ///
 /// ## Example
 ///
 /// ```rust
 /// use dioxus::prelude::*;
-/// use dioxus_primitives::dialog::{DialogContent, DialogDescription, DialogRoot, DialogTitle};
+/// use dioxus_primitives::dialog::{DialogContent, DialogDescription, Dialog, DialogTitle};
 ///
 /// #[component]
 /// fn Demo() -> Element {
@@ -680,7 +680,7 @@ pub struct DialogTitleProps {
 ///             onclick: move |_| open.set(true),
 ///             "Show Dialog"
 ///         }
-///         DialogRoot {
+///         Dialog {
 ///             open: open(),
 ///             on_open_change: move |v| open.set(v),
 ///             DialogContent {
@@ -736,13 +736,13 @@ pub struct DialogDescriptionProps {
 ///
 /// The description of the dialog. This will be used to describe the dialog for accessibility purposes.
 ///
-/// This must be used inside an [`DialogRoot`] component and should be placed inside an [`DialogContent`] component.
+/// This must be used inside an [`Dialog`] component and should be placed inside an [`DialogContent`] component.
 ///
 /// ## Example
 ///
 /// ```rust
 /// use dioxus::prelude::*;
-/// use dioxus_primitives::dialog::{DialogContent, DialogDescription, DialogRoot, DialogTitle};
+/// use dioxus_primitives::dialog::{DialogContent, DialogDescription, Dialog, DialogTitle};
 ///
 /// #[component]
 /// fn Demo() -> Element {
@@ -753,7 +753,7 @@ pub struct DialogDescriptionProps {
 ///             onclick: move |_| open.set(true),
 ///             "Show Dialog"
 ///         }
-///         DialogRoot {
+///         Dialog {
 ///             open: open(),
 ///             on_open_change: move |v| open.set(v),
 ///             DialogContent {
@@ -807,7 +807,7 @@ mod tests {
     fn OpenDialogApp() -> Element {
         rsx! {
             OverlayProvider {
-                DialogRoot {
+                Dialog {
                     open: Some(true),
                     DialogContent {
                         DialogClose { "close-marker" }

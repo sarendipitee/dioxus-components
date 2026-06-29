@@ -268,7 +268,7 @@ test("opposite-side nested sheets do not get sheet depth styling", async ({ page
 });
 
 test("tearing down outer scope while inner is still animating does not crash", async ({ page }) => {
-  // This test exercises the UAF window: the inner DialogRoot and its signals
+  // This test exercises the UAF window: the inner Dialog and its signals
   // live inside the outer DialogPortalBody's children subtree. When the outer
   // scope is torn down (outer sheet closes), those signals are freed. If the
   // inner portaled body is still mounted (exit animation in progress) and reads
@@ -284,7 +284,7 @@ test("tearing down outer scope while inner is still animating does not crash", a
   //   2. Immediately close the OUTER sheet (Escape again) — tears down the
   //      outer scope while the inner portaled body is still mounted/animating.
   // The inner portaled body survives through the outer teardown. Without the
-  // snapshot fix in dialog.rs, any reactive read of the freed inner DialogRoot
+  // snapshot fix in dialog.rs, any reactive read of the freed inner Dialog
   // signals from the portaled body causes a heap-corruption abort.
   await page.goto("/components/sheet/block#nested", {
     timeout: 20 * 60 * 1000,

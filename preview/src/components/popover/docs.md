@@ -8,9 +8,9 @@ Use it for quick action menus, inline forms, metadata cards, or any ephemeral su
 use dioxus_components::popover::*;
 use dioxus_primitives::{ContentAlign, ContentSide};
 
-// PopoverRoot owns the open state and positions content relative to the trigger.
+// Popover owns the open state and positions content relative to the trigger.
 // Omit `open`/`on_open_change` to use it uncontrolled (manages its own state).
-PopoverRoot {
+Popover {
     open: open(),
     on_open_change: move |v| open.set(v),
 
@@ -32,7 +32,7 @@ Content automatically flips and shifts when near a viewport edge to stay in view
 
 ## Props
 
-### PopoverRoot
+### Popover
 
 | Prop | Type | Default | Description |
 |------|------|---------|-------------|

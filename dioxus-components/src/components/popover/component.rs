@@ -3,23 +3,22 @@ use crate::components::typography::{
     Heading, HeadingLevel, Text, TextElement, TypographySize, TypographyTone, TypographyWeight,
 };
 use dioxus::prelude::*;
-use dioxus_primitives::popover::{
-    self, PopoverContentProps, PopoverRootProps, PopoverTriggerProps,
-};
+use dioxus_primitives::popover::{self, PopoverContentProps, PopoverProps, PopoverTriggerProps};
 use dioxus_primitives::{dioxus_attributes::attributes, merge_attributes};
 
 #[component_styles("./style.css")]
 pub(crate) struct Styles;
 
 #[component]
-pub fn PopoverRoot(props: PopoverRootProps) -> Element {
+pub fn Popover(props: PopoverProps) -> Element {
     let base = attributes!(div {
         class: Styles::dx_popover.to_string()
     });
     let merged = merge_attributes(vec![base, props.attributes]);
 
     rsx! {
-        popover::PopoverRoot {
+        popover::Popover {
+            id: props.id,
             is_modal: props.is_modal,
             open: props.open,
             default_open: props.default_open,

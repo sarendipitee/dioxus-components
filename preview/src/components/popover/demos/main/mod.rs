@@ -7,7 +7,7 @@ pub fn Demo() -> Element {
     let mut open = use_signal(|| false);
 
     rsx! {
-        PopoverRoot { open: open(), on_open_change: move |v| open.set(v),
+        Popover { open: open(), on_open_change: move |v| open.set(v),
             PopoverTrigger {
                 Button { r#type: "button", "Open popover" }
             }

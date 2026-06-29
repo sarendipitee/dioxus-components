@@ -112,7 +112,7 @@ pub fn Sheet(props: SheetProps) -> Element {
     });
     let content_attributes = merge_attributes(vec![base, props.attributes]);
     rsx! {
-        dialog::DialogRoot {
+        dialog::Dialog {
             id: props.id,
             is_modal: props.is_modal,
             open: props.open,
