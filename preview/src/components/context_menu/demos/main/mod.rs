@@ -47,7 +47,7 @@ pub fn Demo() -> Element {
                 MenuCheckboxItem::<String> {
                     value: "line_numbers".to_string(),
                     index: 2usize,
-                    checked: show_line_numbers,
+                    checked: show_line_numbers(),
                     on_checked_change: move |checked| show_line_numbers.set(checked),
                     "Show line numbers"
                     MenuItemIndicator { visible: show_line_numbers(), "✓" }
@@ -55,7 +55,7 @@ pub fn Demo() -> Element {
                 MenuSeparator {}
                 MenuLabel { "Panel" }
                 MenuRadioGroup {
-                    value: panel,
+                    value: panel(),
                     on_value_change: move |value| panel.set(Some(value)),
                     MenuRadioItem::<String> {
                         value: "preview".to_string(),

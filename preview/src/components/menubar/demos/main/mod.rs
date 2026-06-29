@@ -57,7 +57,7 @@ pub fn Demo() -> Element {
                         MenuCheckboxItem::<String> {
                             value: "status_bar".to_string(),
                             index: 3usize,
-                            checked: status_bar,
+                            checked: status_bar(),
                             on_checked_change: move |checked| status_bar.set(checked),
                             "Status bar"
                             MenuItemIndicator { visible: status_bar(), "✓" }
@@ -69,7 +69,7 @@ pub fn Demo() -> Element {
                     Menu {
                         MenuLabel { "Sort by" }
                         MenuRadioGroup {
-                            value: sort_order,
+                            value: sort_order(),
                             on_value_change: move |value| sort_order.set(Some(value)),
                             MenuRadioItem::<String> {
                                 value: "name".to_string(),

@@ -40,7 +40,7 @@ pub fn Demo() -> Element {
                 MenuCheckboxItem::<String> {
                     value: "completed",
                     index: 0usize,
-                    checked: show_completed,
+                    checked: show_completed(),
                     on_checked_change: move |checked| show_completed.set(checked),
                     "Show completed issues"
                     MenuItemIndicator { visible: show_completed(), "✓" }
@@ -48,7 +48,7 @@ pub fn Demo() -> Element {
                 MenuCheckboxItem::<String> {
                     value: "critical",
                     index: 1usize,
-                    checked: pin_critical,
+                    checked: pin_critical(),
                     on_checked_change: move |checked| pin_critical.set(checked),
                     "Pin critical issues"
                     MenuItemIndicator { visible: pin_critical(), "✓" }
@@ -56,7 +56,7 @@ pub fn Demo() -> Element {
                 MenuSeparator {}
                 MenuLabel { "Sort by" }
                 MenuRadioGroup {
-                    value: sort_mode,
+                    value: sort_mode(),
                     on_value_change: move |value| sort_mode.set(Some(value)),
                     MenuRadioItem::<SortMode> {
                         value: SortMode::Priority,

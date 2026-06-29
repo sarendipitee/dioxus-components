@@ -5,20 +5,26 @@ use dioxus_components::sheet::{Sheet, SheetSide};
 const MAX_DEPTH: usize = 10;
 
 #[component]
-fn SheetLevel(level: usize, depth: Signal<usize>) -> Element {
+fn SheetLevel(level: usize, open: bool, on_open_change: Callback<bool>) -> Element {
+    let mut child_open = use_signal(|| false);
+
     rsx! {
         Sheet {
-            open: depth() >= level,
-            on_open_change: move |v: bool| { if !v { depth.set(level - 1); } },
+            open,
+            on_open_change,
             side: SheetSide::Right,
             title: "Sheet {level}",
             description: "This is sheet level {level}.",
             Button {
-                onclick: move |_| depth.set(level + 1),
+                onclick: move |_| child_open.set(true),
                 "Open Sheet {level + 1}"
             }
             if level < MAX_DEPTH {
-                SheetLevel { level: level + 1, depth }
+                SheetLevel {
+                    level: level + 1,
+                    open: child_open(),
+                    on_open_change: move |open| child_open.set(open),
+                }
             }
         }
     }
@@ -26,10 +32,14 @@ fn SheetLevel(level: usize, depth: Signal<usize>) -> Element {
 
 #[component]
 pub fn Demo() -> Element {
-    let mut depth = use_signal(|| 0usize);
+    let mut open = use_signal(|| false);
 
     rsx! {
-        Button { onclick: move |_| depth.set(1), "Open Sheet" }
-        SheetLevel { level: 1, depth }
+        Button { onclick: move |_| open.set(true), "Open Sheet" }
+        SheetLevel {
+            level: 1,
+            open: open(),
+            on_open_change: move |next| open.set(next),
+        }
     }
 }

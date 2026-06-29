@@ -164,15 +164,13 @@ fn AlertDialogButton(
     content: Element,
 ) -> Element {
     let ctx: DialogCtx = use_context();
-    let open = ctx.open_memo();
-    let tabindex = if open() { "0" } else { "-1" };
     let handler = use_callback(move |evt: MouseEvent| {
         ctx.set_open(false);
         if let Some(cb) = &on_click {
             cb.call(evt);
         }
     });
-    let attrs = attributes!(button { tabindex: tabindex });
+    let attrs = attributes!(button { tabindex: "0" });
 
     rsx! {
         Button {

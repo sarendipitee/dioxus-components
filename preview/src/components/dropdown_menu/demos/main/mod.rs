@@ -79,7 +79,7 @@ pub fn Demo() -> Element {
                 MenuCheckboxItem::<String> {
                     value: "toolbar",
                     index: 3usize,
-                    checked: show_toolbar,
+                    checked: show_toolbar(),
                     on_checked_change: move |checked| show_toolbar.set(checked),
                     "Show Toolbar"
                     MenuItemIndicator { visible: show_toolbar(), "✓" }
@@ -87,7 +87,7 @@ pub fn Demo() -> Element {
                 MenuSeparator {}
                 MenuLabel { "Theme" }
                 MenuRadioGroup {
-                    value: active_theme,
+                    value: active_theme(),
                     on_value_change: move |value| active_theme.set(Some(value)),
                     MenuRadioItem::<ThemeMode> {
                         value: ThemeMode::System,

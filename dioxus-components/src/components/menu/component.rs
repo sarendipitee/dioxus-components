@@ -28,7 +28,8 @@ pub(crate) fn provide_styled_menu_surface(surface: StyledMenuSurface) {
 #[derive(Props, Clone, PartialEq)]
 pub struct MenuProps {
     /// The ID of the menu content element. If not provided, a unique ID will be generated.
-    pub id: ReadSignal<Option<String>>,
+    #[props(default)]
+    pub id: Option<String>,
     /// Additional attributes to apply to the menu content element.
     #[props(extends = GlobalAttributes)]
     pub attributes: Vec<Attribute>,
