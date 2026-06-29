@@ -1,4 +1,7 @@
 use crate::component_styles;
+use crate::components::typography::{
+    Heading, HeadingLevel, Text, TextElement, TypographySize, TypographyTone, TypographyWeight,
+};
 use dioxus::prelude::*;
 use dioxus_icons::lucide::{CircleAlert, CircleCheck, Info, TriangleAlert};
 use dioxus_primitives::dioxus_attributes::attributes;
@@ -105,7 +108,13 @@ pub fn AlertTitle(
     let attributes = merge_attributes(vec![base, attributes]);
 
     rsx! {
-        h5 { ..attributes, {children} }
+        Heading {
+            size: TypographySize::Md,
+            weight: TypographyWeight::Semibold,
+            level: HeadingLevel::H5,
+            attributes,
+            {children}
+        }
     }
 }
 
@@ -122,7 +131,13 @@ pub fn AlertDescription(
     let attributes = merge_attributes(vec![base, attributes]);
 
     rsx! {
-        div { ..attributes, {children} }
+        Text {
+            size: TypographySize::Sm,
+            tone: TypographyTone::Default,
+            element: TextElement::Div,
+            attributes,
+            {children}
+        }
     }
 }
 

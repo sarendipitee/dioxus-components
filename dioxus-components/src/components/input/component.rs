@@ -6,7 +6,9 @@ use dioxus::prelude::*;
 use dioxus_icons::lucide::X;
 use dioxus_primitives::{dioxus_attributes::attributes, merge_attributes, TextOrElement};
 
-use crate::components::label::Label;
+use crate::components::typography::{
+    Text, TextElement, TypographySize, TypographyTone, TypographyWeight,
+};
 
 #[component_styles("./style.css")]
 struct Styles;
@@ -296,12 +298,19 @@ pub(crate) fn InputFieldText(
 
     rsx! {
         if let Some(label_content) = label_content {
-            Label {
-                html_for: input_id.clone(),
+            Text {
+                size: TypographySize::Md,
+                weight: TypographyWeight::Medium,
+                element: TextElement::Label,
                 attributes: {
                     let mut attributes = vec![Attribute::new(
                         "class",
                         AttributeValue::Text(classes.label),
+                        None,
+                        false,
+                    ), Attribute::new(
+                        "for",
+                        AttributeValue::Text(input_id.clone()),
                         None,
                         false,
                     )];
@@ -326,18 +335,62 @@ pub(crate) fn InputFieldText(
             }
         }
         if let Some((description, description_id)) = description.zip(description_id) {
-            div {
-                id: "{description_id}",
-                class: classes.description,
-                "data-slot": slots.description,
+            Text {
+                size: TypographySize::Sm,
+                tone: TypographyTone::Muted,
+                element: TextElement::Div,
+                attributes: {
+                    let mut attributes = vec![Attribute::new(
+                        "id",
+                        AttributeValue::Text(description_id),
+                        None,
+                        false,
+                    ), Attribute::new(
+                        "class",
+                        AttributeValue::Text(classes.description),
+                        None,
+                        false,
+                    )];
+                    if let Some(slot) = slots.description {
+                        attributes.push(Attribute::new(
+                            "data-slot",
+                            AttributeValue::Text(slot.to_string()),
+                            None,
+                            false,
+                        ));
+                    }
+                    attributes
+                },
                 {description}
             }
         }
         if let Some((error, error_id)) = error.zip(error_id) {
-            div {
-                id: "{error_id}",
-                class: classes.error,
-                "data-slot": slots.error,
+            Text {
+                size: TypographySize::Xs,
+                tone: TypographyTone::Default,
+                element: TextElement::Div,
+                attributes: {
+                    let mut attributes = vec![Attribute::new(
+                        "id",
+                        AttributeValue::Text(error_id),
+                        None,
+                        false,
+                    ), Attribute::new(
+                        "class",
+                        AttributeValue::Text(classes.error),
+                        None,
+                        false,
+                    )];
+                    if let Some(slot) = slots.error {
+                        attributes.push(Attribute::new(
+                            "data-slot",
+                            AttributeValue::Text(slot.to_string()),
+                            None,
+                            false,
+                        ));
+                    }
+                    attributes
+                },
                 {error}
             }
         }

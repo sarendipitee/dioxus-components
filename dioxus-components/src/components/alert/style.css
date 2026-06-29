@@ -52,17 +52,12 @@
 }
 
 .dx_alert_title {
-  margin: 0;
-  font-size: 0.9375rem;
-  font-weight: 600;
-  line-height: 1.4;
+  min-width: 0;
 }
 
 .dx_alert_description {
   grid-column: 2;
   color: color-mix(in srgb, currentColor 78%, transparent);
-  font-size: 0.875rem;
-  line-height: 1.5;
 }
 
 .dx_alert_description > :first-child {

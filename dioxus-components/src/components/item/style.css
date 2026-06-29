@@ -58,8 +58,8 @@ a.dx_item:hover {
 
 /* Item Sizes */
 .dx_item[data-size="default"] {
-  padding: calc(var(--space) * 4);
-  gap: calc(var(--space) * 4);
+  padding: var(--surface-padding);
+  gap: var(--item-gap);
 }
 
 .dx_item[data-size="sm"] {
@@ -130,25 +130,14 @@ a.dx_item:hover {
   display: flex;
   width: fit-content;
   align-items: center;
-  font-size: 0.875rem;
-  font-weight: 500;
   gap: calc(var(--space) * 2);
-  line-height: 1.375;
 }
 
 /* Item Description */
 .dx_item_description {
   display: -webkit-box;
   overflow: hidden;
-  margin: 0;
   -webkit-box-orient: vertical;
-  color: var(--surface-muted-fg);
-  font-size: 0.875rem;
-  font-weight: 400;
-  -webkit-line-clamp: 2;
-  line-height: 1.5;
-  text-align: left;
-  text-wrap: balance;
 }
 
 .dx_item_description a {

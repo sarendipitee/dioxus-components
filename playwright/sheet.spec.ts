@@ -63,6 +63,40 @@ test("sheet basic interactions", async ({ page }) => {
   await expect(reopenedDialog).toBeHidden();
 });
 
+test("sheet title and description keep primitive typography wrappers", async ({ page }) => {
+  await gotoSheetDemo(page);
+
+  const dialog = await openSheet(page, "Right");
+  const sheetContent = page.locator('[data-slot="sheet-content"]').first();
+  const title = dialog.locator('[data-slot="sheet-title"]');
+  const description = dialog.locator('[data-slot="sheet-description"]');
+
+  await expect(title).toHaveCount(1);
+  await expect(description).toHaveCount(1);
+  await expect(title).toHaveClass(/dx_heading/);
+  await expect(description).toHaveClass(/dx_text/);
+  await expect(title).toHaveAttribute("data-tone", "default");
+  await expect(description).toHaveAttribute("data-tone", "default");
+
+  const titleId = await title.getAttribute("id");
+  const descriptionId = await description.getAttribute("id");
+  expect(titleId).toBeTruthy();
+  expect(descriptionId).toBeTruthy();
+  await expect(dialog).toHaveAttribute("aria-labelledby", titleId!);
+  await expect(dialog).toHaveAttribute("aria-describedby", descriptionId!);
+
+  await expect(title).toHaveJSProperty("tagName", "H2");
+  await expect(description).toHaveJSProperty("tagName", "P");
+  await expect(title.locator("h1,h2,h3,h4,h5,h6")).toHaveCount(0);
+  await expect(description.locator("p")).toHaveCount(0);
+
+  const [sheetColor, descriptionColor] = await Promise.all([
+    sheetContent.evaluate((element) => getComputedStyle(element).color),
+    description.evaluate((element) => getComputedStyle(element).color),
+  ]);
+  expect(descriptionColor).toBe(sheetColor);
+});
+
 test("sheet opens from different sides", async ({ page }) => {
   await gotoSheetDemo(page);
 

@@ -21,6 +21,8 @@ PopoverRoot {
     PopoverContent {
         side: ContentSide::Bottom,   // Top | Right | Bottom | Left
         align: ContentAlign::Center, // Start | Center | End
+        PopoverContentTitle { "Details" }
+        PopoverContentDescription { "Short supporting copy." }
         {children}
     }
 }
@@ -45,6 +47,10 @@ Content automatically flips and shifts when near a viewport edge to stay in view
 |------|------|---------|-------------|
 | `side` | `ContentSide` | `Bottom` | Preferred side relative to trigger |
 | `align` | `ContentAlign` | `Center` | Alignment along the side axis |
+
+### PopoverContentTitle / PopoverContentDescription
+
+Use these optional content slots for popovers that need a short heading and supporting copy.
 
 ## Triggers
 

@@ -10,12 +10,8 @@ Dialog {
     // Toggle visibility by binding this to your local open state.
     open: open(),
     // Use a clear action-oriented title so users understand the temporary context.
-    DialogTitle {
-        "Confirm item update"
-    }
+    title: "Confirm item update",
     // Provide a short description that explains consequence and next step.
-    DialogDescription {
-        "Changes are staged in this dialog until you save or cancel."
-    }
+    description: "Changes are staged in this dialog until you save or cancel.",
 }
 ```

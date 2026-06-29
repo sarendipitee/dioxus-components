@@ -326,15 +326,10 @@ html[data-theme="dark"] .dx_toast_container:not(:hover, :focus-within) .dx_toast
 
 .dx_toast_title {
   margin-bottom: var(--space);
-  font-size: 0.9375rem;
-  font-weight: 600;
-  line-height: 1.4;
 }
 
 .dx_toast_description {
   color: color-mix(in srgb, currentColor 78%, transparent);
-  font-size: 0.875rem;
-  line-height: 1.5;
 }
 
 .dx_toast_close {

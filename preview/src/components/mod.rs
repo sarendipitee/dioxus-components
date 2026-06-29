@@ -373,5 +373,6 @@ examples!(
     toggle_group,
     toolbar,
     tooltip[shorthand],
+    typography,
     virtual_list[random_heights],
 );

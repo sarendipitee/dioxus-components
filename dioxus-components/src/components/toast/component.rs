@@ -1,6 +1,11 @@
 use crate::component_styles;
+use crate::components::typography::{
+    TextAlign, TextWrap, TypographySize, TypographyTone, TypographyWeight,
+};
 use dioxus::prelude::*;
 use dioxus_icons::lucide::{CircleAlert, CircleCheck, Info, TriangleAlert};
+use dioxus_primitives::dioxus_attributes::attributes;
+use dioxus_primitives::merge_attributes;
 use dioxus_primitives::toast::{
     self, Toast, ToastActionButtonProps, ToastActionsProps, ToastCloseButtonProps,
     ToastContentProps, ToastDescriptionProps, ToastPosition, ToastProps, ToastTitleProps,
@@ -94,10 +99,18 @@ fn ToastContent(props: ToastContentProps) -> Element {
 
 #[component]
 fn ToastTitle(props: ToastTitleProps) -> Element {
+    let base = typography_slot_attributes(
+        format!("{} dx_heading", Styles::dx_toast_title),
+        "toast-title",
+        TypographySize::Md,
+        TypographyTone::Default,
+        TypographyWeight::Semibold,
+    );
+    let attributes = merge_attributes(vec![base, props.attributes]);
+
     rsx! {
         toast::ToastTitle {
-            class: Styles::dx_toast_title,
-            attributes: props.attributes,
+            attributes,
             children: props.children,
         }
     }
@@ -105,13 +118,40 @@ fn ToastTitle(props: ToastTitleProps) -> Element {
 
 #[component]
 fn ToastDescription(props: ToastDescriptionProps) -> Element {
+    let base = typography_slot_attributes(
+        format!("{} dx_text", Styles::dx_toast_description),
+        "toast-description",
+        TypographySize::Sm,
+        TypographyTone::Default,
+        TypographyWeight::Inherit,
+    );
+    let attributes = merge_attributes(vec![base, props.attributes]);
+
     rsx! {
         toast::ToastDescription {
-            class: Styles::dx_toast_description,
-            attributes: props.attributes,
+            attributes,
             children: props.children,
         }
     }
+}
+
+fn typography_slot_attributes(
+    class: String,
+    slot: &'static str,
+    size: TypographySize,
+    tone: TypographyTone,
+    weight: TypographyWeight,
+) -> Vec<Attribute> {
+    attributes!(div {
+        class,
+        "data-slot": slot,
+        "data-size": size.as_str(),
+        "data-tone": tone.as_str(),
+        "data-weight": weight.as_str(),
+        "data-align": TextAlign::Inherit.as_str(),
+        "data-wrap": TextWrap::Wrap.as_str(),
+        "data-truncate": "false",
+    })
 }
 
 #[component]

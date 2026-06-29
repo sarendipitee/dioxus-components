@@ -7,10 +7,8 @@ The Card component is the building block for grouped UI “chunks” that need a
 Card {
     // CardHeader contains the title, description, and optional action.
     CardHeader {
-        // CardTitle displays the main heading.
-        CardTitle { "Card Title" }
-        // CardDescription provides supporting text.
-        CardDescription { "Card description goes here." }
+        title: "Card Title",
+        description: "Card description goes here.",
         // CardAction positions action elements (e.g., buttons) in the header.
         CardAction {
             Button { "Action" }
@@ -27,8 +25,10 @@ Card {
 }
 ```
 
+For custom title or description markup, pass an element to `title` or `description`, or use the compatibility `CardTitle` and `CardDescription` wrappers with shared `Heading` and `Text` styling.
+
 ## Layout Notes for this component page
 
-- Use this pattern when the card header needs both identity (`CardTitle`/`CardDescription`) and controls (`CardAction`) without extra wrapper divs.
+- Use `CardHeader { title, description }` when the header needs both identity text and controls without extra wrapper divs.
 - When `CardAction` is added to `CardHeader`, the header becomes a two-column layout so the title/description stay aligned while controls remain right-aligned.
 - Keep the heaviest content in `CardContent` and reserve `CardFooter` for secondary actions, status labels, or metadata so the content order stays predictable in every demo.

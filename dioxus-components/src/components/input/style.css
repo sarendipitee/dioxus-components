@@ -15,9 +15,6 @@
   align-items: center;
   gap: calc(var(--space) / 2);
   color: var(--input-fg);
-  font-size: 0.875rem;
-  font-weight: 500;
-  line-height: 1.25rem;
 }
 
 .dx_input_wrapper[data-disabled="true"] .dx_input_label {
@@ -28,12 +25,6 @@
 .dx_input_required,
 .dx_input_error {
   color: var(--danger);
-}
-
-.dx_input_description,
-.dx_input_error {
-  font-size: 0.8125rem;
-  line-height: 1.125rem;
 }
 
 .dx_input_description {

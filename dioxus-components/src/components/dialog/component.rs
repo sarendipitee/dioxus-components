@@ -1,4 +1,7 @@
 use crate::component_styles;
+use crate::components::typography::{
+    TextAlign, TextWrap, TypographySize, TypographyTone, TypographyWeight,
+};
 use dioxus::prelude::*;
 use dioxus_primitives::dialog::{self};
 use dioxus_primitives::{dioxus_attributes::attributes, merge_attributes, TextOrElement};
@@ -90,10 +93,8 @@ pub struct DialogProps {
 /// ```
 #[component]
 pub fn Dialog(props: DialogProps) -> Element {
-    let title_has = !props.title.is_empty();
-    let title_el = title_has.then(|| props.title.into_element());
-    let desc_has = !props.description.is_empty();
-    let desc_el = desc_has.then(|| props.description.into_element());
+    let title = render_dialog_title(props.title);
+    let description = render_dialog_description(props.description);
     let footer_has = !props.footer.is_empty();
     let footer_el = footer_has.then(|| props.footer.into_element());
 
@@ -124,19 +125,13 @@ pub fn Dialog(props: DialogProps) -> Element {
                     }
                 }
 
-                if title_el.is_some() || desc_el.is_some() {
+                if title.is_some() || description.is_some() {
                     header { class: Styles::dx_dialog_header,
-                        if let Some(t) = title_el {
-                            dialog::DialogTitle {
-                                class: Styles::dx_dialog_title,
-                                {t}
-                            }
+                        if let Some(title) = title {
+                            {title}
                         }
-                        if let Some(d) = desc_el {
-                            dialog::DialogDescription {
-                                class: Styles::dx_dialog_description,
-                                {d}
-                            }
+                        if let Some(description) = description {
+                            {description}
                         }
                     }
                 }
@@ -149,4 +144,65 @@ pub fn Dialog(props: DialogProps) -> Element {
             }
         }
     }
+}
+
+fn render_dialog_title(title: TextOrElement<()>) -> Option<Element> {
+    if title.is_empty() {
+        return None;
+    }
+
+    let content = title.into_element();
+    let attributes = typography_slot_attributes(
+        format!("{} dx_heading", Styles::dx_dialog_title),
+        "dialog-title",
+        TypographySize::Lg,
+        TypographyTone::Default,
+        TypographyWeight::Bold,
+    );
+    Some(rsx! {
+        dialog::DialogTitle {
+            attributes,
+            {content}
+        }
+    })
+}
+
+fn render_dialog_description(description: TextOrElement<()>) -> Option<Element> {
+    if description.is_empty() {
+        return None;
+    }
+
+    let content = description.into_element();
+    let attributes = typography_slot_attributes(
+        format!("{} dx_text", Styles::dx_dialog_description),
+        "dialog-description",
+        TypographySize::Md,
+        TypographyTone::Muted,
+        TypographyWeight::Inherit,
+    );
+    Some(rsx! {
+        dialog::DialogDescription {
+            attributes,
+            {content}
+        }
+    })
+}
+
+fn typography_slot_attributes(
+    class: String,
+    slot: &'static str,
+    size: TypographySize,
+    tone: TypographyTone,
+    weight: TypographyWeight,
+) -> Vec<Attribute> {
+    attributes!(div {
+        class,
+        "data-slot": slot,
+        "data-size": size.as_str(),
+        "data-tone": tone.as_str(),
+        "data-weight": weight.as_str(),
+        "data-align": TextAlign::Inherit.as_str(),
+        "data-wrap": TextWrap::Wrap.as_str(),
+        "data-truncate": "false",
+    })
 }

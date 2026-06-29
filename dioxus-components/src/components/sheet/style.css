@@ -107,6 +107,11 @@
   animation: dx-slide-out-bottom 150ms ease-in forwards;
 }
 
+.dx_sheet_title,
+.dx_sheet_description {
+  min-width: 0;
+}
+
 /* Stack peek: buried sheets slide toward the center so their edge remains
    visible behind the front sheet, reading as a physical card stack.
    Uses CSS Level 2 individual `translate`/`scale` properties — the keyframe

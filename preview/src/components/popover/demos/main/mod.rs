@@ -12,7 +12,8 @@ pub fn Demo() -> Element {
                 Button { r#type: "button", "Open popover" }
             }
             PopoverContent {
-                p { "This is the popover content." }
+                PopoverContentTitle { "Details" }
+                PopoverContentDescription { "This is the popover content." }
             }
         }
     }

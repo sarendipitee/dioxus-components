@@ -1,5 +1,9 @@
 use crate::component_styles;
 use crate::components::separator::Separator;
+use crate::components::typography::{
+    Heading, HeadingLevel, Text, TextAlign, TextElement, TextWrap, TypographySize, TypographyTone,
+    TypographyWeight,
+};
 use dioxus::prelude::*;
 use dioxus_primitives::dioxus_attributes::attributes;
 use dioxus_primitives::merge_attributes;
@@ -76,7 +80,13 @@ pub fn ItemGroup(
     let merged = merge_attributes(vec![base, attributes]);
 
     rsx! {
-        div { ..merged,{children} }
+        Heading {
+            size: TypographySize::Sm,
+            weight: TypographyWeight::Medium,
+            level: HeadingLevel::H3,
+            attributes: merged,
+            {children}
+        }
     }
 }
 
@@ -209,7 +219,17 @@ pub fn ItemDescription(
     let merged = merge_attributes(vec![base, attributes]);
 
     rsx! {
-        p { ..merged,{children} }
+        Text {
+            size: TypographySize::Sm,
+            tone: TypographyTone::SurfaceMuted,
+            weight: TypographyWeight::Normal,
+            align: TextAlign::Start,
+            wrap: TextWrap::Balance,
+            line_clamp: Some(2),
+            element: TextElement::P,
+            attributes: merged,
+            {children}
+        }
     }
 }
 

@@ -185,16 +185,11 @@
 }
 
 .dx_popover_content_title {
-  margin: 0;
   color: var(--overlay-fg);
-  font-size: 1.25rem;
-  font-weight: 700;
 }
 
 .dx_popover_content_description {
-  margin: 0;
   color: var(--fg-muted);
-  font-size: 1rem;
 }
 
 .dx_popover_content_actions {

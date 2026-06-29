@@ -1,5 +1,8 @@
 use crate::component_styles;
 use crate::components::dialog::DialogStyles;
+use crate::components::typography::{
+    TextAlign, TextWrap, TypographySize, TypographyTone, TypographyWeight,
+};
 use dioxus::prelude::*;
 use dioxus_icons::lucide::X;
 use dioxus_primitives::dialog;
@@ -95,13 +98,10 @@ pub struct SheetProps {
 /// and optional title, description, close button, and footer.
 #[component]
 pub fn Sheet(props: SheetProps) -> Element {
-    let title_has = !props.title.is_empty();
-    let title_el = title_has.then(|| props.title.into_element());
-    let desc_has = !props.description.is_empty();
-    let desc_el = desc_has.then(|| props.description.into_element());
+    let title = render_sheet_title(props.title);
+    let description = render_sheet_description(props.description);
     let footer_has = !props.footer.is_empty();
     let footer_el = footer_has.then(|| props.footer.into_element());
-
     let root_attributes = attributes!(div {
         "data-slot": "sheet-root",
     });
@@ -111,7 +111,6 @@ pub fn Sheet(props: SheetProps) -> Element {
         "data-side": props.side.as_str(),
     });
     let content_attributes = merge_attributes(vec![base, props.attributes]);
-
     rsx! {
         dialog::DialogRoot {
             id: props.id,
@@ -120,7 +119,6 @@ pub fn Sheet(props: SheetProps) -> Element {
             default_open: props.default_open,
             on_open_change: props.on_open_change,
             attributes: root_attributes,
-
             dialog::DialogContent {
                 close_on_backdrop_click: props.close_on_backdrop_click,
                 close_on_escape: props.close_on_escape,
@@ -136,13 +134,13 @@ pub fn Sheet(props: SheetProps) -> Element {
                     }
                 }
 
-                if title_el.is_some() || desc_el.is_some() {
+                if title.is_some() || description.is_some() {
                     div { class: DialogStyles::dx_dialog_header.to_string(),
-                        if let Some(t) = title_el {
-                            dialog::DialogTitle { {t} }
+                        if let Some(title) = title {
+                            {title}
                         }
-                        if let Some(d) = desc_el {
-                            dialog::DialogDescription { {d} }
+                        if let Some(description) = description {
+                            {description}
                         }
                     }
                 }
@@ -155,4 +153,63 @@ pub fn Sheet(props: SheetProps) -> Element {
             }
         }
     }
+}
+
+fn render_sheet_title(title: TextOrElement<()>) -> Option<Element> {
+    if title.is_empty() {
+        return None;
+    }
+    let content = title.into_element();
+    let attributes = typography_slot_attributes(
+        format!("{} dx_heading", Styles::dx_sheet_title),
+        "sheet-title",
+        TypographySize::Lg,
+        TypographyTone::Default,
+        TypographyWeight::Bold,
+    );
+    Some(rsx! {
+        dialog::DialogTitle {
+            attributes,
+            {content}
+        }
+    })
+}
+
+fn render_sheet_description(description: TextOrElement<()>) -> Option<Element> {
+    if description.is_empty() {
+        return None;
+    }
+    let content = description.into_element();
+    let attributes = typography_slot_attributes(
+        format!("{} dx_text", Styles::dx_sheet_description),
+        "sheet-description",
+        TypographySize::Md,
+        TypographyTone::Default,
+        TypographyWeight::Inherit,
+    );
+    Some(rsx! {
+        dialog::DialogDescription {
+            attributes,
+            {content}
+        }
+    })
+}
+
+fn typography_slot_attributes(
+    class: String,
+    slot: &'static str,
+    size: TypographySize,
+    tone: TypographyTone,
+    weight: TypographyWeight,
+) -> Vec<Attribute> {
+    attributes!(div {
+        class,
+        "data-slot": slot,
+        "data-size": size.as_str(),
+        "data-tone": tone.as_str(),
+        "data-weight": weight.as_str(),
+        "data-align": TextAlign::Inherit.as_str(),
+        "data-wrap": TextWrap::Wrap.as_str(),
+        "data-truncate": "false",
+    })
 }

@@ -1,0 +1,21 @@
+{
+  "name": "typography",
+  "description": "Use shared Text and Heading components to apply consistent typography size, tone, weight, alignment, and semantic elements across reusable component surfaces.",
+  "authors": [
+    "Evan Almloff"
+  ],
+  "exclude": [
+    "demos",
+    "docs.md",
+    "component.json"
+  ],
+  "cargoDependencies": [
+    {
+      "name": "dioxus-primitives",
+      "git": "https://github.com/DioxusLabs/components"
+    }
+  ],
+  "globalAssets": [
+    "../../../../themes/default.css"
+  ]
+}

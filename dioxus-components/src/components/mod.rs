@@ -55,6 +55,7 @@ pub mod toggle;
 pub mod toggle_group;
 pub mod toolbar;
 pub mod tooltip;
+pub mod typography;
 pub mod virtual_list;
 
 pub use accordion::*;
@@ -113,4 +114,5 @@ pub use toggle::*;
 pub use toggle_group::*;
 pub use toolbar::*;
 pub use tooltip::*;
+pub use typography::*;
 pub use virtual_list::*;

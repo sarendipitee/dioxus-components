@@ -4,41 +4,38 @@ Use it when an interaction needs temporary focus—a quick settings form, a comp
 
 These demos are intentionally scoped to:
 - Opening a sheet in a controlled way (`open` prop).
-- Anchoring the panel to a specific edge with `data-side`.
-- Structuring the content with title, description, close, and footer areas that mirror real modal workflows.
+- Anchoring the panel to a specific edge with the `side` prop.
+- Structuring the content with title, description, body, and footer areas that mirror real modal workflows.
 
 ## Component Structure
 
 ```rust
+use dioxus_components::sheet::{Sheet, SheetSide};
+
 Sheet {
     open: open(),
-    // Choose the anchor edge that matches your workflow. Available sides: Top, Right (default), Bottom, Left.
-    "data-side": SheetSide::Right.as_str(),
-    SheetContentClose {}
-    SheetHeader {
-        SheetTitle { "Edit Profile" }
-        SheetDescription { "Make changes to your profile here." }
-    }
-    SheetFooter {
-        SheetClose { "Close" }
-    }
+    on_open_change: move |value| open.set(value),
+    side: SheetSide::Right,
+    title: "Edit Profile",
+    description: "Make changes to your profile here.",
+    footer: rsx! {
+        Button { "Save changes" }
+    },
+    div { "Profile form content" }
 }
 ```
 
-## SheetClose with `as` prop
+## Edge Placement
 
-The `as` prop is demonstrated to keep close behavior while swapping the rendered element type.
-
-This is useful when your design calls for a button, link, or custom control in the same close interaction pattern.
+Use `SheetSide::Top`, `SheetSide::Right`, `SheetSide::Bottom`, or `SheetSide::Left` to choose the entry edge. `SheetSide::Right` is the default.
 
 ```rust
-// Default: renders as <button>
-SheetClose { "Close" }
-
-// Custom element: the preset click handler is passed through in `attributes`
-SheetClose {
-    as: |attributes| rsx! {
-        a { href: "#", ..attributes, "Go back" }
-    }
+Sheet {
+    open: open(),
+    on_open_change: move |value| open.set(value),
+    side: SheetSide::Left,
+    title: "Navigation",
+    description: "Choose a destination.",
+    nav { "Links" }
 }
 ```

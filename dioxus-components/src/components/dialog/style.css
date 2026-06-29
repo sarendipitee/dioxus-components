@@ -146,12 +146,6 @@
   gap: calc(var(--space) * 1.5);
 }
 
-.dx_dialog_header h2 {
-	/* Any browser-default margin on the h2 title will likely double up 
-	 * with padding and look out of place */
-	margin-block: 0
-}
-
 .dx_dialog_body {
   flex: 1 1 auto;
   overflow-y: auto;
@@ -170,17 +164,9 @@
   }
 }
 
-.dx_dialog_title {
-  margin: 0;
-  color: var(--overlay-fg);
-  font-size: 1.25rem;
-  font-weight: 700;
-}
-
+.dx_dialog_title,
 .dx_dialog_description {
-  margin: 0;
-  color: var(--fg-muted);
-  font-size: 1rem;
+  min-width: 0;
 }
 
 @media (width >= 40rem) {

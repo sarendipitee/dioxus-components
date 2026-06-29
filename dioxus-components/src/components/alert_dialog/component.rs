@@ -1,5 +1,8 @@
 use crate::components::button::{Button, ButtonVariant};
 use crate::components::dialog::DialogStyles;
+use crate::components::typography::{
+    TextAlign, TextWrap, TypographySize, TypographyTone, TypographyWeight,
+};
 use dioxus::prelude::*;
 use dioxus_primitives::alert_dialog::{self};
 use dioxus_primitives::dialog::DialogCtx;
@@ -92,10 +95,8 @@ pub struct AlertDialogProps {
 /// ```
 #[component]
 pub fn AlertDialog(props: AlertDialogProps) -> Element {
-    let title_has = !props.title.is_empty();
-    let title_el = title_has.then(|| props.title.into_element());
-    let desc_has = !props.description.is_empty();
-    let desc_el = desc_has.then(|| props.description.into_element());
+    let title = render_alert_dialog_title(props.title);
+    let description = render_alert_dialog_description(props.description);
     let confirm_has = !props.confirm.is_empty();
     let confirm_el = confirm_has.then(|| props.confirm.into_element());
     let cancel_has = !props.cancel.is_empty();
@@ -103,7 +104,8 @@ pub fn AlertDialog(props: AlertDialogProps) -> Element {
 
     let content_attributes = merge_attributes(vec![
         attributes!(div {
-            class: DialogStyles::dx_dialog.to_string()
+            class: DialogStyles::dx_dialog.to_string(),
+            "data-slot": "alert-dialog-content",
         }),
         props.attributes,
     ]);
@@ -120,13 +122,13 @@ pub fn AlertDialog(props: AlertDialogProps) -> Element {
                 backdrop_class: DialogStyles::dx_dialog_backdrop.to_string(),
                 attributes: content_attributes,
 
-                if title_el.is_some() || desc_el.is_some() {
+                if title.is_some() || description.is_some() {
                     div { class: DialogStyles::dx_dialog_header.to_string(),
-                        if let Some(t) = title_el {
-                            alert_dialog::AlertDialogTitle { {t} }
+                        if let Some(title) = title {
+                            {title}
                         }
-                        if let Some(d) = desc_el {
-                            alert_dialog::AlertDialogDescription { {d} }
+                        if let Some(description) = description {
+                            {description}
                         }
                     }
                 }
@@ -156,6 +158,67 @@ pub fn AlertDialog(props: AlertDialogProps) -> Element {
     }
 }
 
+fn render_alert_dialog_title(title: TextOrElement<()>) -> Option<Element> {
+    if title.is_empty() {
+        return None;
+    }
+
+    let content = title.into_element();
+    let attributes = typography_slot_attributes(
+        format!("{} dx_heading", DialogStyles::dx_dialog_title),
+        "alert-dialog-title",
+        TypographySize::Lg,
+        TypographyTone::Default,
+        TypographyWeight::Bold,
+    );
+    Some(rsx! {
+        alert_dialog::AlertDialogTitle {
+            attributes,
+            {content}
+        }
+    })
+}
+
+fn render_alert_dialog_description(description: TextOrElement<()>) -> Option<Element> {
+    if description.is_empty() {
+        return None;
+    }
+
+    let content = description.into_element();
+    let attributes = typography_slot_attributes(
+        format!("{} dx_text", DialogStyles::dx_dialog_description),
+        "alert-dialog-description",
+        TypographySize::Md,
+        TypographyTone::Default,
+        TypographyWeight::Inherit,
+    );
+    Some(rsx! {
+        alert_dialog::AlertDialogDescription {
+            attributes,
+            {content}
+        }
+    })
+}
+
+fn typography_slot_attributes(
+    class: String,
+    slot: &'static str,
+    size: TypographySize,
+    tone: TypographyTone,
+    weight: TypographyWeight,
+) -> Vec<Attribute> {
+    attributes!(div {
+        class,
+        "data-slot": slot,
+        "data-size": size.as_str(),
+        "data-tone": tone.as_str(),
+        "data-weight": weight.as_str(),
+        "data-align": TextAlign::Inherit.as_str(),
+        "data-wrap": TextWrap::Wrap.as_str(),
+        "data-truncate": "false",
+    })
+}
+
 /// Internal button that closes the alert dialog and fires an optional callback.
 #[component]
 fn AlertDialogButton(
@@ -165,12 +228,15 @@ fn AlertDialogButton(
 ) -> Element {
     let ctx: DialogCtx = use_context();
     let handler = use_callback(move |evt: MouseEvent| {
-        ctx.set_open(false);
         if let Some(cb) = &on_click {
             cb.call(evt);
         }
+        ctx.set_open(false);
     });
-    let attrs = attributes!(button { tabindex: "0" });
+    let attrs = attributes!(button {
+        r#type: "button",
+        tabindex: "0",
+    });
 
     rsx! {
         Button {

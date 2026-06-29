@@ -70,9 +70,6 @@
     align-items: center;
     gap: calc(var(--space) / 2);
     color: var(--input-fg);
-    font-size: 0.875rem;
-    font-weight: 500;
-    line-height: 1.25rem;
 }
 
 .dx_switch_field[data-disabled="true"] .dx_switch_label {
@@ -83,12 +80,6 @@
 .dx_switch_required,
 .dx_switch_error {
     color: var(--danger);
-}
-
-.dx_switch_description,
-.dx_switch_error {
-    font-size: 0.8125rem;
-    line-height: 1.125rem;
 }
 
 .dx_switch_description {
