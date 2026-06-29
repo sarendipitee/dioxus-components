@@ -982,13 +982,11 @@ pub fn use_mask(options: UseMaskOptions) -> UseMask {
                     dom::set_cursor(mask_id, next_pos);
                 }
             }
-            Key::ArrowLeft if !shift => {
-                if start > 0 {
-                    let prev_token = find_prev_token_index(slots, start - 1);
-                    if prev_token >= 0 && prev_token as usize != start - 1 {
-                        event.prevent_default();
-                        dom::set_cursor(mask_id, prev_token as usize + 1);
-                    }
+            Key::ArrowLeft if !shift && start > 0 => {
+                let prev_token = find_prev_token_index(slots, start - 1);
+                if prev_token >= 0 && prev_token as usize != start - 1 {
+                    event.prevent_default();
+                    dom::set_cursor(mask_id, prev_token as usize + 1);
                 }
             }
             Key::Character(s) if !mods.ctrl() && !mods.meta() && !mods.alt() => {

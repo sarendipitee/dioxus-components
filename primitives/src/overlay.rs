@@ -654,7 +654,6 @@ impl OverlayRegistration {
     /// is correct: z/depth simply stop being applied to a node that is itself
     /// being torn down.
     pub fn id(&self) -> Option<OverlayId> {
-        use dioxus::prelude::Readable;
         self.id.try_peek().ok().and_then(|v| *v)
     }
 

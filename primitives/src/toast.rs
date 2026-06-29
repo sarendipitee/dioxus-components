@@ -142,7 +142,7 @@ struct AddToastArgs {
 type AddToastCallback = Callback<AddToastArgs, usize>;
 
 // Context for managing toasts
-#[derive(Clone)]
+#[derive(Clone, PartialEq)]
 struct ToastCtx {
     #[allow(dead_code)]
     toasts: Signal<VecDeque<ToastRecord>>,
@@ -156,6 +156,14 @@ struct ToastCtx {
     /// [`ToastListItem`] via `onmounted`/`onresize`; the provider sums these into
     /// the cumulative `--toast-offset` used by the expanded stack layout.
     set_height: Callback<(usize, f64)>,
+}
+
+#[derive(Clone, PartialEq)]
+struct RenderedToast {
+    stack_index: usize,
+    offset: f64,
+    collapsed_offset: f64,
+    toast: ToastRecord,
 }
 
 // Toast provider props
@@ -383,7 +391,8 @@ pub fn ToastProvider(props: ToastProviderProps) -> Element {
         let toasts_vec = toasts.read();
         toasts_vec.iter().cloned().collect::<Vec<_>>()
     });
-    let length = toast_list.len();
+    let toast_records = toast_list.read().clone();
+    let length = toast_records.len();
 
     let mut region_ref: Signal<Option<std::rc::Rc<MountedData>>> = use_signal(|| None);
 
@@ -394,6 +403,12 @@ pub fn ToastProvider(props: ToastProviderProps) -> Element {
         spawn(async move {
             _ = region_ref.set_focus(true).await;
         });
+    });
+    let set_region_ref = use_callback(move |mounted: Option<std::rc::Rc<MountedData>>| {
+        region_ref.set(mounted);
+    });
+    let set_hovered = use_callback(move |hovered: bool| {
+        is_hovered.set(hovered);
     });
 
     // Focus the first toast when the user presses f6
@@ -410,6 +425,42 @@ pub fn ToastProvider(props: ToastProviderProps) -> Element {
         is_hovered,
         set_height,
     });
+    let rendered_toasts = {
+        let heights_map = heights.read().clone();
+        let front_height = toast_records
+            .iter()
+            .rev()
+            .find(|t| !t.removing)
+            .and_then(|t| heights_map.get(&t.id).copied())
+            .unwrap_or(TOAST_FALLBACK_HEIGHT_PX);
+        let mut counter = 0usize;
+        let mut offset_acc = 0f64;
+        toast_records
+            .iter()
+            .rev()
+            .map(|toast| {
+                let stack_index = counter;
+                let offset = offset_acc;
+                let height = heights_map
+                    .get(&toast.id)
+                    .copied()
+                    .unwrap_or(TOAST_FALLBACK_HEIGHT_PX);
+                let scale = (1.0 - stack_index as f64 * TOAST_COLLAPSED_SCALE_STEP).max(0.0);
+                let collapsed_offset =
+                    front_height + stack_index as f64 * TOAST_COLLAPSED_GAP_PX - height * scale;
+                if !toast.removing {
+                    counter += 1;
+                    offset_acc += height + TOAST_EXPAND_GAP_PX;
+                }
+                RenderedToast {
+                    stack_index,
+                    offset,
+                    collapsed_offset,
+                    toast: toast.clone(),
+                }
+            })
+            .collect::<Vec<_>>()
+    };
 
     rsx! {
         // Render children
@@ -417,116 +468,100 @@ pub fn ToastProvider(props: ToastProviderProps) -> Element {
 
         // Render toast container using portal
         PortalIn { portal,
-            div {
-                role: "region",
-                aria_label: "{length} notifications",
-                tabindex: "-1",
-                "data-position": props.position.as_str(),
-                style: "--toast-count: {length}",
-                onmounted: move |e| {
-                    region_ref.set(Some(e.data()));
-                },
-                onmouseenter: move |_| { is_hovered.set(true); },
-                onmouseleave: move |_| { is_hovered.set(false); },
-                ..props.attributes,
-
-                ToastList {
-                    // Render all toasts. `stack_index` is the visual stacking
-                    // position and counts only toasts that are NOT removing, so
-                    // the moment a toast begins dismissing it stops contributing
-                    // to the offset/scale of the toasts behind it. Those toasts
-                    // then slide forward immediately (concurrent with the exit
-                    // fade) instead of waiting for the node to leave the DOM.
-                    // The removing toast still receives a stable index (its last
-                    // visual slot) but its transform is overridden by the exit
-                    // rule, so the value only matters for z-ordering.
-                    for (stack_index, offset, collapsed_offset, toast) in {
-                        // Accumulate each toast's measured height (plus a gap) into
-                        // a running pixel offset. A toast's `--toast-offset` is the
-                        // sum of the heights of every toast in front of it (lower
-                        // stack index / newer), which is what the expanded layout
-                        // needs to lay them out end-to-end without overlap.
-                        // Unmeasured toasts fall back to the CSS min-height so the
-                        // first paint matches the old fixed-step spacing.
-                        let heights_map = heights.read();
-                        let front_height = toast_list
-                            .read()
-                            .iter()
-                            .rev()
-                            .find(|t| !t.removing)
-                            .and_then(|t| heights_map.get(&t.id).copied())
-                            .unwrap_or(TOAST_FALLBACK_HEIGHT_PX);
-                        let mut counter = 0usize;
-                        let mut offset_acc = 0f64;
-                        toast_list
-                            .read()
-                            .iter()
-                            .rev()
-                            .map(|t| {
-                                let assigned = counter;
-                                let this_offset = offset_acc;
-                                let h = heights_map
-                                    .get(&t.id)
-                                    .copied()
-                                    .unwrap_or(TOAST_FALLBACK_HEIGHT_PX);
-                                let scale = (1.0
-                                    - assigned as f64 * TOAST_COLLAPSED_SCALE_STEP)
-                                    .max(0.0);
-                                let collapsed_offset = front_height
-                                    + assigned as f64 * TOAST_COLLAPSED_GAP_PX
-                                    - h * scale;
-                                if !t.removing {
-                                    counter += 1;
-                                    offset_acc += h + TOAST_EXPAND_GAP_PX;
-                                }
-                                (assigned, this_offset, collapsed_offset, t.clone())
-                            })
-                            .collect::<Vec<_>>()
-                            .into_iter()
-                    } {
-                        ToastListItem {
-                            key: "{toast.id}",
-                            toast_id: toast.id,
-                            // The <li> is the absolutely-positioned element that
-                            // participates in the container's stacking context, so
-                            // its z-index (derived from --toast-index in CSS) is
-                            // what actually orders toasts front-to-back. The inner
-                            // Toast div is transformed and forms its own stacking
-                            // context, so a z-index there cannot lift it above
-                            // sibling toasts. --toast-offset is the cumulative
-                            // height of the toasts in front, used by the expanded
-                            // (hover/focus) layout to avoid overlap.
-                            style: "--toast-index: {stack_index}; --toast-offset: {offset}px; --toast-collapsed-offset: {collapsed_offset}px; --toast-collapsed-gap: {TOAST_COLLAPSED_GAP_PX}px",
-                            {
-                                props.render_toast.call(ToastProps::builder().id(toast.id)
-                                    .index(stack_index)
-                                    .title(toast.title.clone())
-                                    .description(toast.description.clone())
-                                    .toast_type(toast.toast_type)
-                                    .permanent(toast.permanent)
-                                    .on_close({
-                                        let toast_id = toast.id;
-                                        let begin_dismiss = ctx.begin_dismiss;
-                                        move |_| {
-                                            begin_dismiss.call(toast_id);
-                                        }
-                                    })
-                                    .duration(if toast.permanent { None } else { toast.duration })
-                                    .action(toast.action.clone())
-                                    .cancel(toast.cancel.clone())
-                                    .removing(toast.removing)
-                                    .attributes(vec![])
-                                    .build()
-                                )
-                            }
-                        }
-                    }
-                }
+            ToastPortalBody {
+                toast_ctx: ctx,
+                position: props.position,
+                attributes: props.attributes.clone(),
+                length,
+                rendered_toasts,
+                render_toast: props.render_toast,
+                set_region_ref,
+                set_hovered,
             }
         }
 
         // Portal output at the end of the document
         PortalOut { portal }
+    }
+}
+
+#[derive(Props, Clone, PartialEq)]
+struct ToastPortalBodyProps {
+    toast_ctx: ToastCtx,
+    position: ToastPosition,
+    attributes: Vec<Attribute>,
+    length: usize,
+    rendered_toasts: Vec<RenderedToast>,
+    render_toast: Callback<ToastPropsWithOwner, Element>,
+    set_region_ref: Callback<Option<std::rc::Rc<MountedData>>>,
+    set_hovered: Callback<bool>,
+}
+
+#[component]
+fn ToastPortalBody(props: ToastPortalBodyProps) -> Element {
+    use_context_provider(|| props.toast_ctx.clone());
+    let begin_dismiss = props.toast_ctx.begin_dismiss;
+
+    rsx! {
+        div {
+            role: "region",
+            aria_label: "{props.length} notifications",
+            tabindex: "-1",
+            "data-position": props.position.as_str(),
+            style: "--toast-count: {props.length}",
+            onmounted: move |e| {
+                props.set_region_ref.call(Some(e.data()));
+            },
+            onmouseenter: move |_| {
+                props.set_hovered.call(true);
+            },
+            onmouseleave: move |_| {
+                props.set_hovered.call(false);
+            },
+            ..props.attributes,
+
+            ToastList {
+                // Render all toasts. `stack_index` counts only non-removing
+                // toasts, so dismissing one immediately frees its slot for the
+                // remaining stack while the exit animation plays.
+                for rendered in props.rendered_toasts {
+                    ToastListItem {
+                        key: "{rendered.toast.id}",
+                        toast_id: rendered.toast.id,
+                        // The <li> owns the list stacking context, so its
+                        // z-index controls front-to-back order. The inner toast
+                        // consumes the computed offsets for expanded/collapsed
+                        // layouts.
+                        style: "--toast-index: {rendered.stack_index}; --toast-offset: {rendered.offset}px; --toast-collapsed-offset: {rendered.collapsed_offset}px; --toast-collapsed-gap: {TOAST_COLLAPSED_GAP_PX}px",
+                        {
+                            props.render_toast.call(ToastProps::builder().id(rendered.toast.id)
+                                .index(rendered.stack_index)
+                                .title(rendered.toast.title.clone())
+                                .description(rendered.toast.description.clone())
+                                .toast_type(rendered.toast.toast_type)
+                                .permanent(rendered.toast.permanent)
+                                .on_close({
+                                    let toast_id = rendered.toast.id;
+                                    move |_| {
+                                        begin_dismiss.call(toast_id);
+                                    }
+                                })
+                                .duration(if rendered.toast.permanent {
+                                    None
+                                } else {
+                                    rendered.toast.duration
+                                })
+                                .action(rendered.toast.action.clone())
+                                .cancel(rendered.toast.cancel.clone())
+                                .removing(rendered.toast.removing)
+                                .attributes(vec![])
+                                .build()
+                            )
+                        }
+                    }
+                }
+            }
+        }
     }
 }
 

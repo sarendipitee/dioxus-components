@@ -4,7 +4,10 @@ use std::rc::Rc;
 
 use dioxus::prelude::*;
 
-use super::super::context::ComboboxContext;
+use super::super::{
+    context::{ComboboxContext, ComboboxPortalContext},
+    hook::ComboboxDropdownEventSource,
+};
 use crate::{
     dioxus_attributes::attributes,
     floating::{style_prop, use_position},
@@ -129,120 +132,182 @@ fn VirtualizedComboboxOptionsPortaled(props: VirtualizedComboboxOptionsPortaledP
     // forward the snapshot into the portaled body as a plain bool so the body
     // never reads the Root-owned store across the portal boundary.
     let is_open = open();
+    let content_id = id.cloned();
+    let overlay_z = reg.z();
+    let should_render = (props.listbox_ctx.render)();
+    let highlighted_index = props.ctx.store.highlighted_option_index();
+    let root_disabled = props.ctx.selectable.disabled.cloned();
+    let selected_values = props.ctx.selectable.values.read().clone();
+    let focused_index = props.ctx.selectable.focus_state.current_focus();
+    let options = props.ctx.selectable.options.read().clone();
+    let visible_indices = props
+        .props
+        .visible_indices
+        .as_ref()
+        .map(|indices| indices.read().clone());
+    let count = (props.props.count)();
+    let visible_count = visible_indices.as_ref().map(Vec::len).unwrap_or(count);
+    let buffer = (props.props.buffer)();
+    let estimated_size = props
+        .props
+        .estimate_size
+        .as_ref()
+        .map(|cb| {
+            let index = visible_indices
+                .as_ref()
+                .and_then(|indices| indices.first().copied())
+                .unwrap_or(0);
+            cb(index).max(1)
+        })
+        .unwrap_or(36);
+
+    // Snapshot every floating-layout value HERE so the portaled body never reads
+    // Root-owned position memos or the combobox store's target ref.
+    let mut floating_ref: Signal<Option<Rc<MountedData>>> = use_signal(|| None);
+    let on_floating_mounted = use_callback(move |mounted: Rc<MountedData>| {
+        floating_ref.set(Some(mounted));
+    });
+    let pos = use_position(
+        props.ctx.store.target_mount_ref(),
+        floating_ref,
+        ContentSide::Bottom,
+        ContentAlign::Start,
+    );
+    let floating_style = pos.style.read().clone();
+    let floating_position = style_prop(&floating_style, "position");
+    let floating_top = style_prop(&floating_style, "top");
+    let floating_left = style_prop(&floating_style, "left");
+    let floating_visibility = if (pos.is_positioned)() {
+        "visible".to_string()
+    } else {
+        "hidden".to_string()
+    };
+    let floating_side = *pos.side.read();
+    let floating_align = *pos.align.read();
+    let floating_active = pos.floating_active;
+    let mut submit_ctx = props.ctx;
+    let submit_index_from_mouse = use_callback(move |index: usize| {
+        submit_ctx.submit_index(index, ComboboxDropdownEventSource::Mouse);
+    });
 
     rsx! {
         PortalIn { portal,
             VirtualizedComboboxOptionsRendered {
-                ctx: props.ctx,
-                listbox_ctx: props.listbox_ctx,
-                reg,
-                id,
                 is_open,
-                inner: props.props,
+                id: content_id,
+                overlay_z,
+                should_render,
+                portal_ctx: ComboboxPortalContext {
+                    selectable: props.ctx.selectable,
+                    store: props.ctx.store,
+                    root_disabled,
+                    selected_values,
+                    focused_index,
+                    highlighted_index,
+                    options,
+                    visible_indices: visible_indices.clone(),
+                    has_visible_options: visible_count > 0,
+                    register_options: true,
+                    submit_index_from_mouse,
+                },
+                highlighted_index,
+                visible_indices,
+                visible_count,
+                count,
+                buffer,
+                estimated_size,
+                render_option: props.props.render_option,
+                floating_position,
+                floating_top,
+                floating_left,
+                floating_visibility,
+                floating_side,
+                floating_align,
+                floating_active,
+                on_floating_mounted,
+                attributes: props.props.attributes.clone(),
             }
         }
     }
 }
 
-/// A tiny `Copy` handle exposing the listbox id, mirroring the field access
-/// (`listbox.id`) the virtualization body uses for scroll helpers.
-#[derive(Clone, Copy)]
-struct ListboxIdHandle {
-    id: Memo<String>,
-}
-
 /// Props for [`VirtualizedComboboxOptionsRendered`], the portaled DOM body.
 #[derive(Props, Clone, PartialEq)]
 struct VirtualizedComboboxOptionsRenderedProps {
-    ctx: ComboboxContext,
-    listbox_ctx: ListboxContext,
-    reg: OverlayRegistration,
-    id: Memo<String>,
     /// Open snapshot threaded from the non-portaled parent — see the matching
     /// note on `DialogPortalBodyProps::is_open`.
     is_open: bool,
-    inner: VirtualizedComboboxOptionsProps,
+    /// Snapshotted in the non-portaled parent so the portaled body never reads
+    /// the Root-owned listbox id memo across the portal boundary.
+    id: String,
+    /// Overlay z metadata, snapshotted in the non-portaled parent where the
+    /// backing `OverlayRegistration` id signal is owned.
+    overlay_z: Option<String>,
+    /// `ListboxContext::render`, snapped before `PortalIn` so the body never
+    /// reads the Root-owned render signal.
+    should_render: bool,
+    portal_ctx: ComboboxPortalContext,
+    /// Virtual window inputs snapped before `PortalIn` so the body never reads
+    /// Root-owned count/filter/highlight signals across the portal boundary.
+    highlighted_index: Option<usize>,
+    visible_indices: Option<Vec<usize>>,
+    visible_count: usize,
+    count: usize,
+    buffer: usize,
+    estimated_size: u32,
+    render_option: Callback<usize, Element>,
+    /// Floating layout fields, snapshotted in the non-portaled parent so the
+    /// portaled body never reads Root-owned positioning memos.
+    floating_position: String,
+    floating_top: String,
+    floating_left: String,
+    floating_visibility: String,
+    floating_side: ContentSide,
+    floating_align: ContentAlign,
+    floating_active: bool,
+    on_floating_mounted: Callback<Rc<MountedData>>,
+    attributes: Vec<Attribute>,
 }
 
-/// The portaled DOM body: re-provides `ComboboxContext` + `ListboxContext` and
-/// owns all virtualization state. Emits `--overlay-z`. The listbox container hook
-/// stays in the Root-tree wrapper — here we read the re-provided `ListboxContext`
-/// and the shared listbox id directly so option-state registration is not
-/// duplicated.
+/// The portaled DOM body: re-provides the portal combobox read model plus
+/// `ListboxContext` and owns local scroll/viewport virtualization state. All
+/// Root-owned listbox id, overlay z, floating layout, and filter/highlight
+/// snapshots are forwarded as plain values from the non-portaled parent.
 #[component]
 fn VirtualizedComboboxOptionsRendered(props: VirtualizedComboboxOptionsRenderedProps) -> Element {
-    let ctx = props.ctx;
-    let reg = props.reg;
-    let id = props.id;
     let is_open = props.is_open;
-    let listbox_ctx = props.listbox_ctx;
-    // Re-provide both contexts INSIDE the portal (the load-bearing rule).
-    use_context_provider(|| ctx);
-    use_context_provider(|| listbox_ctx);
+    let should_render = props.should_render;
+    let mut render_signal = use_signal(|| should_render);
 
-    // Reconstruct the original prop bindings used throughout the body.
-    let props = props.inner;
-    let render = listbox_ctx.render;
-    // Local handle mirroring the old `listbox.id` usage in scroll helpers.
-    let listbox = ListboxIdHandle { id };
+    use_effect(move || {
+        render_signal.set(should_render);
+    });
+    use_context_provider(|| props.portal_ctx);
+    use_context_provider(|| ListboxContext {
+        render: render_signal.into(),
+    });
 
     let mut scroll_offset = use_signal(|| 0u32);
     let mut viewport_size = use_signal(|| 0u32);
-
-    // Floating-element positioning (mirrors `ComboboxOptions`). The reference is the
-    // combobox target registered in the store; the floating element is this listbox
-    // scroll container.
-    let mut floating_ref: Signal<Option<Rc<MountedData>>> = use_signal(|| None);
-    let pos = use_position(
-        ctx.store.target_mount_ref(),
-        floating_ref,
-        ContentSide::Bottom,
-        ContentAlign::Start,
-    );
-    let style = pos.style;
-    let is_positioned = pos.is_positioned;
-    let resolved_side = pos.side;
-    let resolved_align = pos.align;
-    let floating_active = pos.floating_active;
-    let position = use_memo(move || style_prop(&style.read(), "position"));
-    let top = use_memo(move || style_prop(&style.read(), "top"));
-    let left = use_memo(move || style_prop(&style.read(), "left"));
-    let visibility = use_memo(move || if is_positioned() { "visible" } else { "hidden" });
-
-    // The total number of visible rows (changes when the filter changes).
-    let visible_count = use_memo(move || {
-        props
-            .visible_indices
-            .as_ref()
-            .map(|indices| indices.read().len())
-            .unwrap_or_else(|| (props.count)())
-    });
-
-    // The single row-height estimate. We call estimate_size(0) as a representative sample.
-    // For comboboxes all options are the same height, so this is exact.
-    let est = use_memo(move || {
-        props
-            .estimate_size
-            .as_ref()
-            .map(|cb| {
-                let idx = props
-                    .visible_indices
-                    .as_ref()
-                    .and_then(|s| s.read().first().copied())
-                    .unwrap_or(0);
-                cb(idx).max(1)
-            })
-            .unwrap_or(36)
-    });
+    let content_id = props.id.clone();
+    let visible_indices = props.visible_indices.clone();
+    let visible_count = props.visible_count;
+    let count = visible_count;
+    let estimated_size = props.estimated_size.max(1);
+    let highlighted_index = props.highlighted_index;
+    let render_option = props.render_option;
 
     // Reset scroll position whenever the filter changes.
-    use_effect(move || {
-        let _ = visible_count.read();
-        scroll_offset.set(0);
-        spawn(async move {
-            sync_scroll(listbox.id.peek().clone(), 0).await;
-        });
-    });
+    use_effect(use_reactive(
+        (&props.visible_indices, &props.count),
+        move |_| {
+            scroll_offset.set(0);
+            let content_id = content_id.clone();
+            spawn(async move {
+                sync_scroll(content_id, 0).await;
+            });
+        },
+    ));
 
     // Read scroll position directly from the native scroll event — no JS eval loop needed.
     // ScrollData carries scrollTop and clientHeight from the browser event itself.
@@ -254,9 +319,10 @@ fn VirtualizedComboboxOptionsRendered(props: VirtualizedComboboxOptionsRenderedP
 
     // On mount, capture the initial viewport height so the window calculation is correct
     // before the first scroll event fires.
+    let on_floating_mounted = props.on_floating_mounted;
     let on_mounted = move |e: Event<MountedData>| {
         let data = e.data();
-        floating_ref.set(Some(data.clone()));
+        on_floating_mounted.call(data.clone());
         spawn(async move {
             if let Ok(rect) = data.get_client_rect().await {
                 viewport_size.set(rect.size.height.round() as u32);
@@ -267,45 +333,54 @@ fn VirtualizedComboboxOptionsRendered(props: VirtualizedComboboxOptionsRenderedP
     };
 
     // Scroll-to highlighted option using pure estimate positions.
-    use_effect(move || {
-        if !render() {
-            return;
-        }
-        let Some(highlighted_index) = ctx.store.highlighted_option_index() else {
-            return;
-        };
-        let visible_index = if let Some(indices) = props.visible_indices.as_ref() {
-            let indices = indices.read();
-            let Some(pos) = indices.iter().position(|&i| i == highlighted_index) else {
+    let effect_visible_indices = visible_indices.clone();
+    let effect_content_id = props.id.clone();
+    use_effect(use_reactive(
+        (
+            &props.should_render,
+            &props.highlighted_index,
+            &props.visible_indices,
+            &props.visible_count,
+            &props.estimated_size,
+        ),
+        move |_| {
+            if !should_render {
+                return;
+            }
+            let Some(highlighted_index) = highlighted_index else {
                 return;
             };
-            pos
-        } else {
-            highlighted_index
-        };
-        let count = *visible_count.peek();
-        if visible_index >= count {
-            return;
-        }
-        let e = *est.peek();
-        let item_start = visible_index as u32 * e;
-        let item_end = item_start + e;
-        let current = *scroll_offset.peek();
-        let vp = *viewport_size.peek();
-        let next = if item_start < current {
-            Some(item_start)
-        } else if item_end > current.saturating_add(vp) {
-            Some(item_end.saturating_sub(vp))
-        } else {
-            None
-        };
-        if let Some(next) = next {
-            scroll_offset.set(next);
-            spawn(async move {
-                sync_scroll(listbox.id.peek().clone(), next).await;
-            });
-        }
-    });
+            let visible_index = if let Some(indices) = effect_visible_indices.as_ref() {
+                let Some(pos) = indices.iter().position(|&i| i == highlighted_index) else {
+                    return;
+                };
+                pos
+            } else {
+                highlighted_index
+            };
+            if visible_index >= visible_count {
+                return;
+            }
+            let item_start = visible_index as u32 * estimated_size;
+            let item_end = item_start + estimated_size;
+            let current = *scroll_offset.peek();
+            let vp = *viewport_size.peek();
+            let next = if item_start < current {
+                Some(item_start)
+            } else if item_end > current.saturating_add(vp) {
+                Some(item_end.saturating_sub(vp))
+            } else {
+                None
+            };
+            if let Some(next) = next {
+                scroll_offset.set(next);
+                let content_id = effect_content_id.clone();
+                spawn(async move {
+                    sync_scroll(content_id, next).await;
+                });
+            }
+        },
+    ));
 
     // ── Window calculation ────────────────────────────────────────────────────
     //
@@ -327,10 +402,8 @@ fn VirtualizedComboboxOptionsRendered(props: VirtualizedComboboxOptionsRenderedP
 
     let off = *scroll_offset.read();
     let vp = *viewport_size.read();
-    let e = *est.read();
-    let count = *visible_count.read();
-    let buf = (props.buffer)();
-    let e1 = e.max(1);
+    let buf = props.buffer;
+    let e1 = estimated_size;
 
     // How many rows can the viewport hold? Use 240px as a stand-in before the
     // first scroll event so the initial render is already fully populated.
@@ -350,25 +423,27 @@ fn VirtualizedComboboxOptionsRendered(props: VirtualizedComboboxOptionsRenderedP
     let canvas_height = (count as u32 * e1).max(vp);
     let set_size = count.to_string();
 
-    // z-index assigned by the overlay manager via open order.
-    let z_style = reg.z().map(|z| format!("--overlay-z: {z};"));
+    let z_style = props
+        .overlay_z
+        .as_ref()
+        .map(|z| format!("--overlay-z: {z};"));
 
     let floating_attrs = attributes!(div {
-        position: position(),
-        top: top(),
-        left: left(),
-        visibility: visibility(),
+        position: props.floating_position.clone(),
+        top: props.floating_top.clone(),
+        left: props.floating_left.clone(),
+        visibility: props.floating_visibility.clone(),
         style: z_style,
-        "data-floating": floating_active.then_some("true"),
-        "data-side": resolved_side.read().as_str(),
-        "data-align": resolved_align.read().as_str(),
+        "data-floating": props.floating_active.then_some("true"),
+        "data-side": props.floating_side.as_str(),
+        "data-align": props.floating_align.as_str(),
     });
     let attributes = merge_attributes(vec![props.attributes.clone(), floating_attrs]);
 
     rsx! {
-        if render() {
+        if should_render {
             div {
-                id: listbox.id,
+                id: props.id.clone(),
                 role: "listbox",
                 "data-state": if is_open { "open" } else { "closed" },
                 onmounted: on_mounted,
@@ -384,13 +459,10 @@ fn VirtualizedComboboxOptionsRendered(props: VirtualizedComboboxOptionsRenderedP
                     {
                         (start..start + window_size)
                             .map(move |visible_index| {
-                                let index = props
-                                    .visible_indices
+                                let index = visible_indices
                                     .as_ref()
-                                    .map(|indices| indices.read().get(visible_index).copied())
-                                    .unwrap_or_else(|| {
-                                        (visible_index < count).then_some(visible_index)
-                                    });
+                                    .and_then(|indices| indices.get(visible_index).copied())
+                                    .unwrap_or(visible_index);
                                 let item_top = visible_index as u32 * e1;
                                 rsx! {
                                     div {
@@ -400,7 +472,7 @@ fn VirtualizedComboboxOptionsRendered(props: VirtualizedComboboxOptionsRenderedP
                                         "data-virtual-index": "{visible_index}",
                                         "aria-setsize": "{set_size}",
                                         "aria-posinset": "{visible_index + 1}",
-                                        {index.map(|i| (props.render_option)(i))}
+                                        {render_option.call(index)}
                                     }
                                 }
                             })

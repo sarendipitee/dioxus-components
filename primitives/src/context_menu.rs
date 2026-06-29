@@ -321,7 +321,8 @@ pub fn ContextMenuTrigger(props: ContextMenuTriggerProps) -> Element {
 #[derive(Props, Clone, PartialEq)]
 pub struct ContextMenuContentProps {
     /// The ID of the context menu content element.
-    pub id: ReadSignal<Option<String>>,
+    #[props(default)]
+    pub id: Option<String>,
 
     /// Additional attributes for the context menu content element.
     #[props(extends = GlobalAttributes)]
@@ -392,7 +393,11 @@ pub fn ContextMenuContent(props: ContextMenuContentProps) -> Element {
     // `root_id` wrapper. Give it a stable id of its own so the scroll-block eval can
     // test containment against the portaled panel directly.
     let generated_id = use_unique_id();
-    let content_id = use_id_or(generated_id, props.id);
+    let id_value = props.id.clone();
+    let id_signal = ReadSignal::new(use_memo(use_reactive(&id_value, |id_value| {
+        id_value.clone()
+    })));
+    let content_id = use_id_or(generated_id, id_signal);
 
     let mut menu_ref: Signal<Option<std::rc::Rc<MountedData>>> = use_signal(|| None);
     let focused = move || open() && !menu_ctx.focus.any_focused();
@@ -469,15 +474,15 @@ pub fn ContextMenuContent(props: ContextMenuContentProps) -> Element {
 #[derive(Props, Clone, PartialEq)]
 pub struct ContextMenuItemProps {
     /// Whether the item is disabled
-    #[props(default = ReadSignal::new(Signal::new(false)))]
-    pub disabled: ReadSignal<bool>,
+    #[props(default)]
+    pub disabled: bool,
 
     /// The value of the menu item
     #[props(into)]
     pub value: String,
 
     /// The index of the item in the menu
-    pub index: ReadSignal<usize>,
+    pub index: usize,
 
     /// Callback when the item is selected
     #[props(default)]

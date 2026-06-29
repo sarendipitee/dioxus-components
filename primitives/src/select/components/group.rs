@@ -3,18 +3,18 @@
 use crate::{listbox::ListboxContext, use_effect, use_id_or, use_unique_id};
 use dioxus::prelude::*;
 
-use super::super::context::{SelectContext, SelectGroupContext};
+use super::super::context::{SelectContext, SelectGroupContext, SelectPortalContext};
 
 /// The props for the [`SelectGroup`] component
 #[derive(Props, Clone, PartialEq)]
 pub struct SelectGroupProps {
     /// Whether the group is disabled
     #[props(default)]
-    pub disabled: ReadSignal<bool>,
+    pub disabled: bool,
 
     /// Optional ID for the group
     #[props(default)]
-    pub id: ReadSignal<Option<String>>,
+    pub id: Option<String>,
 
     /// Additional attributes for the group
     #[props(extends = GlobalAttributes)]
@@ -71,8 +71,13 @@ pub struct SelectGroupProps {
 /// ```
 #[component]
 pub fn SelectGroup(props: SelectGroupProps) -> Element {
-    let ctx = use_context::<SelectContext>();
-    let disabled = ctx.selectable.disabled.cloned() || props.disabled.cloned();
+    let portal_ctx = try_use_context::<SelectPortalContext>();
+    let disabled = if let Some(portal_ctx) = &portal_ctx {
+        portal_ctx.root_disabled || props.disabled
+    } else {
+        let ctx = use_context::<SelectContext>();
+        ctx.selectable.disabled.cloned() || props.disabled
+    };
 
     let labeled_by = use_signal(|| None);
 
@@ -102,7 +107,8 @@ pub fn SelectGroup(props: SelectGroupProps) -> Element {
 #[derive(Props, Clone, PartialEq)]
 pub struct SelectGroupLabelProps {
     /// Optional ID for the label
-    pub id: ReadSignal<Option<String>>,
+    #[props(default)]
+    pub id: Option<String>,
 
     /// Additional attributes for the label
     #[props(extends = GlobalAttributes)]
@@ -162,7 +168,8 @@ pub fn SelectGroupLabel(props: SelectGroupLabelProps) -> Element {
     let mut ctx: SelectGroupContext = use_context();
 
     let id = use_unique_id();
-    let id = use_id_or(id, props.id);
+    let id_value = props.id.clone();
+    let id = use_id_or(id, ReadSignal::new(use_memo(move || id_value.clone())));
 
     use_effect(move || {
         ctx.labeled_by.set(Some(id()));

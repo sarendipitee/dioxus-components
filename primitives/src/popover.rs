@@ -340,6 +340,27 @@ fn PopoverPortaled(props: PopoverPortaledProps) -> Element {
     // parent re-renders synchronously when `open` flips, keeping data-state in
     // lockstep with the open/close animation.
     let is_open = open();
+    let rendered_id = id.cloned();
+    let overlay_z = reg.z().map(|z| format!("--overlay-z: {z};"));
+    let is_modal = (ctx.is_modal)();
+    let labelledby = ctx.labelledby.cloned();
+    let mut floating_ref: Signal<Option<Rc<MountedData>>> = use_signal(|| None);
+    let on_floating_mounted = use_callback(move |mounted: Rc<MountedData>| {
+        floating_ref.set(Some(mounted));
+    });
+    let pos = use_position(ctx.trigger_ref, floating_ref, props.side, props.align);
+    let floating_style = pos.style.read().clone();
+    let floating_position = style_prop(&floating_style, "position");
+    let floating_top = style_prop(&floating_style, "top");
+    let floating_left = style_prop(&floating_style, "left");
+    let floating_visibility = if (pos.is_positioned)() {
+        "visible".to_string()
+    } else {
+        "hidden".to_string()
+    };
+    let floating_side = *pos.side.read();
+    let floating_align = *pos.align.read();
+    let floating_active = pos.floating_active;
 
     // The body is a CHILD of `PortalIn` so the re-provide lands on the *portaled*
     // render chain — the only place a portaled consumer resolves it.
@@ -347,11 +368,19 @@ fn PopoverPortaled(props: PopoverPortaledProps) -> Element {
         PortalIn { portal,
             PopoverContentRendered {
                 ctx,
-                reg,
                 is_open,
-                id,
-                side: props.side,
-                align: props.align,
+                id: rendered_id,
+                is_modal,
+                labelledby,
+                overlay_z,
+                floating_position,
+                floating_top,
+                floating_left,
+                floating_visibility,
+                floating_side,
+                floating_align,
+                floating_active,
+                on_floating_mounted,
                 attributes: props.attributes.clone(),
                 children: props.children,
             }
@@ -363,30 +392,45 @@ fn PopoverPortaled(props: PopoverPortaledProps) -> Element {
 #[derive(Props, Clone, PartialEq)]
 pub struct PopoverContentRenderedProps {
     ctx: PopoverCtx,
-    reg: OverlayRegistration,
     /// Open snapshot threaded from the non-portaled parent — see the matching
     /// note on `DialogPortalBodyProps::is_open`. The body must not read the
     /// Root-owned `ctx.open` Memo across the portal boundary.
     is_open: bool,
-    id: Memo<String>,
-    side: ContentSide,
-    align: ContentAlign,
+    id: String,
+    is_modal: bool,
+    labelledby: String,
+    overlay_z: Option<String>,
+    floating_position: String,
+    floating_top: String,
+    floating_left: String,
+    floating_visibility: String,
+    floating_side: ContentSide,
+    floating_align: ContentAlign,
+    floating_active: bool,
+    on_floating_mounted: Callback<Rc<MountedData>>,
     attributes: Vec<Attribute>,
     children: Element,
 }
 
 /// The rendered content of the popover, rendered as a child of `PortalIn` (so
-/// this is where [`PopoverCtx`] is re-provided). Floating positioning runs here
-/// off the trigger ref shared through the ctx — reference-based, so portaling the
-/// panel does not break positioning. Keeps the `visibility:hidden until
-/// is_positioned` gate verbatim.
+/// this is where [`PopoverCtx`] is re-provided). Floating layout is snapshotted
+/// in the non-portaled parent and forwarded here as plain values.
 #[component]
 pub fn PopoverContentRendered(props: PopoverContentRenderedProps) -> Element {
     let ctx = props.ctx;
-    let reg = props.reg;
+    let is_open = props.is_open;
     let id = props.id;
-    let side = props.side;
-    let align = props.align;
+    let is_modal = props.is_modal;
+    let labelledby = props.labelledby;
+    let overlay_z = props.overlay_z;
+    let floating_position = props.floating_position;
+    let floating_top = props.floating_top;
+    let floating_left = props.floating_left;
+    let floating_visibility = props.floating_visibility;
+    let floating_side = props.floating_side;
+    let floating_align = props.floating_align;
+    let floating_active = props.floating_active;
+    let on_floating_mounted = props.on_floating_mounted;
     let attributes = props.attributes;
     let children = props.children;
 
@@ -394,56 +438,17 @@ pub fn PopoverContentRendered(props: PopoverContentRenderedProps) -> Element {
     // in-panel consumers resolve PopoverCtx up THIS (portaled) render chain.
     use_context_provider(|| ctx);
 
-    let is_open = props.is_open;
-
-    // Floating-element positioning. The content ref is local; the trigger ref is shared
-    // through the context. `use_position` must be called unconditionally (no conditional
-    // hook) — this component only renders while the popover is open, so both refs settle
-    // on first mount.
-    let mut floating_ref: Signal<Option<Rc<MountedData>>> = use_signal(|| None);
-    let pos = use_position(ctx.trigger_ref, floating_ref, side, align);
-
-    // The hook emits a single inline style string (`position: absolute; top: Ypx; left: Xpx;`
-    // on web, empty on native). `merge_attributes` merges CSS by per-property
-    // (name, namespace=style), last-list-wins — a single raw `style` string would
-    // therefore clobber any user-forwarded `style` string entirely. So we split the
-    // floating coordinates into individual `style:` props (`position`/`top`/`left`),
-    // which only override the user's same-named props and leave every other forwarded
-    // style intact. The floating props are merged LAST so the computed coordinates win.
-    //
-    // R4/R5: keep the element `visibility: hidden` until the first compute lands, so it
-    // does not flash at the origin before positioning. The hook makes `is_positioned`
-    // reliable on web (it passes `open(true)` to floating-ui so the signal flips to
-    // `true` after the first compute), so we guard on it directly — no coordinate-presence
-    // fallback. On native `is_positioned` is always true and the coords are empty, so the
-    // element stays visible and keeps the CSS-only placement.
-    let style = pos.style;
-    let is_positioned = pos.is_positioned;
-    let resolved_side = pos.side;
-    let resolved_align = pos.align;
-    // Marker attribute: present (`data-floating="true"`) on web so the native CSS
-    // fallback (scoped under `:not([data-floating])`) stays inert and the inline
-    // coordinates win; absent on native so the fallback positional rules apply.
-    let floating_active = pos.floating_active;
-
-    let position = use_memo(move || style_prop(&style.read(), "position"));
-    let top = use_memo(move || style_prop(&style.read(), "top"));
-    let left = use_memo(move || style_prop(&style.read(), "left"));
-    let visibility = use_memo(move || if is_positioned() { "visible" } else { "hidden" });
-
     // z-index assigned by the overlay manager via open order. Emitted as a raw
     // `style` string (name=""), so it coexists with the per-property
     // position/top/left styles under `merge_attributes` (merged by name).
-    let z_style = reg.z().map(|z| format!("--overlay-z: {z};"));
-
     let floating_attrs = attributes!(div {
-        position: position(),
-        top: top(),
-        left: left(),
-        visibility: visibility(),
-        style: z_style,
+        position: floating_position,
+        top: floating_top,
+        left: floating_left,
+        visibility: floating_visibility,
+        style: overlay_z,
         "data-floating": floating_active.then_some("true"),
-        onmounted: move |evt| floating_ref.set(Some(evt.data())),
+        onmounted: move |evt| on_floating_mounted.call(evt.data()),
     });
     // Floating props must win over user-forwarded coords → place them in the last list.
     let attributes = merge_attributes(vec![attributes, floating_attrs]);
@@ -452,12 +457,12 @@ pub fn PopoverContentRendered(props: PopoverContentRenderedProps) -> Element {
         div {
             id,
             role: "dialog",
-            aria_modal: (ctx.is_modal)().then_some("true"),
-            aria_labelledby: ctx.labelledby,
+            aria_modal: is_modal.then_some("true"),
+            aria_labelledby: labelledby,
             aria_hidden: (!is_open).then_some("true"),
             "data-state": if is_open { "open" } else { "closed" },
-            "data-side": resolved_side.read().as_str(),
-            "data-align": resolved_align.read().as_str(),
+            "data-side": floating_side.as_str(),
+            "data-align": floating_align.as_str(),
             ..attributes,
             {children}
         }

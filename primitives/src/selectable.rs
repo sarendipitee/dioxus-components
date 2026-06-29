@@ -53,13 +53,20 @@ pub(crate) struct SelectableOption<T: Clone + PartialEq + 'static> {
     pub(crate) focused: Memo<bool>,
     pub(crate) down_pos: Signal<Option<(f64, f64)>>,
     pub(crate) index: ReadSignal<usize>,
-    pub(crate) value: ReadSignal<T>,
+    pub(crate) value: T,
+}
+
+#[derive(Clone, Copy)]
+pub(crate) struct SelectableRegisteredOption {
+    pub(crate) id: Memo<String>,
+    pub(crate) disabled: Memo<bool>,
+    pub(crate) down_pos: Signal<Option<(f64, f64)>>,
 }
 
 pub(crate) struct SelectableOptionConfig<T: Clone + PartialEq + 'static> {
     pub(crate) id: ReadSignal<Option<String>>,
     pub(crate) index: ReadSignal<usize>,
-    pub(crate) value: ReadSignal<T>,
+    pub(crate) value: T,
     pub(crate) text_value: ReadSignal<Option<String>>,
     pub(crate) option_disabled: ReadSignal<bool>,
     pub(crate) component_name: &'static str,
@@ -305,6 +312,7 @@ pub(crate) fn use_selectable_option<T: Clone + PartialEq + 'static>(
         option_disabled,
         component_name,
     } = option;
+    let option_value = value.clone();
     let disabled = {
         let root_disabled = selectable.disabled;
         use_memo(move || root_disabled.cloned() || option_disabled.cloned())
@@ -312,14 +320,15 @@ pub(crate) fn use_selectable_option<T: Clone + PartialEq + 'static>(
     let id = use_listbox_option(
         id,
         index,
-        value,
+        value.clone(),
         text_value,
         selectable.options,
         move || disabled.cloned(),
         component_name,
     );
     use_focus_entry_disabled(selectable.focus_state, index, move || disabled.cloned());
-    let selected = use_memo(move || selectable.is_selected(&RcPartialEqValue::new(value.cloned())));
+    let selected =
+        use_memo(move || selectable.is_selected(&RcPartialEqValue::new(option_value.clone())));
     let focused = use_memo(move || selectable.focus_state.is_focused(index()));
     let down_pos: Signal<Option<(f64, f64)>> = use_signal(|| None);
 
@@ -335,6 +344,39 @@ pub(crate) fn use_selectable_option<T: Clone + PartialEq + 'static>(
         down_pos,
         index,
         value,
+    }
+}
+
+pub(crate) fn use_selectable_option_registration<T: Clone + PartialEq + 'static>(
+    selectable: SelectableContext,
+    option: SelectableOptionConfig<T>,
+    root_disabled: bool,
+) -> SelectableRegisteredOption {
+    let SelectableOptionConfig {
+        id,
+        index,
+        value,
+        text_value,
+        option_disabled,
+        component_name,
+    } = option;
+    let disabled = use_memo(move || root_disabled || option_disabled.cloned());
+    let id = use_listbox_option(
+        id,
+        index,
+        value,
+        text_value,
+        selectable.options,
+        move || disabled.cloned(),
+        component_name,
+    );
+    use_focus_entry_disabled(selectable.focus_state, index, move || disabled.cloned());
+    let down_pos: Signal<Option<(f64, f64)>> = use_signal(|| None);
+
+    SelectableRegisteredOption {
+        id,
+        disabled,
+        down_pos,
     }
 }
 

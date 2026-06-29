@@ -472,8 +472,9 @@ fn DialogPortaled(props: DialogPortaledProps) -> Element {
     rsx! {
         PortalIn { portal,
             DialogPortalBody {
-                ctx,
+                set_open,
                 is_open,
+                is_modal: modal,
                 content_id: content_id_str,
                 backdrop_id: backdrop_id_str,
                 aria_labelledby,
@@ -496,7 +497,7 @@ fn DialogPortaled(props: DialogPortaledProps) -> Element {
 /// Props for [`DialogPortalBody`].
 #[derive(Props, Clone, PartialEq)]
 struct DialogPortalBodyProps {
-    ctx: DialogCtx,
+    set_open: Callback<bool>,
     /// Open state, snapshotted in the non-portaled parent each render and passed
     /// in as a plain `bool`. The body must NOT read the Root-owned `ctx.open`
     /// Memo directly: the portaled subtree lives under the root `OverlayOutlet`,
@@ -506,6 +507,9 @@ struct DialogPortalBodyProps {
     /// in lockstep with the open animation (unlike the effect-driven `closing`
     /// flag, which lags a flush and would race the exit-animation poll).
     is_open: bool,
+    /// Modal state snapshotted in the non-portaled parent. In-portal consumers
+    /// must not read the Root-owned `is_modal` signal through `DialogCtx`.
+    is_modal: bool,
     /// Snapshotted in the non-portaled parent. The body must NOT hold a
     /// `Memo<String>` or `Signal<String>` handle whose owner lives in a
     /// nested `DialogRoot` (e.g. a Sheet rendered inside another Sheet's
@@ -540,9 +544,8 @@ struct DialogPortalBodyProps {
 /// render chain (mirrors the Wave-0 R-CTX smoke test's `SmokePortaledRoot`).
 #[component]
 fn DialogPortalBody(props: DialogPortalBodyProps) -> Element {
-    let ctx = props.ctx;
     let is_open = props.is_open;
-    let set_open = ctx.set_open;
+    let set_open = props.set_open;
     let close_on_backdrop_click = props.close_on_backdrop_click;
     let content_id = props.content_id.clone();
     let backdrop_id = props.backdrop_id.clone();
@@ -568,12 +571,19 @@ fn DialogPortalBody(props: DialogPortalBodyProps) -> Element {
     // same ID string is used both here (for the dialog's aria-labelledby attr,
     // set in `aria_labelledby` above) and in the local signal (read by
     // `DialogTitle`/`DialogDescription` to set their element's `id`).
+    let open = use_memo(use_reactive(&props.is_open, |is_open| is_open));
+    let mut is_modal_signal = use_signal(|| props.is_modal);
+    use_effect(use_reactive(&props.is_modal, move |is_modal| {
+        is_modal_signal.set(is_modal);
+    }));
     let local_labelledby = use_signal(|| props.aria_labelledby.clone());
     let local_describedby = use_signal(|| props.aria_describedby.clone());
     use_context_provider(|| DialogCtx {
+        open,
+        set_open,
+        is_modal: ReadSignal::new(is_modal_signal),
         dialog_labelledby: local_labelledby,
         dialog_describedby: local_describedby,
-        ..ctx
     });
 
     let base = attributes!(div { class: "dx-dialog" });
@@ -641,7 +651,7 @@ fn DialogPortalBody(props: DialogPortalBodyProps) -> Element {
 pub struct DialogTitleProps {
     /// The ID of the dialog title element. If not provided, uses the auto-generated aria ID.
     #[props(default)]
-    pub id: ReadSignal<Option<String>>,
+    pub id: Option<String>,
     /// Additional attributes for the dialog title element.
     #[props(extends = GlobalAttributes)]
     pub attributes: Vec<Attribute>,
@@ -694,7 +704,11 @@ pub struct DialogTitleProps {
 #[component]
 pub fn DialogTitle(props: DialogTitleProps) -> Element {
     let ctx: DialogCtx = use_context();
-    let id = use_id_or(ctx.dialog_labelledby, props.id);
+    let id_value = props.id.clone();
+    let id = use_id_or(
+        ctx.dialog_labelledby,
+        ReadSignal::new(use_memo(move || id_value.clone())),
+    );
 
     rsx! {
         h2 {
@@ -710,7 +724,7 @@ pub fn DialogTitle(props: DialogTitleProps) -> Element {
 pub struct DialogDescriptionProps {
     /// The ID of the dialog description element. If not provided, uses the auto-generated aria ID.
     #[props(default)]
-    pub id: ReadSignal<Option<String>>,
+    pub id: Option<String>,
     /// Additional attributes for the dialog description element.
     #[props(extends = GlobalAttributes)]
     pub attributes: Vec<Attribute>,
@@ -763,7 +777,11 @@ pub struct DialogDescriptionProps {
 #[component]
 pub fn DialogDescription(props: DialogDescriptionProps) -> Element {
     let ctx: DialogCtx = use_context();
-    let id = use_id_or(ctx.dialog_describedby, props.id);
+    let id_value = props.id.clone();
+    let id = use_id_or(
+        ctx.dialog_describedby,
+        ReadSignal::new(use_memo(move || id_value.clone())),
+    );
 
     rsx! {
         p {

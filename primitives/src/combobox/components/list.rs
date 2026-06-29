@@ -4,7 +4,10 @@ use std::rc::Rc;
 
 use dioxus::prelude::*;
 
-use super::super::context::ComboboxContext;
+use super::super::{
+    context::{ComboboxContext, ComboboxPortalContext},
+    hook::ComboboxDropdownEventSource,
+};
 use crate::{
     dioxus_attributes::attributes,
     floating::{style_prop, use_position},
@@ -47,11 +50,14 @@ pub fn ComboboxOptions(props: ComboboxOptionsProps) -> Element {
 
     rsx! {
         if render() {
+            ComboboxOptionsRegistration {
+                children: props.children.clone(),
+            }
             ComboboxOptionsPortaled {
                 ctx,
-                listbox_ctx,
                 id: listbox.id,
                 open,
+                should_render: (listbox_ctx.render)(),
                 attributes: props.attributes.clone(),
                 children: props.children,
             }
@@ -61,13 +67,26 @@ pub fn ComboboxOptions(props: ComboboxOptionsProps) -> Element {
     }
 }
 
+/// Keeps root-tree option registration alive while the visible listbox is portaled.
+#[component]
+fn ComboboxOptionsRegistration(children: Element) -> Element {
+    let render = use_signal(|| false);
+    use_context_provider(|| ListboxContext {
+        render: render.into(),
+    });
+
+    rsx! {
+        {children}
+    }
+}
+
 /// Props for [`ComboboxOptionsPortaled`], the in-portal half of [`ComboboxOptions`].
 #[derive(Props, Clone, PartialEq)]
 struct ComboboxOptionsPortaledProps {
     ctx: ComboboxContext,
-    listbox_ctx: ListboxContext,
     id: Memo<String>,
     open: Memo<bool>,
+    should_render: bool,
     attributes: Vec<Attribute>,
     children: Element,
 }
@@ -110,15 +129,78 @@ fn ComboboxOptionsPortaled(props: ComboboxOptionsPortaledProps) -> Element {
     // forward the snapshot into the portaled body as a plain bool so the body
     // never reads the Root-owned `open` Memo across the portal boundary.
     let is_open = open();
+    let should_render = props.should_render;
+    let content_id = id.cloned();
+    let overlay_z = reg.z();
+    let root_disabled = ctx.selectable.disabled.cloned();
+    let selected_values = ctx.selectable.values.read().clone();
+    let focused_index = ctx.selectable.focus_state.current_focus();
+    let highlighted_index = ctx.store.highlighted_option_index();
+    let options = ctx.selectable.options.read().clone();
+    let visible_indices = options
+        .iter()
+        .filter(|option| ctx.is_visible_text(option.tab_index, option.text_value.clone()))
+        .map(|option| option.tab_index)
+        .collect::<Vec<_>>();
+    let has_visible_options = !visible_indices.is_empty();
+
+    // Snapshot every floating-layout value HERE so the portaled body never reads
+    // Root-owned position memos or the combobox store's target ref.
+    let mut floating_ref: Signal<Option<Rc<MountedData>>> = use_signal(|| None);
+    let on_floating_mounted = use_callback(move |mounted: Rc<MountedData>| {
+        floating_ref.set(Some(mounted));
+    });
+    let pos = use_position(
+        ctx.store.target_mount_ref(),
+        floating_ref,
+        ContentSide::Bottom,
+        ContentAlign::Start,
+    );
+    let floating_style = pos.style.read().clone();
+    let floating_position = style_prop(&floating_style, "position");
+    let floating_top = style_prop(&floating_style, "top");
+    let floating_left = style_prop(&floating_style, "left");
+    let floating_visibility = if (pos.is_positioned)() {
+        "visible".to_string()
+    } else {
+        "hidden".to_string()
+    };
+    let floating_side = *pos.side.read();
+    let floating_align = *pos.align.read();
+    let floating_active = pos.floating_active;
+    let mut submit_ctx = ctx;
+    let submit_index_from_mouse = use_callback(move |index: usize| {
+        submit_ctx.submit_index(index, ComboboxDropdownEventSource::Mouse);
+    });
 
     rsx! {
         PortalIn { portal,
             ComboboxOptionsRendered {
-                ctx,
-                listbox_ctx: props.listbox_ctx,
-                reg,
-                id,
                 is_open,
+                should_render,
+                id: content_id,
+                overlay_z,
+                portal_ctx: ComboboxPortalContext {
+                    selectable: ctx.selectable,
+                    store: ctx.store,
+                    root_disabled,
+                    selected_values,
+                    focused_index,
+                    highlighted_index,
+                    options,
+                    visible_indices: Some(visible_indices),
+                    has_visible_options,
+                    register_options: false,
+                    submit_index_from_mouse,
+                },
+                floating_position,
+                floating_top,
+                floating_left,
+                floating_visibility,
+                floating_side,
+                floating_align,
+                floating_active,
+                on_floating_mounted,
                 attributes: props.attributes.clone(),
                 children: props.children,
             }
@@ -129,76 +211,73 @@ fn ComboboxOptionsPortaled(props: ComboboxOptionsPortaledProps) -> Element {
 /// Props for [`ComboboxOptionsRendered`], the portaled DOM body.
 #[derive(Props, Clone, PartialEq)]
 struct ComboboxOptionsRenderedProps {
-    ctx: ComboboxContext,
-    listbox_ctx: ListboxContext,
-    reg: OverlayRegistration,
-    id: Memo<String>,
     /// Open snapshot threaded from the non-portaled parent — see the matching
     /// note on `DialogPortalBodyProps::is_open`.
     is_open: bool,
+    should_render: bool,
+    /// Snapshotted in the non-portaled parent so the portaled body never reads
+    /// the Root-owned listbox id memo across the portal boundary.
+    id: String,
+    /// Overlay z metadata, snapshotted in the non-portaled parent where the
+    /// backing `OverlayRegistration` id signal is owned.
+    overlay_z: Option<String>,
+    portal_ctx: ComboboxPortalContext,
+    /// Floating layout fields, snapshotted in the non-portaled parent so the
+    /// portaled body never reads Root-owned positioning memos.
+    floating_position: String,
+    floating_top: String,
+    floating_left: String,
+    floating_visibility: String,
+    floating_side: ContentSide,
+    floating_align: ContentAlign,
+    floating_active: bool,
+    on_floating_mounted: Callback<Rc<MountedData>>,
     attributes: Vec<Attribute>,
     children: Element,
 }
 
-/// The rendered listbox, a direct child of `PortalIn`. Re-provides
-/// `ComboboxContext` and `ListboxContext` (context does NOT inherit through the
-/// portal) so the portaled options resolve their context and render. Floating
-/// positioning runs off the combobox target ref shared through the store; keeps
-/// the `visibility:hidden until is_positioned` gate. Emits `--overlay-z`.
+/// The rendered listbox, a direct child of `PortalIn`. Re-provides the portal
+/// combobox read model and `ListboxContext` so portaled options resolve local
+/// snapshots instead of root-owned reactive reads. Floating layout and
+/// `--overlay-z` are snapshotted in the non-portaled parent and forwarded here
+/// as plain values.
 #[component]
 fn ComboboxOptionsRendered(props: ComboboxOptionsRenderedProps) -> Element {
-    let ctx = props.ctx;
-    let reg = props.reg;
-    let id = props.id;
     let is_open = props.is_open;
+    let should_render = props.should_render;
 
-    // Re-provide both contexts INSIDE the portal (the load-bearing rule).
-    use_context_provider(|| ctx);
-    use_context_provider(|| props.listbox_ctx);
-
-    // Floating-element positioning. The list drops below the combobox target
-    // (side=Bottom, align=Start); flip handles upward placement near the bottom
-    // viewport edge and shift slides it into view. The reference element is the
-    // combobox target registered in the store (search input or custom target). The
-    // listbox only mounts while open, so both refs settle on first open.
-    let mut floating_ref: Signal<Option<Rc<MountedData>>> = use_signal(|| None);
-    let pos = use_position(
-        ctx.store.target_mount_ref(),
-        floating_ref,
-        ContentSide::Bottom,
-        ContentAlign::Start,
-    );
-    let style = pos.style;
-    let is_positioned = pos.is_positioned;
-    let resolved_side = pos.side;
-    let resolved_align = pos.align;
-    let floating_active = pos.floating_active;
-    let position = use_memo(move || style_prop(&style.read(), "position"));
-    let top = use_memo(move || style_prop(&style.read(), "top"));
-    let left = use_memo(move || style_prop(&style.read(), "left"));
-    let visibility = use_memo(move || if is_positioned() { "visible" } else { "hidden" });
-
-    // z-index assigned by the overlay manager via open order.
-    let z_style = reg.z().map(|z| format!("--overlay-z: {z};"));
+    let mut render_signal = use_signal(|| should_render);
+    use_effect(use_reactive(&should_render, move |should_render| {
+        render_signal.set(should_render);
+    }));
+    use_context_provider(|| props.portal_ctx);
+    use_context_provider(|| ListboxContext {
+        render: render_signal.into(),
+    });
+    let on_floating_mounted = props.on_floating_mounted;
+    let z_style = props
+        .overlay_z
+        .as_ref()
+        .map(|z| format!("--overlay-z: {z};"));
 
     // Floating coords merged LAST so they win over forwarded styles; `data-floating`
     // keeps the native `:not([data-floating])` CSS fallback inert on web.
     let floating_attrs = attributes!(div {
-        position: position(),
-        top: top(),
-        left: left(),
-        visibility: visibility(),
+        position: props.floating_position.clone(),
+        top: props.floating_top.clone(),
+        left: props.floating_left.clone(),
+        visibility: props.floating_visibility.clone(),
         style: z_style,
-        "data-floating": floating_active.then_some("true"),
-        "data-side": resolved_side.read().as_str(),
-        "data-align": resolved_align.read().as_str(),
-        onmounted: move |evt| floating_ref.set(Some(evt.data())),
+        "data-floating": props.floating_active.then_some("true"),
+        "data-side": props.floating_side.as_str(),
+        "data-align": props.floating_align.as_str(),
+        onmounted: move |event| on_floating_mounted.call(event.data()),
     });
     let attributes = merge_attributes(vec![props.attributes.clone(), floating_attrs]);
 
     rsx! {
         div {
-            id,
+            id: props.id.clone(),
             role: "listbox",
             "data-state": if is_open { "open" } else { "closed" },
             onpointerdown: move |event| {
@@ -229,21 +308,26 @@ pub fn ComboboxList(props: ComboboxListProps) -> Element {
 mod tests {
     //! Overlay-manager migration proof for the combobox listbox (plan §4.2): an
     //! open combobox portals its listbox through the shared outlet, an in-panel
-    //! consumer resolves the re-provided `ComboboxContext` up the *portaled* render
-    //! chain, and the panel carries the manager-assigned `--overlay-z`.
-    use super::super::super::context::ComboboxContext;
+    //! consumer resolves the portal-local combobox read model up the *portaled*
+    //! render chain, and the panel carries the manager-assigned `--overlay-z`.
+    use super::super::super::context::ComboboxPortalContext;
     use super::super::{Combobox, ComboboxInput, ComboboxOptions};
+    use crate::listbox::ListboxContext;
     use crate::overlay::OverlayProvider;
     use dioxus::prelude::*;
 
-    /// Resolves `ComboboxContext` from inside the portaled listbox. If the
+    /// Resolves `ComboboxPortalContext` from inside the portaled listbox. If the
     /// re-provide were on the wrong scope, `use_context` would panic during render.
     #[component]
     fn ComboboxCtxProbe() -> Element {
-        let ctx = use_context::<ComboboxContext>();
-        let open = ctx.store.dropdown_opened();
+        let render = use_context::<ListboxContext>().render;
+        if !render() {
+            return rsx! {};
+        }
+        let ctx = use_context::<ComboboxPortalContext>();
+        let selected = ctx.selected_values.len();
         rsx! {
-            span { class: "combobox-ctx-probe", "open={open}" }
+            span { class: "combobox-ctx-probe", "selected={selected}" }
         }
     }
 
@@ -280,7 +364,7 @@ mod tests {
         );
         assert!(
             html.contains("combobox-ctx-probe"),
-            "in-panel consumer did not resolve ComboboxContext through the portal: {html}"
+            "in-panel consumer did not resolve ComboboxPortalContext through the portal: {html}"
         );
         assert!(
             html.contains("--overlay-z: calc(var(--z-overlay-base)"),

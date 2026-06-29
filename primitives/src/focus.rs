@@ -131,7 +131,6 @@ impl FocusState {
     }
 
     pub(crate) fn set_focus(&mut self, index: Option<usize>) {
-        use dioxus::prelude::Readable;
         // These signals are scoped to the menu component. When a menu/submenu is
         // portaled through the overlay outlet and closes, an `onblur`/focus-sync
         // handler can call `set_focus`/`blur` *after* the component (and its
@@ -234,7 +233,10 @@ impl FocusState {
         // Dialog) tears down, this effect can re-run after the signal is freed.
         // A plain `read()` would panic with `ValueDroppedError`, aborting the
         // wasm runtime. A dead menu has nothing focused.
-        self.current_focus.try_read().map(|v| v.is_some()).unwrap_or(false)
+        self.current_focus
+            .try_read()
+            .map(|v| v.is_some())
+            .unwrap_or(false)
     }
 
     pub(crate) fn is_focused(&self, id: usize) -> bool {

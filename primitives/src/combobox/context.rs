@@ -1,7 +1,7 @@
 //! Shared state for the combobox component.
 
 use super::hook::{ComboboxDropdownEventSource, ComboboxIndexTarget, ComboboxStore};
-use crate::selectable::{OptionState, SelectableContext};
+use crate::selectable::{OptionState, RcPartialEqValue, SelectableContext};
 use dioxus::prelude::*;
 
 /// The default case-insensitive substring filter.
@@ -151,5 +151,54 @@ impl ComboboxContext {
         if !self.selectable.selection_mode.is_multiple() {
             self.store.close_dropdown(source);
         }
+    }
+}
+
+/// Portal-local read model for combobox list descendants.
+#[derive(Clone, PartialEq)]
+pub(super) struct ComboboxPortalContext {
+    /// Root selectable handle, used only for option registration and mutations.
+    pub selectable: SelectableContext,
+    /// Root combobox store handle, used only for option registration and mutations.
+    pub store: ComboboxStore,
+    /// Whether the root combobox is disabled.
+    pub root_disabled: bool,
+    /// Selected values snapshotted before entering the portal.
+    pub selected_values: Vec<RcPartialEqValue>,
+    /// Focused option index snapshotted before entering the portal.
+    pub focused_index: Option<usize>,
+    /// Highlighted option index snapshotted before entering the portal.
+    pub highlighted_index: Option<usize>,
+    /// Registered root-tree option metadata snapshotted before entering the portal.
+    pub options: Vec<OptionState>,
+    /// Visible option indices snapshotted before entering the portal.
+    pub visible_indices: Option<Vec<usize>>,
+    /// Whether any option is visible in the root snapshot.
+    pub has_visible_options: bool,
+    /// Whether portaled options should register themselves with root state.
+    pub register_options: bool,
+    /// Submit an option through the root combobox state.
+    pub submit_index_from_mouse: Callback<usize>,
+}
+
+impl ComboboxPortalContext {
+    /// Returns registered metadata for an option index.
+    pub fn option_state(&self, index: usize) -> Option<&OptionState> {
+        self.options.iter().find(|option| option.tab_index == index)
+    }
+
+    /// Returns whether an option index is visible in the root snapshot.
+    pub fn is_visible(&self, index: usize) -> bool {
+        self.visible_indices
+            .as_ref()
+            .map(|indices| indices.contains(&index))
+            .unwrap_or(true)
+    }
+
+    /// Returns whether the given value is selected in the root state snapshot.
+    pub fn is_selected(&self, value: &RcPartialEqValue) -> bool {
+        self.selected_values
+            .iter()
+            .any(|selected| selected == value)
     }
 }

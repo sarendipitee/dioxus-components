@@ -72,7 +72,25 @@ pub struct AlertDialogCancelProps {
     pub children: Element,
 }
 
+#[derive(Clone, Copy)]
+struct AlertDialogPortalCtx {
+    is_open: Signal<bool>,
+}
+
 // ─── Components ──────────────────────────────────────────────────────────────
+
+#[component]
+fn AlertDialogPortalState(is_open: bool, children: Element) -> Element {
+    let portal_ctx = use_context_provider(|| AlertDialogPortalCtx {
+        is_open: Signal::new(is_open),
+    });
+    let mut portal_open = portal_ctx.is_open;
+    if *portal_open.peek() != is_open {
+        portal_open.set(is_open);
+    }
+
+    rsx! { {children} }
+}
 
 /// The root alert dialog component. Thin alias of [`dialog::DialogRoot`].
 ///
@@ -101,6 +119,9 @@ pub fn AlertDialogTrigger(props: AlertDialogTriggerProps) -> Element {
 /// Must be used inside an [`AlertDialogRoot`].
 #[component]
 pub fn AlertDialogContent(props: AlertDialogContentProps) -> Element {
+    let ctx: DialogCtx = use_context();
+    let is_open = ctx.is_open();
+
     rsx! {
         dialog::DialogContent {
             id: props.id,
@@ -109,7 +130,10 @@ pub fn AlertDialogContent(props: AlertDialogContentProps) -> Element {
             close_on_escape: false,
             dialog_role: "alertdialog",
             attributes: props.attributes,
-            {props.children}
+            AlertDialogPortalState {
+                is_open: is_open,
+                {props.children}
+            }
         }
     }
 }
@@ -144,7 +168,9 @@ pub fn AlertDialogActions(props: AlertDialogActionsProps) -> Element {
 #[component]
 pub fn AlertDialogAction(props: AlertDialogActionProps) -> Element {
     let ctx: DialogCtx = use_context();
-    let open = ctx.open_memo();
+    let is_open = try_use_context::<AlertDialogPortalCtx>()
+        .map(|ctx| (ctx.is_open)())
+        .unwrap_or(true);
     let user_on_click = props.on_click;
     let on_click = use_callback(move |evt: MouseEvent| {
         ctx.set_open(false);
@@ -156,7 +182,7 @@ pub fn AlertDialogAction(props: AlertDialogActionProps) -> Element {
     rsx! {
         button {
             r#type: "button",
-            tabindex: if open() { "0" } else { "-1" },
+            tabindex: if is_open { "0" } else { "-1" },
             onclick: on_click,
             ..props.attributes,
             {props.children}
@@ -170,7 +196,9 @@ pub fn AlertDialogAction(props: AlertDialogActionProps) -> Element {
 #[component]
 pub fn AlertDialogCancel(props: AlertDialogCancelProps) -> Element {
     let ctx: DialogCtx = use_context();
-    let open = ctx.open_memo();
+    let is_open = try_use_context::<AlertDialogPortalCtx>()
+        .map(|ctx| (ctx.is_open)())
+        .unwrap_or(true);
     let user_on_click = props.on_click;
     let on_click = use_callback(move |evt: MouseEvent| {
         ctx.set_open(false);
@@ -182,7 +210,7 @@ pub fn AlertDialogCancel(props: AlertDialogCancelProps) -> Element {
     rsx! {
         button {
             r#type: "button",
-            tabindex: if open() { "0" } else { "-1" },
+            tabindex: if is_open { "0" } else { "-1" },
             onclick: on_click,
             ..props.attributes,
             {props.children}
@@ -198,7 +226,6 @@ mod tests {
     //! asserts the in-portal, context-dependent buttons render without panic.
     use super::*;
     use crate::overlay::OverlayProvider;
-    use dioxus::prelude::*;
 
     #[component]
     fn OpenAlertApp() -> Element {
@@ -234,6 +261,10 @@ mod tests {
         assert!(
             html.contains("action-marker"),
             "AlertDialogAction did not resolve DialogCtx through the portal: {html}"
+        );
+        assert!(
+            html.matches(r#"tabindex="0""#).count() >= 2,
+            "alert dialog actions did not receive open tab index inside portal: {html}"
         );
         // role="alertdialog" carried through to the portaled content.
         assert!(

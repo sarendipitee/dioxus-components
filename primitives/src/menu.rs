@@ -31,6 +31,8 @@ pub struct MenuContext {
     pub(crate) disabled: Memo<bool>,
     /// Roving focus state for items in this menu.
     pub(crate) focus: FocusState,
+    /// Requested initial item focus placement when content opens.
+    pub(crate) initial_focus: Signal<Option<FocusPlacement>>,
     /// Unique id for the trigger that labels this menu.
     pub(crate) trigger_id: Signal<String>,
     /// Reference (trigger) element shared with the content so the floating-ui hook
@@ -57,6 +59,7 @@ pub(crate) fn use_menu_provider(
     roving_loop: ReadSignal<bool>,
 ) -> MenuContext {
     let focus = use_focus_provider(roving_loop);
+    let initial_focus = use_signal(|| None);
     let trigger_id = use_unique_id();
     let trigger_ref = use_signal(|| None);
     let overlay_id = use_signal(|| None);
@@ -66,6 +69,7 @@ pub(crate) fn use_menu_provider(
         set_open,
         disabled,
         focus,
+        initial_focus,
         trigger_id,
         trigger_ref,
         overlay_id,
@@ -73,8 +77,8 @@ pub(crate) fn use_menu_provider(
 
     use_effect(move || {
         let focused = focus.any_focused();
-        if *ctx.open.peek() != focused {
-            (ctx.set_open)(focused);
+        if focused && !*ctx.open.peek() {
+            (ctx.set_open)(true);
         }
     });
 
@@ -149,7 +153,8 @@ pub fn MenuRoot(props: MenuRootProps) -> Element {
 #[derive(Props, Clone, PartialEq)]
 pub struct MenuContentProps {
     /// The ID of the menu content element. If not provided, a unique ID will be generated.
-    pub id: ReadSignal<Option<String>>,
+    #[props(default)]
+    pub id: Option<String>,
     /// The ARIA role for the menu content.
     #[props(default = "menu")]
     pub role: &'static str,
@@ -172,7 +177,11 @@ pub struct MenuContentProps {
 pub fn MenuContent(props: MenuContentProps) -> Element {
     let ctx: MenuContext = use_context();
     let unique_id = use_unique_id();
-    let id = use_id_or(unique_id, props.id);
+    let id_value = props.id.clone();
+    let id_signal = ReadSignal::new(use_memo(use_reactive(&id_value, |id_value| {
+        id_value.clone()
+    })));
+    let id = use_id_or(unique_id, id_signal);
     let render = use_animated_open(id, ctx.open);
 
     rsx! {
@@ -258,7 +267,6 @@ fn MenuContentPortaled(props: MenuContentPortaledProps) -> Element {
     use_effect(move || {
         // Subscribe to `open` only, so this effect re-runs while the menu is live.
         let _ = (ctx.open)();
-        use dioxus::prelude::Readable;
         let (Ok(t), Ok(i)) = (trigger_id.try_peek(), id.try_peek()) else {
             return;
         };
@@ -275,14 +283,31 @@ fn MenuContentPortaled(props: MenuContentPortaledProps) -> Element {
     // forward the snapshot into the portaled body as a plain bool so the body
     // never reads the Root-owned `open` Memo across the portal boundary.
     let is_open = open();
+    // Snapshot every body-owned cross-scope value HERE so the portaled body never
+    // reads `Memo`/`Signal`/`OverlayRegistration` handles owned by this scope.
+    let panel_id = id.cloned();
+    let aria_labelledby = trigger_id.cloned();
+    let is_disabled = (ctx.disabled)();
+    let roving_loop = (ctx.focus.roving_loop)();
+    let initial_focus = ctx
+        .initial_focus
+        .cloned()
+        .map(|placement| matches!(placement, FocusPlacement::Last));
+    let content_overlay_id = reg.id();
+    let overlay_z = reg.z();
 
     rsx! {
         PortalIn { portal,
             MenuContentRendered {
-                ctx,
-                reg,
+                set_open,
                 is_open,
-                id,
+                panel_id,
+                aria_labelledby,
+                is_disabled,
+                roving_loop,
+                initial_focus,
+                content_overlay_id,
+                overlay_z,
                 role: props.role,
                 attributes: props.attributes.clone(),
                 children: props.children,
@@ -294,70 +319,120 @@ fn MenuContentPortaled(props: MenuContentPortaledProps) -> Element {
 /// Props for [`MenuContentRendered`], the portaled DOM body.
 #[derive(Props, Clone, PartialEq)]
 struct MenuContentRenderedProps {
-    ctx: MenuContext,
-    reg: OverlayRegistration,
+    set_open: Callback<bool>,
     /// Open snapshot threaded from the non-portaled parent — see the matching
     /// note on `DialogPortalBodyProps::is_open`.
     is_open: bool,
-    id: Memo<String>,
+    panel_id: String,
+    aria_labelledby: String,
+    is_disabled: bool,
+    roving_loop: bool,
+    initial_focus: Option<bool>,
+    content_overlay_id: Option<OverlayId>,
+    overlay_z: Option<String>,
     role: &'static str,
     attributes: Vec<Attribute>,
     children: Element,
 }
 
-/// The rendered menu panel, a direct child of `PortalIn`. Re-provides a CLONE of
-/// the menu's [`MenuContext`] (with `overlay_id` now set) so in-panel consumers
+/// The rendered menu panel, a direct child of `PortalIn`. Re-provides a
+/// portal-owned [`MenuContext`] (with `overlay_id` now set) so in-panel consumers
 /// (`MenuItem`, `MenuSub`, `MenuSubContent`, the focus state, …) resolve their
 /// context up the *portaled* render chain. Emits `--overlay-z` from the manager.
 #[component]
 fn MenuContentRendered(props: MenuContentRenderedProps) -> Element {
-    let mut ctx = props.ctx;
-    let reg = props.reg;
-    let id = props.id;
     let is_open = props.is_open;
+    let set_open = props.set_open;
 
-    // Re-provide a clone of the menu ctx INSIDE the portal (the load-bearing rule).
-    use_context_provider(|| ctx);
-    // MenuItem consumes the roving-focus `FocusState` from context
-    // (`use_focus_controlled_item_disabled`), which the menu root provides outside
-    // the portal. Re-provide it here so portaled items resolve it up THIS chain.
-    use_context_provider(|| ctx.focus);
+    let open = use_memo(use_reactive(&props.is_open, |is_open| is_open));
+    let disabled = use_memo(use_reactive(&props.is_disabled, |is_disabled| is_disabled));
 
-    let z_style = reg.z().map(|z| format!("--overlay-z: {z};"));
-    let base = attributes!(div { style: z_style });
+    let mut trigger_id = use_signal(|| props.aria_labelledby.clone());
+    use_effect(use_reactive(
+        &props.aria_labelledby,
+        move |aria_labelledby| {
+            trigger_id.set(aria_labelledby);
+        },
+    ));
+
+    let mut roving_loop = use_signal(|| props.roving_loop);
+    use_effect(use_reactive(&props.roving_loop, move |next| {
+        roving_loop.set(next);
+    }));
+    let mut focus = use_hook(|| FocusState::new(ReadSignal::new(roving_loop)));
+    let mut initial_focus = use_signal(|| {
+        props.initial_focus.map(|last| {
+            if last {
+                FocusPlacement::Last
+            } else {
+                FocusPlacement::First
+            }
+        })
+    });
+    use_effect(use_reactive(&props.initial_focus, move |next| {
+        initial_focus.set(next.map(|last| {
+            if last {
+                FocusPlacement::Last
+            } else {
+                FocusPlacement::First
+            }
+        }));
+    }));
+    use_deferred_focus(focus, initial_focus, move || *open.read());
+
+    let trigger_ref = use_signal(|| None);
+    let mut overlay_id = use_signal(|| props.content_overlay_id);
+    use_effect(use_reactive(
+        &props.content_overlay_id,
+        move |content_overlay_id| {
+            overlay_id.set(content_overlay_id);
+        },
+    ));
+
+    // Re-provide portal-owned menu state INSIDE the portal. Descendants may call
+    // the root-owned setter, but all reactive reads stay owned by this subtree.
+    let portal_ctx = MenuContext {
+        open,
+        set_open,
+        disabled,
+        focus,
+        initial_focus,
+        trigger_id,
+        trigger_ref,
+        overlay_id,
+    };
+    use_context_provider(|| portal_ctx);
+    use_context_provider(|| focus);
+
+    let base = attributes!(div {
+        style: props
+            .overlay_z
+            .as_ref()
+            .map(|z| format!("--overlay-z: {z};"))
+    });
     let attributes = merge_attributes(vec![base, props.attributes]);
-
-    // Snapshot the panel id and trigger id NON-reactively. These are
-    // `use_unique_id`-backed signals owned by the menu root (a different scope
-    // than this portaled body). Reading them reactively in the rsx leaves a
-    // `SignalSubscriberDrop` read-guard whose `update_subscribers` drop runs
-    // during teardown against the freed signal storage, panicking with
-    // `ValueDroppedError` (signal.rs:540). The ids are assigned once at mount, so
-    // a one-shot snapshot is both correct and crash-safe across the portal hop.
-    let panel_id = id.peek().clone();
-    let labelledby = ctx.trigger_id.peek().clone();
 
     rsx! {
         div {
-            id: panel_id,
+            id: props.panel_id.clone(),
             role: props.role,
             aria_orientation: "vertical",
-            aria_labelledby: labelledby,
+            aria_labelledby: props.aria_labelledby.clone(),
             "data-state": if is_open { "open" } else { "closed" },
             onkeydown: move |event: Event<KeyboardData>| {
                 match event.key() {
                     Key::Escape => {
-                        ctx.focus.blur();
-                        ctx.set_open.call(false);
+                        focus.blur();
+                        set_open.call(false);
                     }
-                    Key::ArrowDown => ctx.focus.focus_next(),
+                    Key::ArrowDown => focus.focus_next(),
                     Key::ArrowUp => {
-                        if (ctx.open)() {
-                            ctx.focus.focus_prev();
+                        if is_open {
+                            focus.focus_prev();
                         }
                     }
-                    Key::Home => ctx.focus.focus_first(),
-                    Key::End => ctx.focus.focus_last(),
+                    Key::Home => focus.focus_first(),
+                    Key::End => focus.focus_last(),
                     _ => return,
                 }
                 event.prevent_default();
@@ -380,10 +455,10 @@ pub struct MenuItemProps<T: Clone + PartialEq + 'static> {
     #[props(into)]
     pub value: T,
     /// The index of the item within the menu content.
-    pub index: ReadSignal<usize>,
+    pub index: usize,
     /// Whether this item is disabled.
     #[props(default)]
-    pub disabled: ReadSignal<bool>,
+    pub disabled: bool,
     /// The ARIA role for the menu item.
     #[props(default = "menuitem")]
     pub role: &'static str,
@@ -410,9 +485,12 @@ pub struct MenuItemProps<T: Clone + PartialEq + 'static> {
 #[component]
 pub fn MenuItem<T: Clone + PartialEq + 'static>(props: MenuItemProps<T>) -> Element {
     let mut ctx: MenuContext = use_context();
-    let disabled = move || (ctx.disabled)() || (props.disabled)();
-    let focused = move || ctx.focus.is_focused((props.index)());
-    let mut focus_onmounted = use_focus_controlled_item_disabled(props.index, disabled);
+    let index_value = props.index;
+    let index = ReadSignal::new(use_memo(move || index_value));
+    let disabled_value = props.disabled;
+    let disabled = move || (ctx.disabled)() || disabled_value;
+    let focused = move || ctx.focus.is_focused(index_value);
+    let mut focus_onmounted = use_focus_controlled_item_disabled(index, disabled);
     let forward_mounted = props.on_mounted;
     let onmounted = move |evt: MountedEvent| {
         if let Some(cb) = forward_mounted {
@@ -542,7 +620,7 @@ pub fn MenuGroup(props: MenuGroupProps) -> Element {
 pub struct MenuItemIndicatorProps {
     /// Whether the indicator should be rendered.
     #[props(default = true)]
-    pub visible: ReadSignal<bool>,
+    pub visible: bool,
     /// Additional attributes for the indicator element.
     #[props(extends = GlobalAttributes)]
     pub attributes: Vec<Attribute>,
@@ -554,7 +632,7 @@ pub struct MenuItemIndicatorProps {
 #[component]
 pub fn MenuItemIndicator(props: MenuItemIndicatorProps) -> Element {
     rsx! {
-        if (props.visible)() {
+        if props.visible {
             span {
                 role: "presentation",
                 ..props.attributes,
@@ -593,12 +671,12 @@ pub struct MenuCheckboxItemProps<T: Clone + PartialEq + 'static> {
     #[props(into)]
     pub value: T,
     /// The index of the item within the menu content.
-    pub index: ReadSignal<usize>,
+    pub index: usize,
     /// Whether this item is checked.
-    pub checked: ReadSignal<bool>,
+    pub checked: bool,
     /// Whether this item is disabled.
     #[props(default)]
-    pub disabled: ReadSignal<bool>,
+    pub disabled: bool,
     /// Callback fired with the next checked state when the item is selected.
     #[props(default)]
     pub on_checked_change: Callback<bool>,
@@ -632,11 +710,11 @@ pub fn MenuCheckboxItem<T: Clone + PartialEq + 'static>(
             role: "menuitemcheckbox",
             close_on_select: props.close_on_select,
             on_select: move |value| {
-                on_checked_change.call(!checked());
+                on_checked_change.call(!checked);
                 on_select.call(value);
             },
-            aria_checked: checked(),
-            "data-state": if checked() { "checked" } else { "unchecked" },
+            aria_checked: checked,
+            "data-state": if checked { "checked" } else { "unchecked" },
             attributes: props.attributes,
             {props.children}
         }
@@ -645,7 +723,7 @@ pub fn MenuCheckboxItem<T: Clone + PartialEq + 'static>(
 
 #[derive(Clone, Copy)]
 struct MenuRadioGroupContext<T: Clone + PartialEq + 'static> {
-    value: ReadSignal<Option<T>>,
+    value: Option<T>,
     on_value_change: Callback<T>,
 }
 
@@ -653,7 +731,8 @@ struct MenuRadioGroupContext<T: Clone + PartialEq + 'static> {
 #[derive(Props, Clone, PartialEq)]
 pub struct MenuRadioGroupProps<T: Clone + PartialEq + 'static> {
     /// The currently selected radio value.
-    pub value: ReadSignal<Option<T>>,
+    #[props(default)]
+    pub value: Option<T>,
     /// Callback fired when the selected value changes.
     #[props(default)]
     pub on_value_change: Callback<T>,
@@ -688,10 +767,10 @@ pub struct MenuRadioItemProps<T: Clone + PartialEq + 'static> {
     #[props(into)]
     pub value: T,
     /// The index of the item within the menu content.
-    pub index: ReadSignal<usize>,
+    pub index: usize,
     /// Whether this item is disabled.
     #[props(default)]
-    pub disabled: ReadSignal<bool>,
+    pub disabled: bool,
     /// Callback fired when the item is selected.
     #[props(default)]
     pub on_select: Callback<T>,
@@ -710,7 +789,10 @@ pub struct MenuRadioItemProps<T: Clone + PartialEq + 'static> {
 pub fn MenuRadioItem<T: Clone + PartialEq + 'static>(props: MenuRadioItemProps<T>) -> Element {
     let group: MenuRadioGroupContext<T> = use_context();
     let value = props.value.clone();
-    let checked = use_memo(move || group.value.cloned().is_some_and(|current| current == value));
+    let checked = group
+        .value
+        .as_ref()
+        .is_some_and(|current| current == &value);
     let on_select = props.on_select;
 
     rsx! {
@@ -724,8 +806,8 @@ pub fn MenuRadioItem<T: Clone + PartialEq + 'static>(props: MenuRadioItemProps<T
                 group.on_value_change.call(value.clone());
                 on_select.call(value);
             },
-            aria_checked: checked(),
-            "data-state": if checked() { "checked" } else { "unchecked" },
+            aria_checked: checked,
+            "data-state": if checked { "checked" } else { "unchecked" },
             attributes: props.attributes,
             {props.children}
         }
@@ -755,7 +837,8 @@ struct MenuSubContext {
 #[derive(Props, Clone, PartialEq)]
 pub struct MenuSubProps {
     /// Whether the submenu is open. If not provided, the submenu is uncontrolled and uses `default_open`.
-    pub open: ReadSignal<Option<bool>>,
+    #[props(default)]
+    pub open: Option<bool>,
     /// Default open state if the submenu is not controlled.
     #[props(default)]
     pub default_open: bool,
@@ -764,10 +847,10 @@ pub struct MenuSubProps {
     pub on_open_change: Callback<bool>,
     /// Whether the submenu is disabled.
     #[props(default)]
-    pub disabled: ReadSignal<bool>,
+    pub disabled: bool,
     /// Whether focus should loop around when reaching the end.
-    #[props(default = ReadSignal::new(Signal::new(true)))]
-    pub roving_loop: ReadSignal<bool>,
+    #[props(default = true)]
+    pub roving_loop: bool,
     /// Additional attributes for the submenu root.
     #[props(extends = GlobalAttributes)]
     pub attributes: Vec<Attribute>,
@@ -778,15 +861,26 @@ pub struct MenuSubProps {
 /// A nested menu root for submenu trigger/content pairs.
 #[component]
 pub fn MenuSub(props: MenuSubProps) -> Element {
-    let mut internal_open = use_signal(|| props.open.cloned().unwrap_or(props.default_open));
-    let open = use_memo(move || props.open.cloned().unwrap_or_else(&*internal_open));
+    let open_value = props.open;
+    let mut internal_open = use_signal(move || open_value.unwrap_or(props.default_open));
+    let open = use_memo(use_reactive(&props.open, move |open_value| {
+        open_value.unwrap_or_else(&*internal_open)
+    }));
     let set_open = use_callback(move |next| {
         internal_open.set(next);
         props.on_open_change.call(next);
     });
     let parent_ctx: MenuContext = use_context();
-    let disabled = use_memo(move || (parent_ctx.disabled)() || (props.disabled)());
-    let mut focus = FocusState::new(props.roving_loop);
+    let disabled_value = props.disabled;
+    let disabled = use_memo(use_reactive(&disabled_value, move |disabled_value| {
+        (parent_ctx.disabled)() || disabled_value
+    }));
+    let roving_loop_value = props.roving_loop;
+    let mut roving_loop = use_signal(move || roving_loop_value);
+    use_effect(use_reactive(&roving_loop_value, move |next| {
+        roving_loop.set(next);
+    }));
+    let mut focus = FocusState::new(ReadSignal::new(roving_loop));
     let initial_focus = use_signal(|| None);
     let close_parent_all = use_callback(move |_| parent_ctx.set_open.call(false));
     let trigger_id = use_unique_id();
@@ -830,7 +924,11 @@ pub fn MenuSub(props: MenuSubProps) -> Element {
                 const content = (contentId && document.getElementById(contentId))
                     ?? root.querySelector('[role=\"menu\"]');
                 const padding = 8;
-                const pointTarget = document.elementFromPoint(e.clientX, e.clientY) ?? e.target;
+                const pointTarget = document.elementFromPoint(e.clientX, e.clientY);
+                if (!pointTarget) {
+                    dioxus.send(true);
+                    return;
+                }
                 const insideTrigger = trigger && (
                     trigger.contains(pointTarget) ||
                     pointInRect(e.clientX, e.clientY, trigger.getBoundingClientRect(), padding)
@@ -843,9 +941,17 @@ pub fn MenuSub(props: MenuSubProps) -> Element {
             };
             document.addEventListener('pointermove', onMove, true);
             document.addEventListener('mousemove', onMove, true);
+            document.addEventListener('pointerout', onMove, true);
+            document.addEventListener('mouseout', onMove, true);
+            document.addEventListener('pointerleave', onMove, true);
+            document.addEventListener('mouseleave', onMove, true);
             await dioxus.recv();
             document.removeEventListener('pointermove', onMove, true);
-            document.removeEventListener('mousemove', onMove, true);",
+            document.removeEventListener('mousemove', onMove, true);
+            document.removeEventListener('pointerout', onMove, true);
+            document.removeEventListener('mouseout', onMove, true);
+            document.removeEventListener('pointerleave', onMove, true);
+            document.removeEventListener('mouseleave', onMove, true);",
         );
         let _ = eval.send(vec![sub_id_value, panel_id]);
         spawn(async move {
@@ -892,10 +998,10 @@ pub struct MenuSubTriggerProps<T: Clone + PartialEq + 'static> {
     #[props(into)]
     pub value: T,
     /// The index of the trigger within the parent menu content.
-    pub index: ReadSignal<usize>,
+    pub index: usize,
     /// Whether this trigger is disabled.
     #[props(default)]
-    pub disabled: ReadSignal<bool>,
+    pub disabled: bool,
     /// Callback fired when the trigger is selected.
     #[props(default)]
     pub on_select: Callback<T>,
@@ -975,7 +1081,11 @@ pub type MenuSubContentProps = MenuContentProps;
 pub fn MenuSubContent(props: MenuSubContentProps) -> Element {
     let sub_ctx: MenuSubContext = use_context();
     let unique_id = use_unique_id();
-    let id = use_id_or(unique_id, props.id);
+    let id_value = props.id.clone();
+    let id_signal = ReadSignal::new(use_memo(use_reactive(&id_value, |id_value| {
+        id_value.clone()
+    })));
+    let id = use_id_or(unique_id, id_signal);
     // Publish the portaled panel's root id so `MenuSub`'s hover-leave predicate can
     // resolve the panel via `getElementById` (it lives outside `sub_id` now).
     let mut content_id = sub_ctx.content_id;
@@ -1053,6 +1163,7 @@ pub fn MenuSubContent(props: MenuSubContentProps) -> Element {
         set_open,
         disabled: sub_ctx.disabled,
         focus: sub_ctx.focus,
+        initial_focus: sub_ctx.initial_focus,
         trigger_id: sub_ctx.trigger_id,
         trigger_ref: sub_ctx.trigger_ref,
         overlay_id,
@@ -1128,7 +1239,7 @@ mod tests {
             MenuCheckboxItem {
                 value: "checked".to_string(),
                 index: 0usize,
-                checked,
+                checked: checked(),
                 on_select: move |_value: String| {},
                 "Checked item"
             }
@@ -1139,7 +1250,7 @@ mod tests {
     fn StringRadioItems(value: ReadSignal<Option<String>>) -> Element {
         rsx! {
             MenuRadioGroup {
-                value,
+                value: value(),
                 on_value_change: move |_value: String| {},
                 MenuRadioItem {
                     value: "one".to_string(),
@@ -1168,6 +1279,7 @@ mod tests {
             set_open,
             disabled,
             focus,
+            initial_focus: use_signal(|| None),
             trigger_id,
             trigger_ref,
             overlay_id,

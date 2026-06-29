@@ -82,7 +82,7 @@ pub(crate) fn use_listbox_container_with_open(
 pub(crate) fn use_listbox_option<T: Clone + PartialEq + 'static>(
     id: ReadSignal<Option<String>>,
     index: ReadSignal<usize>,
-    value: ReadSignal<T>,
+    value: T,
     text_value: ReadSignal<Option<String>>,
     options: Signal<Vec<OptionState>>,
     disabled: impl Fn() -> bool + Copy + 'static,
@@ -91,8 +91,10 @@ pub(crate) fn use_listbox_option<T: Clone + PartialEq + 'static>(
     let generated_id = use_unique_id();
     let id = use_id_or(generated_id, id);
     let mut previous_id: Signal<Option<String>> = use_signal(|| None);
+    let text_option_value = value.clone();
     let text_value =
-        use_memo(move || option_text_value(&*value.read(), text_value(), component_name));
+        use_memo(move || option_text_value(&text_option_value, text_value(), component_name));
+    let registered_value = value.clone();
 
     use_effect(move || {
         let option_id = id();
@@ -109,7 +111,7 @@ pub(crate) fn use_listbox_option<T: Clone + PartialEq + 'static>(
             options,
             OptionState {
                 tab_index: index(),
-                value: RcPartialEqValue::new(value.cloned()),
+                value: RcPartialEqValue::new(registered_value.clone()),
                 text_value: text_value.cloned(),
                 id: registered_id,
                 disabled: disabled(),

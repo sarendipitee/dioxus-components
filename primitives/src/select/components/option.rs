@@ -1,5 +1,7 @@
 //! SelectOption and SelectItemIndicator component implementations.
 
+use std::rc::Rc;
+
 use crate::{
     focus::use_focus_control_disabled,
     listbox::{ListboxContext, ListboxItemIndicator},
@@ -10,36 +12,37 @@ use crate::{
 };
 use dioxus::prelude::*;
 
-use super::super::context::SelectContext;
+use super::super::context::{SelectContext, SelectPortalContext};
 
 /// The props for the [`SelectOption`] component
 #[derive(Props, Clone, PartialEq)]
 pub struct SelectOptionProps<T: Clone + PartialEq + 'static> {
     /// The value of the option
-    pub value: ReadSignal<T>,
+    #[props(into)]
+    pub value: T,
 
     /// The text value of the option used for typeahead search
     #[props(default)]
-    pub text_value: ReadSignal<Option<String>>,
+    pub text_value: Option<String>,
 
     /// Whether the option is disabled
     #[props(default)]
-    pub disabled: ReadSignal<bool>,
+    pub disabled: bool,
 
     /// Optional ID for the option
     #[props(default)]
-    pub id: ReadSignal<Option<String>>,
+    pub id: Option<String>,
 
     /// The index of the option in the list. This is used to define the focus order for keyboard navigation.
-    pub index: ReadSignal<usize>,
+    pub index: usize,
 
     /// Optional label for the option (for accessibility)
     #[props(default)]
-    pub aria_label: ReadSignal<Option<String>>,
+    pub aria_label: Option<String>,
 
     /// Optional description role for the option (for accessibility)
     #[props(default)]
-    pub aria_roledescription: ReadSignal<Option<String>>,
+    pub aria_roledescription: Option<String>,
 
     /// Additional attributes for the option element
     #[props(extends = GlobalAttributes)]
@@ -102,25 +105,114 @@ pub struct SelectOptionProps<T: Clone + PartialEq + 'static> {
 /// ```
 #[component]
 pub fn SelectOption<T: PartialEq + Clone + 'static>(props: SelectOptionProps<T>) -> Element {
-    let index = props.index;
+    let index_value = props.index;
+    let index = ReadSignal::new(use_memo(move || index_value));
+    let id_value = props.id.clone();
+    let id_signal = ReadSignal::new(use_memo(move || id_value.clone()));
+    let text_value = props.text_value.clone();
+    let text_value_signal = ReadSignal::new(use_memo(move || text_value.clone()));
+    let disabled_value = props.disabled;
+    let disabled_signal = ReadSignal::new(use_memo(move || disabled_value));
+    let portal_ctx = try_use_context::<SelectPortalContext>();
+
+    if let Some(portal_ctx) = portal_ctx {
+        let render = use_context::<ListboxContext>().render;
+        let generated_id = crate::use_unique_id();
+        let fallback_id = crate::use_id_or(generated_id, id_signal);
+        let option_value = props.value.clone();
+        let selected_value = RcPartialEqValue::new(option_value.clone());
+        let option_state = portal_ctx.option_state(index_value);
+        let id = option_state
+            .map(|option| option.id.clone())
+            .unwrap_or_else(|| fallback_id.cloned());
+        let disabled = option_state
+            .map(|option| option.disabled)
+            .unwrap_or(portal_ctx.root_disabled || props.disabled);
+        let selected = portal_ctx.is_selected(&selected_value);
+        let focused = portal_ctx.focused_index == Some(index_value);
+        let mut option_ref: Signal<Option<Rc<MountedData>>> = use_signal(|| None);
+        let down_pos: Signal<Option<(f64, f64)>> = use_signal(|| None);
+        let mut selected_signal = use_signal(|| selected);
+
+        use_effect(use_reactive(&selected, move |selected| {
+            selected_signal.set(selected);
+        }));
+
+        use_context_provider(|| crate::listbox::ListboxOptionContext {
+            selected: selected_signal.into(),
+        });
+
+        use_effect(move || {
+            if disabled {
+                return;
+            }
+            let Some(option_ref) = option_ref() else {
+                return;
+            };
+            if focused {
+                spawn(async move {
+                    _ = option_ref.set_focus(true).await;
+                });
+            }
+        });
+
+        return rsx! {
+            if render() {
+                div {
+                    role: "option",
+                    id,
+                    tabindex: if focused { "0" } else { "-1" },
+                    onmounted: move |event| {
+                        option_ref.set(Some(event.data()));
+                    },
+
+                    aria_selected: selected,
+                    aria_disabled: disabled,
+                    aria_label: props.aria_label.clone(),
+                    aria_roledescription: props.aria_roledescription.clone(),
+                    "data-disabled": disabled,
+
+                    onpointerdown: move |event| {
+                        pointer_select_start(&event, disabled, down_pos);
+                    },
+                    onpointerup: move |event| {
+                        if pointer_select_commit(&event, disabled, down_pos) {
+                            portal_ctx.select_value.call(RcPartialEqValue::new(option_value.clone()));
+                        }
+                    },
+                    onpointercancel: move |_| {
+                        pointer_select_cancel(down_pos);
+                    },
+                    onblur: move |_| {
+                        if focused {
+                            portal_ctx.blur_focus.call(());
+                            portal_ctx.set_open.call(false);
+                        }
+                    },
+
+                    ..props.attributes,
+                    {props.children}
+                }
+            }
+        };
+    }
 
     let mut ctx: SelectContext = use_context();
     let option = use_selectable_option(
         ctx.selectable,
         SelectableOptionConfig {
-            id: props.id,
+            id: id_signal,
             index,
-            value: props.value,
-            text_value: props.text_value,
-            option_disabled: props.disabled,
+            value: props.value.clone(),
+            text_value: text_value_signal,
+            option_disabled: disabled_signal,
             component_name: "SelectOption",
         },
     );
 
-    let onmounted =
-        use_focus_control_disabled(ctx.selectable.focus_state, props.index, move || {
-            option.disabled.cloned()
-        });
+    let onmounted = use_focus_control_disabled(ctx.selectable.focus_state, index, move || {
+        option.disabled.cloned()
+    });
 
     let render = use_context::<ListboxContext>().render;
 
@@ -134,8 +226,8 @@ pub fn SelectOption<T: PartialEq + Clone + 'static>(props: SelectOptionProps<T>)
 
                 aria_selected: (option.selected)(),
                 aria_disabled: (option.disabled)(),
-                aria_label: props.aria_label,
-                aria_roledescription: props.aria_roledescription,
+                aria_label: props.aria_label.clone(),
+                aria_roledescription: props.aria_roledescription.clone(),
                 "data-disabled": (option.disabled)(),
 
                 onpointerdown: move |event| {
@@ -143,7 +235,7 @@ pub fn SelectOption<T: PartialEq + Clone + 'static>(props: SelectOptionProps<T>)
                 },
                 onpointerup: move |event| {
                     if pointer_select_commit(&event, (option.disabled)(), option.down_pos) {
-                        ctx.selectable.select_value(RcPartialEqValue::new(option.value.cloned()));
+                        ctx.selectable.select_value(RcPartialEqValue::new(option.value.clone()));
                     }
                 },
                 onpointercancel: move |_| {

@@ -3231,7 +3231,7 @@ fn data_table_actions(
                 })
             }
         }),
-        reset_filters: Callback::new({ move |_| update_state.call(DataTableAction::ResetFilters) }),
+        reset_filters: Callback::new(move |_| update_state.call(DataTableAction::ResetFilters)),
         reset_column_state: Callback::new(move |_| {
             update_state.call(DataTableAction::ResetColumnState)
         }),

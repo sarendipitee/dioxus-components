@@ -279,6 +279,7 @@ pub fn MenubarMenu(props: MenubarMenuProps) -> Element {
         set_open: set_menu_open,
         disabled: shared_disabled,
         focus,
+        initial_focus,
         trigger_id,
         trigger_ref,
         overlay_id,
@@ -464,7 +465,8 @@ pub fn MenubarTrigger(props: MenubarTriggerProps) -> Element {
 #[derive(Props, Clone, PartialEq)]
 pub struct MenubarContentProps {
     /// The id of the content element.
-    pub id: ReadSignal<Option<String>>,
+    #[props(default)]
+    pub id: Option<String>,
     /// Additional attributes to apply to the content element.
     #[props(extends = GlobalAttributes)]
     pub attributes: Vec<Attribute>,
@@ -597,7 +599,7 @@ pub fn MenubarContent(props: MenubarContentProps) -> Element {
 #[derive(Props, Clone, PartialEq)]
 pub struct MenubarItemProps {
     /// The index of this item within the [`MenubarContent`]. This is used to define the focus order for keyboard navigation.
-    pub index: ReadSignal<usize>,
+    pub index: usize,
 
     /// The value associated with this menu item. This value will be passed to the [`Self::on_select`] callback when the item is selected.
     #[props(into)]
@@ -605,7 +607,7 @@ pub struct MenubarItemProps {
 
     /// Whether this menu item is disabled.
     #[props(default)]
-    pub disabled: ReadSignal<bool>,
+    pub disabled: bool,
 
     /// Callback fired when the item is selected. The [`Self::value`] will be passed as an argument.
     #[props(default)]

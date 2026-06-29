@@ -8,7 +8,10 @@ use std::rc::Rc;
 use std::time::Duration;
 
 use super::text_search::AdaptiveKeyboard;
-use crate::selectable::SelectableContext;
+use crate::{
+    selectable::{RcPartialEqValue, SelectableContext},
+    selection::OptionState,
+};
 
 /// Main context for the select component containing all shared state
 #[derive(Clone, Copy, PartialEq)]
@@ -102,4 +105,37 @@ impl SelectContext {
 pub(super) struct SelectGroupContext {
     /// ID of the element that labels this group
     pub labeled_by: Signal<Option<String>>,
+}
+
+/// Portal-local read model for select list descendants.
+#[derive(Clone, PartialEq)]
+pub(super) struct SelectPortalContext {
+    /// Whether the root select is disabled.
+    pub root_disabled: bool,
+    /// Selected values snapshotted before entering the portal.
+    pub selected_values: Vec<RcPartialEqValue>,
+    /// Focused option index snapshotted before entering the portal.
+    pub focused_index: Option<usize>,
+    /// Registered root-tree option metadata snapshotted before entering the portal.
+    pub options: Vec<OptionState>,
+    /// Select a value through the root selectable state.
+    pub select_value: Callback<RcPartialEqValue>,
+    /// Update root open state.
+    pub set_open: Callback<bool>,
+    /// Clear root focus state.
+    pub blur_focus: Callback<()>,
+}
+
+impl SelectPortalContext {
+    /// Returns registered metadata for an option index.
+    pub fn option_state(&self, index: usize) -> Option<&OptionState> {
+        self.options.iter().find(|option| option.tab_index == index)
+    }
+
+    /// Returns whether the given value is selected in the root state snapshot.
+    pub fn is_selected(&self, value: &RcPartialEqValue) -> bool {
+        self.selected_values
+            .iter()
+            .any(|selected| selected == value)
+    }
 }

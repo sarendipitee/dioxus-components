@@ -45,7 +45,7 @@ impl PartialEq for RcPartialEqValue {
 }
 
 /// Registered option metadata shared by select-like components.
-#[derive(PartialEq)]
+#[derive(Clone, PartialEq)]
 pub(crate) struct OptionState {
     /// Focus/navigation index.
     pub(crate) tab_index: usize,

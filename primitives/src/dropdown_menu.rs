@@ -46,7 +46,7 @@ pub fn DropdownMenu(props: DropdownMenuProps) -> Element {
     let (open, set_open) = use_controlled(props.open, props.default_open, props.on_open_change);
     let mut ctx = menu::use_menu_provider(open, set_open, props.disabled, props.roving_loop);
     let root_id = use_unique_id();
-    let mut initial_focus = use_signal(|| None);
+    let mut initial_focus = ctx.initial_focus;
 
     use_context_provider(|| DropdownMenuContext { initial_focus });
 
