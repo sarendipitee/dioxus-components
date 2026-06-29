@@ -44,7 +44,7 @@ pub fn Demo() -> Element {
         }
 
         div {
-            style: "margin-bottom: 15px; font-size: 16px; font-weight: bold;",
+            style: "margin-bottom: 15px; font-size: var(--text-md); font-weight: bold;",
             "{formatted_value}"
         }
 

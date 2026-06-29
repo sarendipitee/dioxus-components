@@ -16,7 +16,7 @@ pub fn Demo() -> Element {
 
     rsx! {
         div { style: "display: grid; gap: 12px;",
-            div { "data-schedule-main-status": true, style: "font-size: 0.875rem;", "{status}" }
+            div { "data-schedule-main-status": true, style: "font-size: var(--text-sm);", "{status}" }
             ScheduleViewSwitcher { state: schedule }
             Schedule {
                 state: schedule,

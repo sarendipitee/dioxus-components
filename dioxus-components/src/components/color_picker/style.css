@@ -16,23 +16,23 @@
     width: 224px;
     flex-direction: column;
     align-items: center;
-    gap: calc(var(--space) * 2);
+    gap: var(--content-gap);
     grid-template-columns: 1fr auto;
 }
 
 .dx_color_slider_title {
     width: fit-content;
     color: var(--surface-fg);
-    font-size: 0.875rem;
+    font-size: var(--text-sm);
     font-weight: 500;
-    line-height: 1.5rem;
+    line-height: var(--line-height-md);
 }
 
 .dx_color_slider_output {
     color: var(--surface-fg-muted);
-    font-size: 0.875rem;
+    font-size: var(--text-sm);
     font-weight: 500;
-    line-height: 1.5rem;
+    line-height: var(--line-height-md);
 }
 
 .dx_color_slider {
@@ -147,8 +147,8 @@
     display: flex;
     box-sizing: border-box;
     flex-direction: column;
-    padding: calc(var(--space) * 2);
-    gap: calc(var(--space) * 2);
+    padding: var(--surface-padding);
+    gap: var(--content-gap);
 }
 
 .dx_color_picker_input {

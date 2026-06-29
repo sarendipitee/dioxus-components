@@ -25,13 +25,13 @@ const INLINE_STYLE: &str = r#".dx_virtual_list_container {
 .dx-virtual-list-card h3 {
   margin: 0 0 0.3rem;
   color: var(--fg);
-  font-size: 0.95rem;
+  font-size: var(--text-md);
 }
 
 .dx-virtual-list-card p {
   margin: 0;
   color: var(--fg);
-  font-size: 0.875rem;
+  font-size: var(--text-sm);
   line-height: 1.4;
 }"#;
 
@@ -48,7 +48,7 @@ fn pseudo_random_repeats(idx: usize) -> usize {
 pub fn Demo() -> Element {
     rsx! {
         div { class: "dx-virtual-list-demo",
-            p { style: "color: var(--fg-muted); font-size: 0.9rem; margin-bottom: 0.75rem;",
+            p { style: "color: var(--fg-muted); font-size: var(--text-sm); margin-bottom: 0.75rem;",
                 "Random heights demo - tests adaptive estimation with highly variable item sizes"
             }
             style { {INLINE_STYLE} }

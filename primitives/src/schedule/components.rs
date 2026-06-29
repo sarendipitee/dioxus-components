@@ -760,7 +760,7 @@ fn TimeGridView(mut props: TimeGridViewProps) -> Element {
                                     ),
                                     span {
                                         "data-schedule-current-time-label": true,
-                                        style: "position: absolute; left: 0; top: 50%; transform: translateY(-50%); border-radius: 999px; background: #ef4444; color: white; padding: 2px 8px; font-size: 0.75rem; font-weight: 700; line-height: 1.2; box-shadow: 0 1px 2px rgba(0, 0, 0, 0.22);",
+                                        style: "position: absolute; left: 0; top: 50%; transform: translateY(-50%); border-radius: 999px; background: #ef4444; color: white; padding: 2px 8px; font-size: var(--text-xs); font-weight: 700; line-height: 1.2; box-shadow: 0 1px 2px rgba(0, 0, 0, 0.22);",
                                         "{current_time_label}"
                                     }
                                     span {

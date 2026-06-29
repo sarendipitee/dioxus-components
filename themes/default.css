@@ -214,17 +214,36 @@
   /* Surface padding. Use for cards, popovers, dialogs, menus, and panels. */
   --surface-padding: calc(var(--space) * 4);
 
+  /* Large surface padding. Use for roomy drop zones, sheets, and dense
+     showcase panels that need stronger inset than standard surfaces. */
+  --surface-padding-lg: calc(var(--space) * 6);
+  --surface-padding-xl: calc(var(--space) * 8);
+
   /* Surface gap. Use between sections inside cards, popovers, dialogs, and
      other contained surfaces. */
   --surface-gap: calc(var(--space) * 3);
+
+  /* Section gap. Use between major stacked groups inside one component. */
+  --section-gap: calc(var(--space) * 4);
 
   /* Content gap. Use between labels, descriptions, validation messages, and
      related field content. */
   --content-gap: calc(var(--space) * 2);
 
+  /* Compact gap. Use between closely related content that needs less separation
+     than the standard content gap. */
+  --compact-gap: calc(var(--space) * 1.5);
+
   /* Item gap. Use between icon + text, checkbox + label, and inline content
      inside a single row/control. */
   --item-gap: calc(var(--space) * 2);
+
+  /* Fine gap. Use for very tight inline spacing and compact affordances. */
+  --fine-gap: calc(var(--space) / 2);
+
+  /* Floating offset. Use for native/CSS fallback gaps between triggers and
+     floating overlays. */
+  --floating-offset: calc(var(--space) * 2);
 
   /* Control height. Use for buttons, toolbar controls, selects */
   --control-height-sm: 1.5rem;
@@ -240,6 +259,9 @@
   --control-padding-x-sm: calc(var(--space) * 2);
   --control-padding-x-md: calc(var(--space) * 2);
   --control-padding-x-lg: calc(var(--space) * 3);
+
+  /* Vertical padding for medium buttons and compact controls. */
+  --control-padding-y-md: calc(var(--space) * 2);
 
   /* Gap between icon and label inside buttons and compact controls. */
   --control-gap: calc(var(--space) * 2);

@@ -84,7 +84,7 @@ pub fn Demo() -> Element {
                         on_open_change: move |v| open.set(v),
                         PopoverTrigger {
                             div {
-                                style: "width: 3.5rem; height: 3.5rem; background: var(--surface-muted); border: 1px solid var(--surface-border); border-radius: var(--radius); display: flex; align-items: center; justify-content: center; font-size: 0.6875rem; font-weight: 600; color: var(--surface-muted-fg); cursor: pointer;",
+                                style: "width: 3.5rem; height: 3.5rem; background: var(--surface-muted); border: 1px solid var(--surface-border); border-radius: var(--radius); display: flex; align-items: center; justify-content: center; font-size: var(--text-xs); font-weight: 600; color: var(--surface-muted-fg); cursor: pointer;",
                                 "trigger"
                             }
                         }
@@ -92,7 +92,7 @@ pub fn Demo() -> Element {
                             side: active().side,
                             align: active().align,
                             div {
-                                style: "padding: 0.25rem 0.625rem; white-space: nowrap; font-size: 0.8125rem; font-weight: 500;",
+                                style: "padding: 0.25rem 0.625rem; white-space: nowrap; font-size: var(--text-sm); font-weight: 500;",
                                 "{placement_label(active())}"
                             }
                         }

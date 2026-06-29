@@ -6,7 +6,7 @@
 .dx_popover_content {
   /* Position (position/top/left) is owned by the floating-ui hook, which emits
      inline coords AND a `data-floating="true"` marker on web. The legacy CSS gap
-     (calc(var(--space) * 2)) now lives in the offset() middleware. On native the
+     (`--floating-offset`) now lives in the offset() middleware. On native the
      hook is inert (no marker, no coords) and the `:not([data-floating])` fallback
      rules below provide static data-side/data-align placement. */
   /* z-index assigned by the overlay manager via `--overlay-z` (open order),
@@ -17,7 +17,7 @@
   max-width: calc(100% - 2rem);
   box-sizing: border-box;
   flex-direction: column;
-  padding: calc(var(--space) * 3);
+  padding: var(--surface-padding);
   text-align: center;
   transform-origin: top;
   will-change: transform, opacity;
@@ -93,28 +93,28 @@
 .dx_popover_content:not([data-floating])[data-side="top"] {
   bottom: 100%;
   left: 50%;
-  margin-bottom: calc(var(--space) * 2);
+  margin-bottom: var(--floating-offset);
   transform: translateX(-50%);
 }
 
 .dx_popover_content:not([data-floating])[data-side="right"] {
   top: 50%;
   left: 100%;
-  margin-left: calc(var(--space) * 2);
+  margin-left: var(--floating-offset);
   transform: translateY(-50%);
 }
 
 .dx_popover_content:not([data-floating])[data-side="bottom"] {
   top: 100%;
   left: 50%;
-  margin-top: calc(var(--space) * 2);
+  margin-top: var(--floating-offset);
   transform: translateX(-50%);
 }
 
 .dx_popover_content:not([data-floating])[data-side="left"] {
   top: 50%;
   right: 100%;
-  margin-right: calc(var(--space) * 2);
+  margin-right: var(--floating-offset);
   transform: translateY(-50%);
 }
 
@@ -195,7 +195,7 @@
 .dx_popover_content_actions {
   display: flex;
   flex-direction: column-reverse;
-  gap: calc(var(--space) * 3);
+  gap: var(--surface-gap);
 }
 
 @media (width >= 40rem) {
@@ -217,7 +217,7 @@
   background: var(--surface);
   color: var(--surface-fg);
   cursor: pointer;
-  font-size: 1rem;
+  font-size: var(--text-md);
   transition: background-color 0.2s ease;
 }
 
@@ -236,7 +236,7 @@
   background: var(--danger);
   color: var(--danger-fg);
   cursor: pointer;
-  font-size: 1rem;
+  font-size: var(--text-md);
   transition: background-color 0.2s ease;
 }
 

@@ -2,7 +2,7 @@
     display: flex;
     width: 100%;
     flex-direction: column;
-    gap: calc(var(--space) * 3);
+    gap: var(--surface-gap);
 }
 
 .dx_tabs[data-inverted="true"] .dx_tabs_list {
@@ -16,7 +16,7 @@
 .dx_tabs[data-orientation="vertical"] {
     display: grid;
     align-items: start;
-    gap: calc(var(--space) * 4);
+    gap: var(--section-gap);
     grid-template-columns: auto minmax(0, 1fr);
 }
 
@@ -156,7 +156,7 @@
 }
 
 .dx_tabs[data-variant="default"] .dx_tabs_trigger {
-    padding-inline: calc(var(--space) * 3);
+    padding-inline: var(--surface-gap);
     border-radius: 0;
     color: var(--fg-muted);
 }
@@ -214,4 +214,3 @@
 .dx_tabs_content[data-state="inactive"] {
     display: none;
 }
-

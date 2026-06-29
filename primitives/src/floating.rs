@@ -20,7 +20,7 @@ use dioxus::prelude::*;
 use crate::{ContentAlign, ContentSide};
 
 /// The default gap, in pixels, between the trigger (reference) element and the
-/// floating element. Matches the legacy CSS gap of `calc(var(--space) * 2)`, which
+/// floating element. Matches the `--floating-offset` CSS token, which
 /// resolves to roughly `8px` with the default `--space` of `4px`.
 ///
 /// Only referenced by the wasm `use_position` (the native impl is CSS-driven), so it

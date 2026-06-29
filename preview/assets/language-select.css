@@ -33,7 +33,7 @@
   background: transparent;
   color: var(--fg-muted);
   cursor: pointer;
-  font-size: 1.5rem;
+  font-size: var(--text-xl);
   gap: 2px;
   transition: background-color 0.2s ease, color 0.2s ease;
 }

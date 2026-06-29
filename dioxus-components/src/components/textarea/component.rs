@@ -108,7 +108,7 @@ pub fn Textarea(
     });
     let bottom_section_base = attributes!(div {
         class: "dx-textarea-bottom-section",
-        style: "display: flex; align-items: center; justify-content: space-between; gap: 0.75rem; color: var(--secondary-color-5); font-size: 0.875rem;",
+        style: "display: flex; align-items: center; justify-content: space-between; gap: 0.75rem; color: var(--secondary-color-5); font-size: var(--text-sm);",
     });
 
     let attributes = merge_attributes(vec![textarea_base, control_attrs, attributes]);

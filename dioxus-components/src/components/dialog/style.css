@@ -143,7 +143,7 @@
 .dx_dialog_header {
   display: flex;
   flex-direction: column;
-  gap: calc(var(--space) * 1.5);
+  gap: var(--compact-gap);
 }
 
 .dx_dialog_body {
@@ -154,7 +154,7 @@
 .dx_dialog_footer {
   display: flex;
   flex-direction: column-reverse;
-  gap: calc(var(--space) * 2);
+  gap: var(--item-gap);
 }
 
 @media (width >= 40rem) {
@@ -178,8 +178,8 @@
 
 .dx_dialog_close {
   position: absolute;
-  top: calc(var(--space) * 4);
-  right: calc(var(--space) * 4);
+  top: var(--surface-padding);
+  right: var(--surface-padding);
   align-self: flex-start;
   padding: 0;
   border: none;
@@ -187,7 +187,7 @@
   background: none;
   color: var(--fg-muted);
   cursor: pointer;
-  font-size: 18px;
+  font-size: var(--text-lg);
   line-height: 1;
 }
 

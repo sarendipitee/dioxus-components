@@ -8,7 +8,7 @@ pub fn Demo() -> Element {
     rsx! {
         div {
             style: "display: flex; flex-direction: column; gap: 0.75rem; width: 100%; max-width: 760px;",
-            div { style: "font-size: 0.875rem; color: var(--fg);", "{status}" }
+            div { style: "font-size: var(--text-sm); color: var(--fg);", "{status}" }
             div {
                 style: "height: 260px;",
                 SplitPane {
@@ -46,7 +46,7 @@ fn Panel(title: &'static str, body: &'static str) -> Element {
     rsx! {
         div {
             style: "height: 100%; box-sizing: border-box; padding: 1rem;",
-            h3 { style: "margin: 0 0 0.5rem; font-size: 1rem;", "{title}" }
+            h3 { style: "margin: 0 0 0.5rem; font-size: var(--text-md);", "{title}" }
             p { style: "margin: 0; color: var(--fg);", "{body}" }
         }
     }

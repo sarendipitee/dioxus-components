@@ -44,9 +44,9 @@ pub fn OverlayNestingDemo() -> Element {
                         border: 1px dashed var(--border, #888); border-radius: 0.5rem; \
                         display: flex; flex-direction: column; gap: 1rem;",
 
-                h1 { style: "font-size: 1.25rem; font-weight: 600;", "Overlay nesting matrix" }
+                h1 { style: "font-size: var(--text-lg); font-weight: 600;", "Overlay nesting matrix" }
                 p {
-                    style: "opacity: 0.7; font-size: 0.875rem;",
+                    style: "opacity: 0.7; font-size: var(--text-sm);",
                     "All overlays below render inside a CSS-transformed ancestor. \
                      They must portal to the root outlet and land above this shell."
                 }

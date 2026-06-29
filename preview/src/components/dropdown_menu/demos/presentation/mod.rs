@@ -28,7 +28,7 @@ pub fn Demo() -> Element {
                     value: "duplicate",
                     index: 1usize,
                     on_select: move |_| selected_action.set("Duplicate review".to_string()),
-                    style: "padding-left: calc(var(--space) * 6);",
+                    style: "padding-left: var(--surface-padding-lg);",
                     "Inset duplicate review"
                     MenuItemSection { "Inset" }
                 }
@@ -46,7 +46,7 @@ pub fn Demo() -> Element {
                     value: "archive",
                     index: 3usize,
                     on_select: move |_| selected_action.set("Archive project".to_string()),
-                    style: "padding-left: calc(var(--space) * 6); color: var(--danger);",
+                    style: "padding-left: var(--surface-padding-lg); color: var(--danger);",
                     "Inset destructive archive"
                     MenuItemSection { "Inset + destructive" }
                 }

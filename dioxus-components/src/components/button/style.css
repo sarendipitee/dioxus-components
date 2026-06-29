@@ -27,10 +27,10 @@
   background: var(--button-bg);
   color: var(--button-fg);
   font-family: inherit;
-  font-size: 0.875rem;
+  font-size: var(--text-sm);
   font-weight: 500;
   gap: var(--button-gap);
-  line-height: 1.25rem;
+  line-height: var(--line-height-sm);
   outline: none;
   user-select: none;
   transition:

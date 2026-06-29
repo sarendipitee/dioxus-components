@@ -19,7 +19,7 @@ const INLINE_STYLE: &str = r#".dx-tasks-demo {
 .dx-tasks-title {
   margin: 0;
   color: var(--accent);
-  font-size: 14px;
+  font-size: var(--text-sm);
   font-weight: 600;
   line-height: 1.3;
 }
@@ -27,13 +27,13 @@ const INLINE_STYLE: &str = r#".dx-tasks-demo {
 .dx-tasks-subtitle {
   margin: 4px 0 0;
   color: var(--fg-faint);
-  font-size: 12px;
+  font-size: var(--text-xs);
   line-height: 1.4;
 }
 
 .dx-tasks-count {
   color: var(--fg-faint);
-  font-size: 12px;
+  font-size: var(--text-xs);
   font-variant-numeric: tabular-nums;
   font-weight: 500;
   white-space: nowrap;
@@ -58,7 +58,7 @@ const INLINE_STYLE: &str = r#".dx-tasks-demo {
 .dx-task-title {
   overflow: hidden;
   color: var(--accent);
-  font-size: 13.5px;
+  font-size: var(--text-sm);
   font-weight: 500;
   line-height: 1.35;
   text-overflow: ellipsis;
@@ -69,7 +69,7 @@ const INLINE_STYLE: &str = r#".dx-tasks-demo {
   display: flex;
   align-items: center;
   color: var(--fg-faint);
-  font-size: 11.5px;
+  font-size: var(--text-xs);
   font-variant-numeric: tabular-nums;
   gap: 7px;
   line-height: 1.3;
@@ -78,7 +78,7 @@ const INLINE_STYLE: &str = r#".dx-tasks-demo {
 .dx-task-code {
   color: var(--surface-disabled-fg);
   font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, monospace;
-  font-size: 10.5px;
+  font-size: var(--text-xs);
   font-weight: 500;
   letter-spacing: 0.03em;
 }

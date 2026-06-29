@@ -1,5 +1,5 @@
 .dx_dnd_list {
-  --dx-item-gap: calc(var(--space) * 1.5);
+  --dx-item-gap: var(--compact-gap);
 
   width: 100%;
 }
@@ -88,7 +88,7 @@
 
 .dx_item_icon {
   flex-shrink: 0;
-  margin-right: calc(var(--space) * 1.5);
+  margin-right: var(--compact-gap);
   color: var(--fg-faint);
   transition: color 150ms ease;
 }
@@ -102,9 +102,9 @@
 .dx_item_body_div {
   min-width: 0;
   flex-grow: 1;
-  font-size: 14px;
+  font-size: var(--text-sm);
   font-weight: normal;
-  line-height: 20px;
+  line-height: var(--line-height-sm);
 }
 
 .dx_remove_button {

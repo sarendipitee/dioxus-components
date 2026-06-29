@@ -13,7 +13,7 @@ pub fn Demo() -> Element {
 
     rsx! {
         div { style: "display: grid; gap: 12px; padding: 20px;",
-            div { "data-schedule-controlled-status": true, style: "font-size: 0.875rem;", "{status}" }
+            div { "data-schedule-controlled-status": true, style: "font-size: var(--text-sm);", "{status}" }
             div { style: "display: flex; flex-wrap: wrap; gap: 8px; align-items: center;",
                 button { onclick: move |_| date.set(date() - Duration::days(1)), "Previous day" }
                 button { onclick: move |_| date.set(sample_date()), "Reset date" }

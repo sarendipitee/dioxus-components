@@ -13,7 +13,7 @@
   display: inline-flex;
   width: fit-content;
   align-items: center;
-  gap: calc(var(--space) / 2);
+  gap: var(--fine-gap);
   color: var(--input-fg);
 }
 
@@ -102,7 +102,7 @@
 }
 
 .dx_input_wrapper[data-input-describedby] .dx_input {
-  padding-block-start: var(--input-padding-y);
+  margin-block-start: var(--input-padding-y);
 }
 
 .dx_input[data-error="true"] {

@@ -1,12 +1,12 @@
 .dx_time_picker {
     display: inline-flex;
     flex-direction: column;
-    gap: calc(var(--space) * 2);
+    gap: var(--content-gap);
 }
 
 .dx_time_picker_columns {
     display: flex;
-    gap: calc(var(--space) * 0.5);
+    gap: var(--fine-gap);
 }
 
 .dx_time_picker_col {
@@ -22,7 +22,7 @@
     font-size: var(--text-xs);
     color: var(--input-fg-muted);
     text-align: center;
-    padding-block-end: calc(var(--space) / 2);
+    padding-block-end: var(--fine-gap);
     position: sticky;
     top: 0;
     background: var(--popover-bg, var(--bg));
@@ -59,16 +59,16 @@
 .dx_time_picker_presets {
     display: flex;
     flex-wrap: wrap;
-    gap: calc(var(--space) / 2);
+    gap: var(--fine-gap);
     border-top: 1px solid var(--border);
-    padding-block-start: calc(var(--space) * 2);
+    padding-block-start: var(--content-gap);
 }
 
 .dx_time_picker_preset_btn {
     background: none;
     border: 1px solid var(--border);
     border-radius: var(--radius-sm);
-    padding: calc(var(--space) / 2) var(--space);
+    padding: var(--fine-gap) var(--space);
     font-size: var(--text-xs);
     cursor: pointer;
     color: var(--input-fg);

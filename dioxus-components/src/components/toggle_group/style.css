@@ -9,7 +9,7 @@
   border-radius: 0;
   background: transparent;
   color: var(--surface-fg);
-  font-size: 14px;
+  font-size: var(--text-sm);
   outline: none;
   transition: background-color 200ms ease, border 200ms ease, outline-color 150ms;
 }

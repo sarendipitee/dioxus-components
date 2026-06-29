@@ -30,7 +30,7 @@ pub fn Demo() -> Element {
             div {
                 style: "display: flex; flex-wrap: wrap; align-items: center; gap: 0.5rem; padding: 0.625rem 0.75rem; border: 1px solid var(--border); border-radius: var(--radius); background: var(--surface-muted);",
                 span {
-                    style: "color: var(--surface-muted-fg); font-size: 0.8125rem; font-weight: 500; margin-right: 0.25rem;",
+                    style: "color: var(--surface-muted-fg); font-size: var(--text-sm); font-weight: 500; margin-right: 0.25rem;",
                     "Simulate server response"
                 }
                 StateButton {
@@ -73,10 +73,10 @@ pub fn Demo() -> Element {
                 empty_message: "Server returned no orders",
                 empty_hint: "Try another search, filter, sort, or page.",
                 toolbar_left: rsx! {
-                    span { style: "color: var(--surface-muted-fg); font-size: 0.875rem;", "Server mode" }
+                    span { style: "color: var(--surface-muted-fg); font-size: var(--text-sm);", "Server mode" }
                 },
                 table_settings: rsx! {
-                    span { style: "color: var(--surface-muted-fg); font-size: 0.8125rem;", "Manual pagination, sorting, and filtering" }
+                    span { style: "color: var(--surface-muted-fg); font-size: var(--text-sm);", "Manual pagination, sorting, and filtering" }
                 },
             }
         }

@@ -10,7 +10,7 @@ pub fn Demo() -> Element {
     rsx! {
         div { style: "display: flex; gap: 2rem; flex-wrap: wrap;",
             div {
-                p { style: "font-size: 0.75rem; color: var(--muted-fg); margin-block-end: 0.5rem;",
+                p { style: "font-size: var(--text-xs); color: var(--muted-fg); margin-block-end: 0.5rem;",
                     "Manual presets"
                 }
                 TimePicker {
@@ -21,7 +21,7 @@ pub fn Demo() -> Element {
                 }
             }
             div {
-                p { style: "font-size: 0.75rem; color: var(--muted-fg); margin-block-end: 0.5rem;",
+                p { style: "font-size: var(--text-xs); color: var(--muted-fg); margin-block-end: 0.5rem;",
                     "Generated range (every 1.5h)"
                 }
                 TimePicker {

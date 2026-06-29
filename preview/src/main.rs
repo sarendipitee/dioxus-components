@@ -1591,10 +1591,10 @@ fn MasonryCard(props: MasonryCardProps) -> Element {
 fn BlockSignIn() -> Element {
     rsx! {
         div { style: "display: grid; gap: 0.3rem; margin-bottom: 1.1rem;",
-            h3 { style: "margin: 0; font-size: 1.05rem; font-weight: 660; color: var(--fg);",
+            h3 { style: "margin: 0; font-size: var(--text-md); font-weight: 660; color: var(--fg);",
                 "Welcome back"
             }
-            p { style: "margin: 0; color: var(--fg-faint); font-size: 0.85rem;",
+            p { style: "margin: 0; color: var(--fg-faint); font-size: var(--text-sm);",
                 "Sign in to your workspace."
             }
         }
@@ -1610,7 +1610,7 @@ fn BlockSignIn() -> Element {
             div { style: "display: grid; gap: 0.35rem;",
                 div { style: "display: flex; align-items: center;",
                     Label { html_for: "blk-signin-pw", "Password" }
-                    span { style: "margin-left: auto; font-size: 0.78rem; color: var(--fg-faint); text-decoration: underline; text-underline-offset: 3px;",
+                    span { style: "margin-left: auto; font-size: var(--text-xs); color: var(--fg-faint); text-decoration: underline; text-underline-offset: 3px;",
                         "Forgot?"
                     }
                 }
@@ -1648,11 +1648,11 @@ fn BlockProfile() -> Element {
                         VerifiedIcon {}
                     }
                 }
-                span { style: "color: var(--fg-faint); font-size: 0.85rem;", "@averylin" }
+                span { style: "color: var(--fg-faint); font-size: var(--text-sm);", "@averylin" }
             }
             Button { variant: ButtonVariant::Outline, "Follow" }
         }
-        p { style: "margin: 1.1rem 0 0; color: var(--fg-faint); font-size: 0.9rem; line-height: 1.55;",
+        p { style: "margin: 1.1rem 0 0; color: var(--fg-faint); font-size: var(--text-sm); line-height: 1.55;",
             "Building UI primitives that ship to web, desktop, and mobile. Mostly Rust, mostly weekends."
         }
         div { style: "display: flex; gap: 0.35rem; margin-top: 0.85rem; flex-wrap: wrap;",
@@ -1667,11 +1667,11 @@ fn BlockProfile() -> Element {
 fn BlockStats() -> Element {
     rsx! {
         div { style: "display: grid; gap: 0.45rem;",
-            p { style: "margin: 0; color: var(--fg-faint); font-size: 0.74rem; text-transform: uppercase; letter-spacing: 0.1em; font-weight: 600;",
+            p { style: "margin: 0; color: var(--fg-faint); font-size: var(--text-xs); text-transform: uppercase; letter-spacing: 0.1em; font-weight: 600;",
                 "Active users · 30d"
             }
             div { style: "display: flex; align-items: baseline; gap: 0.6rem;",
-                span { style: "font-size: 2rem; font-weight: 720; color: var(--fg); line-height: 1.1;",
+                span { style: "font-size: var(--text-xl); font-weight: 720; color: var(--fg); line-height: 1.1;",
                     "24,815"
                 }
                 Badge {
@@ -1688,7 +1688,7 @@ fn BlockStats() -> Element {
                 style: "width: 100%;",
             }
         }
-        p { style: "margin: 0.65rem 0 0; color: var(--fg-faint); font-size: 0.82rem;",
+        p { style: "margin: 0.65rem 0 0; color: var(--fg-faint); font-size: var(--text-sm);",
             "On track for the 36k Q2 target."
         }
     }
@@ -1698,10 +1698,10 @@ fn BlockStats() -> Element {
 fn BlockNotifications() -> Element {
     rsx! {
         div { style: "display: grid; gap: 0.3rem; margin-bottom: 1rem;",
-            h3 { style: "margin: 0; font-size: 1rem; font-weight: 660; color: var(--fg);",
+            h3 { style: "margin: 0; font-size: var(--text-md); font-weight: 660; color: var(--fg);",
                 "Notifications"
             }
-            p { style: "margin: 0; color: var(--fg-faint); font-size: 0.85rem;",
+            p { style: "margin: 0; color: var(--fg-faint); font-size: var(--text-sm);",
                 "Pick what we ping you about."
             }
         }
@@ -1740,10 +1740,10 @@ fn NotificationRow(id: String, name: String, description: String, default_on: bo
     rsx! {
         div { style: "display: flex; align-items: center; gap: 0.75rem;",
             div { style: "flex: 1; display: grid; gap: 0.1rem; min-width: 0;",
-                span { style: "font-weight: 540; font-size: 0.92rem; color: var(--fg);",
+                span { style: "font-weight: 540; font-size: var(--text-sm); color: var(--fg);",
                     "{name}"
                 }
-                span { style: "color: var(--fg-faint); font-size: 0.8rem;", "{description}" }
+                span { style: "color: var(--fg-faint); font-size: var(--text-xs);", "{description}" }
             }
             Switch {
                 id: "{id}",
@@ -1809,7 +1809,7 @@ fn BlockPlayer() -> Element {
                 p { style: "margin: 0; font-weight: 600; color: var(--fg); overflow: hidden; text-overflow: ellipsis; white-space: nowrap;",
                     "Midnight City"
                 }
-                p { style: "margin: 0.15rem 0 0; color: var(--fg-faint); font-size: 0.85rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;",
+                p { style: "margin: 0.15rem 0 0; color: var(--fg-faint); font-size: var(--text-sm); overflow: hidden; text-overflow: ellipsis; white-space: nowrap;",
                     "M83 · Hurry Up, We're Dreaming"
                 }
             }
@@ -1824,7 +1824,7 @@ fn BlockPlayer() -> Element {
                 on_value_change: move |value| progress_seconds.set(Some(value)),
                 label: "Track progress",
             }
-            div { style: "display: flex; justify-content: space-between; margin-top: 0.45rem; color: var(--fg-faint); font-size: 0.78rem;",
+            div { style: "display: flex; justify-content: space-between; margin-top: 0.45rem; color: var(--fg-faint); font-size: var(--text-xs);",
                 span { "{current_time}" }
                 span { "{duration_time}" }
             }
@@ -1876,24 +1876,24 @@ fn format_track_time(seconds: f64) -> String {
 fn BlockPricing() -> Element {
     rsx! {
         div { style: "display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.6rem;",
-            h3 { style: "margin: 0; font-size: 1rem; font-weight: 660; color: var(--fg);",
+            h3 { style: "margin: 0; font-size: var(--text-md); font-weight: 660; color: var(--fg);",
                 "Team"
             }
             Badge { variant: BadgeVariant::Secondary, "Most popular" }
         }
-        p { style: "margin: 0 0 1rem; color: oklch(var(--fg-faint)); font-size: 0.86rem; line-height: 1.55;",
+        p { style: "margin: 0 0 1rem; color: oklch(var(--fg-faint)); font-size: var(--text-sm); line-height: 1.55;",
             "For growing teams that need collaboration, controls, and support."
         }
         div { style: "display: flex; align-items: baseline; gap: 0.3rem; margin-bottom: 0.55rem;",
-            span { style: "font-size: 2.4rem; font-weight: 720; color: var(--fg); line-height: 1;",
+            span { style: "font-size: var(--text-xl); font-weight: 720; color: var(--fg); line-height: 1;",
                 "$12"
             }
             span { style: "color: var(--fg-faint);", "/ seat / mo" }
         }
-        p { style: "margin: 0 0 1rem; color: var(--fg-faint); font-size: 0.86rem; line-height: 1.55;",
+        p { style: "margin: 0 0 1rem; color: var(--fg-faint); font-size: var(--text-sm); line-height: 1.55;",
             "Everything in Pro, plus shared workspaces and audit logs."
         }
-        ul { style: "list-style: none; padding: 0; margin: 0 0 1rem; display: grid; gap: 0.55rem; color: var(--fg-muted); font-size: 0.88rem;",
+        ul { style: "list-style: none; padding: 0; margin: 0 0 1rem; display: grid; gap: 0.55rem; color: var(--fg-muted); font-size: var(--text-sm);",
             for feature in ["Unlimited projects", "Role-based access", "SSO + SAML", "Priority support"] {
                 li { style: "display: flex; align-items: center; gap: 0.55rem;",
                     svg {
@@ -1918,16 +1918,16 @@ fn BlockPricing() -> Element {
 fn BlockFilters() -> Element {
     rsx! {
         div { style: "display: grid; gap: 0.3rem; margin-bottom: 1rem;",
-            h3 { style: "margin: 0; font-size: 1rem; font-weight: 660; color: var(--fg);",
+            h3 { style: "margin: 0; font-size: var(--text-md); font-weight: 660; color: var(--fg);",
                 "Filter results"
             }
-            p { style: "margin: 0; color: var(--fg-faint); font-size: 0.85rem;",
+            p { style: "margin: 0; color: var(--fg-faint); font-size: var(--text-sm);",
                 "Narrow down what's shown below."
             }
         }
         div { style: "display: grid; gap: 1.1rem;",
             div { style: "display: grid; gap: 0.45rem;",
-                span { style: "color: var(--fg-muted); font-size: 0.78rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em;",
+                span { style: "color: var(--fg-muted); font-size: var(--text-xs); font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em;",
                     "Status"
                 }
                 RadioGroup { default_value: "active".to_string(),
@@ -1937,7 +1937,7 @@ fn BlockFilters() -> Element {
                 }
             }
             div { style: "display: grid; gap: 0.45rem;",
-                span { style: "color: var(--fg-muted); font-size: 0.78rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em;",
+                span { style: "color: var(--fg-muted); font-size: var(--text-xs); font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em;",
                     "Tags"
                 }
                 div { style: "display: grid; gap: 0.4rem;",
@@ -1975,10 +1975,10 @@ fn BlockColorPalette() -> Element {
 
     rsx! {
         div { style: "display: grid; gap: 0.3rem; margin-bottom: 1.1rem;",
-            h3 { style: "margin: 0; font-size: 1rem; font-weight: 660; color: var(--fg);",
+            h3 { style: "margin: 0; font-size: var(--text-md); font-weight: 660; color: var(--fg);",
                 "Theme accent"
             }
-            p { style: "margin: 0; color: var(--fg-faint); font-size: 0.85rem;",
+            p { style: "margin: 0; color: var(--fg-faint); font-size: var(--text-sm);",
                 "Tune the accent that shows up across the workspace."
             }
         }
@@ -2000,10 +2000,10 @@ fn BlockTabs() -> Element {
     ];
     rsx! {
         div { style: "display: grid; gap: 0.3rem; margin-bottom: 1.1rem;",
-            h3 { style: "margin: 0; font-size: 1rem; font-weight: 660; color: var(--fg);",
+            h3 { style: "margin: 0; font-size: var(--text-md); font-weight: 660; color: var(--fg);",
                 "Workspace"
             }
-            p { style: "margin: 0; color: var(--fg-faint); font-size: 0.85rem;",
+            p { style: "margin: 0; color: var(--fg-faint); font-size: var(--text-sm);",
                 "Team activity at a glance."
             }
         }
@@ -2028,10 +2028,10 @@ fn BlockTabs() -> Element {
                                 "{member.3}"
                             }
                             div { style: "flex: 1; min-width: 0;",
-                                div { style: "font-weight: 540; color: var(--fg); font-size: 0.9rem;",
+                                div { style: "font-weight: 540; color: var(--fg); font-size: var(--text-sm);",
                                     "{member.0}"
                                 }
-                                div { style: "color: var(--fg-faint); font-size: 0.78rem;",
+                                div { style: "color: var(--fg-faint); font-size: var(--text-xs);",
                                     "{member.1}"
                                 }
                             }
@@ -2055,10 +2055,10 @@ fn BlockTabs() -> Element {
             TabContent { index: 1usize, value: "activity".to_string(),
                 div { style: "display: grid; gap: 0.85rem;",
                     for entry in activity.iter() {
-                        div { style: "display: flex; align-items: baseline; gap: 0.45rem; font-size: 0.88rem;",
+                        div { style: "display: flex; align-items: baseline; gap: 0.45rem; font-size: var(--text-sm);",
                             span { style: "font-weight: 600; color: var(--fg);", "{entry.0}" }
                             span { style: "color: var(--fg-faint);", "{entry.1}" }
-                            span { style: "margin-left: auto; color: var(--fg-faint); font-size: 0.78rem; white-space: nowrap;",
+                            span { style: "margin-left: auto; color: var(--fg-faint); font-size: var(--text-xs); white-space: nowrap;",
                                 "{entry.2}"
                             }
                         }
@@ -2066,7 +2066,7 @@ fn BlockTabs() -> Element {
                 }
             }
             TabContent { index: 2usize, value: "files".to_string(),
-                div { style: "display: grid; gap: 0.6rem; color: var(--fg-muted); font-size: 0.88rem;",
+                div { style: "display: grid; gap: 0.6rem; color: var(--fg-muted); font-size: var(--text-sm);",
                     div { style: "display: flex; align-items: center; gap: 0.5rem;",
                         span { style: "font-family: monospace; color: var(--fg-faint);",
                             "/"
@@ -2101,10 +2101,10 @@ fn BlockSchedule() -> Element {
     rsx! {
         div { style: "display: flex; align-items: center; gap: 0.6rem; margin-bottom: 0.85rem;",
             div { style: "flex: 1;",
-                h3 { style: "margin: 0; font-size: 1rem; font-weight: 660; color: var(--fg);",
+                h3 { style: "margin: 0; font-size: var(--text-md); font-weight: 660; color: var(--fg);",
                     "Schedule"
                 }
-                p { style: "margin: 0; color: var(--fg-faint); font-size: 0.85rem;",
+                p { style: "margin: 0; color: var(--fg-faint); font-size: var(--text-sm);",
                     "Pick a day for the standup."
                 }
             }
@@ -2129,10 +2129,10 @@ fn BlockCommand() -> Element {
     ];
     rsx! {
         div { style: "display: grid; gap: 0.3rem; margin-bottom: 1rem;",
-            h3 { style: "margin: 0; font-size: 1rem; font-weight: 660; color: var(--fg);",
+            h3 { style: "margin: 0; font-size: var(--text-md); font-weight: 660; color: var(--fg);",
                 "Switch workspace"
             }
-            p { style: "margin: 0; color: var(--fg-faint); font-size: 0.85rem;",
+            p { style: "margin: 0; color: var(--fg-faint); font-size: var(--text-sm);",
                 "Jump between projects your team owns."
             }
         }
@@ -2165,10 +2165,10 @@ fn BlockInbox() -> Element {
     rsx! {
         div { style: "display: flex; align-items: center; gap: 0.55rem; margin-bottom: 0.85rem;",
             div { style: "flex: 1;",
-                h3 { style: "margin: 0; font-size: 1rem; font-weight: 660; color: var(--fg);",
+                h3 { style: "margin: 0; font-size: var(--text-md); font-weight: 660; color: var(--fg);",
                     "Inbox"
                 }
-                p { style: "margin: 0; color: var(--fg-faint); font-size: 0.85rem;",
+                p { style: "margin: 0; color: var(--fg-faint); font-size: var(--text-sm);",
                     "3 new conversations."
                 }
             }
@@ -2215,10 +2215,10 @@ fn BlockTasks() -> Element {
                     key: "{t.0}",
                     style: "display: flex; align-items: center; gap: 0.75rem; min-width: 0;",
                     div { style: "flex: 1; min-width: 0; display: grid; gap: 0.2rem;",
-                        div { style: "color: var(--fg); font-size: 0.9rem; font-weight: 540; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;",
+                        div { style: "color: var(--fg); font-size: var(--text-sm); font-weight: 540; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;",
                             "{t.1}"
                         }
-                        div { style: "display: flex; align-items: center; gap: 0.45rem; color: var(--fg-faint); font-size: 0.78rem;",
+                        div { style: "display: flex; align-items: center; gap: 0.45rem; color: var(--fg-faint); font-size: var(--text-xs);",
                             span { style: "font-family: monospace;", "{t.0}" }
                             span { style: "width: 3px; height: 3px; border-radius: 999px; background: var(--surface-selected-border);" }
                             span { "{t.2}" }
@@ -2239,10 +2239,10 @@ fn BlockTasks() -> Element {
     rsx! {
         div { style: "display: flex; align-items: center; gap: 0.55rem; margin-bottom: 1.1rem;",
             div { style: "flex: 1;",
-                h3 { style: "margin: 0; font-size: 1rem; font-weight: 660; color: var(--fg);",
+                h3 { style: "margin: 0; font-size: var(--text-md); font-weight: 660; color: var(--fg);",
                     "Launch priorities"
                 }
-                p { style: "margin: 0; color: var(--fg-faint); font-size: 0.85rem;",
+                p { style: "margin: 0; color: var(--fg-faint); font-size: var(--text-sm);",
                     "Drag to reorder — top is highest priority."
                 }
             }
@@ -2267,10 +2267,10 @@ fn BlockComposer() -> Element {
                 "AL"
             }
             div { style: "flex: 1; display: grid; gap: 0.1rem;",
-                span { style: "font-weight: 600; color: var(--fg); font-size: 0.9rem;",
+                span { style: "font-weight: 600; color: var(--fg); font-size: var(--text-sm);",
                     "Reply to roadmap thread"
                 }
-                span { style: "color: var(--fg-faint); font-size: 0.78rem;",
+                span { style: "color: var(--fg-faint); font-size: var(--text-xs);",
                     "Posting as @averylin · #product"
                 }
             }

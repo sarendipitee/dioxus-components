@@ -14,9 +14,9 @@
 }
 
 .dx_context_menu_label {
-  padding: calc(var(--space) * 2) calc(var(--space) * 3);
+  padding: var(--list-item-padding-y) var(--list-item-padding-x);
   color: var(--surface-muted-fg);
-  font-size: 0.75rem;
+  font-size: var(--text-xs);
   font-weight: 600;
   letter-spacing: 0.04em;
   text-transform: uppercase;
@@ -70,11 +70,11 @@
 .dx_context_menu_item {
   display: flex;
   align-items: center;
-  padding: calc(var(--space) * 2) calc(var(--space) * 3);
+  padding: var(--list-item-padding-y) var(--list-item-padding-x);
   border-radius: calc(var(--radius) - var(--space));
   color: var(--overlay-fg);
   cursor: pointer;
-  font-size: 14px;
+  font-size: var(--text-sm);
   outline: none;
   transition: background-color 100ms ease-out;
   user-select: none;
@@ -104,7 +104,7 @@
 
 .dx_context_menu_separator {
   height: 1px;
-  margin: var(--space) calc(var(--space) * 2);
+  margin: var(--space) var(--list-item-padding-x);
   background: var(--overlay-border);
 }
 
@@ -118,9 +118,9 @@
 
 .dx_context_menu_item_section {
   margin-left: auto;
-  padding-left: calc(var(--space) * 3);
+  padding-left: var(--surface-gap);
   color: var(--surface-muted-fg);
-  font-size: 0.75rem;
+  font-size: var(--text-xs);
 }
 
 .dx_context_menu_sub_trigger::after {

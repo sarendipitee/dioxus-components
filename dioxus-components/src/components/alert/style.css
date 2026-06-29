@@ -1,12 +1,12 @@
 .dx_alert {
   display: grid;
   align-items: start;
-  padding: calc(var(--space) * 4);
+  padding: var(--surface-padding);
   border: 1px solid var(--surface-border);
   border-radius: var(--radius-surface);
   background: var(--surface);
   color: var(--surface-fg);
-  gap: calc(var(--space) * 1.5) calc(var(--space) * 3);
+  gap: var(--compact-gap) var(--surface-gap);
   grid-template-columns: auto minmax(0, 1fr);
   box-shadow: 0 1px 2px rgb(0 0 0 / 6%);
 }
@@ -47,7 +47,7 @@
   width: 1.25rem;
   min-height: 1.25rem;
   margin-top: 0.125rem;
-  font-size: 1rem;
+  font-size: var(--text-md);
   line-height: 1;
 }
 
@@ -73,7 +73,7 @@
   grid-column: 3;
   grid-row: 1 / span 2;
   align-self: center;
-  gap: calc(var(--space) * 2);
+  gap: var(--item-gap);
 }
 
 .dx_alert_action:empty {

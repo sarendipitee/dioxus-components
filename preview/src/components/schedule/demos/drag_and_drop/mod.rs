@@ -11,7 +11,7 @@ pub fn Demo() -> Element {
 
     rsx! {
         div { style: "display: grid; gap: 12px; padding: 20px;",
-            div { style: "font-size: 0.875rem;", "{last_drop}" }
+            div { style: "font-size: var(--text-sm);", "{last_drop}" }
             Schedule {
                 default_date: sample_date(),
                 default_view: ScheduleView::Week,

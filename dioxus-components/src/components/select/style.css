@@ -36,7 +36,7 @@
   min-width: 0;
   flex: 1 1 auto;
   align-items: center;
-  font-size: 0.875rem;
+  font-size: var(--text-sm);
 }
 
 .dx_select_trigger span[data-placeholder="true"] {
@@ -135,7 +135,7 @@
   padding-block: var(--list-item-padding-y);
   border-radius: var(--radius-control);
   cursor: pointer;
-  font-size: 0.875rem;
+  font-size: var(--text-sm);
   outline: none;
   user-select: none;
 }
@@ -154,7 +154,7 @@
 }
 
 .dx_select_group_label {
-  padding: var(--space) calc(var(--space) * 3);
+  padding: var(--input-padding-y) var(--input-padding-x-lg);
   color: var(--input-fg-muted);
-  font-size: 0.75rem;
+  font-size: var(--text-xs);
 }

@@ -32,7 +32,7 @@ pub fn Demo() -> Element {
                                     Label { html_for: "password", "Password" }
                                     a {
                                         href: "#",
-                                        style: "margin-left: auto; font-size: 0.875rem; color: var(--fg-faint); text-decoration: underline; text-underline-offset: 4px;",
+                                        style: "margin-left: auto; font-size: var(--text-sm); color: var(--fg-faint); text-decoration: underline; text-underline-offset: 4px;",
                                         "Forgot your password?"
                                     }
                                 }

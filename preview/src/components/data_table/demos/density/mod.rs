@@ -47,7 +47,7 @@ pub fn Demo() -> Element {
                 style: "--dx-data-table-cell-padding-x: var(--space); --dx-data-table-cell-padding-y: 0.9rem; --dx-data-table-selection-cell-padding-x: var(--space); --dx-data-table-selection-cell-padding-y: 0.9rem;",
                 empty_message: "No custom-density orders",
                 toolbar_left: rsx! {
-                    span { style: "color: var(--surface-muted-fg); font-size: 0.875rem;", "Custom inline/block CSS overrides" }
+                    span { style: "color: var(--surface-muted-fg); font-size: var(--text-sm);", "Custom inline/block CSS overrides" }
                 },
             }
         }

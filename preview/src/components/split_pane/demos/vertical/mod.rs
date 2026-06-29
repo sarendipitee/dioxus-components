@@ -28,7 +28,7 @@ fn PaneContent(title: &'static str, content: &'static str) -> Element {
     rsx! {
         div {
             style: "height: 100%; box-sizing: border-box; padding: 1rem;",
-            h3 { style: "margin: 0 0 0.5rem; font-size: 1rem;", "{title}" }
+            h3 { style: "margin: 0 0 0.5rem; font-size: var(--text-md);", "{title}" }
             p { style: "margin: 0; color: var(--fg);", "{content}" }
         }
     }

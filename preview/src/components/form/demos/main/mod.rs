@@ -21,7 +21,7 @@ pub fn Demo() -> Element {
                 background_color: "var(--surface-muted)",
                 color: "var(--fg-muted)",
                 cursor: "pointer",
-                font_size: "14px",
+                font_size: "var(--text-sm)",
                 "Submit"
             }
         }

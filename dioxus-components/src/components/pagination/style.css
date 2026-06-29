@@ -21,7 +21,7 @@
   justify-content: center;
   border-radius: var(--radius-control);
   color: var(--surface-fg);
-  font-size: 0.875rem;
+  font-size: var(--text-sm);
   font-weight: 500;
   gap: var(--item-gap);
   line-height: 1;
@@ -54,7 +54,7 @@
 
 .dx_pagination_link[data-size="default"] {
   height: var(--control-height-md);
-  padding: calc(var(--space) * 2) calc(var(--space) * 4);
+  padding: var(--content-gap) var(--surface-padding);
 }
 
 .dx_pagination_link[data-active="true"] {

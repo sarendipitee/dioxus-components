@@ -22,8 +22,8 @@
   color: inherit;
   cursor: text;
   font-family: inherit;
-  font-size: 0.875rem;
-  line-height: 1.25rem;
+  font-size: var(--text-sm);
+  line-height: var(--line-height-sm);
   outline: none;
 }
 
@@ -102,8 +102,8 @@
 }
 
 .dx_combobox_empty {
-  padding: calc(var(--space) * 6) 0;
-  font-size: 0.875rem;
+  padding: var(--surface-padding-lg) 0;
+  font-size: var(--text-sm);
   text-align: center;
 }
 
@@ -111,12 +111,12 @@
   display: flex;
   box-sizing: border-box;
   align-items: center;
-  padding: calc(var(--space) * 1.5) calc(var(--space) * 2);
+  padding: var(--list-item-padding-y) var(--list-item-padding-x);
   border-radius: var(--radius-control);
   cursor: default;
-  font-size: 0.875rem;
+  font-size: var(--text-sm);
   gap: var(--item-gap);
-  line-height: 1.25rem;
+  line-height: var(--line-height-sm);
   outline: none;
   user-select: none;
 }
@@ -161,8 +161,8 @@
   align-items: center;
   color: inherit;
   cursor: text;
-  gap: calc(var(--space) * 1.5);
-  padding-block: calc(var(--space) * 1.5);
+  gap: var(--compact-gap);
+  padding-block: var(--compact-gap);
 }
 
 .dx_combobox_pills_root [data-pills-input]:focus-within,
@@ -182,14 +182,14 @@
 .dx_combobox_tags_input [data-pill] {
   display: inline-flex;
   align-items: center;
-  padding: calc(var(--space) / 2) calc(var(--space) * 2);
+  padding: var(--fine-gap) var(--control-padding-x-sm);
   border-radius: 999px;
   background: var(--surface);
   color: var(--surface-fg);
   cursor: default;
-  font-size: 0.8125rem;
+  font-size: var(--text-sm);
   gap: var(--space);
-  line-height: 1.25rem;
+  line-height: var(--line-height-sm);
 }
 
 .dx_combobox_pills_root [data-pill] button,

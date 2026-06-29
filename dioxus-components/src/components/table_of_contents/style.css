@@ -1,7 +1,7 @@
 .dx_table_of_contents {
   display: flex;
   flex-direction: column;
-  padding: calc(var(--space) * 3) 0;
+  padding: var(--surface-gap) 0;
 }
 
 .dx_table_of_contents a {
@@ -9,8 +9,8 @@
   display: block;
   padding: var(--list-item-padding-y) var(--list-item-padding-x);
   color: var(--fg-muted);
-  font-size: 0.875rem;
-  line-height: 1.25rem;
+  font-size: var(--text-sm);
+  line-height: var(--line-height-sm);
   text-decoration: none;
   outline: none;
   transition: background-color 120ms ease, color 120ms ease;

@@ -24,7 +24,7 @@ pub fn Demo() -> Element {
   margin: 0;
   margin-bottom: 0.75rem;
   color: var(--fg-muted);
-  font-size: 0.9rem;
+  font-size: var(--text-sm);
 }}
 
 .dx-virtual-list-card {{
@@ -37,13 +37,13 @@ pub fn Demo() -> Element {
 .dx-virtual-list-card h3 {{
   margin: 0 0 0.3rem;
   color: var(--fg);
-  font-size: 0.95rem;
+  font-size: var(--text-md);
 }}
 
 .dx-virtual-list-card p {{
   margin: 0;
   color: var(--fg);
-  font-size: 0.875rem;
+  font-size: var(--text-sm);
   line-height: 1.4;
 }}"# }
             VirtualList {

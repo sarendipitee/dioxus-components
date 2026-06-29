@@ -35,14 +35,14 @@
     flex-direction: column;
     border-bottom: 1px solid var(--schedule-border);
     background: var(--surface);
-    padding: calc(var(--space) * 4) calc(var(--space) * 8);
-    gap: calc(var(--spcae) * 8);
+    padding: var(--surface-padding) var(--surface-padding-xl);
+    gap: var(--surface-padding-xl);
 }
 
 .dx_schedule_view_switcher {
     display: inline-flex;
     align-items: center;
-    gap: calc(var(--space) * 1);
+    gap: var(--space);
 }
 
 .dx_schedule [data-schedule-nav] {
@@ -53,7 +53,7 @@
 .dx_schedule [data-schedule-title] {
     flex: auto;
     color: var(--surface-fg);
-    font-size: 1.25rem;
+    font-size: var(--text-lg);
 }
 
 .dx_schedule [data-schedule-title] span:first-child {
@@ -102,7 +102,7 @@
 }
 
 .dx_schedule_time_view [data-schedule-day-header] {
-    padding: calc(var(--space) * 2);
+    padding: var(--content-gap);
     border: 0;
     border-right: 1px solid var(--schedule-border);
     background: transparent;
@@ -135,7 +135,7 @@
     background: var(--surface-subtle);
     color: var(--surface-muted-fg);
     cursor: pointer;
-    font-size: 0.75rem;
+    font-size: var(--text-xs);
     text-align: left;
 }
 
@@ -176,7 +176,7 @@
     background: transparent;
     color: var(--surface-muted-fg);
     cursor: pointer;
-    font-size: 0.75rem;
+    font-size: var(--text-xs);
 }
 
 .dx_schedule_time_slot:hover,
@@ -220,7 +220,7 @@
 
 .dx_schedule_time_view [data-schedule-all-day-label] {
     color: var(--surface-muted-fg);
-    font-size: 0.6875rem;
+    font-size: var(--text-xs);
     line-height: 1;
     text-align: right;
 }
@@ -243,7 +243,7 @@
     right: 0.5rem;
     transform: translateY(-50%);
     color: var(--surface-muted-fg);
-    font-size: 0.6875rem;
+    font-size: var(--text-xs);
     line-height: 1;
     white-space: nowrap;
 }
@@ -275,12 +275,12 @@
     overflow: hidden;
     min-width: 0;
     flex-direction: column;
-    padding: calc(var(--space) * 1.5);
+    padding: var(--compact-gap);
     border: 1px solid color-mix(in srgb, var(--accent) 30%, transparent);
     border-radius: calc(var(--schedule-radius) * 0.65);
     background: color-mix(in srgb, var(--accent) 18%, var(--surface));
     color: var(--surface-fg);
-    font-size: 0.75rem;
+    font-size: var(--text-xs);
     gap: 0.125rem;
     line-height: 1.25;
     pointer-events: auto;
@@ -389,7 +389,7 @@
     border-radius: calc(var(--schedule-radius) * 0.65);
     background: color-mix(in srgb, var(--accent) 25%, var(--surface));
     color: var(--surface-fg);
-    font-size: 0.75rem;
+    font-size: var(--text-xs);
     gap: 0;
     line-height: 1.25;
     opacity: 0.85;
@@ -457,9 +457,9 @@
 }
 
 .dx_schedule_month_view [data-schedule-month-weekday] {
-    padding: calc(var(--space) * 2);
+    padding: var(--content-gap);
     color: var(--surface-muted-fg);
-    font-size: 0.75rem;
+    font-size: var(--text-xs);
     font-weight: 600;
     text-align: center;
 }
@@ -552,18 +552,18 @@
 }
 
 .dx_schedule_mobile_month_view {
-    padding: calc(var(--space) * 2);
+    padding: var(--content-gap);
 }
 
 .dx_schedule_mobile_month_view [data-schedule-mobile-month-day] {
-    padding: calc(var(--space) * 2) 0;
+    padding: var(--content-gap) 0;
     border-bottom: 1px solid var(--schedule-border);
 }
 
 .dx_schedule_year_view {
     display: grid;
-    padding: calc(var(--space) * 3);
-    gap: calc(var(--space) * 3);
+    padding: var(--surface-gap);
+    gap: var(--surface-gap);
     grid-template-columns: repeat(auto-fit, minmax(13rem, 1fr));
 }
 
@@ -571,7 +571,7 @@
     display: flex;
     min-width: 0;
     flex-direction: column;
-    padding: calc(var(--space) * 2);
+    padding: var(--content-gap);
     border: 1px solid var(--schedule-border);
     border-radius: var(--radius-surface);
     background: var(--surface);
@@ -588,7 +588,7 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
-    margin-bottom: calc(var(--space) * 2);
+    margin-bottom: var(--content-gap);
     gap: var(--space);
 }
 
@@ -599,7 +599,7 @@
 .dx_schedule_year_view [data-schedule-year-month-meta],
 .dx_schedule_year_view [data-schedule-year-weekday] {
     color: var(--surface-muted-fg);
-    font-size: 0.75rem;
+    font-size: var(--text-xs);
 }
 
 .dx_schedule_year_view [data-schedule-year-weekdays],
@@ -617,7 +617,7 @@
     justify-content: center;
     border-radius: var(--radius-control);
     color: var(--surface-fg);
-    font-size: 0.75rem;
+    font-size: var(--text-xs);
 }
 
 .dx_schedule_year_view [data-schedule-year-day][data-outside-month="true"] {
@@ -644,7 +644,7 @@
 
 .dx_schedule_year_view [data-schedule-year-day-overflow] {
     color: var(--surface-muted-fg);
-    font-size: 0.625rem;
+    font-size: var(--text-xs);
 }
 
 @media (width <= 640px) {
@@ -657,6 +657,6 @@
     }
 
     .dx_schedule [data-schedule-nav] {
-        padding: calc(var(--space) * 2);
+        padding: var(--content-gap);
     }
 }

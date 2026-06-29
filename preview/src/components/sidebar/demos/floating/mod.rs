@@ -226,7 +226,7 @@ fn TeamSwitcher(teams: &'static [Team]) -> Element {
                         },
                     }
                     Menu {
-                        div { style: "padding:0.5rem; font-size:0.75rem; opacity:0.7;",
+                        div { style: "padding:0.5rem; font-size:var(--text-xs); opacity:0.7;",
                             "Teams"
                         }
                         for (idx , team) in teams.iter().enumerate() {
@@ -236,7 +236,7 @@ fn TeamSwitcher(teams: &'static [Team]) -> Element {
                                 on_select: move |v: usize| active_team.set(v),
                                 DemoIcon {}
                                 {team.name}
-                                span { style: "margin-left:auto; font-size:0.75rem; opacity:0.7;",
+                                span { style: "margin-left:auto; font-size:var(--text-xs); opacity:0.7;",
                                     "⌘{idx + 1}"
                                 }
                             }
@@ -399,7 +399,7 @@ fn NavUser() -> Element {
                         },
                     }
                     Menu {
-                        div { style: "display:flex; align-items:center; gap:0.5rem; padding:0.375rem 0.25rem; text-align:left; font-size:0.875rem;",
+                        div { style: "display:flex; align-items:center; gap:0.5rem; padding:0.375rem 0.25rem; text-align:left; font-size:var(--text-sm);",
                             ImageAvatar {
                                 size: AvatarImageSize::Small,
                                 style: "border-radius:0.5rem;",
@@ -465,45 +465,45 @@ fn DemoSettingControls(
     rsx! {
         div { style: "display: flex; flex-direction: column; gap: 0.75rem; padding: 0.75rem; border: 1px solid var(--surface-border); border-radius: 0.75rem; background: var(--surface-hover);",
             div { style: "display: flex; align-items: center; justify-content: space-between; gap: 0.75rem; flex-wrap: wrap;",
-                span { style: "font-size: 0.75rem; font-weight: 600; color: var(--fg-muted);",
+                span { style: "font-size: var(--text-xs); font-weight: 600; color: var(--fg-muted);",
                     "Side"
                 }
                 div { style: "display: inline-flex; gap: 0.5rem;",
                     Button {
                         variant: if side() == SidebarSide::Left { ButtonVariant::Default } else { ButtonVariant::Outline },
                         onclick: move |_| side.set(SidebarSide::Left),
-                        style: "padding: 0.4rem 0.6rem; font-size: 0.75rem;",
+                        style: "padding: 0.4rem 0.6rem; font-size: var(--text-xs);",
                         "Left"
                     }
                     Button {
                         variant: if side() == SidebarSide::Right { ButtonVariant::Default } else { ButtonVariant::Outline },
                         onclick: move |_| side.set(SidebarSide::Right),
-                        style: "padding: 0.4rem 0.6rem; font-size: 0.75rem;",
+                        style: "padding: 0.4rem 0.6rem; font-size: var(--text-xs);",
                         "Right"
                     }
                 }
             }
             div { style: "display: flex; align-items: center; justify-content: space-between; gap: 0.75rem; flex-wrap: wrap;",
-                span { style: "font-size: 0.75rem; font-weight: 600; color: var(--fg-muted);",
+                span { style: "font-size: var(--text-xs); font-weight: 600; color: var(--fg-muted);",
                     "Collapse"
                 }
                 div { style: "display: inline-flex; gap: 0.5rem; flex-wrap: wrap;",
                     Button {
                         variant: if collapsible() == SidebarCollapsible::Offcanvas { ButtonVariant::Default } else { ButtonVariant::Outline },
                         onclick: move |_| collapsible.set(SidebarCollapsible::Offcanvas),
-                        style: "padding: 0.4rem 0.6rem; font-size: 0.75rem;",
+                        style: "padding: 0.4rem 0.6rem; font-size: var(--text-xs);",
                         "Offcanvas"
                     }
                     Button {
                         variant: if collapsible() == SidebarCollapsible::Icon { ButtonVariant::Default } else { ButtonVariant::Outline },
                         onclick: move |_| collapsible.set(SidebarCollapsible::Icon),
-                        style: "padding: 0.4rem 0.6rem; font-size: 0.75rem;",
+                        style: "padding: 0.4rem 0.6rem; font-size: var(--text-xs);",
                         "Icon"
                     }
                     Button {
                         variant: if collapsible() == SidebarCollapsible::None { ButtonVariant::Default } else { ButtonVariant::Outline },
                         onclick: move |_| collapsible.set(SidebarCollapsible::None),
-                        style: "padding: 0.4rem 0.6rem; font-size: 0.75rem;",
+                        style: "padding: 0.4rem 0.6rem; font-size: var(--text-xs);",
                         "None"
                     }
                 }

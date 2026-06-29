@@ -21,7 +21,7 @@ pub fn Demo() -> Element {
                 },
                 "External planning task"
             }
-            div { "data-schedule-external-drop-status": true, style: "font-size: 0.875rem;", "{message}" }
+            div { "data-schedule-external-drop-status": true, style: "font-size: var(--text-sm);", "{message}" }
             Schedule {
                 default_date: sample_date(),
                 default_view: ScheduleView::Week,

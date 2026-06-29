@@ -7,7 +7,7 @@ pub fn Demo() -> Element {
         div {
             style: "display: flex; flex-direction: column; gap: 0.75rem; width: 100%; max-width: 900px;",
             div {
-                style: "font-size: 0.875rem; color: var(--fg);",
+                style: "font-size: var(--text-sm); color: var(--fg);",
                 "Three panes share one horizontal SplitPane with two independently focusable dividers."
             }
             div {
@@ -50,7 +50,7 @@ fn Panel(title: &'static str, body: &'static str) -> Element {
     rsx! {
         div {
             style: "height: 100%; box-sizing: border-box; padding: 1rem; display: flex; flex-direction: column; gap: 0.5rem;",
-            h3 { style: "margin: 0; font-size: 1rem;", "{title}" }
+            h3 { style: "margin: 0; font-size: var(--text-md);", "{title}" }
             p { style: "margin: 0; color: var(--fg); line-height: 1.4;", "{body}" }
         }
     }

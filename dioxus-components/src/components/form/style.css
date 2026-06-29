@@ -3,19 +3,19 @@
     height: 50px;
     border: 1px solid var(--input-border);
     border-radius: var(--radius-control);
-    margin: calc(var(--space) * 2) calc(var(--space) * 4);
+    margin: var(--content-gap) var(--surface-padding);
     background: var(--input);
     color: var(--input-fg);
     cursor: pointer;
-    font-size: 14px;
+    font-size: var(--text-sm);
 }
 
 .dx_form_example button {
-    padding: calc(var(--space) * 2) calc(var(--space) * 4);
+    padding: var(--content-gap) var(--surface-padding);
     border: 1px solid var(--input-border);
     border-radius: var(--radius-control);
     background: var(--input);
     color: var(--input-fg);
     cursor: pointer;
-    font-size: 14px;
+    font-size: var(--text-sm);
 }

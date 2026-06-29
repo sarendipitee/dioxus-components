@@ -6,8 +6,8 @@
   align-items: center;
   justify-content: space-between;
   padding: 0;
-  padding-top: calc(var(--space) * 4);
-  padding-bottom: calc(var(--space) * 4);
+  padding-top: var(--surface-padding);
+  padding-bottom: var(--surface-padding);
   border: none;
   background: transparent;
   color: var(--surface-fg);

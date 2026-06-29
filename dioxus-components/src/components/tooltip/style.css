@@ -16,9 +16,9 @@
   /* z-index assigned by the overlay manager via `--overlay-z`, now portaled. */
   z-index: var(--overlay-z);
   max-width: 250px;
-  padding: calc(var(--space) * 2) calc(var(--space) * 3);
+  padding: var(--content-gap) var(--surface-gap);
   animation: dx-tooltip-fade-in 0.2s ease-in-out;
-  font-size: 14px;
+  font-size: var(--text-sm);
   line-height: 1.4;
 }
 
@@ -42,7 +42,7 @@
   position: absolute;
   bottom: 100%;
   left: 50%;
-  margin-bottom: calc(var(--space) * 2);
+  margin-bottom: var(--floating-offset);
   transform: translateX(-50%);
 }
 
@@ -57,7 +57,7 @@
   position: absolute;
   top: 50%;
   left: 100%;
-  margin-left: calc(var(--space) * 2);
+  margin-left: var(--floating-offset);
   transform: translateY(-50%);
 }
 
@@ -72,7 +72,7 @@
   position: absolute;
   top: 100%;
   left: 50%;
-  margin-top: calc(var(--space) * 2);
+  margin-top: var(--floating-offset);
   transform: translateX(-50%);
 }
 
@@ -87,7 +87,7 @@
   position: absolute;
   top: 50%;
   right: 100%;
-  margin-right: calc(var(--space) * 2);
+  margin-right: var(--floating-offset);
   transform: translateY(-50%);
 }
 

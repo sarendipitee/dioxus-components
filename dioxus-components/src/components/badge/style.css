@@ -3,14 +3,14 @@
   align-items: center;
   gap: var(--space);
   min-width: 2rem;
-  padding: calc(var(--space) / 2) calc(var(--space) * 2);
+  padding: var(--fine-gap) var(--control-padding-x-sm);
   border-radius: 99px;
-  font-size: 0.8rem;
+  font-size: var(--text-xs);
   display: inline-flex;
 }
 
 .dx_badge[padding="true"] {
-  padding: 0 calc(var(--space) * 2);
+  padding: 0 var(--control-padding-x-sm);
 }
 
 .dx_badge[data-variant="primary"] {

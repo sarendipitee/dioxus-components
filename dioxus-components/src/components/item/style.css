@@ -2,7 +2,7 @@
 .dx_item_group {
   display: flex;
   flex-direction: column;
-  gap: calc(var(--space)*4);
+  gap: var(--section-gap);
 }
 
 /* Item Separator */
@@ -18,7 +18,7 @@
   align-items: center;
   border: 1px solid transparent;
   border-radius: var(--radius-control);
-  font-size: 0.875rem;
+  font-size: var(--text-sm);
   outline: none;
   transition:
     color 0.1s ease,
@@ -63,7 +63,7 @@ a.dx_item:hover {
 }
 
 .dx_item[data-size="sm"] {
-  padding: calc(var(--space) * 3) calc(var(--space) * 4);
+  padding: var(--surface-gap) var(--surface-padding);
   gap: 0.625rem;
 }
 
@@ -73,7 +73,7 @@ a.dx_item:hover {
   flex-shrink: 0;
   align-items: center;
   justify-content: center;
-  gap: calc(var(--space) * 2);
+  gap: var(--item-gap);
 }
 
 .dx_item:has([data-slot="item-description"]) .dx_item_media {
@@ -130,7 +130,7 @@ a.dx_item:hover {
   display: flex;
   width: fit-content;
   align-items: center;
-  gap: calc(var(--space) * 2);
+  gap: var(--item-gap);
 }
 
 /* Item Description */
@@ -153,7 +153,7 @@ a.dx_item:hover {
 .dx_item_actions {
   display: flex;
   align-items: center;
-  gap: calc(var(--space) * 2);
+  gap: var(--item-gap);
 }
 
 /* Item Header & Footer */
@@ -163,5 +163,5 @@ a.dx_item:hover {
   flex-basis: 100%;
   align-items: center;
   justify-content: space-between;
-  gap: calc(var(--space) * 2);
+  gap: var(--item-gap);
 }

@@ -3,7 +3,7 @@
   width: 100%;
   min-height: 4rem;
   box-sizing: border-box;
-  padding: calc(var(--space) * 2) calc(var(--space) * 3);
+  padding: var(--input-padding-y) var(--input-padding-x-lg);
   border: none;
   border-radius: var(--radius-input);
   margin: 0;
