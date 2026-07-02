@@ -464,7 +464,7 @@ pub fn InputWrapper(props: InputWrapperProps) -> Element {
         "data-error": field.invalid,
         "data-required": required || with_asterisk,
         "data-input-id": field.id.clone(),
-        "data-input-describedby": field.described_by.clone().unwrap_or_default(),
+        "data-input-describedby": field.described_by.clone(),
     });
     let attributes = merge_attributes(vec![base, attributes]);
 
