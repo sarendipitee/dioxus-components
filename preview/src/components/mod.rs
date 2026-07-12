@@ -288,7 +288,7 @@ examples!(
     collapsible,
     color_input,
     color_picker,
-    autocomplete,
+    autocomplete[server_backed],
     combobox[controlled, disabled, dynamic, autocomplete, multi_select, tags_input, virtualized],
     context_menu,
     date_input,
