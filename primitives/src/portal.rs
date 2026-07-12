@@ -5,7 +5,11 @@ use std::collections::HashMap;
 use crate::use_effect_cleanup;
 
 #[derive(Debug, Clone, Copy, PartialEq)]
-pub struct PortalId(usize);
+pub struct PortalId {
+    id: usize,
+    content: Signal<Element>,
+    visible: Signal<bool>,
+}
 
 #[derive(Clone, Copy, PartialEq)]
 struct PortalCtx {
@@ -31,15 +35,23 @@ pub fn use_portal() -> PortalId {
         };
 
         let sig = Signal::new_in_scope(VNode::empty(), ScopeId::ROOT);
+        let visible = Signal::new_in_scope(false, ScopeId::ROOT);
         ctx.portals.write().insert(id, sig);
 
-        (sig, PortalId(id))
+        (
+            sig,
+            PortalId {
+                id,
+                content: sig,
+                visible,
+            },
+        )
     });
 
     // Cleanup the portal.
     use_effect_cleanup(move || {
         let mut ctx = consume_context::<PortalCtx>();
-        ctx.portals.write().remove(&id.0);
+        ctx.portals.write().remove(&id.id);
         sig.manually_drop();
     });
 
@@ -50,9 +62,11 @@ pub fn use_portal() -> PortalId {
 pub fn PortalIn(portal: PortalId, children: Element) -> Element {
     if let Some(mut ctx) = try_use_context::<PortalCtx>() {
         let mut portals = ctx.portals.write();
-        if let Some(portal) = portals.get_mut(&portal.0) {
-            portal.set(children);
-        }
+        let _ = portals.get_mut(&portal.id);
+        let mut content = portal.content;
+        content.set(children);
+        let mut visible = portal.visible;
+        visible.set(true);
     }
 
     rsx! {}
@@ -60,10 +74,14 @@ pub fn PortalIn(portal: PortalId, children: Element) -> Element {
 
 #[component]
 pub fn PortalOut(portal: PortalId) -> Element {
+    if !(portal.visible)() {
+        return rsx! {};
+    }
     if let Some(ctx) = try_use_context::<PortalCtx>() {
-        if let Some(children) = ctx.portals.peek().get(&portal.0) {
+        let portals = (ctx.portals)();
+        if let Some(children) = portals.get(&portal.id) {
             return rsx! {
-                {*children}
+                {children()}
             };
         }
     }

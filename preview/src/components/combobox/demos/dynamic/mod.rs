@@ -1,19 +1,28 @@
 use dioxus_components::combobox::*;
 use dioxus::prelude::*;
+use std::time::Duration;
 
 #[component]
 pub fn Demo() -> Element {
     let mut show_svelte = use_signal(|| true);
     let mut show_solid = use_signal(|| true);
+    let mut patient_loaded = use_signal(|| false);
 
     rsx! {
         div { style: "display: grid; gap: 0.75rem; max-width: 20rem;",
             div { style: "display: flex; gap: 0.5rem;",
                 button {
                     r#type: "button",
+                    tabindex: "-1",
+                    "data-overlay-dismiss-ignore": "true",
                     onpointerdown: move |event| {
                         event.prevent_default();
+                        event.stop_propagation();
                         show_svelte.toggle();
+                    },
+                    onmousedown: move |event| {
+                        event.prevent_default();
+                        event.stop_propagation();
                     },
                     onkeydown: move |event| {
                         let key = event.key();
@@ -26,9 +35,16 @@ pub fn Demo() -> Element {
                 }
                 button {
                     r#type: "button",
+                    tabindex: "-1",
+                    "data-overlay-dismiss-ignore": "true",
                     onpointerdown: move |event| {
                         event.prevent_default();
+                        event.stop_propagation();
                         show_solid.toggle();
+                    },
+                    onmousedown: move |event| {
+                        event.prevent_default();
+                        event.stop_propagation();
                     },
                     onkeydown: move |event| {
                         let key = event.key();
@@ -38,6 +54,27 @@ pub fn Demo() -> Element {
                         }
                     },
                     "Toggle SolidStart"
+                }
+                button {
+                    r#type: "button",
+                    tabindex: "-1",
+                    "data-overlay-dismiss-ignore": "true",
+                    onpointerdown: move |event| {
+                        event.prevent_default();
+                        event.stop_propagation();
+                        spawn(async move {
+                            gloo_timers::future::sleep(Duration::from_millis(150)).await;
+                            patient_loaded.set(true);
+                        });
+                    },
+                    onmousedown: move |event| {
+                        event.prevent_default();
+                        event.stop_propagation();
+                    },
+                    "Load matching patient"
+                }
+                if patient_loaded() {
+                    span { "data-testid": "dynamic-patient-loaded", "Matching patient loaded" }
                 }
             }
             Combobox::<String> {
@@ -72,6 +109,14 @@ pub fn Demo() -> Element {
                     value: "dioxus".to_string(),
                     text_value: "Dioxus",
                     "Dioxus"
+                }
+                if patient_loaded() {
+                    ComboboxOption::<String> {
+                        index: 4usize,
+                        value: "ada-lovelace".to_string(),
+                        text_value: "Ada Lovelace",
+                        "Ada Lovelace"
+                    }
                 }
             }
         }

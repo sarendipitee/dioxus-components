@@ -11,7 +11,9 @@ use dioxus_primitives::{dioxus_attributes::attributes, merge_attributes};
 use crate::input::{element_label, Input, InputBase, InputRadius, InputSize, InputVariant};
 
 #[component_styles("./style.css")]
-struct Styles;
+pub struct ComboboxStyles;
+
+use ComboboxStyles as Styles;
 
 fn use_combobox_input_id() -> String {
     static NEXT_ID: AtomicUsize = AtomicUsize::new(0);

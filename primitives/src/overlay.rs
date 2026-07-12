@@ -31,6 +31,7 @@ use crate::dioxus_core::provide_root_context;
 use crate::portal::{PortalId, PortalOut};
 use crate::{use_effect_cleanup, FOCUS_TRAP_JS};
 use dioxus::prelude::*;
+use serde::Deserialize;
 use std::sync::atomic::{AtomicUsize, Ordering};
 
 /// A unique, monotonic overlay identifier. Never reused for the lifetime of the
@@ -528,10 +529,11 @@ fn use_overlay_dismiss_stack() {
 
 /// Outside-pointerdown dismissal for the topmost dismissable entry, using the
 /// union-of-subtrees predicate. A single long-lived JS listener sends the click
-/// target id back; the Rust side resolves the current topmost entry + inside set
-/// and decides. The JS reports the closest element id under the pointer so the
-/// Rust side can run the union containment test against the live entry set
-/// (entries change between presses, so the test must be re-evaluated per event).
+/// target id, explicit dismissal exemption, and final cancellation state back;
+/// the Rust side resolves the current topmost entry + inside set and decides.
+/// The JS reports the closest element id under the pointer so the Rust side can
+/// run the union containment test against the live entry set (entries change
+/// between presses, so the test must be re-evaluated per event).
 ///
 /// Teardown protocol (mirrors floating.rs sentinel pattern): the JS side `await
 /// dioxus.recv()` blocks until the Rust cleanup closure sends a value (here
@@ -544,17 +546,31 @@ fn use_overlay_outside_dismiss(ctx: OverlayCtx) {
     crate::use_effect_with_cleanup(move || {
         let mut eval = document::eval(
             r#"
-            // Report, for each pointerdown (capture phase), the list of element
-            // ids on the path from the target up to <body>. The Rust side tests
-            // its union "inside" set against this path.
+            // Read the path in capture phase, then report in a microtask so a
+            // target/bubble handler can cancel this pointerdown before dismissal.
             const onPointer = e => {
                 const ids = [];
+                let dismissIgnore = false;
                 let node = e.target;
                 while (node && node !== document.body && node !== document.documentElement) {
                     if (node.id) ids.push(node.id);
+                    if (node instanceof Element && node.hasAttribute('data-overlay-dismiss-ignore')) {
+                        dismissIgnore = true;
+                    }
                     node = node.parentElement;
                 }
-                dioxus.send(ids);
+                queueMicrotask(() => {
+                    // Dioxus dispatches delegated handlers through synchronous
+                    // WASM work, which can flush this first microtask before the
+                    // handler's preventDefault response reaches the DOM event.
+                    queueMicrotask(() => {
+                        dioxus.send({
+                            pathIds: ids,
+                            dismissIgnore,
+                            defaultPrevented: e.defaultPrevented,
+                        });
+                    });
+                });
             };
             document.addEventListener('pointerdown', onPointer, true);
             await dioxus.recv();
@@ -562,7 +578,10 @@ fn use_overlay_outside_dismiss(ctx: OverlayCtx) {
             "#,
         );
         spawn(async move {
-            while let Ok(path_ids) = eval.recv::<Vec<String>>().await {
+            while let Ok(event) = eval.recv::<OutsidePointerEvent>().await {
+                if event.default_prevented || event.dismiss_ignore {
+                    continue;
+                }
                 // IMPORTANT: resolve the callback and drop the read guard BEFORE
                 // calling it. If on_dismiss calls back into unregister() ->
                 // entries.write(), holding the read guard alive causes a RefCell
@@ -573,7 +592,8 @@ fn use_overlay_outside_dismiss(ctx: OverlayCtx) {
                         continue;
                     };
                     let inside = inside_ids_for(&list, target);
-                    let is_inside = path_ids
+                    let is_inside = event
+                        .path_ids
                         .iter()
                         .any(|pid| inside.iter().any(|iid| iid == pid));
                     if is_inside {
@@ -592,6 +612,14 @@ fn use_overlay_outside_dismiss(ctx: OverlayCtx) {
             let _ = eval.send(true);
         }
     });
+}
+
+#[derive(Deserialize)]
+#[serde(rename_all = "camelCase")]
+struct OutsidePointerEvent {
+    path_ids: Vec<String>,
+    dismiss_ignore: bool,
+    default_prevented: bool,
 }
 
 /// Ref-counted scroll lock: lock `document.body` overflow when the count of

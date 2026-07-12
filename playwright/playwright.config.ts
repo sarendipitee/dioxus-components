@@ -4,6 +4,7 @@ import { defineConfig, devices } from "@playwright/test";
 
 const runHeaded = process.env.PLAYWRIGHT_HEADED === "1";
 const externalBaseUrl = process.env.PLAYWRIGHT_BASE_URL;
+const chromiumExecutablePath = process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE;
 const localBasePort = externalBaseUrl
   ? null
   : getLocalBasePort();
@@ -88,7 +89,12 @@ export default defineConfig({
     {
       name: "chromium",
       grepInvert: /mobile/,
-      use: { ...devices["Desktop Chrome"] },
+      use: {
+        ...devices["Desktop Chrome"],
+        ...(chromiumExecutablePath
+          ? { launchOptions: { executablePath: chromiumExecutablePath } }
+          : {}),
+      },
     },
 
     {

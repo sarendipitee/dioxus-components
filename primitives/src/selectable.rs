@@ -100,7 +100,7 @@ impl SelectableContext {
     }
 
     pub(crate) fn focused_option_id(&self) -> Option<String> {
-        let index = self.focus_state.current_focus()?;
+        let index = (self.focus_state.current_focus)()?;
         if !self.focus_state.is_enabled(index) {
             return None;
         }

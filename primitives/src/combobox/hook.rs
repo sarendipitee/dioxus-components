@@ -50,6 +50,40 @@ pub struct ComboboxSubmittedOption {
     pub index: usize,
 }
 
+#[derive(Clone, Copy, PartialEq)]
+pub(crate) struct VirtualizedComboboxNavigation {
+    count: ReadSignal<usize>,
+    visible_indices: Option<ReadSignal<Vec<usize>>>,
+}
+
+impl VirtualizedComboboxNavigation {
+    pub(crate) fn new(
+        count: ReadSignal<usize>,
+        visible_indices: Option<ReadSignal<Vec<usize>>>,
+    ) -> Self {
+        Self {
+            count,
+            visible_indices,
+        }
+    }
+
+    pub(crate) fn initial_index(self, target: ComboboxIndexTarget) -> Option<usize> {
+        match target {
+            ComboboxIndexTarget::First => self
+                .visible_indices
+                .as_ref()
+                .and_then(|indices| indices.read().first().copied())
+                .or_else(|| ((self.count)() > 0).then_some(0)),
+            ComboboxIndexTarget::Last => self
+                .visible_indices
+                .as_ref()
+                .and_then(|indices| indices.read().last().copied())
+                .or_else(|| (self.count)().checked_sub(1)),
+            _ => None,
+        }
+    }
+}
+
 /// Options for [`use_combobox`].
 #[derive(Clone, Copy)]
 pub struct UseComboboxOptions {
@@ -110,6 +144,10 @@ pub struct ComboboxStore {
     disclosure: Disclosure,
     options: Signal<Vec<ComboboxOptionState>>,
     highlighted_index: Signal<Option<usize>>,
+    pending_initial_selection: Signal<Option<ComboboxIndexTarget>>,
+    pending_initial_selection_index: Signal<Option<usize>>,
+    pending_virtual_initial_selection: Signal<Option<usize>>,
+    virtualized_navigation: Signal<Option<VirtualizedComboboxNavigation>>,
     submitted_option: Signal<Option<ComboboxSubmittedOption>>,
     target_mount: Signal<Option<Rc<MountedData>>>,
     search_mount: Signal<Option<Rc<MountedData>>>,
@@ -137,6 +175,7 @@ impl ComboboxStore {
     pub fn close_dropdown(&self, source: ComboboxDropdownEventSource) {
         if self.disclosure.close() {
             self.reset_selected_option();
+            self.clear_pending_initial_selection();
             if let Some(on_close) = self.on_dropdown_close {
                 on_close.call(source);
             }
@@ -153,6 +192,7 @@ impl ComboboxStore {
             }
             Some(false) => {
                 self.reset_selected_option();
+                self.clear_pending_initial_selection();
                 if let Some(on_close) = self.on_dropdown_close {
                     on_close.call(source);
                 }
@@ -230,6 +270,102 @@ impl ComboboxStore {
     pub fn reset_selected_option(&self) {
         let mut highlighted_index = self.highlighted_index;
         highlighted_index.set(None);
+    }
+
+    /// Requests initial option highlighting after opening. If no matching option
+    /// is registered yet, the request stays pending until a list implementation
+    /// resolves it during option registration.
+    pub fn request_initial_selection(&self, target: ComboboxIndexTarget) {
+        let mut pending = self.pending_initial_selection;
+        pending.set(Some(target));
+    }
+
+    /// Requests initial highlighting for one known option index after opening.
+    ///
+    /// The selectable root can resolve its logical focus before the combobox
+    /// store receives the corresponding option registration. Keeping this exact
+    /// index pending prevents first/last resolution from observing a partial
+    /// registration set.
+    pub(crate) fn request_initial_selection_at(&self, index: usize) {
+        let mut pending = self.pending_initial_selection_index;
+        pending.set(Some(index));
+    }
+
+    /// Returns exact logical virtual option index to highlight on open.
+    pub(crate) fn virtual_initial_selection_index(
+        &self,
+        target: ComboboxIndexTarget,
+    ) -> Option<usize> {
+        (self.virtualized_navigation)().and_then(|navigation| navigation.initial_index(target))
+    }
+
+    /// Requests initial highlighting for an exact virtual option index.
+    pub(crate) fn request_virtual_initial_selection(&self, index: usize) {
+        let mut pending = self.pending_virtual_initial_selection;
+        pending.set(Some(index));
+    }
+
+    /// Returns an unresolved initial keyboard-selection request.
+    pub fn pending_initial_selection(&self) -> Option<ComboboxIndexTarget> {
+        (self.pending_initial_selection)()
+    }
+
+    /// Returns unresolved exact virtual keyboard-selection index.
+    pub(crate) fn pending_virtual_initial_selection(&self) -> Option<usize> {
+        (self.pending_virtual_initial_selection)()
+    }
+
+    /// Retries a pending first/last selection against registered options.
+    ///
+    /// Non-virtual lists invoke this after each registration. Virtual lists
+    /// resolve through [`Self::resolve_pending_initial_selection_at`] once the
+    /// logical first/last row is materialized.
+    pub(crate) fn retry_pending_initial_selection(&self) -> Option<ComboboxOptionKey> {
+        let target = self.pending_initial_selection()?;
+        let resolved = match target {
+            ComboboxIndexTarget::First => self.select_first_option(),
+            ComboboxIndexTarget::Last => {
+                let key = last_enabled_visible(&self.options.read())?;
+                let mut highlighted_index = self.highlighted_index;
+                highlighted_index.set(Some(key.index));
+                Some(key)
+            }
+            _ => None,
+        };
+        if resolved.is_some() {
+            self.clear_pending_initial_selection();
+        }
+        resolved
+    }
+
+    /// Resolves a pending virtual-list request when its exact logical target row
+    /// registers.
+    pub(crate) fn resolve_pending_initial_selection_at(
+        &self,
+        index: usize,
+    ) -> Option<ComboboxOptionKey> {
+        (self.pending_initial_selection_index() == Some(index)
+            || self.pending_virtual_initial_selection() == Some(index))
+        .then_some(())?;
+        let resolved = self.select_option(index)?;
+        let mut pending = self.pending_initial_selection_index;
+        pending.set(None);
+        let mut virtual_pending = self.pending_virtual_initial_selection;
+        virtual_pending.set(None);
+        Some(resolved)
+    }
+
+    fn pending_initial_selection_index(&self) -> Option<usize> {
+        (self.pending_initial_selection_index)()
+    }
+
+    fn clear_pending_initial_selection(&self) {
+        let mut pending = self.pending_initial_selection;
+        pending.set(None);
+        let mut pending_index = self.pending_initial_selection_index;
+        pending_index.set(None);
+        let mut virtual_pending = self.pending_virtual_initial_selection;
+        virtual_pending.set(None);
     }
 
     /// Updates the highlighted option according to the requested target.
@@ -318,6 +454,26 @@ impl ComboboxStore {
         }
     }
 
+    pub(crate) fn register_virtualized_navigation(
+        &self,
+        navigation: VirtualizedComboboxNavigation,
+    ) {
+        let mut virtualized_navigation = self.virtualized_navigation;
+        virtualized_navigation.set(Some(navigation));
+    }
+
+    pub(crate) fn unregister_virtualized_navigation(
+        &self,
+        navigation: VirtualizedComboboxNavigation,
+    ) {
+        let mut virtualized_navigation = self.virtualized_navigation;
+        if virtualized_navigation() == Some(navigation) {
+            virtualized_navigation.set(None);
+            let mut pending = self.pending_virtual_initial_selection;
+            pending.set(None);
+        }
+    }
+
     pub(crate) fn unregister_option(&self, id: &str) {
         let mut options = self.options;
         options.write().retain(|option| option.key.id != id);
@@ -357,6 +513,10 @@ pub fn use_combobox(options: UseComboboxOptions) -> ComboboxStore {
     });
     let options_signal = use_signal(Vec::new);
     let highlighted_index = use_signal(|| None);
+    let pending_initial_selection = use_signal(|| None);
+    let pending_initial_selection_index = use_signal(|| None);
+    let pending_virtual_initial_selection = use_signal(|| None);
+    let virtualized_navigation = use_signal(|| None);
     let submitted_option = use_signal(|| None);
     let target_mount = use_signal(|| None);
     let search_mount = use_signal(|| None);
@@ -365,6 +525,10 @@ pub fn use_combobox(options: UseComboboxOptions) -> ComboboxStore {
         disclosure,
         options: options_signal,
         highlighted_index,
+        pending_initial_selection,
+        pending_initial_selection_index,
+        pending_virtual_initial_selection,
+        virtualized_navigation,
         submitted_option,
         target_mount,
         search_mount,

@@ -8,9 +8,11 @@ use crate::{
     use_animated_open, use_effect, use_effect_cleanup, use_id_or, use_unique_id,
 };
 
-#[derive(Clone, Copy, PartialEq)]
+#[derive(Clone, PartialEq)]
 pub(crate) struct ListboxContext {
     pub(crate) render: ReadSignal<bool>,
+    /// Stable identity shared by every render tree for this listbox.
+    pub(crate) id: String,
 }
 
 #[derive(Clone, Copy)]
@@ -62,11 +64,18 @@ pub(crate) fn use_listbox_container_with_open(
 
     use_context_provider(|| ListboxContext {
         render: render.into(),
+        id: id.cloned(),
     });
 
     use_effect(move || {
-        if !render.cloned() {
-            selectable.initial_focus.set(None);
+        let open = open.cloned();
+        let render = render.cloned();
+
+        if !open {
+            return;
+        }
+
+        if !render || selectable.options.read().is_empty() {
             return;
         }
 
@@ -88,8 +97,9 @@ pub(crate) fn use_listbox_option<T: Clone + PartialEq + 'static>(
     disabled: impl Fn() -> bool + Copy + 'static,
     component_name: &'static str,
 ) -> Memo<String> {
-    let generated_id = use_unique_id();
-    let id = use_id_or(generated_id, id);
+    let listbox = use_context::<ListboxContext>();
+    let listbox_id = listbox.id;
+    let id = use_memo(move || id().unwrap_or_else(|| format!("{listbox_id}-option-{}", index())));
     let mut previous_id: Signal<Option<String>> = use_signal(|| None);
     let text_option_value = value.clone();
     let text_value =

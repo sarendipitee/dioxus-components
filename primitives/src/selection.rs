@@ -108,12 +108,14 @@ fn sync_option_state(options: &mut Vec<OptionState>, option_state: OptionState) 
         .iter()
         .position(|option| option.id == option_state.id)
     {
-        if options[position].tab_index == option_state.tab_index {
-            options[position] = option_state;
-        } else {
-            options.remove(position);
-            insert_option(options, option_state);
-        }
+        options.remove(position);
+    }
+
+    if let Some(position) = options
+        .iter()
+        .position(|option| option.tab_index == option_state.tab_index)
+    {
+        options[position] = option_state;
     } else {
         insert_option(options, option_state);
     }
@@ -162,12 +164,22 @@ mod tests {
     }
 
     #[test]
-    fn sync_option_state_keeps_sorted_order_when_tab_index_decreases() {
+    fn sync_option_state_replaces_option_when_tab_index_changes() {
         let mut options = vec![option("a", 0), option("b", 1), option("c", 2)];
 
         sync_option_state(&mut options, option("c", 0));
 
-        assert_eq!(ids(&options), ["a", "c", "b"]);
-        assert_eq!(tab_indices(&options), [0, 0, 1]);
+        assert_eq!(ids(&options), ["c", "b"]);
+        assert_eq!(tab_indices(&options), [0, 1]);
+    }
+
+    #[test]
+    fn sync_option_state_replaces_previous_option_at_same_tab_index() {
+        let mut options = vec![option("a", 0), option("stale", 1), option("c", 2)];
+
+        sync_option_state(&mut options, option("replacement", 1));
+
+        assert_eq!(ids(&options), ["a", "replacement", "c"]);
+        assert_eq!(tab_indices(&options), [0, 1, 2]);
     }
 }

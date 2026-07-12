@@ -141,7 +141,8 @@
 }
 
 .dx_select_option:hover:not([data-disabled="true"]),
-.dx_select_option:focus-visible {
+.dx_select_option:focus-visible,
+.dx_select_option[data-highlighted="true"] {
   background: var(--surface-hover);
   color: var(--surface-hover-fg);
 }

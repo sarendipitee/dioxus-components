@@ -92,6 +92,7 @@ pub fn SelectList(props: SelectListProps) -> Element {
     rsx! {
         if render() {
             SelectListRegistration {
+                id: listbox.id.cloned(),
                 children: props.children.clone(),
             }
             SelectListPortaled {
@@ -111,10 +112,11 @@ pub fn SelectList(props: SelectListProps) -> Element {
 
 /// Keeps root-tree option registration alive while the visible listbox is portaled.
 #[component]
-fn SelectListRegistration(children: Element) -> Element {
+fn SelectListRegistration(id: String, children: Element) -> Element {
     let render = use_signal(|| false);
     use_context_provider(|| ListboxContext {
         render: render.into(),
+        id,
     });
 
     rsx! {
@@ -336,7 +338,7 @@ fn SelectListRendered(props: SelectListRenderedProps) -> Element {
     let should_render = props.should_render;
     let focused = props.focused;
     let overlay_z = props.overlay_z;
-    let portal_ctx = props.portal_ctx;
+    let portal_ctx_snapshot = props.portal_ctx;
     let learn_key = props.learn_key;
     let clear_typeahead = props.clear_typeahead;
     let select_current_item = props.select_current_item;
@@ -360,24 +362,43 @@ fn SelectListRendered(props: SelectListRenderedProps) -> Element {
     use_effect(use_reactive(&should_render, move |should_render| {
         render_signal.set(should_render);
     }));
-    let portal_ctx_for_provider = portal_ctx.clone();
-    let portal_set_open = portal_ctx.set_open;
-    use_context_provider(|| portal_ctx_for_provider);
+    // Context providers initialize once. Keep a portal-local signal so every
+    // root-side snapshot update reaches descendants after portal mounting.
+    let mut portal_ctx = use_context_provider(|| Signal::new(portal_ctx_snapshot.clone()));
+    use_effect(use_reactive(&portal_ctx_snapshot, move |next| {
+        portal_ctx.set(next);
+    }));
+    let portal_set_open = portal_ctx().set_open;
     use_context_provider(|| ListboxContext {
         render: render_signal.into(),
+        id: id.clone(),
     });
     let mut listbox_ref: Signal<Option<Rc<MountedData>>> = use_signal(|| None);
 
-    use_effect(move || {
+    use_effect(use_reactive(&focused, move |focused| {
         let Some(listbox_ref) = listbox_ref() else {
             return;
         };
         if focused {
             spawn(async move {
-                _ = listbox_ref.set_focus(true);
+                _ = listbox_ref.set_focus(true).await;
             });
         }
-    });
+    }));
+
+    // Floating positioning initially renders hidden. Retry focus once the
+    // positioned list becomes visible, otherwise browsers reject the first
+    // focus request made during mounting.
+    use_effect(use_reactive(&floating_visibility, move |visibility| {
+        let Some(listbox_ref) = listbox_ref() else {
+            return;
+        };
+        if focused && visibility == "visible" {
+            spawn(async move {
+                _ = listbox_ref.set_focus(true).await;
+            });
+        }
+    }));
 
     let onkeydown = move |event: KeyboardEvent| {
         let key = event.key();
@@ -468,6 +489,12 @@ fn SelectListRendered(props: SelectListRenderedProps) -> Element {
             onmounted: move |evt| {
                 let mounted = evt.data();
                 listbox_ref.set(Some(mounted.clone()));
+                if focused {
+                    let focus_target = mounted.clone();
+                    spawn(async move {
+                        _ = focus_target.set_focus(true).await;
+                    });
+                }
                 on_floating_mounted.call(mounted);
             },
             onkeydown,
@@ -504,7 +531,8 @@ mod tests {
         if !render() {
             return rsx! {};
         }
-        let ctx = use_context::<SelectPortalContext>();
+        let ctx = use_context::<Signal<SelectPortalContext>>();
+        let ctx = ctx();
         let selected = ctx.selected_values.len();
         rsx! {
             span { class: "select-ctx-probe", "selected={selected}" }

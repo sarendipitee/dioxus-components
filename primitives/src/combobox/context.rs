@@ -17,6 +17,7 @@ pub(super) struct ComboboxContext {
     pub query: Memo<String>,
     pub set_query: Callback<String>,
     pub filter: Callback<(String, String), bool>,
+    pub portal_open: Signal<bool>,
 }
 
 impl ComboboxContext {
@@ -61,26 +62,64 @@ impl ComboboxContext {
     pub fn open_with_empty_query_and_focus_first(&mut self) {
         let query = String::new();
         self.set_query.call(query.clone());
-        let initial_focus = self
-            .selectable
-            .first_matching_enabled_index(self.predicate_for(query));
-        self.selectable.initial_focus.set(initial_focus);
-        self.store.update_selected_option_index(
-            initial_focus.map_or(ComboboxIndexTarget::None, |_| ComboboxIndexTarget::First),
-        );
+        let virtual_initial_focus = self
+            .store
+            .virtual_initial_selection_index(ComboboxIndexTarget::First);
+        let initial_focus = virtual_initial_focus.or_else(|| {
+            (virtual_initial_focus.is_none())
+                .then(|| {
+                    self.selectable
+                        .first_matching_enabled_index(self.predicate_for(query))
+                })
+                .flatten()
+        });
+        if let Some(index) = initial_focus {
+            if virtual_initial_focus.is_some() {
+                self.store.request_virtual_initial_selection(index);
+                self.selectable.initial_focus.set(None);
+            } else {
+                self.store.request_initial_selection_at(index);
+                self.store.resolve_pending_initial_selection_at(index);
+                self.selectable.initial_focus.set(Some(index));
+            }
+        } else {
+            self.store
+                .request_initial_selection(ComboboxIndexTarget::First);
+            self.selectable.initial_focus.set(None);
+        }
+        self.selectable.focus_state.set_focus(initial_focus);
         self.set_open(true);
     }
 
     pub fn open_with_empty_query_and_focus_last(&mut self) {
         let query = String::new();
         self.set_query.call(query.clone());
-        let initial_focus = self
-            .selectable
-            .last_matching_enabled_index(self.predicate_for(query));
-        self.selectable.initial_focus.set(initial_focus);
-        self.store.update_selected_option_index(
-            initial_focus.map_or(ComboboxIndexTarget::None, |_| ComboboxIndexTarget::Last),
-        );
+        let virtual_initial_focus = self
+            .store
+            .virtual_initial_selection_index(ComboboxIndexTarget::Last);
+        let initial_focus = virtual_initial_focus.or_else(|| {
+            (virtual_initial_focus.is_none())
+                .then(|| {
+                    self.selectable
+                        .last_matching_enabled_index(self.predicate_for(query))
+                })
+                .flatten()
+        });
+        if let Some(index) = initial_focus {
+            if virtual_initial_focus.is_some() {
+                self.store.request_virtual_initial_selection(index);
+                self.selectable.initial_focus.set(None);
+            } else {
+                self.store.request_initial_selection_at(index);
+                self.store.resolve_pending_initial_selection_at(index);
+                self.selectable.initial_focus.set(Some(index));
+            }
+        } else {
+            self.store
+                .request_initial_selection(ComboboxIndexTarget::Last);
+            self.selectable.initial_focus.set(None);
+        }
+        self.selectable.focus_state.set_focus(initial_focus);
         self.set_open(true);
     }
 
@@ -97,7 +136,6 @@ impl ComboboxContext {
             })
             .or_else(|| self.selectable.focused_option_id())
     }
-
     pub fn focus_next_visible(&mut self) {
         self.selectable.focus_next_where(self.predicate());
         if let Some(index) = self.selectable.focus_state.current_focus() {
@@ -177,6 +215,9 @@ pub(super) struct ComboboxPortalContext {
     pub has_visible_options: bool,
     /// Whether portaled options should register themselves with root state.
     pub register_options: bool,
+    /// Logical virtual option index that resolves a pending initial keyboard
+    /// selection once materialized.
+    pub initial_selection_index: Option<usize>,
     /// Submit an option through the root combobox state.
     pub submit_index_from_mouse: Callback<usize>,
 }
@@ -200,5 +241,11 @@ impl ComboboxPortalContext {
         self.selected_values
             .iter()
             .any(|selected| selected == value)
+    }
+
+    /// Returns whether this option is the materialized target for pending
+    /// virtual initial focus.
+    pub fn is_initial_selection_index(&self, index: usize) -> bool {
+        self.initial_selection_index == Some(index)
     }
 }

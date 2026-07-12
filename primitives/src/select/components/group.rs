@@ -71,8 +71,9 @@ pub struct SelectGroupProps {
 /// ```
 #[component]
 pub fn SelectGroup(props: SelectGroupProps) -> Element {
-    let portal_ctx = try_use_context::<SelectPortalContext>();
+    let portal_ctx = try_use_context::<Signal<SelectPortalContext>>();
     let disabled = if let Some(portal_ctx) = &portal_ctx {
+        let portal_ctx = portal_ctx();
         portal_ctx.root_disabled || props.disabled
     } else {
         let ctx = use_context::<SelectContext>();

@@ -93,6 +93,11 @@ pub(super) fn use_combobox_root(
         ..Default::default()
     });
     let store_open = use_memo(move || store.dropdown_opened());
+    let mut portal_open =
+        use_hook(move || Signal::new_in_scope(store.dropdown_opened(), ScopeId::ROOT));
+    use_effect(move || {
+        portal_open.set(store.dropdown_opened());
+    });
     let selectable = use_selectable_root_with_state(
         values,
         set_value,
@@ -109,6 +114,7 @@ pub(super) fn use_combobox_root(
         query,
         set_query,
         filter,
+        portal_open,
     });
 
     use_memo(move || store.dropdown_opened())

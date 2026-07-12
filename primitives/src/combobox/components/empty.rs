@@ -20,9 +20,10 @@ pub struct ComboboxEmptyProps {
 #[component]
 pub fn ComboboxEmpty(props: ComboboxEmptyProps) -> Element {
     let render = use_context::<ListboxContext>().render;
-    let portal_ctx = try_use_context::<ComboboxPortalContext>();
+    let portal_ctx = try_use_context::<Signal<ComboboxPortalContext>>();
 
     if let Some(portal_ctx) = portal_ctx {
+        let portal_ctx = portal_ctx();
         if !render() || portal_ctx.has_visible_options {
             return rsx! {};
         }

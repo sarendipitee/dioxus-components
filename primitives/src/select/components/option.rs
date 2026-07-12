@@ -113,9 +113,10 @@ pub fn SelectOption<T: PartialEq + Clone + 'static>(props: SelectOptionProps<T>)
     let text_value_signal = ReadSignal::new(use_memo(move || text_value.clone()));
     let disabled_value = props.disabled;
     let disabled_signal = ReadSignal::new(use_memo(move || disabled_value));
-    let portal_ctx = try_use_context::<SelectPortalContext>();
+    let portal_ctx = try_use_context::<Signal<SelectPortalContext>>();
 
     if let Some(portal_ctx) = portal_ctx {
+        let portal_ctx = portal_ctx();
         let render = use_context::<ListboxContext>().render;
         let generated_id = crate::use_unique_id();
         let fallback_id = crate::use_id_or(generated_id, id_signal);
@@ -142,7 +143,7 @@ pub fn SelectOption<T: PartialEq + Clone + 'static>(props: SelectOptionProps<T>)
             selected: selected_signal.into(),
         });
 
-        use_effect(move || {
+        use_effect(use_reactive(&focused, move |focused| {
             if disabled {
                 return;
             }
@@ -154,7 +155,7 @@ pub fn SelectOption<T: PartialEq + Clone + 'static>(props: SelectOptionProps<T>)
                     _ = option_ref.set_focus(true).await;
                 });
             }
-        });
+        }));
 
         return rsx! {
             if render() {
@@ -171,6 +172,7 @@ pub fn SelectOption<T: PartialEq + Clone + 'static>(props: SelectOptionProps<T>)
                     aria_label: props.aria_label.clone(),
                     aria_roledescription: props.aria_roledescription.clone(),
                     "data-disabled": disabled,
+                    "data-highlighted": focused,
 
                     onpointerdown: move |event| {
                         pointer_select_start(&event, disabled, down_pos);
@@ -229,6 +231,7 @@ pub fn SelectOption<T: PartialEq + Clone + 'static>(props: SelectOptionProps<T>)
                 aria_label: props.aria_label.clone(),
                 aria_roledescription: props.aria_roledescription.clone(),
                 "data-disabled": (option.disabled)(),
+                "data-highlighted": (option.focused)(),
 
                 onpointerdown: move |event| {
                     pointer_select_start(&event, (option.disabled)(), option.down_pos);

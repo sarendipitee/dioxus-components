@@ -2,11 +2,12 @@
 
 use std::rc::Rc;
 
+use crate::dioxus_core::use_hook_with_cleanup;
 use dioxus::prelude::*;
 
 use super::super::{
     context::{ComboboxContext, ComboboxPortalContext},
-    hook::ComboboxDropdownEventSource,
+    hook::{ComboboxDropdownEventSource, VirtualizedComboboxNavigation},
 };
 use crate::{
     dioxus_attributes::attributes,
@@ -58,6 +59,15 @@ pub struct VirtualizedComboboxOptionsProps {
 #[component]
 pub fn VirtualizedComboboxOptions(props: VirtualizedComboboxOptionsProps) -> Element {
     let ctx = use_context::<ComboboxContext>();
+    let store = ctx.store;
+    let _navigation = use_hook_with_cleanup(
+        move || {
+            let navigation = VirtualizedComboboxNavigation::new(props.count, props.visible_indices);
+            store.register_virtualized_navigation(navigation);
+            navigation
+        },
+        move |navigation| store.unregister_virtualized_navigation(navigation),
+    );
     let open = use_memo(move || ctx.store.dropdown_opened());
     let id = use_listbox_id(props.id, ctx.selectable.list_id);
     let listbox = use_listbox_container_with_open(id, ctx.selectable, open);
@@ -138,7 +148,7 @@ fn VirtualizedComboboxOptionsPortaled(props: VirtualizedComboboxOptionsPortaledP
     let highlighted_index = props.ctx.store.highlighted_option_index();
     let root_disabled = props.ctx.selectable.disabled.cloned();
     let selected_values = props.ctx.selectable.values.read().clone();
-    let focused_index = props.ctx.selectable.focus_state.current_focus();
+    let focused_index = (props.ctx.selectable.focus_state.current_focus)();
     let options = props.ctx.selectable.options.read().clone();
     let visible_indices = props
         .props
@@ -147,6 +157,7 @@ fn VirtualizedComboboxOptionsPortaled(props: VirtualizedComboboxOptionsPortaledP
         .map(|indices| indices.read().clone());
     let count = (props.props.count)();
     let visible_count = visible_indices.as_ref().map(Vec::len).unwrap_or(count);
+    let initial_selection_index = props.ctx.store.pending_virtual_initial_selection();
     let buffer = (props.props.buffer)();
     let estimated_size = props
         .props
@@ -208,9 +219,11 @@ fn VirtualizedComboboxOptionsPortaled(props: VirtualizedComboboxOptionsPortaledP
                     visible_indices: visible_indices.clone(),
                     has_visible_options: visible_count > 0,
                     register_options: true,
+                    initial_selection_index,
                     submit_index_from_mouse,
                 },
                 highlighted_index,
+                initial_selection_index,
                 visible_indices,
                 visible_count,
                 count,
@@ -250,6 +263,7 @@ struct VirtualizedComboboxOptionsRenderedProps {
     /// Virtual window inputs snapped before `PortalIn` so the body never reads
     /// Root-owned count/filter/highlight signals across the portal boundary.
     highlighted_index: Option<usize>,
+    initial_selection_index: Option<usize>,
     visible_indices: Option<Vec<usize>>,
     visible_count: usize,
     count: usize,
@@ -282,9 +296,15 @@ fn VirtualizedComboboxOptionsRendered(props: VirtualizedComboboxOptionsRenderedP
     use_effect(move || {
         render_signal.set(should_render);
     });
-    use_context_provider(|| props.portal_ctx);
+    // Context providers initialize once. Keep a portal-local signal so every
+    // root-side snapshot update reaches descendants after portal mounting.
+    let mut portal_ctx = use_context_provider(|| Signal::new(props.portal_ctx.clone()));
+    use_effect(use_reactive(&props.portal_ctx, move |next| {
+        portal_ctx.set(next);
+    }));
     use_context_provider(|| ListboxContext {
         render: render_signal.into(),
+        id: props.id.clone(),
     });
 
     let mut scroll_offset = use_signal(|| 0u32);
@@ -295,6 +315,7 @@ fn VirtualizedComboboxOptionsRendered(props: VirtualizedComboboxOptionsRenderedP
     let count = visible_count;
     let estimated_size = props.estimated_size.max(1);
     let highlighted_index = props.highlighted_index;
+    let initial_selection_index = props.initial_selection_index;
     let render_option = props.render_option;
 
     // Reset scroll position whenever the filter changes.
@@ -413,7 +434,23 @@ fn VirtualizedComboboxOptionsRendered(props: VirtualizedComboboxOptionsRenderedP
     let window_size = ((viewport_rows / e1) as usize + 2 * buf + 1).min(count);
 
     // Desired first visible row.
-    let desired_start = (off / e1).saturating_sub(buf as u32) as usize;
+    let scroll_start = (off / e1).saturating_sub(buf as u32) as usize;
+    // Resolving a pending virtual keyboard selection clears its pending index
+    // before the highlight-driven scroll effect can update `scroll_offset`.
+    // Keep the highlighted row in the first post-resolution window until that
+    // local scroll state catches up; otherwise the target unmounts and loses
+    // its selection registration.
+    let window_anchor =
+        initial_selection_index.or_else(|| (off == 0).then_some(highlighted_index).flatten());
+    let initial_start = window_anchor
+        .and_then(|index| {
+            visible_indices
+                .as_ref()
+                .and_then(|indices| indices.iter().position(|&candidate| candidate == index))
+                .or((index < count).then_some(index))
+        })
+        .map(|index| index.saturating_sub(window_size.saturating_sub(1)));
+    let desired_start = initial_start.unwrap_or(scroll_start);
 
     // Clamp so we always emit exactly `window_size` items. At the bottom of
     // the list this shifts the window backward instead of shrinking it.

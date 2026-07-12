@@ -1,4 +1,4 @@
-import { test, expect, devices, type Page } from "@playwright/test";
+import { test, expect, devices, type Locator, type Page } from "@playwright/test";
 
 const URL = "/components/combobox";
 const demoUrl = (demo: string) =>
@@ -13,9 +13,23 @@ const content = (page: Page) =>
 const list = (page: Page) =>
     page.locator("[role='listbox'][data-state='open']");
 
+const visualStyle = (option: Locator) =>
+    option.evaluate((element) => {
+        const style = getComputedStyle(element);
+        return {
+            backgroundColor: style.backgroundColor,
+            borderColor: style.borderColor,
+            boxShadow: style.boxShadow,
+            color: style.color,
+            outlineColor: style.outlineColor,
+            outlineStyle: style.outlineStyle,
+            outlineWidth: style.outlineWidth,
+        };
+    });
+
 test("opens from the focused input with the keyboard", async ({ page }) => {
     await page.goto(URL, { timeout: 20 * 60 * 1000 });
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState("domcontentloaded");
 
     const trigger = input(page);
     await expect(trigger).toBeVisible();
@@ -29,11 +43,63 @@ test("opens from the focused input with the keyboard", async ({ page }) => {
         "data-highlighted",
         "true",
     );
+    const option = list(page).getByRole("option", { name: "Next.js" });
+    await expect(trigger).toHaveAttribute("aria-activedescendant", await option.getAttribute("id"));
+    await expect(option).toHaveAttribute("id", await trigger.getAttribute("aria-activedescendant"));
+});
+
+test("ArrowUp opens at the last option with a visual active item", async ({ page }) => {
+    await page.goto(URL, { timeout: 20 * 60 * 1000 });
+    await page.waitForLoadState("domcontentloaded");
+
+    const trigger = input(page);
+    await trigger.focus();
+    await page.keyboard.press("ArrowUp");
+
+    const dioxus = list(page).getByRole("option", { name: "Dioxus" });
+    const next = list(page).getByRole("option", { name: "Next.js" });
+    const unhighlightedStyle = await visualStyle(next);
+
+    await expect(content(page)).toBeVisible();
+    await expect(dioxus).toHaveAttribute("data-highlighted", "true");
+    await expect(next).toHaveAttribute("data-highlighted", "false");
+    await expect.poll(() => visualStyle(dioxus)).not.toEqual(unhighlightedStyle);
+    await expect(trigger).toBeFocused();
+});
+
+test("Home and End move active option and select it", async ({ page }) => {
+    await page.goto(URL, { timeout: 20 * 60 * 1000 });
+    await page.waitForLoadState("domcontentloaded");
+
+    const trigger = input(page);
+    await trigger.focus();
+    await page.keyboard.press("ArrowDown");
+
+    const next = list(page).getByRole("option", { name: "Next.js" });
+    const dioxus = list(page).getByRole("option", { name: "Dioxus" });
+
+    await page.keyboard.press("End");
+    await expect(dioxus).toHaveAttribute("data-highlighted", "true");
+    await expect(trigger).toHaveAttribute(
+        "aria-activedescendant",
+        await dioxus.getAttribute("id"),
+    );
+
+    await page.keyboard.press("Home");
+    await expect(next).toHaveAttribute("data-highlighted", "true");
+    await expect(trigger).toHaveAttribute(
+        "aria-activedescendant",
+        await next.getAttribute("id"),
+    );
+
+    await page.keyboard.press("Enter");
+    await expect(content(page)).toHaveCount(0);
+    await expect(trigger).toHaveValue("Next.js");
 });
 
 test("filters and selects with the keyboard", async ({ page }) => {
     await page.goto(URL, { timeout: 20 * 60 * 1000 });
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState("domcontentloaded");
 
     const trigger = input(page);
     await trigger.click();
@@ -60,7 +126,7 @@ test("filters and selects with the keyboard", async ({ page }) => {
 
 test("shows an empty state when no options match", async ({ page }) => {
     await page.goto(URL, { timeout: 20 * 60 * 1000 });
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState("domcontentloaded");
 
     const trigger = input(page);
     await trigger.click();
@@ -72,7 +138,7 @@ test("shows an empty state when no options match", async ({ page }) => {
 
 test("arrow keys stay on visible filtered options", async ({ page }) => {
     await page.goto(URL, { timeout: 20 * 60 * 1000 });
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState("domcontentloaded");
 
     const trigger = input(page);
     await trigger.click();
@@ -98,7 +164,7 @@ test("arrow keys stay on visible filtered options", async ({ page }) => {
 
 test("keeps filtered options in source order", async ({ page }) => {
     await page.goto(URL, { timeout: 20 * 60 * 1000 });
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState("domcontentloaded");
 
     const trigger = input(page);
     await trigger.click();
@@ -130,7 +196,7 @@ test("keeps filtered options in source order", async ({ page }) => {
 
 test("keeps filtered options during keyboard close animation", async ({ page }) => {
     await page.goto(URL, { timeout: 20 * 60 * 1000 });
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState("domcontentloaded");
 
     const trigger = input(page);
     await trigger.click();
@@ -155,7 +221,7 @@ test("keeps filtered options during keyboard close animation", async ({ page }) 
 
 test("clicking an option commits and closes", async ({ page }) => {
     await page.goto(URL, { timeout: 20 * 60 * 1000 });
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState("domcontentloaded");
 
     const trigger = input(page);
     await trigger.click();
@@ -167,7 +233,7 @@ test("clicking an option commits and closes", async ({ page }) => {
 
 test("tabbing away closes the list", async ({ page }) => {
     await page.goto(URL, { timeout: 20 * 60 * 1000 });
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState("domcontentloaded");
 
     const trigger = input(page);
     await trigger.click();
@@ -179,7 +245,7 @@ test("tabbing away closes the list", async ({ page }) => {
 
 test("disabled options are exposed but skipped by keyboard selection", async ({ page }) => {
     await page.goto(demoUrl("disabled"), { timeout: 20 * 60 * 1000 });
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState("domcontentloaded");
 
     await expect(page.getByRole("combobox", { name: "Disabled combobox" })).toBeDisabled();
 
@@ -208,7 +274,7 @@ test("disabled options are exposed but skipped by keyboard selection", async ({ 
 
 test("controlled value and controlled open stay in sync", async ({ page }) => {
     await page.goto(demoUrl("controlled"), { timeout: 20 * 60 * 1000 });
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState("domcontentloaded");
 
     const trigger = page.getByRole("combobox", { name: "Controlled framework" });
     const storedValue = page.getByTestId("combobox-controlled-value");
@@ -229,9 +295,9 @@ test("controlled value and controlled open stay in sync", async ({ page }) => {
     await expect(storedValue).toHaveText("dioxus");
 });
 
-test("dynamic option removal updates filtering and keyboard selection", async ({ page }) => {
+test("dynamic option mutation keeps list open, while an ordinary outside click dismisses it", async ({ page }) => {
     await page.goto(demoUrl("dynamic"), { timeout: 20 * 60 * 1000 });
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState("domcontentloaded");
 
     const trigger = page.getByRole("combobox", { name: "Dynamic framework" });
     const toggleSvelte = page.getByRole("button", { name: "Toggle SvelteKit" });
@@ -258,6 +324,13 @@ test("dynamic option removal updates filtering and keyboard selection", async ({
     await expect(content(page)).toBeVisible();
     await expect(trigger).toBeFocused();
 
+    await page.locator("body").dispatchEvent("pointerdown", { bubbles: true, cancelable: true });
+    await expect(content(page)).toHaveCount(0);
+
+    await trigger.click();
+    await expect(content(page)).toBeVisible();
+    await expect(trigger).toBeFocused();
+
     await page.keyboard.press("ArrowDown");
     const next = list(page).getByRole("option", { name: "Next.js" });
     await expect(next).toHaveAttribute("data-highlighted", "true");
@@ -267,9 +340,38 @@ test("dynamic option removal updates filtering and keyboard selection", async ({
     await expect(trigger).toHaveValue("Next.js");
 });
 
+test("delayed option arrival replaces empty state and supports keyboard selection", async ({ page }) => {
+    await page.goto(demoUrl("dynamic"), { timeout: 20 * 60 * 1000 });
+    await page.waitForLoadState("domcontentloaded");
+
+    const trigger = page.getByRole("combobox", { name: "Dynamic framework" });
+    await expect(trigger).toBeVisible();
+    await trigger.click();
+    await expect(list(page)).toHaveAttribute(
+        "style",
+        /--overlay-z:\s*calc\(var\(--z-overlay-base\) \+ \d+ \* var\(--z-overlay-step\)\)/,
+    );
+    await page.keyboard.type("ada");
+
+    await expect(content(page)).toHaveText("No framework found.");
+    await page.getByRole("button", { name: "Load matching patient" }).click();
+    await expect(page.getByTestId("dynamic-patient-loaded")).toBeVisible();
+
+    const ada = list(page).getByRole("option", { name: "Ada Lovelace" });
+    await expect(ada).toBeVisible();
+    await expect(content(page).getByText("No framework found.")).toHaveCount(0);
+    await expect(trigger).toBeFocused();
+
+    await page.keyboard.press("ArrowDown");
+    await expect(ada).toHaveAttribute("data-highlighted", "true");
+    await page.keyboard.press("Enter");
+    await expect(trigger).toHaveValue("Ada Lovelace");
+    await expect(content(page)).toHaveCount(0);
+});
+
 test("virtualized demo shows visible options when opened", async ({ page }) => {
     await page.goto(demoUrl("virtualized"), { timeout: 20 * 60 * 1000 });
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState("domcontentloaded");
 
     const trigger = page.getByRole("combobox", { name: "Virtualized option picker" });
     await trigger.focus();
@@ -280,11 +382,31 @@ test("virtualized demo shows visible options when opened", async ({ page }) => {
     await expect(menu).toBeVisible();
     await expect(menu.getByRole("option", { name: "Option 0", exact: true })).toBeVisible();
     await expect(menu.getByRole("option", { name: "Option 1", exact: true })).toBeVisible();
+    const activeId = await trigger.getAttribute("aria-activedescendant");
+    await expect(page.locator(`#${activeId}`)).toHaveText("Option 0");
+});
+
+test("virtualized ArrowUp opens at final logical option", async ({ page }) => {
+    await page.goto(demoUrl("virtualized"), { timeout: 20 * 60 * 1000 });
+    await page.waitForLoadState("domcontentloaded");
+
+    const trigger = page.getByRole("combobox", { name: "Virtualized option picker" });
+    await trigger.focus();
+    await page.keyboard.press("ArrowUp");
+
+    const last = list(page).getByRole("option", { name: "Option 999", exact: true });
+    await expect(last).toBeVisible();
+    await expect(last).toHaveAttribute("data-highlighted", "true");
+    await expect(trigger).toBeFocused();
+    await expect(trigger).toHaveAttribute(
+        "aria-activedescendant",
+        await last.getAttribute("id"),
+    );
 });
 
 test("virtualized demo keeps scrollHeight stable while scrolling", async ({ page }) => {
     await page.goto(demoUrl("virtualized"), { timeout: 20 * 60 * 1000 });
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState("domcontentloaded");
 
     const trigger = page.getByRole("combobox", { name: "Virtualized option picker" });
     await trigger.focus();
@@ -392,7 +514,7 @@ test("touch selection commits and closes", async ({ browser, browserName }) => {
     try {
         const page = await context.newPage();
         await page.goto(URL, { timeout: 20 * 60 * 1000 });
-        await page.waitForLoadState('networkidle');
+        await page.waitForLoadState("domcontentloaded");
 
         const trigger = input(page);
         await trigger.tap();

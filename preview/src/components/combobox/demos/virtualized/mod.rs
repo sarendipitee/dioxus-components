@@ -1,4 +1,4 @@
-use dioxus_components::combobox::*;
+use dioxus_components::combobox::{ComboboxStyles as Styles, *};
 use dioxus::prelude::*;
 use dioxus_primitives::combobox::{default_combobox_filter, VirtualizedComboboxOptions};
 
@@ -25,7 +25,7 @@ pub fn Demo() -> Element {
                 list_aria_label: "Virtualized options",
                 with_list: false,
                 VirtualizedComboboxOptions {
-                    class: "dx-combobox-list",
+                    class: Styles::dx_combobox_list,
                     aria_label: "Virtualized options",
                     count: 1000usize,
                     visible_indices: Some(visible_indices.into()),

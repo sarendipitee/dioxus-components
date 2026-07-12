@@ -36,7 +36,7 @@ pub struct ComboboxOptionsProps {
 
 /// Listbox that contains the visible options.
 ///
-/// Root-tree half: provides `ListboxContext` to the closed-branch children (so
+/// Root-tree half provides `ListboxContext` to the closed-branch children (so
 /// they register their option state without rendering) and portals the open
 /// listbox through the overlay manager.
 #[component]
@@ -51,6 +51,7 @@ pub fn ComboboxOptions(props: ComboboxOptionsProps) -> Element {
     rsx! {
         if render() {
             ComboboxOptionsRegistration {
+                id: listbox.id.cloned(),
                 children: props.children.clone(),
             }
             ComboboxOptionsPortaled {
@@ -69,10 +70,11 @@ pub fn ComboboxOptions(props: ComboboxOptionsProps) -> Element {
 
 /// Keeps root-tree option registration alive while the visible listbox is portaled.
 #[component]
-fn ComboboxOptionsRegistration(children: Element) -> Element {
+fn ComboboxOptionsRegistration(id: String, children: Element) -> Element {
     let render = use_signal(|| false);
     use_context_provider(|| ListboxContext {
         render: render.into(),
+        id,
     });
 
     rsx! {
@@ -101,7 +103,6 @@ fn ComboboxOptionsPortaled(props: ComboboxOptionsPortaledProps) -> Element {
     let open = props.open;
 
     let portal = use_portal();
-
     let on_dismiss = use_callback(move |_| {
         ctx.set_open(false);
     });
@@ -125,16 +126,14 @@ fn ComboboxOptionsPortaled(props: ComboboxOptionsPortaledProps) -> Element {
         reg.set_closing(!open());
     });
 
-    // Subscribe to `open` HERE, in the non-portaled (Root-descendant) scope, and
-    // forward the snapshot into the portaled body as a plain bool so the body
-    // never reads the Root-owned `open` Memo across the portal boundary.
-    let is_open = open();
+    // Mirror open state through a dedicated Root signal so the portaled body can
+    // update its `data-state` without reading the root-owned combobox store.
     let should_render = props.should_render;
     let content_id = id.cloned();
     let overlay_z = reg.z();
     let root_disabled = ctx.selectable.disabled.cloned();
     let selected_values = ctx.selectable.values.read().clone();
-    let focused_index = ctx.selectable.focus_state.current_focus();
+    let focused_index = (ctx.selectable.focus_state.current_focus)();
     let highlighted_index = ctx.store.highlighted_option_index();
     let options = ctx.selectable.options.read().clone();
     let visible_indices = options
@@ -172,11 +171,10 @@ fn ComboboxOptionsPortaled(props: ComboboxOptionsPortaledProps) -> Element {
     let submit_index_from_mouse = use_callback(move |index: usize| {
         submit_ctx.submit_index(index, ComboboxDropdownEventSource::Mouse);
     });
-
     rsx! {
         PortalIn { portal,
             ComboboxOptionsRendered {
-                is_open,
+                is_open: ctx.portal_open,
                 should_render,
                 id: content_id,
                 overlay_z,
@@ -191,6 +189,7 @@ fn ComboboxOptionsPortaled(props: ComboboxOptionsPortaledProps) -> Element {
                     visible_indices: Some(visible_indices),
                     has_visible_options,
                     register_options: false,
+                    initial_selection_index: None,
                     submit_index_from_mouse,
                 },
                 floating_position,
@@ -211,9 +210,9 @@ fn ComboboxOptionsPortaled(props: ComboboxOptionsPortaledProps) -> Element {
 /// Props for [`ComboboxOptionsRendered`], the portaled DOM body.
 #[derive(Props, Clone, PartialEq)]
 struct ComboboxOptionsRenderedProps {
-    /// Open snapshot threaded from the non-portaled parent — see the matching
-    /// note on `DialogPortalBodyProps::is_open`.
-    is_open: bool,
+    /// Open state shared with the portaled body so selection closes the list
+    /// without waiting for a new portal child VNode.
+    is_open: Signal<bool>,
     should_render: bool,
     /// Snapshotted in the non-portaled parent so the portaled body never reads
     /// the Root-owned listbox id memo across the portal boundary.
@@ -238,21 +237,27 @@ struct ComboboxOptionsRenderedProps {
 
 /// The rendered listbox, a direct child of `PortalIn`. Re-provides the portal
 /// combobox read model and `ListboxContext` so portaled options resolve local
-/// snapshots instead of root-owned reactive reads. Floating layout and
+/// reactive snapshots instead of root-owned reactive reads. Floating layout and
 /// `--overlay-z` are snapshotted in the non-portaled parent and forwarded here
 /// as plain values.
 #[component]
 fn ComboboxOptionsRendered(props: ComboboxOptionsRenderedProps) -> Element {
-    let is_open = props.is_open;
     let should_render = props.should_render;
 
     let mut render_signal = use_signal(|| should_render);
     use_effect(use_reactive(&should_render, move |should_render| {
         render_signal.set(should_render);
     }));
-    use_context_provider(|| props.portal_ctx);
+    let is_open = (props.is_open)();
+    // Context providers initialize once. Keep a portal-local signal so every
+    // root-side snapshot update reaches descendants after portal mounting.
+    let mut portal_ctx = use_context_provider(|| Signal::new(props.portal_ctx.clone()));
+    use_effect(use_reactive(&props.portal_ctx, move |next| {
+        portal_ctx.set(next);
+    }));
     use_context_provider(|| ListboxContext {
         render: render_signal.into(),
+        id: props.id.clone(),
     });
     let on_floating_mounted = props.on_floating_mounted;
     let z_style = props
@@ -316,7 +321,7 @@ mod tests {
     use crate::overlay::OverlayProvider;
     use dioxus::prelude::*;
 
-    /// Resolves `ComboboxPortalContext` from inside the portaled listbox. If the
+    /// Resolves portal-local `ComboboxPortalContext` from inside the portaled listbox. If the
     /// re-provide were on the wrong scope, `use_context` would panic during render.
     #[component]
     fn ComboboxCtxProbe() -> Element {
@@ -324,7 +329,8 @@ mod tests {
         if !render() {
             return rsx! {};
         }
-        let ctx = use_context::<ComboboxPortalContext>();
+        let ctx = use_context::<Signal<ComboboxPortalContext>>();
+        let ctx = ctx();
         let selected = ctx.selected_values.len();
         rsx! {
             span { class: "combobox-ctx-probe", "selected={selected}" }

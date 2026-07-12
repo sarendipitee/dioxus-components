@@ -1,4 +1,4 @@
-import { test, expect, type Page } from "@playwright/test";
+import { test, expect, type Locator, type Page } from "@playwright/test";
 
 const singleSelectTrigger = (page: Page) =>
     page.getByRole("button").filter({ hasText: /Select an option|Apple|Banana/ });
@@ -6,11 +6,61 @@ const singleSelectTrigger = (page: Page) =>
 const multiSelectTrigger = (page: Page) =>
     page.getByRole("button").filter({ hasText: /Pepperoni|Mushroom|Onion/ });
 
+const visualStyle = (option: Locator) =>
+    option.evaluate((element) => {
+        const style = getComputedStyle(element);
+        return {
+            backgroundColor: style.backgroundColor,
+            borderColor: style.borderColor,
+            boxShadow: style.boxShadow,
+            color: style.color,
+            outlineColor: style.outlineColor,
+            outlineStyle: style.outlineStyle,
+            outlineWidth: style.outlineWidth,
+        };
+    });
+
+test("keyboard focus gives Select options a visual cue", async ({ page }) => {
+    await page.goto("/components/select", { timeout: 20 * 60 * 1000 });
+
+    const selectTrigger = singleSelectTrigger(page);
+    await selectTrigger.click();
+
+    const selectMenu = page.getByRole("listbox");
+    const apple = selectMenu.getByRole("option", { name: "apple" });
+    const banana = selectMenu.getByRole("option", { name: "banana" });
+    const unfocusedStyle = await visualStyle(banana);
+
+    await page.keyboard.press("ArrowDown");
+
+    await expect(apple).toBeFocused();
+    await expect(apple).toHaveAttribute("data-highlighted", "true");
+    await expect.poll(() => visualStyle(apple)).not.toEqual(unfocusedStyle);
+});
+
+test("keyboard focus gives SelectMulti options a visual cue", async ({ page }) => {
+    await page.goto("/components/select/block#multi", { timeout: 20 * 60 * 1000 });
+
+    const selectTrigger = multiSelectTrigger(page);
+    await selectTrigger.click();
+
+    const selectMenu = page.getByRole("listbox");
+    const pepperoni = selectMenu.getByRole("option", { name: "Pepperoni" });
+    const mushroom = selectMenu.getByRole("option", { name: "Mushroom" });
+    const unfocusedStyle = await visualStyle(mushroom);
+
+    await page.keyboard.press("ArrowDown");
+
+    await expect(pepperoni).toBeFocused();
+    await expect(pepperoni).toHaveAttribute("data-highlighted", "true");
+    await expect.poll(() => visualStyle(pepperoni)).not.toEqual(unfocusedStyle);
+});
+
 test("test", async ({ page }) => {
     await page.goto("/components/select", {
         timeout: 20 * 60 * 1000,
-        waitUntil: 'networkidle'
-    }); // Increase timeout to 20 minutes
+        waitUntil: "domcontentloaded",
+    });
     // Find Select a fruit...
     let selectTrigger = singleSelectTrigger(page);
     await selectTrigger.click();

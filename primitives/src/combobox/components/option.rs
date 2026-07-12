@@ -65,9 +65,12 @@ pub fn ComboboxOption<T: PartialEq + Clone + 'static>(props: ComboboxOptionProps
     let text_value_signal = ReadSignal::new(use_memo(move || text_value.clone()));
     let disabled_value = props.disabled;
     let disabled_signal = ReadSignal::new(use_memo(move || disabled_value));
-    let portal_ctx = try_use_context::<ComboboxPortalContext>();
+    let portal_ctx = try_use_context::<Signal<ComboboxPortalContext>>();
 
     if let Some(portal_ctx) = portal_ctx {
+        // Read from portal-local signal so navigation/filter snapshots rerender
+        // options after their root-side state changes.
+        let portal_ctx = portal_ctx();
         let render = use_context::<ListboxContext>().render;
         let visible = portal_ctx.is_visible(index_value);
         let selected_value = RcPartialEqValue::new(props.value.clone());
@@ -89,6 +92,7 @@ pub fn ComboboxOption<T: PartialEq + Clone + 'static>(props: ComboboxOptionProps
         });
 
         if portal_ctx.register_options {
+            let resolves_initial_selection = portal_ctx.is_initial_selection_index(index_value);
             let option = use_selectable_option_registration(
                 portal_ctx.selectable,
                 SelectableOptionConfig {
@@ -109,9 +113,18 @@ pub fn ComboboxOption<T: PartialEq + Clone + 'static>(props: ComboboxOptionProps
                 let store = portal_ctx.store;
                 let id = option.id;
                 let disabled = option.disabled;
+                let selectable = portal_ctx.selectable;
                 move || {
                     let id_value = id.cloned();
                     store.register_option(id_value.clone(), index(), disabled(), visible, selected);
+                    if resolves_initial_selection
+                        && store
+                            .resolve_pending_initial_selection_at(index())
+                            .is_some()
+                    {
+                        let mut focus_state = selectable.focus_state;
+                        focus_state.set_focus(Some(index()));
+                    }
                     move || store.unregister_option(&id_value)
                 }
             });
@@ -233,9 +246,17 @@ pub fn ComboboxOption<T: PartialEq + Clone + 'static>(props: ComboboxOptionProps
         let id = option.id;
         let disabled = option.disabled;
         let selected = option.selected;
+        let selectable = ctx.selectable;
         move || {
             let id_value = id.cloned();
             store.register_option(id_value.clone(), index(), disabled(), visible(), selected());
+            if let Some(initial) = store
+                .resolve_pending_initial_selection_at(index())
+                .or_else(|| store.retry_pending_initial_selection())
+            {
+                let mut focus_state = selectable.focus_state;
+                focus_state.set_focus(Some(initial.index));
+            }
             move || store.unregister_option(&id_value)
         }
     });
