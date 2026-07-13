@@ -1272,6 +1272,7 @@ mod tests {
         let trigger_ref = use_signal(|| None);
         let overlay_id = use_signal(|| None);
         let checked = use_signal(|| true);
+        let initial_focus = use_signal(|| None);
         let radio_value = use_signal(|| Some("one".to_string()));
 
         use_context_provider(|| MenuContext {
@@ -1279,7 +1280,7 @@ mod tests {
             set_open,
             disabled,
             focus,
-            initial_focus: use_signal(|| None),
+            initial_focus,
             trigger_id,
             trigger_ref,
             overlay_id,
