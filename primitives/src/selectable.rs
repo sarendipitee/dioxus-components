@@ -56,12 +56,6 @@ pub(crate) struct SelectableOption<T: Clone + PartialEq + 'static> {
     pub(crate) value: T,
 }
 
-#[derive(Clone, Copy)]
-pub(crate) struct SelectableRegisteredOption {
-    pub(crate) id: Memo<String>,
-    pub(crate) disabled: Memo<bool>,
-    pub(crate) down_pos: Signal<Option<(f64, f64)>>,
-}
 
 pub(crate) struct SelectableOptionConfig<T: Clone + PartialEq + 'static> {
     pub(crate) id: ReadSignal<Option<String>>,
@@ -347,38 +341,6 @@ pub(crate) fn use_selectable_option<T: Clone + PartialEq + 'static>(
     }
 }
 
-pub(crate) fn use_selectable_option_registration<T: Clone + PartialEq + 'static>(
-    selectable: SelectableContext,
-    option: SelectableOptionConfig<T>,
-    root_disabled: bool,
-) -> SelectableRegisteredOption {
-    let SelectableOptionConfig {
-        id,
-        index,
-        value,
-        text_value,
-        option_disabled,
-        component_name,
-    } = option;
-    let disabled = use_memo(move || root_disabled || option_disabled.cloned());
-    let id = use_listbox_option(
-        id,
-        index,
-        value,
-        text_value,
-        selectable.options,
-        move || disabled.cloned(),
-        component_name,
-    );
-    use_focus_entry_disabled(selectable.focus_state, index, move || disabled.cloned());
-    let down_pos: Signal<Option<(f64, f64)>> = use_signal(|| None);
-
-    SelectableRegisteredOption {
-        id,
-        disabled,
-        down_pos,
-    }
-}
 
 pub(crate) fn pointer_select_start(
     event: &Event<PointerData>,
