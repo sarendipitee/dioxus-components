@@ -3,16 +3,18 @@
 use dioxus::prelude::*;
 
 use super::super::{
-    context::{ComboboxContext, ComboboxPortalContext},
+    context::{
+        ComboboxContext, ComboboxPortalContext, ComboboxPortalOptionRegistration,
+    },
     hook::ComboboxDropdownEventSource,
 };
 use crate::{
     listbox::{ListboxContext, ListboxItemIndicator},
     selectable::{
         pointer_select_cancel, pointer_select_commit, pointer_select_start, use_selectable_option,
-        use_selectable_option_registration, RcPartialEqValue, SelectableOptionConfig,
+        RcPartialEqValue, SelectableOptionConfig,
     },
-    selection::option_text_value,
+    selection::{option_text_value, OptionState},
     use_effect_with_cleanup,
 };
 
@@ -71,7 +73,8 @@ pub fn ComboboxOption<T: PartialEq + Clone + 'static>(props: ComboboxOptionProps
         // Read from portal-local signal so navigation/filter snapshots rerender
         // options after their root-side state changes.
         let portal_ctx = portal_ctx();
-        let render = use_context::<ListboxContext>().render;
+        let listbox = use_context::<ListboxContext>();
+        let render = listbox.render;
         let visible = portal_ctx.is_visible(index_value);
         let selected_value = RcPartialEqValue::new(props.value.clone());
         let selected = portal_ctx.is_selected(&selected_value);
@@ -92,40 +95,41 @@ pub fn ComboboxOption<T: PartialEq + Clone + 'static>(props: ComboboxOptionProps
         });
 
         if portal_ctx.register_options {
-            let resolves_initial_selection = portal_ctx.is_initial_selection_index(index_value);
-            let option = use_selectable_option_registration(
-                portal_ctx.selectable,
-                SelectableOptionConfig {
-                    id: id_signal,
-                    index,
-                    value: props.value.clone(),
-                    text_value: text_value_signal,
-                    option_disabled: disabled_signal,
-                    component_name: "ComboboxOption",
-                },
-                portal_ctx.root_disabled,
-            );
-            let disabled = (option.disabled)();
-            let id = option.id;
-            let down_pos = option.down_pos;
+            let listbox_id = listbox.id.clone();
+            let id = use_memo(move || {
+                id_signal()
+                    .unwrap_or_else(|| format!("{listbox_id}-option-{}", index()))
+            });
+            let disabled = disabled_snapshot;
+            let registration_value = props.value.clone();
+            let option_value = props.value.clone();
+            let text_value_override = props.text_value.clone();
+            let text_value = use_memo(move || {
+                option_text_value(
+                    &option_value,
+                    text_value_override.clone(),
+                    "ComboboxOption",
+                )
+            });
+            let down_pos: Signal<Option<(f64, f64)>> = use_signal(|| None);
 
             use_effect_with_cleanup({
-                let store = portal_ctx.store;
-                let id = option.id;
-                let disabled = option.disabled;
-                let selectable = portal_ctx.selectable;
+                let register_option = portal_ctx.register_option;
+                let unregister_option = portal_ctx.unregister_option;
                 move || {
-                    let id_value = id.cloned();
-                    store.register_option(id_value.clone(), index(), disabled(), visible, selected);
-                    if resolves_initial_selection
-                        && store
-                            .resolve_pending_initial_selection_at(index())
-                            .is_some()
-                    {
-                        let mut focus_state = selectable.focus_state;
-                        focus_state.set_focus(Some(index()));
-                    }
-                    move || store.unregister_option(&id_value)
+                    let registration = ComboboxPortalOptionRegistration {
+                        option: OptionState {
+                            tab_index: index(),
+                            value: RcPartialEqValue::new(registration_value.clone()),
+                            text_value: text_value.cloned(),
+                            id: id.cloned(),
+                            disabled,
+                        },
+                        visible,
+                        selected,
+                    };
+                    register_option.call(registration.clone());
+                    move || unregister_option.call(registration)
                 }
             });
 
@@ -144,11 +148,9 @@ pub fn ComboboxOption<T: PartialEq + Clone + 'static>(props: ComboboxOptionProps
                         "data-disabled": disabled,
                         "data-selected": selected,
 
-                        onmouseenter: move |_| {
+                        onmouseenter: move |_: Event<MouseData>| {
                             if !disabled {
-                                let mut focus_state = portal_ctx.selectable.focus_state;
-                                focus_state.set_focus(Some(index_value));
-                                portal_ctx.store.select_option(index_value);
+                                portal_ctx.hover_option.call(index_value);
                             }
                         },
                         onpointerdown: move |event| {
@@ -193,11 +195,9 @@ pub fn ComboboxOption<T: PartialEq + Clone + 'static>(props: ComboboxOptionProps
                     "data-disabled": disabled,
                     "data-selected": selected,
 
-                    onmouseenter: move |_| {
+                    onmouseenter: move |_: Event<MouseData>| {
                         if !disabled {
-                            let mut focus_state = portal_ctx.selectable.focus_state;
-                            focus_state.set_focus(Some(index_value));
-                            portal_ctx.store.select_option(index_value);
+                            portal_ctx.hover_option.call(index_value);
                         }
                     },
                     onpointerdown: move |event| {

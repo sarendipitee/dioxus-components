@@ -13,7 +13,7 @@ pub fn Demo() -> Element {
     ];
 
     rsx! {
-        div { class: "dx-combobox-demo-stack",
+        div {
             MultiSelect::<String> {
                 values,
                 on_values_change: move |next| values.set(Some(next)),
@@ -30,7 +30,7 @@ pub fn Demo() -> Element {
                     }
                 }
             }
-            p { class: "dx-combobox-demo-value",
+            p {
                 "Selected: {values().unwrap_or_default().join(\", \")}"
             }
         }

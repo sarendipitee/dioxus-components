@@ -9,7 +9,7 @@ pub fn Demo() -> Element {
     let mut selected = use_signal(|| vec!["Dioxus".to_string(), "Rust".to_string()]);
 
     rsx! {
-        div { class: "dx-combobox-demo-stack",
+        div {
             Combobox::<String> {
                 on_value_change: move |val: Option<String>| {
                     if let Some(v) = val {
@@ -56,7 +56,7 @@ pub fn Demo() -> Element {
                     }
                 }
             }
-            p { class: "dx-combobox-demo-value",
+            p {
                 "Selected: {selected().join(\", \")}"
             }
         }

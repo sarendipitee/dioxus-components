@@ -5,7 +5,7 @@ use std::rc::Rc;
 use dioxus::prelude::*;
 
 use super::super::{
-    context::{ComboboxContext, ComboboxPortalContext},
+    context::{ComboboxContext, ComboboxPortalContext, ComboboxPortalOptionRegistration},
     hook::ComboboxDropdownEventSource,
 };
 use crate::{
@@ -171,6 +171,15 @@ fn ComboboxOptionsPortaled(props: ComboboxOptionsPortaledProps) -> Element {
     let submit_index_from_mouse = use_callback(move |index: usize| {
         submit_ctx.submit_index(index, ComboboxDropdownEventSource::Mouse);
     });
+    let mut hover_focus_state = ctx.selectable.focus_state;
+    let hover_store = ctx.store;
+    let hover_option = use_callback(move |index: usize| {
+        hover_focus_state.set_focus(Some(index));
+        hover_store.select_option(index);
+    });
+    let register_option = use_callback(move |_: ComboboxPortalOptionRegistration| {});
+    let unregister_option = use_callback(move |_: ComboboxPortalOptionRegistration| {});
+
     rsx! {
         PortalIn { portal,
             ComboboxOptionsRendered {
@@ -179,8 +188,7 @@ fn ComboboxOptionsPortaled(props: ComboboxOptionsPortaledProps) -> Element {
                 id: content_id,
                 overlay_z,
                 portal_ctx: ComboboxPortalContext {
-                    selectable: ctx.selectable,
-                    store: ctx.store,
+                    hover_option,
                     root_disabled,
                     selected_values,
                     focused_index,
@@ -189,7 +197,8 @@ fn ComboboxOptionsPortaled(props: ComboboxOptionsPortaledProps) -> Element {
                     visible_indices: Some(visible_indices),
                     has_visible_options,
                     register_options: false,
-                    initial_selection_index: None,
+                    register_option,
+                    unregister_option,
                     submit_index_from_mouse,
                 },
                 floating_position,
@@ -316,7 +325,7 @@ mod tests {
     //! consumer resolves the portal-local combobox read model up the *portaled*
     //! render chain, and the panel carries the manager-assigned `--overlay-z`.
     use super::super::super::context::ComboboxPortalContext;
-    use super::super::{Combobox, ComboboxInput, ComboboxOptions};
+    use super::super::{Combobox, ComboboxInput, ComboboxOption, ComboboxOptions};
     use crate::listbox::ListboxContext;
     use crate::overlay::OverlayProvider;
     use dioxus::prelude::*;
@@ -334,6 +343,26 @@ mod tests {
         let selected = ctx.selected_values.len();
         rsx! {
             span { class: "combobox-ctx-probe", "selected={selected}" }
+        }
+    }
+
+
+    #[component]
+    fn OpenHoverComboboxApp() -> Element {
+        rsx! {
+            OverlayProvider {
+                Combobox::<String> {
+                    default_open: ReadSignal::new(Signal::new(true)),
+                    ComboboxInput {}
+                    ComboboxOptions {
+                        ComboboxOption::<String> {
+                            index: 0,
+                            value: "apple",
+                            "Apple"
+                        }
+                    }
+                }
+            }
         }
     }
 
@@ -375,6 +404,23 @@ mod tests {
         assert!(
             html.contains("--overlay-z: calc(var(--z-overlay-base)"),
             "combobox listbox did not receive manager --overlay-z: {html}"
+        );
+    }
+
+    #[test]
+    fn portaled_option_renders_mouseenter_hover_handler() {
+        let mut dom = VirtualDom::new(OpenHoverComboboxApp);
+        let mut mutations = dom.rebuild_to_vec();
+        for _ in 0..8 {
+            mutations.edits.extend(dom.render_immediate_to_vec().edits);
+        }
+
+        assert!(
+            mutations.edits.iter().any(|mutation| matches!(
+                mutation,
+                dioxus::core::Mutation::NewEventListener { name, .. } if name == "mouseenter"
+            )),
+            "portaled option did not register its mouseenter hover handler"
         );
     }
 }

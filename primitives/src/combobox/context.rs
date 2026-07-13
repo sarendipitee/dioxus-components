@@ -192,13 +192,19 @@ impl ComboboxContext {
     }
 }
 
+/// Root-side registration payload for a materialized virtual option.
+#[derive(Clone, PartialEq)]
+pub(super) struct ComboboxPortalOptionRegistration {
+    pub option: OptionState,
+    pub visible: bool,
+    pub selected: bool,
+}
+
 /// Portal-local read model for combobox list descendants.
 #[derive(Clone, PartialEq)]
 pub(super) struct ComboboxPortalContext {
-    /// Root selectable handle, used only for option registration and mutations.
-    pub selectable: SelectableContext,
-    /// Root combobox store handle, used only for option registration and mutations.
-    pub store: ComboboxStore,
+    /// Focus and highlight an option through root-owned combobox state.
+    pub hover_option: Callback<usize>,
     /// Whether the root combobox is disabled.
     pub root_disabled: bool,
     /// Selected values snapshotted before entering the portal.
@@ -215,9 +221,10 @@ pub(super) struct ComboboxPortalContext {
     pub has_visible_options: bool,
     /// Whether portaled options should register themselves with root state.
     pub register_options: bool,
-    /// Logical virtual option index that resolves a pending initial keyboard
-    /// selection once materialized.
-    pub initial_selection_index: Option<usize>,
+    /// Register a materialized virtual option through root-owned state.
+    pub register_option: Callback<ComboboxPortalOptionRegistration>,
+    /// Remove a materialized virtual option through root-owned state.
+    pub unregister_option: Callback<ComboboxPortalOptionRegistration>,
     /// Submit an option through the root combobox state.
     pub submit_index_from_mouse: Callback<usize>,
 }
@@ -243,9 +250,4 @@ impl ComboboxPortalContext {
             .any(|selected| selected == value)
     }
 
-    /// Returns whether this option is the materialized target for pending
-    /// virtual initial focus.
-    pub fn is_initial_selection_index(&self, index: usize) -> bool {
-        self.initial_selection_index == Some(index)
-    }
 }

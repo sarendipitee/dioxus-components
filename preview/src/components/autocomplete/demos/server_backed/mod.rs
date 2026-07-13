@@ -50,7 +50,16 @@ pub fn Demo() -> Element {
     let mut request_id = use_signal(|| 0u64);
 
     rsx! {
-        div { class: "dx-combobox-demo-stack", style: "max-width: 24rem;",
+        div { style: "width: 24rem;",
+            p {
+                if loading() {
+                    "Simulating a 350 ms server response..."
+                } else if query().trim().is_empty() {
+                    "Search is idle."
+                } else {
+                    "Server returned {results().len()} result(s)."
+                }
+            }
             Autocomplete {
                 value: Some(value.into()),
                 on_value_change: move |next| value.set(next),
@@ -98,16 +107,7 @@ pub fn Demo() -> Element {
                     }
                 }
             }
-            p { class: "dx-combobox-demo-value",
-                if loading() {
-                    "Simulating a 350 ms server response..."
-                } else if query().trim().is_empty() {
-                    "Search is idle."
-                } else {
-                    "Server returned {results().len()} result(s)."
-                }
-            }
-            p { class: "dx-combobox-demo-value",
+            p {
                 "Selected: {value().unwrap_or_else(|| \"none\".to_string())}"
             }
         }

@@ -6,7 +6,9 @@ use crate::dioxus_core::use_hook_with_cleanup;
 use dioxus::prelude::*;
 
 use super::super::{
-    context::{ComboboxContext, ComboboxPortalContext},
+    context::{
+        ComboboxContext, ComboboxPortalContext, ComboboxPortalOptionRegistration,
+    },
     hook::{ComboboxDropdownEventSource, VirtualizedComboboxNavigation},
 };
 use crate::{
@@ -17,6 +19,7 @@ use crate::{
     overlay::{use_overlay_registration, OverlayKind, OverlayRegistration, RegisterArgs},
     portal::{use_portal, PortalIn},
     ContentAlign, ContentSide,
+    selection::{remove_option, sync_option},
 };
 
 /// Props for [`VirtualizedComboboxOptions`].
@@ -200,6 +203,43 @@ fn VirtualizedComboboxOptionsPortaled(props: VirtualizedComboboxOptionsPortaledP
     let submit_index_from_mouse = use_callback(move |index: usize| {
         submit_ctx.submit_index(index, ComboboxDropdownEventSource::Mouse);
     });
+    let mut hover_focus_state = props.ctx.selectable.focus_state;
+    let hover_store = props.ctx.store;
+    let hover_option = use_callback(move |index: usize| {
+        hover_focus_state.set_focus(Some(index));
+        hover_store.select_option(index);
+    });
+    let mut registration_selectable = props.ctx.selectable;
+    let registration_store = props.ctx.store;
+    let register_option = use_callback(move |registration: ComboboxPortalOptionRegistration| {
+        let option = registration.option;
+        let index = option.tab_index;
+        let disabled = option.disabled;
+        sync_option(registration_selectable.options, option.clone());
+        registration_selectable
+            .focus_state
+            .add_update_item(index, disabled);
+        registration_store.register_option(
+            option.id,
+            index,
+            disabled,
+            registration.visible,
+            registration.selected,
+        );
+        if let Some(resolved) = registration_store.resolve_pending_initial_selection_at(index) {
+            registration_selectable
+                .focus_state
+                .set_focus(Some(resolved.index));
+        }
+    });
+    let mut unregister_selectable = props.ctx.selectable;
+    let unregister_store = props.ctx.store;
+    let unregister_option = use_callback(move |registration: ComboboxPortalOptionRegistration| {
+        let option = registration.option;
+        remove_option(unregister_selectable.options, &option.id);
+        unregister_selectable.focus_state.remove_item(option.tab_index);
+        unregister_store.unregister_option(&option.id);
+    });
 
     rsx! {
         PortalIn { portal,
@@ -209,8 +249,7 @@ fn VirtualizedComboboxOptionsPortaled(props: VirtualizedComboboxOptionsPortaledP
                 overlay_z,
                 should_render,
                 portal_ctx: ComboboxPortalContext {
-                    selectable: props.ctx.selectable,
-                    store: props.ctx.store,
+                    hover_option,
                     root_disabled,
                     selected_values,
                     focused_index,
@@ -219,7 +258,8 @@ fn VirtualizedComboboxOptionsPortaled(props: VirtualizedComboboxOptionsPortaledP
                     visible_indices: visible_indices.clone(),
                     has_visible_options: visible_count > 0,
                     register_options: true,
-                    initial_selection_index,
+                    register_option,
+                    unregister_option,
                     submit_index_from_mouse,
                 },
                 highlighted_index,
@@ -533,4 +573,58 @@ async fn sync_scroll(container_id: String, scroll_top: u32) {
     );
     let _ = eval.send(container_id);
     let _ = eval.send(scroll_top);
+}
+
+#[cfg(test)]
+mod tests {
+    use super::super::{
+        Combobox, ComboboxInput, ComboboxOption, VirtualizedComboboxOptions,
+    };
+    use crate::overlay::OverlayProvider;
+    use dioxus::prelude::*;
+
+
+    #[component]
+    fn OpenVirtualizedHoverComboboxApp() -> Element {
+        let count = ReadSignal::new(Signal::new(1));
+        let render_option = use_callback(move |index: usize| {
+            rsx! {
+                ComboboxOption::<String> {
+                    index,
+                    value: "apple",
+                    "Apple"
+                }
+            }
+        });
+
+        rsx! {
+            OverlayProvider {
+                Combobox::<String> {
+                    default_open: ReadSignal::new(Signal::new(true)),
+                    ComboboxInput {}
+                    VirtualizedComboboxOptions {
+                        count,
+                        render_option,
+                    }
+                }
+            }
+        }
+    }
+
+    #[test]
+    fn portaled_virtualized_option_renders_mouseenter_hover_handler() {
+        let mut dom = VirtualDom::new(OpenVirtualizedHoverComboboxApp);
+        let mut mutations = dom.rebuild_to_vec();
+        for _ in 0..8 {
+            mutations.edits.extend(dom.render_immediate_to_vec().edits);
+        }
+
+        assert!(
+            mutations.edits.iter().any(|mutation| matches!(
+                mutation,
+                dioxus::core::Mutation::NewEventListener { name, .. } if name == "mouseenter"
+            )),
+            "virtualized portaled option did not register its mouseenter hover handler"
+        );
+    }
 }

@@ -15,7 +15,7 @@ pub fn Demo() -> Element {
     ];
 
     rsx! {
-        div { class: "dx-combobox-demo-stack",
+        div {
             Autocomplete {
                 value: Some(value.into()),
                 on_value_change: move |next| value.set(next),
@@ -30,7 +30,7 @@ pub fn Demo() -> Element {
                     }
                 }
             }
-            p { class: "dx-combobox-demo-value",
+            p {
                 "Selected: {value().unwrap_or_else(|| \"none\".to_string())}"
             }
         }
