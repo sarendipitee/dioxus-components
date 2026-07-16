@@ -1,0 +1,6 @@
+{
+  "database": "beads.db",
+  "backend": "sqlite",
+  "sqlite_path": "beads.db",
+  "project_id": "081c4a1d-73ac-42fc-b8dc-1f34bed9a280"
+}
