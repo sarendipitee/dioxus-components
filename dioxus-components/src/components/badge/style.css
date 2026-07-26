@@ -7,6 +7,7 @@
   border-radius: 99px;
   font-size: var(--text-xs);
   display: inline-flex;
+	line-height: 2;
 }
 
 .dx_badge[padding="true"] {
