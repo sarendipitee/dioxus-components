@@ -15,13 +15,12 @@ use dioxus_primitives::r#virtual::{
 use dioxus_primitives::TextOrElement;
 
 use crate::components::{
-    Button, ButtonSize, ButtonVariant, Checkbox, ComboboxEmpty, ComboboxOption,
-    MultiSelect as ComboboxMultiSelect, Pagination, PaginationContent, PaginationFirst,
-    PaginationItem, PaginationLast, PaginationNext, PaginationPrevious, Popover, PopoverContent,
-    PopoverTrigger, Select, SelectOption, Skeleton, TextInput, Tooltip, TooltipContent,
-    TooltipTrigger,
+    Button, ButtonSize, ButtonVariant, Checkbox, DropdownMenu, DropdownMenuTrigger, Menu,
+    MenuCheckboxItem, MenuItem, MenuItemIndicator, MenuRadioGroup, MenuRadioItem, MenuSub,
+    MenuSubContent, MenuSubTrigger, Pagination, PaginationContent, PaginationFirst, PaginationItem,
+    PaginationLast, PaginationNext, PaginationPrevious, Popover, PopoverContent, PopoverTrigger,
+    Select, SelectOption, Skeleton, TextInput, Tooltip, TooltipContent, TooltipTrigger,
 };
-use crate::input::InputWrapper;
 
 #[component_styles("./style.css")]
 struct Styles;
@@ -832,6 +831,7 @@ impl Default for DataTableVirtualization {
 }
 
 /// Preset density options for table padding and row height rhythm.
+
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
 pub enum DataTableDensity {
     /// Default density matching existing styles.
@@ -1891,7 +1891,7 @@ fn render_data_row<T: Clone + PartialEq + 'static>(
                     class: Styles::dx_data_table_expansion_cell,
                     onclick: move |event: MouseEvent| event.stop_propagation(),
                     Button {
-                        variant: ButtonVariant::Outline,
+                        variant: ButtonVariant::Ghost,
                         size: ButtonSize::Sm,
                         class: Styles::dx_data_table_icon_button,
                         r#type: "button",
@@ -2558,22 +2558,26 @@ fn render_filter_menu<T: Clone + PartialEq + 'static>(
     actions: &DataTableActions,
 ) -> Element {
     rsx! {
-        Popover { class: Styles::dx_data_table_filter_menu,
-            PopoverTrigger { class: "dx--trigger", "aria-label": "Add filter",
+        DropdownMenu { class: Styles::dx_data_table_filter_menu,
+            DropdownMenuTrigger { "aria-label": "Add filter",
                 Button { variant: ButtonVariant::Outline,
                     Plus { size: "14", "aria-hidden": "true" }
                     "Filter"
                 }
             }
-            PopoverContent { class: Styles::dx_data_table_filter_options,
-                for column in columns.iter().filter(|column| column.filter.is_some()) {
-                    {render_filter_control(column, state, actions)}
+            Menu { class: Styles::dx_data_table_filter_options,
+                for (index, column) in columns
+                    .iter()
+                    .filter(|column| column.filter.is_some())
+                    .enumerate()
+                {
+                    {render_filter_submenu(column, index, state, actions)}
                 }
-                Button {
-                    variant: ButtonVariant::Ghost,
-                    size: ButtonSize::Sm,
+                MenuItem::<String> {
+                    value: "reset-filters",
+                    index: columns.iter().filter(|column| column.filter.is_some()).count(),
                     disabled: state.filters.is_empty() && state.global_filter.is_none(),
-                    onclick: {
+                    on_select: {
                         let actions = actions.clone();
                         move |_| actions.reset_filters.call(())
                     },
@@ -2730,8 +2734,9 @@ fn render_table_settings<T: Clone + PartialEq + 'static>(
     }
 }
 
-fn render_filter_control<T: Clone + PartialEq + 'static>(
+fn render_filter_submenu<T: Clone + PartialEq + 'static>(
     column: &DataTableColumn<T>,
+    index: usize,
     state: &DataTableState,
     actions: &DataTableActions,
 ) -> Element {
@@ -2741,167 +2746,150 @@ fn render_filter_control<T: Clone + PartialEq + 'static>(
         return rsx! {};
     };
 
-    let control = match column_filter {
+    let content = match column_filter {
         DataTableColumnFilter::Text | DataTableColumnFilter::Custom(_) => {
             let value = match filter {
                 Some(DataTableFilterValue::Text(value)) => value.clone(),
                 _ => String::new(),
             };
             rsx! {
-                TextInput {
-                    class: Styles::dx_data_table_input,
-                    value,
-                    "aria-label": "Filter column",
-                    oninput: {
-                        let actions = actions.clone();
-                        let column_id = column.id.clone();
-                        move |event: FormEvent| {
-                            let value = event.value();
-                            actions
-                                .update_state
-                                .call(DataTableAction::SetFilter {
+                div {
+                    class: Styles::dx_data_table_filter_editor,
+                    onpointerdown: move |event| event.stop_propagation(),
+                    onkeydown: move |event| event.stop_propagation(),
+                    TextInput {
+                        class: Styles::dx_data_table_input,
+                        value,
+                        placeholder: "Filter {label}",
+                        "aria-label": "Filter {label}",
+                        oninput: {
+                            let actions = actions.clone();
+                            let column_id = column.id.clone();
+                            move |event: FormEvent| {
+                                let value = event.value();
+                                actions.update_state.call(DataTableAction::SetFilter {
                                     column: column_id.clone(),
                                     value: (!value.is_empty())
                                         .then_some(DataTableFilterValue::Text(value)),
                                 });
-                        }
-                    },
+                            }
+                        },
+                    }
                 }
             }
         }
         DataTableColumnFilter::Select { options } => {
-            let value = match filter {
-                Some(DataTableFilterValue::Option(value)) => value.clone(),
-                _ => String::new(),
+            let selected = match filter {
+                Some(DataTableFilterValue::Option(value)) => Some(value.clone()),
+                _ => None,
             };
             rsx! {
-                Select::<String> {
-                    class: Styles::dx_data_table_select,
-                    value: Some(ReadSignal::new(Signal::new(Some(value)))),
-                    "aria-label": "Filter column",
+                MenuRadioGroup::<String> {
+                    value: selected.clone().or_else(|| Some(String::new())),
                     on_value_change: {
                         let actions = actions.clone();
                         let column_id = column.id.clone();
-                        move |value: Option<String>| {
-                            actions
-                                .update_state
-                                .call(DataTableAction::SetFilter {
-                                    column: column_id.clone(),
-                                    value: value
-                                        .filter(|value| !value.is_empty())
-                                        .map(DataTableFilterValue::Option),
-                                });
-                        }
+                        move |value: String| actions.update_state.call(DataTableAction::SetFilter {
+                            column: column_id.clone(),
+                            value: (!value.is_empty())
+                                .then_some(DataTableFilterValue::Option(value)),
+                        })
                     },
-                    SelectOption::<String> {
-                        index: 0usize,
+                    MenuRadioItem::<String> {
                         value: String::new(),
-                        text_value: "All",
+                        index: 0usize,
                         "All"
+                        MenuItemIndicator {
+                            if selected.is_none() { "✓" }
+                        }
                     }
-                    for (index , option) in options.iter().enumerate() {
-                        SelectOption::<String> {
-                            index: index + 1,
+                    for (option_index, option) in options.iter().enumerate() {
+                        MenuRadioItem::<String> {
                             value: option.value.clone(),
-                            text_value: option.label.clone(),
+                            index: option_index + 1,
                             "{option.label}"
+                            MenuItemIndicator {
+                                if selected.as_ref() == Some(&option.value) { "✓" }
+                            }
                         }
                     }
                 }
             }
         }
         DataTableColumnFilter::MultiSelect { options } => {
-            let values = match filter {
+            let selected = match filter {
                 Some(DataTableFilterValue::Multiple(values)) => values.clone(),
                 _ => Vec::new(),
             };
-            let option_labels = options
-                .iter()
-                .map(|option| (option.value.clone(), option.label.clone()))
-                .collect::<Vec<_>>();
-
             rsx! {
-                ComboboxMultiSelect::<String> {
-                    values: ReadSignal::new(Signal::new(Some(values))),
-                    placeholder: "(All)",
-                    render_value: move |value: String| {
-                        let label = option_labels
-                            .iter()
-                            .find(|(option_value, _)| option_value == &value)
-                            .map(|(_, label)| label.clone())
-                            .unwrap_or(value);
-                        rsx! { "{label}" }
-                    },
-                    on_values_change: {
-                        let actions = actions.clone();
-                        let column_id = column.id.clone();
-                        move |values: Vec<String>| {
-                            actions
-                                .update_state
-                                .call(DataTableAction::SetFilter {
+                for (option_index, option) in options.iter().enumerate() {
+                    MenuCheckboxItem::<String> {
+                        value: option.value.clone(),
+                        index: option_index,
+                        checked: selected.contains(&option.value),
+                        close_on_select: false,
+                        on_checked_change: {
+                            let actions = actions.clone();
+                            let column_id = column.id.clone();
+                            let option_value = option.value.clone();
+                            let selected = selected.clone();
+                            move |checked| {
+                                let mut values = selected.clone();
+                                if checked {
+                                    if !values.contains(&option_value) {
+                                        values.push(option_value.clone());
+                                    }
+                                } else {
+                                    values.retain(|value| value != &option_value);
+                                }
+                                actions.update_state.call(DataTableAction::SetFilter {
                                     column: column_id.clone(),
                                     value: (!values.is_empty())
                                         .then_some(DataTableFilterValue::Multiple(values)),
                                 });
-                        }
-                    },
-                    ComboboxEmpty { "No options found." }
-                    for (index , option) in options.iter().enumerate() {
-                        ComboboxOption::<String> {
-                            index,
-                            value: option.value.clone(),
-                            text_value: option.label.clone(),
-                            "{option.label}"
+                            }
+                        },
+                        "{option.label}"
+                        MenuItemIndicator {
+                            if selected.contains(&option.value) { "✓" }
                         }
                     }
                 }
             }
         }
         DataTableColumnFilter::Boolean => {
-            let value = match filter {
-                Some(DataTableFilterValue::Boolean(true)) => "true",
-                Some(DataTableFilterValue::Boolean(false)) => "false",
-                _ => "",
+            let selected_value = match filter {
+                Some(DataTableFilterValue::Boolean(value)) => value.to_string(),
+                _ => String::new(),
             };
             rsx! {
-                Select::<String> {
-                    class: Styles::dx_data_table_select,
-                    value: Some(ReadSignal::new(Signal::new(Some(value.to_string())))),
-                    "aria-label": "Filter column",
+                MenuRadioGroup::<String> {
+                    value: Some(selected_value.clone()),
                     on_value_change: {
                         let actions = actions.clone();
                         let column_id = column.id.clone();
-                        move |event_value: Option<String>| {
-                            let value = match event_value.as_deref() {
-                                Some("true") => Some(DataTableFilterValue::Boolean(true)),
-                                Some("false") => Some(DataTableFilterValue::Boolean(false)),
+                        move |value: String| actions.update_state.call(DataTableAction::SetFilter {
+                            column: column_id.clone(),
+                            value: match value.as_str() {
+                                "true" => Some(DataTableFilterValue::Boolean(true)),
+                                "false" => Some(DataTableFilterValue::Boolean(false)),
                                 _ => None,
-                            };
-                            actions
-                                .update_state
-                                .call(DataTableAction::SetFilter {
-                                    column: column_id.clone(),
-                                    value,
-                                });
-                        }
+                            },
+                        })
                     },
-                    SelectOption::<String> {
-                        index: 0usize,
-                        value: String::new(),
-                        text_value: "All",
-                        "All"
-                    }
-                    SelectOption::<String> {
-                        index: 1usize,
-                        value: "true".to_string(),
-                        text_value: "True",
-                        "True"
-                    }
-                    SelectOption::<String> {
-                        index: 2usize,
-                        value: "false".to_string(),
-                        text_value: "False",
-                        "False"
+                    for (option_index, (value, option_label)) in
+                        [("", "All"), ("true", "True"), ("false", "False")]
+                            .into_iter()
+                            .enumerate()
+                    {
+                        MenuRadioItem::<String> {
+                            value,
+                            index: option_index,
+                            "{option_label}"
+                            MenuItemIndicator {
+                                if selected_value == value { "✓" }
+                            }
+                        }
                     }
                 }
             }
@@ -2920,46 +2908,47 @@ fn render_filter_control<T: Clone + PartialEq + 'static>(
                 DataTableRangeFilterKind::DateTime => "datetime-local",
             };
             rsx! {
-                div { class: Styles::dx_data_table_range,
-                    TextInput {
-                        class: Styles::dx_data_table_input,
-                        r#type: input_type,
-                        value: min.clone(),
-                        placeholder: "Min",
-                        "aria-label": "Minimum filter value",
-                        oninput: {
-                            let actions = actions.clone();
-                            let column_id = column.id.clone();
-                            let max = max.clone();
-                            move |event: FormEvent| {
-                                actions
-                                    .update_state
-                                    .call(DataTableAction::SetFilter {
+                div {
+                    class: Styles::dx_data_table_filter_editor,
+                    onpointerdown: move |event| event.stop_propagation(),
+                    onkeydown: move |event| event.stop_propagation(),
+                    div { class: Styles::dx_data_table_range,
+                        TextInput {
+                            class: Styles::dx_data_table_input,
+                            r#type: input_type,
+                            value: min.clone(),
+                            placeholder: "Min",
+                            "aria-label": "Minimum {label} filter value",
+                            oninput: {
+                                let actions = actions.clone();
+                                let column_id = column.id.clone();
+                                let max = max.clone();
+                                move |event: FormEvent| actions.update_state.call(
+                                    DataTableAction::SetFilter {
                                         column: column_id.clone(),
                                         value: range_filter_value(event.value(), max.clone()),
-                                    });
-                            }
-                        },
-                    }
-                    TextInput {
-                        class: Styles::dx_data_table_input,
-                        r#type: input_type,
-                        value: max,
-                        placeholder: "Max",
-                        "aria-label": "Maximum filter value",
-                        oninput: {
-                            let actions = actions.clone();
-                            let column_id = column.id.clone();
-                            let min = min.clone();
-                            move |event: FormEvent| {
-                                actions
-                                    .update_state
-                                    .call(DataTableAction::SetFilter {
+                                    },
+                                )
+                            },
+                        }
+                        TextInput {
+                            class: Styles::dx_data_table_input,
+                            r#type: input_type,
+                            value: max,
+                            placeholder: "Max",
+                            "aria-label": "Maximum {label} filter value",
+                            oninput: {
+                                let actions = actions.clone();
+                                let column_id = column.id.clone();
+                                let min = min.clone();
+                                move |event: FormEvent| actions.update_state.call(
+                                    DataTableAction::SetFilter {
                                         column: column_id.clone(),
                                         value: range_filter_value(min.clone(), event.value()),
-                                    });
-                            }
-                        },
+                                    },
+                                )
+                            },
+                        }
                     }
                 }
             }
@@ -2967,7 +2956,16 @@ fn render_filter_control<T: Clone + PartialEq + 'static>(
     };
 
     rsx! {
-        InputWrapper { class: Styles::dx_data_table_filter, label, {control} }
+        MenuSub {
+            MenuSubTrigger::<String> {
+                value: column.id.clone(),
+                index,
+                "{label}"
+            }
+            MenuSubContent { class: Styles::dx_data_table_filter_submenu,
+                {content}
+            }
+        }
     }
 }
 

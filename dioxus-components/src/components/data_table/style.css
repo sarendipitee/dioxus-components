@@ -135,34 +135,40 @@
 
 .dx_data_table_filter_chip_label {
     color: var(--surface-muted-fg);
+		flex: 1 0 auto;
 }
 
 .dx_data_table_filter_chip_value {
     color: var(--surface-fg);
 }
 
-.dx_data_table_input,
+.dx_data_table_input {
+    width: 100%;
+    min-width: 12rem;
+    font: inherit;
+}
+
 .dx_data_table_select {
     max-width: 12rem;
     font: inherit;
 }
 
-.dx_data_table_select .dx_select_trigger {
-    min-height: var(--input-height-md, var(--control-height-md));
-}
-
+.dx_data_table_select .dx_select_trigger,
 .dx_data_table_select .dx_select_input {
     min-height: var(--input-height-md, var(--control-height-md));
 }
 
 .dx_data_table_range {
-    display: inline-flex;
-    align-items: center;
+    display: grid;
     gap: var(--space);
 }
 
-.dx_data_table_range .dx_data_table_input {
-    max-width: 6.5rem;
+.dx_data_table_filter_editor {
+    padding: var(--list-item-padding-y) var(--list-item-padding-x);
+}
+
+.dx_data_table_filter_submenu {
+    min-width: 14rem;
 }
 
 .dx_data_table_column_menu,
@@ -171,7 +177,10 @@
     font-size: var(--text-sm);
 }
 
-.dx_data_table_filter_options,
+.dx_data_table_filter_options {
+    min-width: 12rem;
+}
+
 .dx_data_table_settings {
     display: grid;
     min-width: 16rem;
@@ -234,10 +243,8 @@
 .dx_data_table_surface {
     overflow: auto hidden;
     width: 100%;
-    border: 1px solid var(--surface-border);
-    border-radius: var(--radius-surface);
-    background: var(--surface);
 }
+
 
 .dx_data_table_base {
     width: 100%;
@@ -264,7 +271,6 @@
     position: sticky;
     z-index: 2;
     top: 0;
-    background: var(--surface-muted);
 }
 
 .dx_data_table_surface[data-virtualized="true"] .dx_data_table_selection_head_cell,
@@ -281,13 +287,13 @@
     white-space: nowrap;
 }
 
+
 .dx_data_table_head {
-    background: var(--surface-muted);
+    background: transparent;
 }
 
 .dx_data_table_head_cell {
     padding: var(--dx-data-table-head-cell-padding-block) var(--dx-data-table-head-cell-padding-inline);
-    border-bottom: 1px solid var(--surface-border);
     color: var(--surface-muted-fg);
     font-size: var(--text-xs);
     font-weight: 500;
@@ -318,15 +324,10 @@
 .dx_data_table_expansion_cell {
     width: 1%;
     padding: var(--dx-data-table-selection-cell-padding-block) var(--dx-data-table-selection-cell-padding-inline);
-    border-bottom: 1px solid var(--surface-border);
     text-align: center;
     white-space: nowrap;
 }
 
-.dx_data_table_selection_head_cell,
-.dx_data_table_expansion_head_cell {
-    background: var(--surface-muted);
-}
 
 .dx_data_table_head_label {
     display: block;
@@ -404,8 +405,6 @@
 
 .dx_data_table_cell {
     padding: var(--dx-data-table-cell-padding-block) var(--dx-data-table-cell-padding-inline);
-    border-bottom: 1px solid var(--surface-border);
-    color: var(--surface-fg);
     font-size: var(--text-sm);
     vertical-align: middle;
 }
@@ -416,12 +415,10 @@
 
 .dx_data_table_expanded_cell {
     padding: calc(var(--space) * 3) calc(var(--space) * 4) calc(var(--space) * 4);
-    border-bottom: 1px solid var(--surface-border);
 }
 
 .dx_data_table_state_cell {
     padding: calc(var(--space) * 8) calc(var(--space) * 4);
-    border-bottom: 1px solid var(--surface-border);
 }
 
 .dx_data_table_empty,

@@ -13,6 +13,254 @@ async function gotoSidebarBlock(page: Page) {
   });
 }
 
+async function gotoFloatingSidebar(page: Page) {
+  await page.goto("/components/sidebar/block#floating", {
+    timeout: 20 * 60 * 1000,
+    waitUntil: 'load'
+  });
+
+  await expect(page.locator('[data-slot="sidebar-wrapper"]')).toBeVisible({
+    timeout: SIDEBAR_RENDER_TIMEOUT,
+  });
+}
+
+
+test("floating offcanvas: reveals on edge hover on both sides", async ({ page }) => {
+  await gotoFloatingSidebar(page);
+
+  const sidebar = page.locator('[data-slot="sidebar"]:not([data-mobile="true"])');
+  const gap = sidebar.locator('[data-slot="sidebar-gap"]');
+  const inner = sidebar.locator('[data-slot="sidebar-inner"]');
+  const container = sidebar.locator('[data-slot="sidebar-container"]');
+  const hotzone = sidebar.locator('[data-slot="sidebar-hotzone"]');
+  const inset = page.locator('[data-slot="sidebar-inset"]');
+
+  for (const side of ["left", "right"] as const) {
+    await page.getByRole("button", { name: side === "left" ? "Left" : "Right" }).click();
+    await page.getByRole("button", { name: "Offcanvas" }).click();
+    await expect(sidebar).toHaveAttribute("data-variant", "floating");
+    await expect(sidebar).toHaveAttribute("data-collapsible", "");
+    await expect(sidebar).toHaveAttribute("data-side", side);
+    await expect(sidebar).toHaveAttribute("data-state", "expanded");
+    await expect(hotzone).toHaveAttribute("aria-hidden", "true");
+
+    const viewport = await page.evaluate(() => ({ width: innerWidth, height: innerHeight }));
+    const expandedInner = await inner.boundingBox();
+    const expandedGap = await gap.boundingBox();
+    expect(expandedInner).not.toBeNull();
+    expect(expandedGap).not.toBeNull();
+    expect(expandedInner!.width).toBeGreaterThan(0);
+    expect(expandedInner!.height).toBeGreaterThan(0);
+    expect(expandedGap!.width).toBeGreaterThan(0);
+    expect(expandedInner!.x).toBeGreaterThanOrEqual(0);
+
+    await page.keyboard.press("Control+b");
+    await expect(sidebar).toHaveAttribute("data-state", "collapsed");
+    await expect(sidebar).toHaveAttribute("data-collapsible", "offcanvas");
+    await expect(gap).toHaveCSS("width", "0px");
+    await expect.poll(async () => {
+      const box = await inner.boundingBox();
+      return box
+        ? side === "left"
+          ? box.x + box.width <= 0
+          : box.x >= viewport.width
+        : false;
+    }).toBe(true);
+    const collapsedInset = await inset.boundingBox();
+    expect(collapsedInset).not.toBeNull();
+    expect(Math.round(collapsedInset!.x)).toBe(0);
+    expect(Math.round(collapsedInset!.width)).toBe(viewport.width);
+
+    const edgeX = side === "left" ? 1 : viewport.width - 1;
+    await page.mouse.move(edgeX, Math.round(viewport.height / 2));
+    await expect.poll(async () => {
+      const box = await container.boundingBox();
+      if (!box) return false;
+      return side === "left"
+        ? Math.abs(box.x) <= 1
+        : Math.abs(box.x + box.width - viewport.width) <= 1;
+    }).toBe(true);
+    await expect(sidebar).toHaveAttribute("data-state", "collapsed");
+    const revealedInner = await inner.boundingBox();
+    expect(revealedInner).not.toBeNull();
+    await page.mouse.move(
+      Math.round(revealedInner!.x + revealedInner!.width / 2),
+      Math.round(revealedInner!.y + revealedInner!.height / 2),
+    );
+    await expect.poll(async () => {
+      const box = await container.boundingBox();
+      if (!box) return false;
+      return side === "left"
+        ? Math.abs(box.x) <= 1
+        : Math.abs(box.x + box.width - viewport.width) <= 1;
+    }).toBe(true);
+
+    await page.mouse.move(Math.round(viewport.width / 2), Math.round(viewport.height / 2));
+    await expect.poll(async () => {
+      const box = await inner.boundingBox();
+      return box
+        ? side === "left"
+          ? box.x + box.width <= 0
+          : box.x >= viewport.width
+        : false;
+    }).toBe(true);
+    await expect(sidebar).toHaveAttribute("data-state", "collapsed");
+    await page.keyboard.press("Control+b");
+    await expect(sidebar).toHaveAttribute("data-state", "expanded");
+  }
+});
+test("floating offcanvas: collapsed rail drag never expands", async ({ page }) => {
+  await gotoFloatingSidebar(page);
+
+  const sidebar = page.locator('[data-slot="sidebar"]:not([data-mobile="true"])').first();
+  const rail = sidebar.locator('[data-slot="sidebar-rail"]');
+  const viewport = page.viewportSize();
+  expect(viewport).not.toBeNull();
+
+  if ((await sidebar.getAttribute("data-state")) === "expanded") {
+    await page.keyboard.press("Control+b");
+  }
+  await expect(sidebar).toHaveAttribute("data-state", "collapsed");
+
+  await page.mouse.move(1, Math.round(viewport!.height / 2));
+  const railBox = await rail.boundingBox();
+  expect(railBox).not.toBeNull();
+  const startX = railBox!.x + railBox!.width / 2;
+  const y = railBox!.y + railBox!.height / 2;
+  await rail.click();
+  await expect(sidebar).toHaveAttribute("data-state", "expanded");
+  await page.keyboard.press("Control+b");
+  await expect(sidebar).toHaveAttribute("data-state", "collapsed");
+  await page.mouse.move(1, y);
+
+  await page.mouse.move(startX, y);
+  await page.mouse.down();
+  await page.mouse.move(startX + 60, y);
+  await expect(sidebar).toHaveAttribute("data-state", "collapsed");
+  await page.mouse.up();
+  await expect(sidebar).toHaveAttribute("data-state", "collapsed");
+});
+
+test("floating offcanvas: trigger hover reveals transiently and click toggles on both sides", async ({ page }) => {
+  await gotoFloatingSidebar(page);
+
+  const sidebar = page.locator('[data-slot="sidebar"]:not([data-mobile="true"])');
+  const trigger = page.locator('[data-slot="sidebar-trigger"]');
+  const gap = sidebar.locator('[data-slot="sidebar-gap"]');
+  const container = sidebar.locator('[data-slot="sidebar-container"]');
+
+  for (const side of ["left", "right"] as const) {
+    await page.getByRole("button", { name: side === "left" ? "Left" : "Right" }).click();
+    await page.getByRole("button", { name: "Offcanvas" }).click();
+    await expect(sidebar).toHaveAttribute("data-variant", "floating");
+    await expect(sidebar).toHaveAttribute("data-collapsible", "");
+    await expect(sidebar).toHaveAttribute("data-side", side);
+    await expect(sidebar).toHaveAttribute("data-state", "expanded");
+
+    await trigger.click();
+    await expect(sidebar).toHaveAttribute("data-state", "collapsed");
+    await expect(gap).toHaveCSS("width", "0px");
+
+    const viewport = await page.evaluate(() => ({ width: innerWidth, height: innerHeight }));
+    const triggerBox = await trigger.boundingBox();
+    expect(triggerBox).not.toBeNull();
+    await page.mouse.move(
+      triggerBox!.x + triggerBox!.width / 2,
+      triggerBox!.y + triggerBox!.height / 2,
+    );
+    await expect(sidebar).toHaveAttribute("data-state", "collapsed");
+    await expect.poll(async () => {
+      const box = await container.boundingBox();
+      if (!box) return false;
+      return side === "left"
+        ? Math.abs(box.x) <= 1
+        : Math.abs(box.x + box.width - viewport.width) <= 1;
+    }).toBe(true);
+    await expect(gap).toHaveCSS("width", "0px");
+
+    const revealedContainer = await container.boundingBox();
+    expect(revealedContainer).not.toBeNull();
+    await page.mouse.move(
+      revealedContainer!.x + revealedContainer!.width / 2,
+      revealedContainer!.y + revealedContainer!.height / 2,
+    );
+    await expect.poll(async () => {
+      const box = await container.boundingBox();
+      if (!box) return false;
+      return side === "left"
+        ? Math.abs(box.x) <= 1
+        : Math.abs(box.x + box.width - viewport.width) <= 1;
+    }).toBe(true);
+    await expect(sidebar).toHaveAttribute("data-state", "collapsed");
+    await expect(gap).toHaveCSS("width", "0px");
+
+    await page.mouse.move(Math.round(viewport.width / 2), 1);
+    await expect.poll(async () => {
+      const box = await container.boundingBox();
+      if (!box) return false;
+      return side === "left"
+        ? box.x + box.width <= 0
+        : box.x >= viewport.width;
+    }).toBe(true);
+    await expect(sidebar).toHaveAttribute("data-state", "collapsed");
+
+    const secondTriggerBox = await trigger.boundingBox();
+    expect(secondTriggerBox).not.toBeNull();
+    await page.mouse.move(
+      secondTriggerBox!.x + secondTriggerBox!.width / 2,
+      secondTriggerBox!.y + secondTriggerBox!.height / 2,
+    );
+    await expect.poll(async () => {
+      const box = await container.boundingBox();
+      if (!box) return false;
+      return side === "left"
+        ? Math.abs(box.x) <= 1
+        : Math.abs(box.x + box.width - viewport.width) <= 1;
+    }).toBe(true);
+
+    await trigger.click();
+    await expect(sidebar).toHaveAttribute("data-state", "expanded");
+    await expect.poll(async () => (await gap.boundingBox())?.width ?? 0).toBeGreaterThan(0);
+    await expect.poll(async () => {
+      const box = await container.boundingBox();
+      if (!box) return false;
+      return side === "left"
+        ? Math.abs(box.x) <= 1
+        : Math.abs(box.x + box.width - viewport.width) <= 1;
+    }).toBe(true);
+
+    await trigger.click();
+    await expect(sidebar).toHaveAttribute("data-state", "collapsed");
+    await expect(gap).toHaveCSS("width", "0px");
+    await trigger.hover();
+    await expect.poll(async () => {
+      const box = await container.boundingBox();
+      if (!box) return false;
+      return side === "left"
+        ? Math.abs(box.x) <= 1
+        : Math.abs(box.x + box.width - viewport.width) <= 1;
+    }).toBe(true);
+    await page.mouse.move(Math.round(viewport.width / 2), 1);
+    await expect.poll(async () => {
+      const box = await container.boundingBox();
+      if (!box) return false;
+      return side === "left"
+        ? box.x + box.width <= 0
+        : box.x >= viewport.width;
+    }).toBe(true);
+
+    await page.mouse.move(Math.round(viewport.width / 2), 1);
+    await expect.poll(async () => {
+      const box = await container.boundingBox();
+      if (!box) return false;
+      return side === "left"
+        ? box.x + box.width <= 0
+        : box.x >= viewport.width;
+    }).toBe(true);
+    await page.keyboard.press("Control+b");
+    await expect(sidebar).toHaveAttribute("data-state", "expanded");
+  }
+});
 test("sidebar: preview page renders block", async ({ page }) => {
   await page.goto("/components/sidebar", {
     timeout: 20 * 60 * 1000,
@@ -50,6 +298,104 @@ test.describe("sidebar: block route", () => {
     await page.keyboard.press("Control+b");
     await expect(sidebar).toHaveAttribute("data-state", "collapsed");
     await page.keyboard.press("Control+b");
+    await expect(sidebar).toHaveAttribute("data-state", "expanded");
+  });
+
+  test("desktop: rail drag resizes within configured bounds", async ({ page }) => {
+    await gotoSidebarBlock(page);
+
+    const sidebar = page.locator('[data-slot="sidebar"]:not([data-mobile="true"])');
+    const rail = sidebar.locator('[data-slot="sidebar-rail"]');
+    await expect(rail).toHaveAccessibleName("Resize Sidebar");
+
+    const railBox = await rail.boundingBox();
+    expect(railBox).not.toBeNull();
+    await page.mouse.move(railBox!.x + railBox!.width / 2, railBox!.y + railBox!.height / 2);
+    await page.mouse.down();
+    await page.mouse.move(railBox!.x + 500, railBox!.y + railBox!.height / 2);
+    await page.mouse.up();
+    await expect(sidebar.locator('[data-slot="sidebar-gap"]')).toHaveCSS("width", "360px");
+
+    const resizedRailBox = await rail.boundingBox();
+    expect(resizedRailBox).not.toBeNull();
+    await page.mouse.move(
+      resizedRailBox!.x + resizedRailBox!.width / 2,
+      resizedRailBox!.y + resizedRailBox!.height / 2,
+    );
+    await page.mouse.down();
+    await page.mouse.move(100, resizedRailBox!.y + resizedRailBox!.height / 2);
+    await page.mouse.up();
+    await expect(sidebar.locator('[data-slot="sidebar-gap"]')).toHaveCSS("width", "220px");
+  });
+
+  test("desktop: rail drag collapses near either viewport edge", async ({ page }) => {
+    await gotoSidebarBlock(page);
+
+    const sidebar = page.locator('[data-slot="sidebar"]:not([data-mobile="true"])');
+    const rail = sidebar.locator('[data-slot="sidebar-rail"]');
+    const viewport = page.viewportSize();
+    expect(viewport).not.toBeNull();
+
+    for (const side of ["left"] as const) {
+      await page.getByRole("button", { name: side === "left" ? "Left" : "Right" }).click();
+      await expect(sidebar).toHaveAttribute("data-side", side);
+      await expect(sidebar).toHaveAttribute("data-state", "expanded");
+
+      const railBox = await rail.boundingBox();
+      expect(railBox).not.toBeNull();
+      const y = railBox!.y + railBox!.height / 2;
+      await page.mouse.move(railBox!.x + railBox!.width / 2, y);
+      await page.mouse.down();
+      await page.mouse.move(side === "left" ? 40 : viewport!.width - 40, y);
+      await page.mouse.up();
+      if (side === "left") {
+        await expect(sidebar).toHaveAttribute("data-collapse-animating", "true");
+      }
+
+      await expect(sidebar).toHaveAttribute("data-state", "collapsed");
+      await expect(sidebar).toHaveCSS("--dx-sidebar-width", "220px");
+      await page.locator('[data-slot="sidebar-trigger"]').click();
+      await expect(sidebar).toHaveAttribute("data-state", "expanded");
+    }
+  });
+
+  test("desktop: collapsed inset rail drag reopens the sidebar", async ({ page }) => {
+    await page.goto("/components/sidebar/block#inset", {
+      timeout: 20 * 60 * 1000,
+      waitUntil: "load",
+    });
+
+    const sidebar = page.locator('[data-slot="sidebar"]:not([data-mobile="true"])').first();
+    const rail = sidebar.locator('[data-slot="sidebar-rail"]');
+    const viewport = page.viewportSize();
+    expect(viewport).not.toBeNull();
+
+    await page.getByRole("button", { name: "Left" }).click();
+    await expect(sidebar).toHaveAttribute("data-side", "left");
+    if ((await sidebar.getAttribute("data-state")) === "expanded") {
+      await page.keyboard.press("Control+b");
+    }
+    await expect(sidebar).toHaveAttribute("data-state", "collapsed");
+
+    await rail.click();
+    await expect(sidebar).toHaveAttribute("data-state", "expanded");
+    await page.keyboard.press("Control+b");
+    await expect(sidebar).toHaveAttribute("data-state", "collapsed");
+
+    const railBox = await rail.boundingBox();
+    expect(railBox).not.toBeNull();
+    const dragStartX = railBox!.x + railBox!.width / 2;
+    const y = railBox!.y + railBox!.height / 2;
+    await page.mouse.move(dragStartX, y);
+    await page.mouse.down();
+    await page.mouse.move(dragStartX + 29, y);
+    await expect(sidebar).toHaveAttribute("data-state", "collapsed");
+    await page.mouse.move(dragStartX + 31, y);
+    await expect(sidebar).toHaveAttribute("data-state", "expanded");
+    await expect(sidebar).toHaveAttribute("data-expansion-animating", "true");
+    await page.mouse.move(300, y);
+    await page.mouse.up();
+
     await expect(sidebar).toHaveAttribute("data-state", "expanded");
   });
 
