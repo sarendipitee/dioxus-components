@@ -637,7 +637,6 @@ pub fn MenuItem<T: Clone + PartialEq + 'static>(props: MenuItemProps<T>) -> Elem
         focus_onmounted(evt);
     };
     let down_pos: Signal<Option<(f64, f64)>> = use_signal(|| None);
-    let tab_index = use_memo(move || if focused() { "0" } else { "-1" });
 
     let mut select = move |value: T| {
         if !disabled() {
@@ -904,19 +903,27 @@ pub fn MenuRadioGroup<T: Clone + PartialEq + 'static>(props: MenuRadioGroupProps
 /// Props for [`MenuRadioItem`].
 #[derive(Props, Clone, PartialEq)]
 pub struct MenuRadioItemProps<T: Clone + PartialEq + 'static> {
+    /// Value represented by this radio item.
     #[props(into)]
     pub value: T,
+    /// Position of this item in the radio group.
     pub index: usize,
+    /// Whether this item is disabled.
     #[props(default)]
     pub disabled: bool,
+    /// Callback invoked when this item is selected.
     #[props(default)]
     pub on_select: Callback<T>,
+    /// Whether selecting this item closes the menu.
     #[props(default)]
     pub close_on_select: bool,
+    /// Text used when filtering menu items.
     #[props(default)]
     pub search_text: Option<String>,
+    /// Attributes forwarded to the rendered element.
     #[props(extends = GlobalAttributes)]
     pub attributes: Vec<Attribute>,
+    /// Content rendered inside this item.
     pub children: Element,
 }
 /// A radio-style menu item coordinated by the nearest [`MenuRadioGroup`].
@@ -1236,49 +1243,6 @@ pub fn MenuSubContent(props: MenuSubContentProps) -> Element {
         // effect can re-run after `content_id`'s backing store is freed.
         if content_id.try_peek().map(|v| *v != next).unwrap_or(false) {
             let _ = content_id.try_write().map(|mut w| *w = next);
-        }
-    });
-    let set_open = use_callback(move |next: bool| {
-        sub_ctx.set_open.call(next);
-        if !next {
-            // Close the submenu now, but defer closing the PARENT menu until the
-            // submenu's portaled panel has actually left the DOM.
-            //
-            // Selecting a nested item closes the submenu (above) AND the whole
-            // parent menu (`close_parent_all`). The submenu's panel is portaled
-            // through the shared overlay outlet but its content re-provides the
-            // submenu's `MenuContext` whose signals are OWNED by the `MenuSub` /
-            // `MenuSubContent` definition-tree scopes. Closing the parent menu
-            // unmounts that whole definition subtree (`MenuSub` lives inside the
-            // parent's `MenuContent`), freeing those `use_unique_id` /
-            // `MenuContext` signals. If the submenu's portaled body is still
-            // mounted at that moment (its 150ms exit animation has not settled),
-            // its live read-guards (`SignalSubscriberDrop`) drop against the
-            // freed signal storage → `ValueDroppedError` (`signal.rs:540`) and a
-            // corrupted heap that aborts the wasm runtime.
-            //
-            // Gating the parent close on the submenu panel's removal from the
-            // DOM guarantees the submenu's portaled subtree (and every cross
-            // scope subscription it holds) has fully unmounted before the parent
-            // close frees the `MenuSub` scope. Spawned on `ScopeId::ROOT` so the
-            // wait survives this component's own unmount; the panel id is
-            // snapshotted so the task never reads a freed signal.
-            let close_parent_all = sub_ctx.close_parent_all;
-            // Liveness probe owned by the SAME scope as `close_parent_all` (both
-            // created in `MenuSub`): `open` is the submenu's `Memo`. If the whole
-            // overlay subtree tears down first (e.g. the enclosing Dialog closes)
-            // the `MenuSub` scope is dropped before this deferred action fires,
-            // freeing `close_parent_all`'s backing store. `Callback::call` has no
-            // dropped-tolerant path — it panics on freed storage, aborting the
-            // wasm runtime. Probing the co-owned `Memo` detects that teardown; the
-            // parent is already closing, so there is nothing left to do.
-            let alive = sub_ctx.open;
-            let panel_id = id.peek().clone();
-            crate::defer_close_after_removed(panel_id, move || {
-                if alive.try_peek().is_ok() {
-                    close_parent_all.call(());
-                }
-            });
         }
     });
     use_deferred_focus(sub_ctx.focus, sub_ctx.initial_focus, move || {
