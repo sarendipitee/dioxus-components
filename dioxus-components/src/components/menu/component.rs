@@ -2,10 +2,12 @@ use crate::component_styles;
 use crate::components::context_menu::ContextMenuStyles;
 use crate::components::dropdown_menu::DropdownMenuStyles;
 use crate::components::menubar::MenubarStyles;
+use crate::components::input::{InputVariant, TextInput};
 use dioxus::prelude::*;
 use dioxus_primitives::dioxus_attributes::attributes;
 use dioxus_primitives::menu::{
-    self, FilterableMenuInputProps as PrimitiveFilterableMenuInputProps, MenuCheckboxItemProps,
+    self, FilterableMenuContentProps as PrimitiveFilterableMenuContentProps,
+    FilterableMenuInputProps as PrimitiveFilterableMenuInputProps, MenuCheckboxItemProps,
     MenuGroupProps, MenuItemIndicatorProps, MenuItemProps, MenuItemSectionProps, MenuLabelProps,
     MenuRadioGroupProps, MenuRadioItemProps, MenuSeparatorProps, MenuSubContentProps, MenuSubProps,
     MenuSubTriggerProps,
@@ -37,6 +39,8 @@ pub struct MenuProps {
     /// The children of the menu content.
     pub children: Element,
 }
+/// Props forwarded to the styled filterable content rendered inside an existing menu.
+pub type FilterableMenuContentProps = PrimitiveFilterableMenuContentProps;
 
 /// Props forwarded to the styled filter input rendered by [`FilterableMenu`].
 pub type FilterableMenuInputProps = PrimitiveFilterableMenuInputProps;
@@ -65,18 +69,7 @@ pub struct FilterableMenuProps {
 /// A styled filterable menu with a text input above its menu items.
 #[component]
 pub fn FilterableMenu(props: FilterableMenuProps) -> Element {
-    let filter_input_props = props.filter_input_props;
-    let filter_input_attributes = merge_attributes(vec![
-        attributes!(input {
-            class: Styles::dx_filterable_menu_input
-        }),
-        filter_input_props.attributes,
-    ]);
-    let attributes = merge_with_class(
-        "div",
-        Styles::dx_menu_filterable.to_string(),
-        props.attributes,
-    );
+    let filter_input_props = styled_filter_input_props(props.filter_input_props);
 
     rsx! {
         menu::FilterableMenu {
@@ -84,15 +77,48 @@ pub fn FilterableMenu(props: FilterableMenuProps) -> Element {
             set_open: props.set_open,
             disabled: props.disabled,
             roving_loop: props.roving_loop,
-            filter_input_props: PrimitiveFilterableMenuInputProps {
-                oninput: filter_input_props.oninput,
-                onmounted: filter_input_props.onmounted,
-                onkeydown: filter_input_props.onkeydown,
-                attributes: filter_input_attributes,
-            },
-            attributes,
+            filter_input_props,
+            attributes: props.attributes,
             {props.children}
         }
+    }
+}
+
+/// Styled filterable content for an existing menu surface.
+#[component]
+pub fn FilterableMenuContent(props: FilterableMenuContentProps) -> Element {
+    let filter_input_props = styled_filter_input_props(props.filter_input_props);
+
+    rsx! {
+        menu::FilterableMenuContent {
+            filter_input_props,
+            {props.children}
+        }
+    }
+}
+
+fn styled_filter_input_props(
+    props: PrimitiveFilterableMenuInputProps,
+) -> PrimitiveFilterableMenuInputProps {
+    let attributes = merge_attributes(vec![
+        attributes!(input {
+            placeholder: "Filter...",
+            aria_label: "Filter menu items",
+        }),
+        props.attributes,
+    ]);
+
+    PrimitiveFilterableMenuInputProps {
+        oninput: props.oninput,
+        onmounted: props.onmounted,
+        onkeydown: props.onkeydown,
+        r#as: Some(Callback::new(|attributes: Vec<Attribute>| rsx! {
+            TextInput {
+                variant: InputVariant::Unstyled,
+                attributes,
+            }
+        })),
+        attributes,
     }
 }
 
@@ -253,6 +279,7 @@ pub fn MenuItem<T: Clone + PartialEq + 'static>(props: MenuItemProps<T>) -> Elem
             role: props.role,
             on_select: props.on_select,
             close_on_select: props.close_on_select,
+            search_text: props.search_text,
             attributes,
             {props.children}
         }
@@ -370,6 +397,7 @@ pub fn MenuCheckboxItem<T: Clone + PartialEq + 'static>(
             on_checked_change: props.on_checked_change,
             on_select: props.on_select,
             close_on_select: props.close_on_select,
+            search_text: props.search_text,
             attributes,
             {props.children}
         }
@@ -415,6 +443,7 @@ pub fn MenuRadioItem<T: Clone + PartialEq + 'static>(props: MenuRadioItemProps<T
             disabled: props.disabled,
             on_select: props.on_select,
             close_on_select: props.close_on_select,
+            search_text: props.search_text,
             attributes,
             {props.children}
         }
@@ -469,6 +498,7 @@ pub fn MenuSubTrigger<T: Clone + PartialEq + 'static>(props: MenuSubTriggerProps
             index: props.index,
             disabled: props.disabled,
             on_select: props.on_select,
+            search_text: props.search_text,
             attributes,
             {props.children}
         }

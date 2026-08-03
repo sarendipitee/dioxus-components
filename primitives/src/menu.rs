@@ -20,34 +20,18 @@ use crate::{
 use dioxus::prelude::*;
 use dioxus_attributes::attributes;
 
-/// Shared menu state provided to menu triggers, content, and items.
+/// Shared menu state provided to triggers, content, and items.
 #[derive(Clone, Copy, PartialEq)]
 pub struct MenuContext {
-    /// Whether this menu is open.
     pub(crate) open: Memo<bool>,
-    /// Sets the menu open state.
     pub(crate) set_open: Callback<bool>,
-    /// Whether this menu and its items are disabled.
     pub(crate) disabled: Memo<bool>,
-    /// Roving focus state for items in this menu.
     pub(crate) focus: FocusState,
-    /// Requested initial item focus placement when content opens.
     pub(crate) initial_focus: Signal<Option<FocusPlacement>>,
-    /// Unique id for the trigger that labels this menu.
     pub(crate) trigger_id: Signal<String>,
-    /// Reference (trigger) element shared with the content so the floating-ui hook
-    /// can position the content relative to the trigger. Set by the wrapper trigger
-    /// (e.g. [`crate::dropdown_menu::DropdownMenuTrigger`],
-    /// [`crate::menubar::MenubarTrigger`]) via `onmounted`. Benign for consumers
-    /// that position differently (e.g. context_menu) — they simply never read it.
     pub(crate) trigger_ref: Signal<Option<Rc<MountedData>>>,
-    /// The overlay manager id of this menu's portaled panel, once registered. Set
-    /// only inside the re-provided context within the portaled `MenuContent` body
-    /// (see [`MenuContentPortaled`]). A nested [`MenuSubContent`] reads this so it
-    /// can register itself as a CHILD overlay entry (`parent = Some(this)`), which
-    /// keeps the submenu inside the parent's union dismiss predicate and stacks it
-    /// above the parent. `None` in the Root tree (before the panel is portaled).
     pub(crate) overlay_id: Signal<Option<OverlayId>>,
+    pub(crate) filter_query: Signal<String>,
 }
 
 /// Provides shared menu state to descendants in the current component scope.
@@ -63,6 +47,7 @@ pub(crate) fn use_menu_provider(
     let trigger_id = use_unique_id();
     let trigger_ref = use_signal(|| None);
     let overlay_id = use_signal(|| None);
+    let filter_query = use_signal(String::new);
     let disabled = use_memo(move || disabled());
     let ctx = use_context_provider(|| MenuContext {
         open,
@@ -73,6 +58,7 @@ pub(crate) fn use_menu_provider(
         trigger_id,
         trigger_ref,
         overlay_id,
+        filter_query,
     });
 
     use_effect(move || {
@@ -115,6 +101,9 @@ pub struct FilterableMenuInputProps {
     /// Callback fired for keyboard events in the filter input.
     #[props(default)]
     pub onkeydown: Option<EventHandler<KeyboardEvent>>,
+    /// Render the filter control as a custom component while preserving primitive attributes and events.
+    #[props(default)]
+    pub r#as: Option<Callback<Vec<Attribute>, Element>>,
     /// Additional attributes for the native text input.
     #[props(extends = GlobalAttributes)]
     #[props(extends = input)]
@@ -142,20 +131,11 @@ pub struct FilterableMenuProps {
     pub children: Element,
 }
 
-/// An unstyled menu with a focused text input that filters its [`MenuItem`] descendants.
-///
-/// Filtering performs a case-insensitive substring match against each item's rendered text.
-/// Items are shown again when the query is empty. The input receives focus when it mounts.
+/// An unstyled menu with a focused text input that filters its menu items.
 #[component]
 pub fn FilterableMenu(props: FilterableMenuProps) -> Element {
     let filter_id = use_unique_id();
-    let filter_root_id = format!("{filter_id}-items");
-    let filter_input_props = props.filter_input_props;
-    let oninput = filter_input_props.oninput;
-    let onmounted = filter_input_props.onmounted;
-    let onkeydown = filter_input_props.onkeydown;
-    let filter_input_root_id = filter_root_id.clone();
-
+    let filter_input_id = format!("{filter_id}-input");
     rsx! {
         Menu {
             open: props.open,
@@ -165,49 +145,87 @@ pub fn FilterableMenu(props: FilterableMenuProps) -> Element {
             attributes: props.attributes,
             div {
                 "data-slot": "filterable-menu-input-section",
-                input {
-                    r#type: "text",
-                    onmounted: move |event| {
-                        let data = event.data();
-                        spawn(async move {
-                            _ = data.set_focus(true).await;
-                        });
-                        if let Some(callback) = onmounted {
-                            callback.call(event);
-                        }
-                    },
-                    oninput: move |event: Event<FormData>| {
-                        let query = event.value();
-                        let mut eval = document::eval(
-                            "const root = document.getElementById(await dioxus.recv());\n                             const query = (await dioxus.recv()).trim().toLocaleLowerCase();\n                             if (root) {\n                               root.querySelectorAll('[role^=\"menuitem\"]').forEach((item) => {\n                                 item.hidden = !item.textContent.toLocaleLowerCase().includes(query);\n                               });\n                             }\n                             dioxus.send(true);",
-                        );
-                        let root_id = filter_input_root_id.clone();
-                        spawn(async move {
-                            let _ = eval.send(root_id);
-                            let _ = eval.send(query);
-                            let _ = eval.recv::<bool>().await;
-                        });
-                        if let Some(callback) = oninput {
-                            callback.call(event);
-                        }
-                    },
-                    onkeydown: move |event: Event<KeyboardData>| {
-                        event.stop_propagation();
-                        if let Some(callback) = onkeydown {
-                            callback.call(event);
-                        }
-                    },
-                    ..filter_input_props.attributes,
+                FilterableMenuInputControl {
+                    input_id: filter_input_id,
+                    props: props.filter_input_props,
                 }
             }
-            div {
-                id: filter_root_id.clone(),
-                "data-slot": "filterable-menu-items",
-                {props.children}
-            }
+            MenuSeparator { "data-slot": "filterable-menu-separator" }
+            {props.children}
         }
     }
 }
+
+#[component]
+fn FilterableMenuInputControl(
+    input_id: String,
+    props: FilterableMenuInputProps,
+) -> Element {
+    let mut query = use_context::<MenuContext>().filter_query;
+    let oninput = props.oninput;
+    let onmounted = props.onmounted;
+    let onkeydown = props.onkeydown;
+    let dynamic = props.r#as;
+    let mounted_input_id = input_id.clone();
+    let input_attributes = merge_attributes(vec![
+        attributes!(input {
+            id: input_id,
+            r#type: "text",
+            autofocus: true,
+            onmounted: move |event| {
+                let input_id = mounted_input_id.clone();
+                spawn(async move {
+                    let mut eval = document::eval("await new Promise(requestAnimationFrame); const input = document.getElementById(await dioxus.recv()); if (input) input.focus();");
+                    let _ = eval.send(input_id);
+                    let _ = eval.recv::<bool>().await;
+                });
+                if let Some(callback) = onmounted { callback.call(event); }
+            },
+            oninput: move |event: Event<FormData>| {
+                query.set(event.value().trim().to_lowercase());
+                if let Some(callback) = oninput { callback.call(event); }
+            },
+            onkeydown: move |event: Event<KeyboardData>| {
+                event.stop_propagation();
+                if let Some(callback) = onkeydown { callback.call(event); }
+            },
+        }),
+        props.attributes,
+    ]);
+    if let Some(dynamic) = dynamic { dynamic.call(input_attributes) }
+    else { rsx! { input { ..input_attributes } } }
+}
+
+
+/// Props for filterable content rendered inside an existing menu root.
+#[derive(Props, Clone, PartialEq)]
+pub struct FilterableMenuContentProps {
+    /// Props forwarded to the filter text input.
+    #[props(default)]
+    pub filter_input_props: FilterableMenuInputProps,
+    /// Menu items and other menu content.
+    pub children: Element,
+}
+
+/// Filterable menu content for an existing menu root.
+#[component]
+pub fn FilterableMenuContent(props: FilterableMenuContentProps) -> Element {
+    let filter_id = use_unique_id();
+    let filter_input_id = format!("{filter_id}-input");
+
+    rsx! {
+        div {
+            "data-slot": "filterable-menu-input-section",
+            FilterableMenuInputControl {
+                input_id: filter_input_id,
+                props: props.filter_input_props,
+            }
+        }
+        MenuSeparator { "data-slot": "filterable-menu-separator" }
+        {props.children}
+    }
+}
+
 /// Shared root for a single menu surface.
 #[component]
 pub fn Menu(props: MenuProps) -> Element {
@@ -505,6 +523,7 @@ fn MenuContentRendered(props: MenuContentRenderedProps) -> Element {
         trigger_id,
         trigger_ref,
         overlay_id,
+        filter_query: use_context::<MenuContext>().filter_query,
     };
     use_context_provider(|| portal_ctx);
     use_context_provider(|| focus);
@@ -579,6 +598,9 @@ pub struct MenuItemProps<T: Clone + PartialEq + 'static> {
     /// all other items.
     #[props(default)]
     pub on_mounted: Option<Callback<Rc<MountedData>>>,
+    /// Text used for matching when rendered inside a filterable menu.
+    #[props(default)]
+    pub search_text: Option<String>,
     /// Additional attributes for the item element.
     #[props(extends = GlobalAttributes)]
     pub attributes: Vec<Attribute>,
@@ -593,9 +615,20 @@ pub fn MenuItem<T: Clone + PartialEq + 'static>(props: MenuItemProps<T>) -> Elem
     let index_value = props.index;
     let index = ReadSignal::new(use_memo(move || index_value));
     let disabled_value = props.disabled;
-    let disabled = move || (ctx.disabled)() || disabled_value;
+    let search_text = ReadSignal::new(use_memo(move || props.search_text.clone()));
+    let visible = move || {
+        let query = (ctx.filter_query)();
+        query.is_empty()
+            || search_text()
+                .as_deref()
+                .unwrap_or_default()
+                .to_lowercase()
+                .contains(&query)
+    };
     let focused = move || ctx.focus.is_focused(index_value);
-    let mut focus_onmounted = use_focus_controlled_item_disabled(index, disabled);
+    let disabled = move || (ctx.disabled)() || disabled_value;
+    let unavailable = move || disabled() || !visible();
+    let mut focus_onmounted = use_focus_controlled_item_disabled(index, unavailable);
     let forward_mounted = props.on_mounted;
     let onmounted = move |evt: MountedEvent| {
         if let Some(cb) = forward_mounted {
@@ -621,8 +654,8 @@ pub fn MenuItem<T: Clone + PartialEq + 'static>(props: MenuItemProps<T>) -> Elem
     rsx! {
         div {
             role: props.role,
-            "data-disabled": disabled(),
-            tabindex: tab_index,
+            hidden: !visible(),
+            "data-disabled": unavailable(),
             onpointerdown: move |event| {
                 pointer_select_start(&event, disabled(), down_pos);
             },
@@ -788,6 +821,9 @@ pub struct MenuCheckboxItemProps<T: Clone + PartialEq + 'static> {
     /// Callback fired when the item is selected.
     #[props(default)]
     pub on_select: Callback<T>,
+    /// Text used for matching when rendered inside a filterable menu.
+    #[props(default)]
+    pub search_text: Option<String>,
     /// Whether the menu should close after the item is selected.
     #[props(default)]
     pub close_on_select: bool,
@@ -814,6 +850,7 @@ pub fn MenuCheckboxItem<T: Clone + PartialEq + 'static>(
             disabled: props.disabled,
             role: "menuitemcheckbox",
             close_on_select: props.close_on_select,
+            search_text: props.search_text,
             on_select: move |value| {
                 on_checked_change.call(!checked);
                 on_select.call(value);
@@ -855,7 +892,6 @@ pub fn MenuRadioGroup<T: Clone + PartialEq + 'static>(props: MenuRadioGroupProps
         value: props.value,
         on_value_change: props.on_value_change,
     });
-
     rsx! {
         div {
             role: "group",
@@ -868,27 +904,21 @@ pub fn MenuRadioGroup<T: Clone + PartialEq + 'static>(props: MenuRadioGroupProps
 /// Props for [`MenuRadioItem`].
 #[derive(Props, Clone, PartialEq)]
 pub struct MenuRadioItemProps<T: Clone + PartialEq + 'static> {
-    /// The value represented by this radio item.
     #[props(into)]
     pub value: T,
-    /// The index of the item within the menu content.
     pub index: usize,
-    /// Whether this item is disabled.
     #[props(default)]
     pub disabled: bool,
-    /// Callback fired when the item is selected.
     #[props(default)]
     pub on_select: Callback<T>,
-    /// Whether the menu should close after the item is selected.
     #[props(default)]
     pub close_on_select: bool,
-    /// Additional attributes for the item element.
+    #[props(default)]
+    pub search_text: Option<String>,
     #[props(extends = GlobalAttributes)]
     pub attributes: Vec<Attribute>,
-    /// The children of the item.
     pub children: Element,
 }
-
 /// A radio-style menu item coordinated by the nearest [`MenuRadioGroup`].
 #[component]
 pub fn MenuRadioItem<T: Clone + PartialEq + 'static>(props: MenuRadioItemProps<T>) -> Element {
@@ -907,6 +937,7 @@ pub fn MenuRadioItem<T: Clone + PartialEq + 'static>(props: MenuRadioItemProps<T
             disabled: props.disabled,
             role: "menuitemradio",
             close_on_select: props.close_on_select,
+            search_text: props.search_text,
             on_select: move |value: T| {
                 group.on_value_change.call(value.clone());
                 on_select.call(value);
@@ -917,6 +948,7 @@ pub fn MenuRadioItem<T: Clone + PartialEq + 'static>(props: MenuRadioItemProps<T
             {props.children}
         }
     }
+
 }
 
 #[derive(Clone, Copy)]
@@ -1110,6 +1142,9 @@ pub struct MenuSubTriggerProps<T: Clone + PartialEq + 'static> {
     /// Callback fired when the trigger is selected.
     #[props(default)]
     pub on_select: Callback<T>,
+    /// Text used for matching when rendered inside a filterable menu.
+    #[props(default)]
+    pub search_text: Option<String>,
     /// Additional attributes for the trigger element.
     #[props(extends = GlobalAttributes)]
     pub attributes: Vec<Attribute>,
@@ -1161,6 +1196,7 @@ pub fn MenuSubTrigger<T: Clone + PartialEq + 'static>(props: MenuSubTriggerProps
                 value: props.value,
                 index: props.index,
                 disabled: props.disabled,
+                search_text: props.search_text,
                 close_on_select: false,
                 on_select: move |value: T| {
                     open_submenu.call(());
@@ -1249,30 +1285,6 @@ pub fn MenuSubContent(props: MenuSubContentProps) -> Element {
         (sub_ctx.open)()
     });
     use_context_provider(|| sub_ctx.focus);
-    // The parent menu's portaled MenuContext exposes its overlay id; mirror it into
-    // this submenu's MenuContext so the inner MenuContentPortaled registers with
-    // `parent = Some(parent menu id)` (CHILD entry — union dismiss + z-stacking).
-    // A plain Signal kept in sync via effect; the parent menu is already open and
-    // registered by the time this submenu's panel mounts, so the id is available at
-    // registration time.
-    let parent_menu_ctx: MenuContext = use_context();
-    let parent_overlay = parent_menu_ctx.overlay_id;
-    let mut overlay_id: Signal<Option<OverlayId>> = use_signal(move || *parent_overlay.peek());
-    use_effect(move || {
-        let next = parent_overlay();
-        // Dropped-tolerant: this effect can re-run while the submenu unmounts.
-        let _ = overlay_id.try_write().map(|mut w| *w = next);
-    });
-    use_context_provider(|| MenuContext {
-        open: sub_ctx.open,
-        set_open,
-        disabled: sub_ctx.disabled,
-        focus: sub_ctx.focus,
-        initial_focus: sub_ctx.initial_focus,
-        trigger_id: sub_ctx.trigger_id,
-        trigger_ref: sub_ctx.trigger_ref,
-        overlay_id,
-    });
 
     // Floating-element positioning for the submenu. A submenu naturally opens to the
     // right of its parent item, aligned to the item's top edge; flip() handles the
@@ -1443,6 +1455,8 @@ mod tests {
 
         assert!(html.contains("type=\"text\""));
         assert!(html.contains("placeholder=\"Filter actions\""));
+        assert!(html.contains("data-slot=\"filterable-menu-separator\""));
+        assert!(html.contains("role=\"separator\""));
         assert!(html.contains("role=\"menuitem\""));
     }
 

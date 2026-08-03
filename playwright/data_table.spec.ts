@@ -140,67 +140,67 @@ test("virtualized table keeps column widths stable during scroll", async ({
   }
 });
 
-// The "+ Filter" control opens a Popover containing filter inputs. Clicking the
-// popover's own (non-focusable) background must NOT dismiss it: doing so blurs
-// the focused input and the browser moves focus to the nearest focusable
-// ancestor — which still contains the popover — and that must not be treated as
-// an outside focus-out. Regression test for the popover light-dismiss logic.
+// The filter control opens a FilterableMenu inside the dropdown surface.
 const FILTER_URL = "/components/data_table";
 
-async function openFilterPopover(page: Page) {
+async function openFilterMenu(page: Page) {
   const trigger = page.getByRole("button", { name: "Filter" }).first();
   await expect(trigger).toBeVisible({ timeout: 60000 });
   await trigger.click();
-  const dialog = page.getByRole("dialog").first();
-  await expect(dialog).toBeVisible();
-  return dialog;
+  const menu = page.locator('[role="menu"][data-state="open"]').first();
+  await expect(menu).toBeVisible();
+  const input = menu.getByRole("textbox", { name: "Filter menu items" });
+  await expect(input).toBeVisible();
+  await expect(input).toBeFocused();
+  return menu;
 }
 
-test("filter popover stays open when clicking its background", async ({
-  page,
-}) => {
+test("filter menu stays open when clicking its background", async ({ page }) => {
   await page.goto(FILTER_URL);
-  await openFilterPopover(page);
+  const menu = await openFilterMenu(page);
 
-  // Find an in-viewport pixel whose top hit-test element is the dialog itself
-  // (the popover background, not a control).
-  const target = await page.evaluate(async () => {
-    const d = document.querySelector('[role="dialog"][data-state="open"]');
-    d.scrollIntoView({ block: "center" });
-    await new Promise((r) => requestAnimationFrame(() => r(null)));
-    const r = d.getBoundingClientRect();
-    for (let y = r.top + 2; y < r.bottom - 2; y += 3) {
-      if (y < 0 || y > window.innerHeight) continue;
-      for (let x = r.left + 2; x < r.right - 2; x += 3) {
-        if (x < 0 || x > window.innerWidth) continue;
-        if (document.elementFromPoint(x, y) === d) return { x, y, ok: true };
+  const target = await menu.evaluate(async (element) => {
+    element.scrollIntoView({ block: "center" });
+    await new Promise((resolve) => requestAnimationFrame(() => resolve(null)));
+    const rect = element.getBoundingClientRect();
+    for (let y = rect.top + 2; y < rect.bottom - 2; y += 3) {
+      for (let x = rect.left + 2; x < rect.right - 2; x += 3) {
+        if (document.elementFromPoint(x, y) === element) return { x, y, ok: true };
       }
     }
     return { x: 0, y: 0, ok: false };
   });
-  expect(target.ok, "found a background pixel of the popover").toBe(true);
+  expect(target.ok, "found a background pixel of the menu").toBe(true);
 
   await page.mouse.click(target.x, target.y);
-  await page.waitForTimeout(300);
-
-  await expect(
-    page.locator('[role="dialog"][data-state="open"]'),
-    "background click must not dismiss the popover",
-  ).toHaveCount(1);
+  await expect(page.locator('[role="menu"][data-state="open"]')).toHaveCount(1);
 });
 
-test("filter popover still dismisses when clicking outside", async ({
-  page,
-}) => {
+test("filter menu filters column choices", async ({ page }) => {
   await page.goto(FILTER_URL);
-  await openFilterPopover(page);
+  const menu = await openFilterMenu(page);
+  const input = menu.getByRole("textbox", { name: "Filter menu items" });
+  await input.pressSequentially("status");
+  await expect(menu.getByRole("menuitem", { name: "Status" })).toBeVisible();
+  await expect(menu.getByRole("menuitem", { name: "Customer" })).toBeHidden();
+  await expect(menu.getByRole("menuitem", { name: "Priority" })).toBeHidden();
+});
 
-  // Far corner of the document — genuinely outside the popover.
+test("multiselect filter menu filters its options", async ({ page }) => {
+  await page.goto(FILTER_URL);
+  const menu = await openFilterMenu(page);
+  await menu.getByRole("menuitem", { name: "Status" }).click();
+  const submenu = page.locator('[role="menu"][data-state="open"]').last();
+  const input = submenu.getByRole("textbox", { name: "Filter menu items" });
+  await expect(input).toBeFocused();
+  await input.pressSequentially("paid");
+  await expect(submenu.getByRole("menuitemcheckbox", { name: "Paid" })).toBeVisible();
+  await expect(submenu.getByRole("menuitemcheckbox", { name: "Packing" })).toBeHidden();
+});
+
+test("filter menu dismisses when clicking outside", async ({ page }) => {
+  await page.goto(FILTER_URL);
+  await openFilterMenu(page);
   await page.mouse.click(2, 2);
-  await page.waitForTimeout(300);
-
-  await expect(
-    page.locator('[role="dialog"][data-state="open"]'),
-    "outside click must dismiss the popover",
-  ).toHaveCount(0);
+  await expect(page.locator('[role="menu"][data-state="open"]')).toHaveCount(0);
 });

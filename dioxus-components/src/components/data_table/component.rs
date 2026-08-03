@@ -15,8 +15,8 @@ use dioxus_primitives::r#virtual::{
 use dioxus_primitives::TextOrElement;
 
 use crate::components::{
-    Button, ButtonSize, ButtonVariant, Checkbox, DropdownMenu, DropdownMenuTrigger, Menu,
-    MenuCheckboxItem, MenuItem, MenuItemIndicator, MenuRadioGroup, MenuRadioItem, MenuSub,
+    Button, ButtonSize, ButtonVariant, Checkbox, DropdownMenu, DropdownMenuTrigger, FilterableMenuContent,
+    Menu, MenuCheckboxItem, MenuItem, MenuItemIndicator, MenuRadioGroup, MenuRadioItem, MenuSub,
     MenuSubContent, MenuSubTrigger, Pagination, PaginationContent, PaginationFirst, PaginationItem,
     PaginationLast, PaginationNext, PaginationPrevious, Popover, PopoverContent, PopoverTrigger,
     Select, SelectOption, Skeleton, TextInput, Tooltip, TooltipContent, TooltipTrigger,
@@ -2566,22 +2566,20 @@ fn render_filter_menu<T: Clone + PartialEq + 'static>(
                 }
             }
             Menu { class: Styles::dx_data_table_filter_options,
-                for (index, column) in columns
-                    .iter()
-                    .filter(|column| column.filter.is_some())
-                    .enumerate()
-                {
-                    {render_filter_submenu(column, index, state, actions)}
-                }
-                MenuItem::<String> {
-                    value: "reset-filters",
-                    index: columns.iter().filter(|column| column.filter.is_some()).count(),
-                    disabled: state.filters.is_empty() && state.global_filter.is_none(),
-                    on_select: {
-                        let actions = actions.clone();
-                        move |_| actions.reset_filters.call(())
-                    },
-                    "Reset filters"
+                FilterableMenuContent {
+                    for (index, column) in columns.iter().filter(|column| column.filter.is_some()).enumerate() {
+                        {render_filter_submenu(column, index, state, actions)}
+                    }
+                    MenuItem::<String> {
+                        value: "reset-filters",
+                        index: columns.iter().filter(|column| column.filter.is_some()).count(),
+                        disabled: state.filters.is_empty() && state.global_filter.is_none(),
+                        on_select: {
+                            let actions = actions.clone();
+                            move |_| actions.reset_filters.call(())
+                        },
+                        "Reset filters"
+                    }
                 }
             }
         }
@@ -2784,32 +2782,23 @@ fn render_filter_submenu<T: Clone + PartialEq + 'static>(
                 _ => None,
             };
             rsx! {
-                MenuRadioGroup::<String> {
-                    value: selected.clone().or_else(|| Some(String::new())),
-                    on_value_change: {
-                        let actions = actions.clone();
-                        let column_id = column.id.clone();
-                        move |value: String| actions.update_state.call(DataTableAction::SetFilter {
-                            column: column_id.clone(),
-                            value: (!value.is_empty())
-                                .then_some(DataTableFilterValue::Option(value)),
-                        })
-                    },
-                    MenuRadioItem::<String> {
-                        value: String::new(),
-                        index: 0usize,
-                        "All"
-                        MenuItemIndicator {
-                            if selected.is_none() { "✓" }
+                FilterableMenuContent {
+                    MenuRadioGroup::<String> {
+                        value: selected.clone().or_else(|| Some(String::new())),
+                        on_value_change: {
+                            let actions = actions.clone();
+                            let column_id = column.id.clone();
+                            move |value: String| actions.update_state.call(DataTableAction::SetFilter {
+                                column: column_id.clone(),
+                                value: (!value.is_empty()).then_some(DataTableFilterValue::Option(value)),
+                            })
+                        },
+                        MenuRadioItem::<String> { value: String::new(), index: 0usize, "All"
+                            MenuItemIndicator { if selected.is_none() { "✓" } }
                         }
-                    }
-                    for (option_index, option) in options.iter().enumerate() {
-                        MenuRadioItem::<String> {
-                            value: option.value.clone(),
-                            index: option_index + 1,
-                            "{option.label}"
-                            MenuItemIndicator {
-                                if selected.as_ref() == Some(&option.value) { "✓" }
+                        for (option_index, option) in options.iter().enumerate() {
+                            MenuRadioItem::<String> { value: option.value.clone(), index: option_index + 1, "{option.label}"
+                                MenuItemIndicator { if selected.as_ref() == Some(&option.value) { "✓" } }
                             }
                         }
                     }
@@ -2822,36 +2811,33 @@ fn render_filter_submenu<T: Clone + PartialEq + 'static>(
                 _ => Vec::new(),
             };
             rsx! {
-                for (option_index, option) in options.iter().enumerate() {
-                    MenuCheckboxItem::<String> {
-                        value: option.value.clone(),
-                        index: option_index,
-                        checked: selected.contains(&option.value),
-                        close_on_select: false,
-                        on_checked_change: {
-                            let actions = actions.clone();
-                            let column_id = column.id.clone();
-                            let option_value = option.value.clone();
-                            let selected = selected.clone();
-                            move |checked| {
-                                let mut values = selected.clone();
-                                if checked {
-                                    if !values.contains(&option_value) {
-                                        values.push(option_value.clone());
+                FilterableMenuContent {
+                    for (option_index, option) in options.iter().enumerate() {
+                        MenuCheckboxItem::<String> {
+                            value: option.value.clone(),
+                            index: option_index,
+                            checked: selected.contains(&option.value),
+                            close_on_select: false,
+                            on_checked_change: {
+                                let actions = actions.clone();
+                                let column_id = column.id.clone();
+                                let option_value = option.value.clone();
+                                let selected = selected.clone();
+                                move |checked| {
+                                    let mut values = selected.clone();
+                                    if checked {
+                                        if !values.contains(&option_value) { values.push(option_value.clone()); }
+                                    } else {
+                                        values.retain(|value| value != &option_value);
                                     }
-                                } else {
-                                    values.retain(|value| value != &option_value);
+                                    actions.update_state.call(DataTableAction::SetFilter {
+                                        column: column_id.clone(),
+                                        value: (!values.is_empty()).then_some(DataTableFilterValue::Multiple(values)),
+                                    });
                                 }
-                                actions.update_state.call(DataTableAction::SetFilter {
-                                    column: column_id.clone(),
-                                    value: (!values.is_empty())
-                                        .then_some(DataTableFilterValue::Multiple(values)),
-                                });
-                            }
-                        },
-                        "{option.label}"
-                        MenuItemIndicator {
-                            if selected.contains(&option.value) { "✓" }
+                            },
+                            "{option.label}"
+                            MenuItemIndicator { if selected.contains(&option.value) { "✓" } }
                         }
                     }
                 }
