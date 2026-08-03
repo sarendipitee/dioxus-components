@@ -46,6 +46,9 @@
   box-sizing: border-box;
   align-items: stretch;
   gap: var(--item-gap);
+}
+
+.dx_input:not([data-variant="unstyled"]) {
   border: 1px solid var(--input-border);
   border-radius: var(--input-radius);
   background: var(--input);
@@ -85,31 +88,34 @@
 
 .dx_input[data-variant="unstyled"] {
   min-height: 0;
-  border-color: transparent;
+  border: 0;
   border-radius: 0;
-  background: transparent;
+  background: none;
+  color: inherit;
+  transition: none;
 }
 
-.dx_input:hover:not([data-disabled="true"]):not([data-error="true"]) {
+.dx_input:hover:not([data-disabled="true"]):not([data-error="true"]):not([data-variant="unstyled"]) {
   background: var(--input-hover);
   border-color: var(--input-hover-border);
   color: var(--input-hover-fg);
 }
-
-.dx_input:focus-within:not([data-disabled="true"]):not([data-error="true"]) {
+.dx_input:focus-within:not([data-disabled="true"]):not([data-error="true"]):not([data-variant="unstyled"]) {
   background: var(--input-focus);
   color: var(--input-focus-fg);
 }
+
 
 .dx_input_wrapper[data-input-describedby] .dx_input {
   margin-block-start: var(--input-padding-y);
 }
 
-.dx_input[data-error="true"] {
+.dx_input[data-error="true"]:not([data-variant="unstyled"]) {
   border-color: var(--danger-border);
 }
 
-.dx_input[data-disabled="true"] {
+
+.dx_input[data-disabled="true"]:not([data-variant="unstyled"]) {
   border-color: var(--input-disabled-border);
   background: var(--input-disabled);
   color: var(--input-disabled-fg);
