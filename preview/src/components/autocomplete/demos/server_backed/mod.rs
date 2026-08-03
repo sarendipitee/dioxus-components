@@ -45,6 +45,7 @@ fn search_people(query: &str) -> Vec<SearchResult> {
 pub fn Demo() -> Element {
     let mut value = use_signal(|| None::<String>);
     let mut query = use_signal(String::new);
+    let mut open = use_signal(|| Some(false));
     let mut results = use_signal(Vec::<SearchResult>::new);
     let mut loading = use_signal(|| false);
     let mut request_id = use_signal(|| 0u64);
@@ -66,6 +67,7 @@ pub fn Demo() -> Element {
                 query: Some(query()),
                 on_query_change: move |next: String| {
                     query.set(next.clone());
+                    open.set(Some(!next.trim().is_empty()));
                     let next_request_id = request_id() + 1;
                     request_id.set(next_request_id);
                     results.set(Vec::new());
@@ -84,13 +86,13 @@ pub fn Demo() -> Element {
                         }
                     });
                 },
+                open: open,
+                on_open_change: move |next| open.set(Some(next && !query().trim().is_empty())), 
                 placeholder: "Search people...",
                 aria_label: "Server-backed people search",
                 list_aria_label: "People search results",
                 loading: loading(),
-                if query().trim().is_empty() {
-                    ComboboxEmpty { "Type a name or role to search." }
-                } else if loading() {
+                if loading() {
                     div { role: "status", "Searching server..." }
                 } else {
                     ComboboxEmpty { "Server returned no matches." }
