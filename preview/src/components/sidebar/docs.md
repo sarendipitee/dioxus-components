@@ -1,28 +1,30 @@
-The Sidebar component in this page is the canonical navigation shell for multi-section apps: it anchors core entry points, tool actions, and context filters to an edge while keeping the main work area readable.
+Sidebar provides the navigation layout commonly used in dashboards and other multi-page applications. It can sit on either side of the page and hold navigation links, actions, filters, and account controls.
 
-The demo pages below show how to combine sidebar primitives into concrete layouts, including:
+These examples cover:
 
-- fixed side placement on the left or right,
-- floating vs. inset chrome variants,
-- three collapse modes (off-canvas, icon-only rail, and non-collapsible), and
-- nested menu patterns with optional actions, badges, and tooltips.
+- left- and right-aligned sidebars,
+- standard, floating, and inset variants,
+- off-canvas, icon-only, and fixed layouts, and
+- nested menus with actions, badges, and tooltips.
 
 ## Component Structure
 
 ```rust
-// Provider: supplies open/side/collapsible signals and ⌘/Ctrl+B toggle
+// Provides sidebar state and the ⌘/Ctrl+B keyboard shortcut
 SidebarProvider {
     Sidebar {
         side: SidebarSide::Left,                     // left/right placement
-        variant: SidebarVariant::Sidebar,            // chrome: Sidebar | Floating | Inset
+        variant: SidebarVariant::Sidebar,            // Sidebar | Floating | Inset
         collapsible: SidebarCollapsible::Offcanvas,  // behavior: Offcanvas | Icon | None
+        min_width: 192.0,                          // desktop resize lower bound in px
+        max_width: 480.0,                          // desktop resize upper bound in px
 
-        // Layout - Header
+        // Header
         SidebarHeader {
             SidebarTrigger {}                        // toggle button (as)
         }
 
-        // Layout - Scrollable content area
+        // Scrollable content
         SidebarContent {
             SidebarGroup {
                 SidebarGroupLabel { "..." }          // optional label (as)
@@ -51,28 +53,27 @@ SidebarProvider {
             }
         }
 
-        // Layout -  Footer
+        // Footer
         SidebarFooter {
             SidebarMenu { /* ... */ }
         }
     }
+    // Optional resize handle for desktop layouts
+    SidebarRail {}
 
-    // Optional desktop rail controller placed between rail and content
-    SidebarRail {}                               // draggable resize handle
-
-    // Layout - Main content area beside the rail
+    // Main content
     SidebarInset { /* ... */ }
 }
 ```
 
-## Behaviors
-- Layout control starts at the provider and `Sidebar`: use `side` to attach to left or right edge, then switch `variant` for a floating or inset container treatment without changing menu composition.
-- Collapse behavior is controlled by `collapsible` (`Offcanvas`, `Icon`, `None`) so you can test wide desktop rails, compact icon strips, or fully static sidebars in place.
-- Keyboard support and accessibility are built in: ⌘/Ctrl+B toggles from the provider, and focus visibility is handled through the focus-visible styles declared in `sidebar/style.css`.
-- Menu tooltip behavior is per-item via `SidebarMenuButton { tooltip }`; passing `None` keeps the item label-only and avoids tooltip wrappers in dense icon-only layouts.
+## Behavior
 
-## Custom Rendering with `as`
-Supported components: `SidebarTrigger`, `SidebarGroupLabel`, `SidebarGroupAction`, `SidebarMenuButton`, `SidebarMenuAction`, `SidebarMenuSubButton`. Use `as: |attrs| rsx! { ... }` and spread `..attrs` to preserve merged attributes, state markers, and event handlers while swapping in your own rendering.
+- Set `side` to `Left` or `Right` to choose where the sidebar appears.
+- Set `variant` to `Sidebar`, `Floating`, or `Inset` to change how it sits alongside the page.
+- Set `collapsible` to `Offcanvas`, `Icon`, or `None` to hide the sidebar, reduce it to icons, or keep it open.
+- Press ⌘/Ctrl+B to toggle the sidebar. Focus indicators are included for keyboard users.
+- Add a `tooltip` to `SidebarMenuButton` when its label needs to remain available in the icon-only layout.
 
-## Why these demos exist
-The sidebar page is intentionally split into small scenarios so you can validate a real navigation pattern quickly: placement, chrome variants, collapse ergonomics, and nested menu behavior under keyboard interaction.
+## Custom rendering with `as`
+
+`SidebarTrigger`, `SidebarGroupLabel`, `SidebarGroupAction`, `SidebarMenuButton`, `SidebarMenuAction`, and `SidebarMenuSubButton` support the `as` prop. Return your custom element from the callback and spread `..attrs` onto it so the component keeps its attributes, state, and event handlers.

@@ -1,6 +1,6 @@
 {
   "name": "sidebar",
-  "description": "Provide a docked application chrome that hosts navigation, filters, and actions while supporting left/right placement, floating chrome, and collapsible rail states for dense workspaces.",
+  "description": "A responsive application sidebar with left and right placement, three visual variants, nested menus, resizing, and collapsible layouts.",
   "authors": [
     "zhiyanzhaijie"
   ],
@@ -23,7 +23,6 @@
     "button",
     "separator",
     "sheet",
-    "skeleton",
     "tooltip"
   ],
   "globalAssets": [

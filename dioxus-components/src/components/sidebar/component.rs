@@ -10,6 +10,7 @@ use dioxus_icons::lucide::PanelLeft;
 use dioxus_primitives::dioxus_attributes::attributes;
 use dioxus_primitives::merge_attributes;
 use dioxus_primitives::use_controlled;
+use std::sync::atomic::{AtomicUsize, Ordering};
 
 #[component_styles("./style.css")]
 struct Styles;
@@ -19,6 +20,17 @@ const SIDEBAR_WIDTH: &str = "16rem";
 const SIDEBAR_WIDTH_MOBILE: &str = "18rem";
 const SIDEBAR_WIDTH_ICON: &str = "3rem";
 const SIDEBAR_KEYBOARD_SHORTCUT: &str = "b";
+const SIDEBAR_DEFAULT_WIDTH: f64 = 256.0;
+const SIDEBAR_DEFAULT_MIN_WIDTH: f64 = 192.0;
+const SIDEBAR_DEFAULT_MAX_WIDTH: f64 = 480.0;
+static SIDEBAR_RAIL_ID: AtomicUsize = AtomicUsize::new(0);
+
+#[derive(Clone, Copy)]
+struct SidebarResizeCtx {
+    width: Signal<f64>,
+    min_width: ReadSignal<f64>,
+    max_width: ReadSignal<f64>,
+}
 const MOBILE_BREAKPOINT: u32 = 768;
 
 #[derive(Debug, Clone, Copy, Default, PartialEq)]
@@ -243,7 +255,7 @@ pub fn SidebarProvider(
     );
 
     let base = attributes!(div {
-        class: Styles::dx_sidebar_wrapper.to_string(),
+        class: Styles::dx_sidebar_wrapper,
         "data-slot": "sidebar-wrapper",
         style: sidebar_style,
     });
@@ -259,9 +271,16 @@ pub fn Sidebar(
     #[props(default)] side: SidebarSide,
     #[props(default)] variant: SidebarVariant,
     #[props(default)] collapsible: SidebarCollapsible,
+    /// Minimum desktop width in CSS pixels while resizing.
+    #[props(default = SIDEBAR_DEFAULT_MIN_WIDTH)]
+    min_width: ReadSignal<f64>,
+    /// Maximum desktop width in CSS pixels while resizing.
+    #[props(default = SIDEBAR_DEFAULT_MAX_WIDTH)]
+    max_width: ReadSignal<f64>,
     #[props(extends = GlobalAttributes)] attributes: Vec<Attribute>,
     children: Element,
 ) -> Element {
+    let width = use_signal(|| SIDEBAR_DEFAULT_WIDTH);
     let ctx = use_sidebar();
     let mut ctx_side = ctx.side;
     if *ctx_side.peek() != side {
@@ -274,7 +293,7 @@ pub fn Sidebar(
 
     if collapsible == SidebarCollapsible::None {
         let base = attributes!(div {
-            class: Styles::dx_sidebar_static.to_string(),
+            class: Styles::dx_sidebar_static,
             "data-slot": "sidebar",
         });
         let merged = merge_attributes(vec![base, attributes]);
@@ -295,14 +314,14 @@ pub fn Sidebar(
                 open: open_mobile(),
                 on_open_change: move |v| ctx.set_open_mobile(v),
                 side: sheet_side,
-                class: Styles::dx_sidebar_sheet.to_string(),
+                class: Styles::dx_sidebar_sheet,
                 "data-sidebar": "sidebar",
                 "data-slot": "sidebar",
                 "data-mobile": "true",
                 title: "Sidebar",
                 description: "Displays the mobile sidebar.",
                 with_close_button: false,
-                div { class: Styles::dx_sidebar_mobile_inner.to_string(), {children} }
+                div { class: Styles::dx_sidebar_mobile_inner, {children} }
             }
         };
     }
@@ -313,25 +332,39 @@ pub fn Sidebar(
         ""
     };
 
+    let resize_ctx = SidebarResizeCtx {
+        width,
+        min_width,
+        max_width,
+    };
+    use_context_provider(|| resize_ctx);
+    let desktop_style = format!("--dx-sidebar-width: {}px", width());
+
     let container_base = attributes!(div {
-        class: Styles::dx_sidebar_container.to_string(),
+        class: Styles::dx_sidebar_container,
         "data-slot": "sidebar-container",
     });
     let container_attrs = merge_attributes(vec![container_base, attributes]);
 
     rsx! {
         div {
-            class: Styles::dx_sidebar_desktop.to_string(),
+            class: Styles::dx_sidebar_desktop,
             "data-state": state().as_str(),
             "data-collapsible": collapsible_str,
             "data-variant": variant.as_str(),
             "data-side": side.as_str(),
             "data-slot": "sidebar",
-            div { class: Styles::dx_sidebar_gap.to_string(), "data-slot": "sidebar-gap" }
+            style: desktop_style,
+            div { class: Styles::dx_sidebar_gap, "data-slot": "sidebar-gap" }
+            div {
+                class: Styles::dx_sidebar_hotzone,
+                "data-slot": "sidebar-hotzone",
+                "aria-hidden": "true",
+            }
             div {
                 ..container_attrs,
                 div {
-                    class: Styles::dx_sidebar_inner.to_string(),
+                    class: Styles::dx_sidebar_inner,
                     "data-sidebar": "sidebar",
                     "data-slot": "sidebar-inner",
                     {children}
@@ -351,7 +384,7 @@ pub fn SidebarTrigger(
     let ctx = use_sidebar();
 
     let base = attributes!(button {
-        class: Styles::dx_sidebar_trigger.to_string(),
+        class: Styles::dx_sidebar_trigger,
         "data-sidebar": "trigger",
         "data-slot": "sidebar-trigger",
     });
@@ -368,10 +401,10 @@ pub fn SidebarTrigger(
             },
             attributes: merged,
             PanelLeft {
-                class: Styles::dx_sidebar_trigger_icon.to_string(),
+                class: Styles::dx_sidebar_trigger_icon,
                 size: "1rem",
             }
-            span { class: Styles::dx_sr_only.to_string(), "Toggle Sidebar" }
+            span { class: Styles::dx_sr_only, "Toggle Sidebar" }
         }
     }
 }
@@ -379,9 +412,11 @@ pub fn SidebarTrigger(
 #[component]
 pub fn SidebarRail(#[props(extends = GlobalAttributes)] attributes: Vec<Attribute>) -> Element {
     let ctx = use_sidebar();
-
+    let resize = use_context::<SidebarResizeCtx>();
+    let rail_id = use_hook(|| SIDEBAR_RAIL_ID.fetch_add(1, Ordering::Relaxed));
+    let mut dragged = use_signal(|| false);
     let base = attributes!(button {
-        class: Styles::dx_sidebar_rail.to_string(),
+        class: Styles::dx_sidebar_rail,
         "data-sidebar": "rail",
         "data-slot": "sidebar-rail",
     });
@@ -389,10 +424,135 @@ pub fn SidebarRail(#[props(extends = GlobalAttributes)] attributes: Vec<Attribut
 
     rsx! {
         button {
-            aria_label: "Toggle Sidebar",
+            aria_label: "Resize Sidebar",
             tabindex: -1,
-            onclick: move |_| ctx.toggle(),
-            title: "Toggle Sidebar",
+            title: "Drag to resize sidebar",
+            "data-resizing": "false",
+            "data-sidebar-rail-id": rail_id,
+            onpointerdown: move |event| {
+                if event.trigger_button() != Some(dioxus::html::input_data::MouseButton::Primary) {
+                    return;
+                }
+                event.prevent_default();
+                let was_collapsed = (ctx.state)() == SidebarState::Collapsed;
+                let start_x = event.client_coordinates().x;
+                let start_width = (resize.width)();
+                let min = (resize.min_width)().max(0.0);
+                let max = (resize.max_width)().max(min);
+                dragged.set(false);
+
+                spawn(async move {
+                    let mut eval = document::eval(&format!(r#"
+                        const rail = document.querySelector('[data-sidebar-rail-id="{rail_id}"]');
+                        const sidebar = rail.closest('[data-slot="sidebar"]');
+                        const startX = {start_x};
+                        const startWidth = {start_width};
+                        const minWidth = {min};
+                        const maxWidth = {max};
+                        const side = sidebar.dataset.side;
+                        const canExpandFromDrag = sidebar.dataset.variant !== 'floating';
+                        const direction = side === 'left' ? 1 : -1;
+                        const collapseDistance = minWidth * 0.2;
+                        const dragThreshold = 30;
+                        let width = startWidth;
+                        let moved = false;
+                        let frame = 0;
+                        let finished = false;
+
+                        sidebar.dataset.resizing = 'true';
+                        const apply = clientX => {{
+                            width = Math.min(maxWidth, Math.max(minWidth,
+                                startWidth + (clientX - startX) * direction));
+                            sidebar.style.setProperty('--dx-sidebar-width', `${{width}}px`);
+                        }};
+                        const shouldCollapse = clientX => side === 'left'
+                            ? clientX <= collapseDistance
+                            : window.innerWidth - clientX <= collapseDistance;
+                        const cleanup = () => {{
+                            cancelAnimationFrame(frame);
+                            delete sidebar.dataset.resizing;
+                            window.removeEventListener('pointermove', move);
+                            window.removeEventListener('pointerup', end);
+                            window.removeEventListener('pointercancel', cancel);
+                        }};
+                        const finish = (event, collapse) => {{
+                            if (finished) return;
+                            finished = true;
+                            if (moved && !{was_collapsed}) {{
+                                event.preventDefault();
+                                apply(event.clientX);
+                            }}
+                            cleanup();
+                            const openFromClick = {was_collapsed} && !moved;
+                            if (moved || openFromClick) {{
+                                rail.addEventListener('click', event => {{
+                                    event.preventDefault();
+                                    event.stopImmediatePropagation();
+                                }}, {{ once: true, capture: true }});
+                            }}
+                            const mustStayCollapsed = {was_collapsed} && !canExpandFromDrag;
+                            const result = [width, moved, moved && (collapse || mustStayCollapsed), openFromClick, true];
+                            dioxus.send(result);
+                        }};
+                        const move = event => {{
+                            event.preventDefault();
+                            moved ||= Math.abs(event.clientX - startX) >= dragThreshold;
+                            if ({was_collapsed}) {{
+                                if (canExpandFromDrag && moved) {{
+                                    finished = true;
+                                    width = minWidth;
+                                    sidebar.style.setProperty('--dx-sidebar-width', `${{width}}px`);
+                                    cleanup();
+                                    rail.addEventListener('click', event => {{
+                                        event.preventDefault();
+                                        event.stopImmediatePropagation();
+                                    }}, {{ once: true, capture: true }});
+                                    dioxus.send([width, true, false, false, true]);
+                                }}
+                                return;
+                            }}
+                            if (shouldCollapse(event.clientX)) {{
+                                finish(event, true);
+                                return;
+                            }}
+                            cancelAnimationFrame(frame);
+                            frame = requestAnimationFrame(() => apply(event.clientX));
+                        }};
+                        const end = event => finish(event, shouldCollapse(event.clientX));
+                        const cancel = event => finish(event, false);
+                        window.addEventListener('pointermove', move, {{ passive: false }});
+                        window.addEventListener('pointerup', end, {{ once: true }});
+                        window.addEventListener('pointercancel', cancel, {{ once: true }});
+                    "#));
+                    while let Ok((final_width, was_dragged, collapse, open_from_click, finished)) =
+                        eval.recv::<(f64, bool, bool, bool, bool)>().await
+                    {
+                        if !finished {
+                            ctx.set_open.call(true);
+                            continue;
+                        }
+                        if open_from_click {
+                            ctx.set_open.call(true);
+                        }
+                        if was_dragged {
+                            dragged.set(true);
+                            let mut width = resize.width;
+                            let minimum = (resize.min_width)().max(0.0);
+                            let maximum = (resize.max_width)().max(minimum);
+                            width.set(final_width.clamp(minimum, maximum));
+                            ctx.set_open.call(!collapse);
+                        }
+                        break;
+                    }
+                });
+            },
+            onclick: move |_| {
+                if dragged() {
+                    dragged.set(false);
+                } else {
+                    ctx.toggle();
+                }
+            },
             ..merged,
         }
     }
@@ -404,7 +564,7 @@ pub fn SidebarInset(
     children: Element,
 ) -> Element {
     let base = attributes!(main {
-        class: Styles::dx_sidebar_inset.to_string(),
+        class: Styles::dx_sidebar_inset,
         "data-slot": "sidebar-inset",
     });
     let merged = merge_attributes(vec![base, attributes]);
@@ -420,7 +580,7 @@ pub fn SidebarHeader(
     children: Element,
 ) -> Element {
     let base = attributes!(div {
-        class: Styles::dx_sidebar_header.to_string(),
+        class: Styles::dx_sidebar_header,
         "data-slot": "sidebar-header",
         "data-sidebar": "header",
     });
@@ -437,7 +597,7 @@ pub fn SidebarContent(
     children: Element,
 ) -> Element {
     let base = attributes!(div {
-        class: Styles::dx_sidebar_content.to_string(),
+        class: Styles::dx_sidebar_content,
         "data-slot": "sidebar-content",
         "data-sidebar": "content",
     });
@@ -454,7 +614,7 @@ pub fn SidebarFooter(
     children: Element,
 ) -> Element {
     let base = attributes!(div {
-        class: Styles::dx_sidebar_footer.to_string(),
+        class: Styles::dx_sidebar_footer,
         "data-slot": "sidebar-footer",
         "data-sidebar": "footer",
     });
@@ -472,7 +632,7 @@ pub fn SidebarSeparator(
     #[props(extends = GlobalAttributes)] attributes: Vec<Attribute>,
 ) -> Element {
     let base = attributes!(div {
-        class: Styles::dx_sidebar_separator.to_string(),
+        class: Styles::dx_sidebar_separator,
         "data-slot": "sidebar-separator",
         "data-sidebar": "separator",
     });
@@ -489,7 +649,7 @@ pub fn SidebarGroup(
     children: Element,
 ) -> Element {
     let base = attributes!(div {
-        class: Styles::dx_sidebar_group.to_string(),
+        class: Styles::dx_sidebar_group,
         "data-slot": "sidebar-group",
         "data-sidebar": "group",
     });
@@ -507,7 +667,7 @@ pub fn SidebarGroupLabel(
     children: Element,
 ) -> Element {
     let base = attributes!(div {
-        class: Styles::dx_sidebar_group_label.to_string(),
+        class: Styles::dx_sidebar_group_label,
         "data-slot": "sidebar-group-label",
         "data-sidebar": "group-label",
     });
@@ -529,7 +689,7 @@ pub fn SidebarGroupAction(
     children: Element,
 ) -> Element {
     let base = attributes!(button {
-        class: Styles::dx_sidebar_group_action.to_string(),
+        class: Styles::dx_sidebar_group_action,
         "data-slot": "sidebar-group-action",
         "data-sidebar": "group-action",
     });
@@ -550,7 +710,7 @@ pub fn SidebarGroupContent(
     children: Element,
 ) -> Element {
     let base = attributes!(div {
-        class: Styles::dx_sidebar_group_content.to_string(),
+        class: Styles::dx_sidebar_group_content,
         "data-slot": "sidebar-group-content",
         "data-sidebar": "group-content",
     });
@@ -567,7 +727,7 @@ pub fn SidebarMenu(
     children: Element,
 ) -> Element {
     let base = attributes!(ul {
-        class: Styles::dx_sidebar_menu.to_string(),
+        class: Styles::dx_sidebar_menu,
         "data-slot": "sidebar-menu",
         "data-sidebar": "menu",
     });
@@ -584,7 +744,7 @@ pub fn SidebarMenuItem(
     children: Element,
 ) -> Element {
     let base = attributes!(li {
-        class: Styles::dx_sidebar_menu_item.to_string(),
+        class: Styles::dx_sidebar_menu_item,
         "data-slot": "sidebar-menu-item",
         "data-sidebar": "menu-item",
     });
@@ -646,7 +806,7 @@ pub fn SidebarMenuButton(
     let state = ctx.state;
 
     let base = attributes!(button {
-        class: Styles::dx_sidebar_menu_button.to_string(),
+        class: Styles::dx_sidebar_menu_button,
         "data-slot": "sidebar-menu-button",
         "data-sidebar": "menu-button",
         "data-size": size.as_str(),
@@ -668,7 +828,7 @@ pub fn SidebarMenuButton(
 
     rsx! {
         Tooltip {
-            class: Styles::dx_sidebar_tooltip.to_string(),
+            class: Styles::dx_sidebar_tooltip,
             disabled: hidden,
             TooltipTrigger {
                 as: move |tooltip_attrs: Vec<Attribute>| {
@@ -700,7 +860,7 @@ pub fn SidebarMenuAction(
     children: Element,
 ) -> Element {
     let base = attributes!(button {
-        class: Styles::dx_sidebar_menu_action.to_string(),
+        class: Styles::dx_sidebar_menu_action,
         "data-slot": "sidebar-menu-action",
         "data-sidebar": "menu-action",
         "data-show-on-hover": if show_on_hover { "true" } else { "false" },
@@ -722,7 +882,7 @@ pub fn SidebarMenuBadge(
     children: Element,
 ) -> Element {
     let base = attributes!(div {
-        class: Styles::dx_sidebar_menu_badge.to_string(),
+        class: Styles::dx_sidebar_menu_badge,
         "data-slot": "sidebar-menu-badge",
         "data-sidebar": "menu-badge",
     });
@@ -739,7 +899,7 @@ pub fn SidebarMenuSkeleton(
     #[props(extends = GlobalAttributes)] attributes: Vec<Attribute>,
 ) -> Element {
     let base = attributes!(div {
-        class: Styles::dx_sidebar_menu_skeleton.to_string(),
+        class: Styles::dx_sidebar_menu_skeleton,
         "data-slot": "sidebar-menu-skeleton",
         "data-sidebar": "menu-skeleton",
     });
@@ -749,9 +909,9 @@ pub fn SidebarMenuSkeleton(
         div {
             ..merged,
             if show_icon {
-                Skeleton { class: Styles::dx_sidebar_menu_skeleton_icon.to_string() }
+                Skeleton { class: Styles::dx_sidebar_menu_skeleton_icon }
             }
-            Skeleton { class: Styles::dx_sidebar_menu_skeleton_text.to_string(), width: "70%" }
+            Skeleton { class: Styles::dx_sidebar_menu_skeleton_text, width: "70%" }
         }
     }
 }
@@ -762,7 +922,7 @@ pub fn SidebarMenuSub(
     children: Element,
 ) -> Element {
     let base = attributes!(ul {
-        class: Styles::dx_sidebar_menu_sub.to_string(),
+        class: Styles::dx_sidebar_menu_sub,
         "data-slot": "sidebar-menu-sub",
         "data-sidebar": "menu-sub",
     });
@@ -779,7 +939,7 @@ pub fn SidebarMenuSubItem(
     children: Element,
 ) -> Element {
     let base = attributes!(li {
-        class: Styles::dx_sidebar_menu_sub_item.to_string(),
+        class: Styles::dx_sidebar_menu_sub_item,
         "data-slot": "sidebar-menu-sub-item",
         "data-sidebar": "menu-sub-item",
     });
@@ -816,7 +976,7 @@ pub fn SidebarMenuSubButton(
     children: Element,
 ) -> Element {
     let base = attributes!(a {
-        class: Styles::dx_sidebar_menu_sub_button.to_string(),
+        class: Styles::dx_sidebar_menu_sub_button,
         "data-slot": "sidebar-menu-sub-button",
         "data-sidebar": "menu-sub-button",
         "data-size": size.as_str(),

@@ -1,5 +1,5 @@
 use dioxus_components::avatar::{ImageAvatar, AvatarImageSize};
-use dioxus_components::button::{Button, ButtonVariant};
+use dioxus_components::button::{Button, ButtonSize, ButtonVariant};
 use dioxus_components::collapsible::{Collapsible, CollapsibleContent, CollapsibleTrigger};
 use dioxus_components::dropdown_menu::{DropdownMenu, DropdownMenuTrigger};
 use dioxus_components::menu::{Menu, MenuItem, MenuSeparator};
@@ -9,10 +9,9 @@ use dioxus_components::sidebar::{
     SidebarHeader, SidebarInset, SidebarMenu, SidebarMenuAction, SidebarMenuBadge,
     SidebarMenuButton, SidebarMenuButtonSize, SidebarMenuItem, SidebarMenuSub,
     SidebarMenuSubButton, SidebarMenuSubItem, SidebarProvider, SidebarRail, SidebarSide,
-    SidebarTrigger, SidebarVariant,
+    SidebarTrigger, SidebarVariant, use_sidebar,
 };
-use dioxus_components::skeleton::Skeleton;
-use dioxus_icons::lucide::{ChevronRight, Circle};
+use dioxus_icons::lucide::{ChevronRight, Circle, PanelLeftOpen, PanelRightOpen};
 use dioxus::prelude::*;
 
 #[css_module("/src/components/sidebar/demos/demo.css")]
@@ -172,8 +171,9 @@ pub fn Demo() -> Element {
                 variant: SidebarVariant::Floating,
                 collapsible: collapsible(),
                 side: side(),
-                SidebarHeader {
+                SidebarHeader { class: DemoStyles::dx_sidebar_floating_header,
                     TeamSwitcher { teams: TEAMS }
+                    ExpandSidebarButton { side: side() }
                 }
                 SidebarContent {
                     NavMain { items: NAV_MAIN }
@@ -183,18 +183,36 @@ pub fn Demo() -> Element {
                 SidebarRail {}
             }
             SidebarInset {
-                header { style: "display:flex; align-items:center; justify-content:space-between; height:3.5rem; flex-shrink:0; padding:0 1rem; border-bottom:1px solid var(--surface-border); background:var(--surface-muted);",
+                header { class: DemoStyles::dx_sidebar_inset_header,
                     div { style: "display: flex; align-items: center; gap: 0.75rem;",
                         SidebarTrigger {}
                         Separator { height: "1rem", horizontal: false }
-                        span { "Sidebar Setting" }
+                        span { "Sidebar settings" }
                     }
                 }
                 div { style: "display:flex; flex:1; flex-direction:column; gap:1.5rem; padding:1.5rem; min-height:0; overflow-y:auto; overflow-x:hidden;",
                     DemoSettingControls { side, collapsible }
-                    Skeleton { style: "height: 10rem; width: 100%; flex-shrink:0;" }
-                    Skeleton { style: "height: 20rem; width: 100%; flex-shrink:0;" }
                 }
+            }
+        }
+    }
+}
+
+#[component]
+fn ExpandSidebarButton(side: SidebarSide) -> Element {
+    let sidebar = use_sidebar();
+
+    rsx! {
+        Button {
+            class: DemoStyles::dx_sidebar_expand_button,
+            variant: ButtonVariant::Ghost,
+            size: ButtonSize::IconSm,
+            aria_label: "Expand sidebar",
+            title: "Expand sidebar",
+            onclick: move |_| sidebar.toggle(),
+            match side {
+                SidebarSide::Left => rsx! { PanelLeftOpen { size: "1rem" } },
+                SidebarSide::Right => rsx! { PanelRightOpen { size: "1rem" } },
             }
         }
     }

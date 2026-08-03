@@ -51,3 +51,30 @@
   transition: opacity 200ms ease-out, max-height 200ms ease-out, padding 200ms ease-out, visibility 0ms 200ms;
   visibility: hidden;
 }
+
+.dx-sidebar-inset-header {
+  display: flex;
+  height: 3.5rem;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 1rem;
+  border-bottom: 1px solid var(--surface-border);
+}
+
+.dx-sidebar-floating-header {
+  position: relative;
+}
+
+.dx-sidebar-expand-button {
+  position: absolute;
+  z-index: 1;
+  top: var(--content-gap);
+  right: var(--content-gap);
+  display: none;
+  background: var(--dx-sidebar-bg);
+}
+
+[data-state="collapsed"][data-variant="floating"] .dx-sidebar-expand-button {
+  display: inline-flex;
+}

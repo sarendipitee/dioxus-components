@@ -1,1 +1,1 @@
-Demonstrates the canonical app sidebar layout with nested navigation, footer actions, and live controls for switching side placement and collapse behavior.
+The standard sidebar with nested navigation, account actions, and controls for changing its position and collapse mode.

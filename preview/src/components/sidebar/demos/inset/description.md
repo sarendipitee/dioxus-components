@@ -1,1 +1,1 @@
-Shows the inset sidebar treatment, where the navigation shell feels embedded into the surrounding app surface instead of sitting flush against the viewport edge.
+The inset variant places the page content inside a framed area beside the sidebar.

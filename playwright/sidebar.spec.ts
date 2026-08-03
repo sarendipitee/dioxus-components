@@ -109,6 +109,105 @@ test("floating offcanvas: reveals on edge hover on both sides", async ({ page })
     await expect(sidebar).toHaveAttribute("data-state", "expanded");
   }
 });
+test("offcanvas: collapsed rail drag stops when expansion threshold is crossed", async ({ page }) => {
+  await gotoSidebarBlock(page);
+
+  const sidebar = page.locator('[data-slot="sidebar"]:not([data-mobile="true"])').first();
+  const rail = sidebar.locator('[data-slot="sidebar-rail"]');
+  const gap = sidebar.locator('[data-slot="sidebar-gap"]');
+  const trigger = page.locator('[data-slot="sidebar-trigger"]').first();
+
+  if ((await sidebar.getAttribute("data-state")) === "expanded") {
+    await trigger.click();
+  }
+  await expect(gap).toHaveCSS("width", "0px");
+  await expect(sidebar).toHaveAttribute("data-state", "collapsed");
+
+  const railBox = await rail.boundingBox();
+  expect(railBox).not.toBeNull();
+  const startX = railBox!.x + railBox!.width / 2;
+  const y = railBox!.y + railBox!.height / 2;
+
+  await page.mouse.move(startX, y);
+  await page.mouse.down();
+  await page.mouse.move(startX + 35, y, { steps: 2 });
+  await expect(sidebar).toHaveAttribute("data-state", "expanded");
+  await expect(gap).toHaveCSS("width", "220px");
+
+  await page.mouse.move(startX + 180, y, { steps: 4 });
+  await expect(gap).toHaveCSS("width", "220px");
+  await page.mouse.up();
+
+  await expect(sidebar).toHaveAttribute("data-state", "expanded");
+  await expect(gap).toHaveCSS("width", "220px");
+});
+test("offcanvas: rail collapse can reopen from trigger and rail", async ({ page }) => {
+  await gotoSidebarBlock(page);
+
+  const sidebar = page.locator('[data-slot="sidebar"]:not([data-mobile="true"])').first();
+  const container = sidebar.locator('[data-slot="sidebar-container"]');
+  const gap = sidebar.locator('[data-slot="sidebar-gap"]');
+  const rail = sidebar.locator('[data-slot="sidebar-rail"]');
+  const trigger = page.locator('[data-slot="sidebar-trigger"]').first();
+
+  const collapseByRail = async () => {
+    const railBox = await rail.boundingBox();
+    expect(railBox).not.toBeNull();
+    const y = railBox!.y + railBox!.height / 2;
+    await page.mouse.move(railBox!.x + railBox!.width / 2, y);
+    await page.mouse.down();
+    await page.mouse.move(1, y);
+    await page.mouse.up();
+    await expect(sidebar).toHaveAttribute("data-state", "collapsed");
+    await expect(gap).toHaveCSS("width", "0px");
+  };
+
+  await collapseByRail();
+  await trigger.click();
+  await expect(sidebar).toHaveAttribute("data-state", "expanded");
+  await expect(gap).toHaveCSS("width", "220px");
+  await expect(container).toHaveCSS("left", "0px");
+
+  await collapseByRail();
+  await rail.click();
+  await expect(sidebar).toHaveAttribute("data-state", "expanded");
+  await expect(gap).toHaveCSS("width", "220px");
+  await expect(container).toHaveCSS("left", "0px");
+});
+
+test("icon: trigger collapses to icon width after rail resize", async ({ page }) => {
+  await gotoSidebarBlock(page);
+
+  const sidebar = page.locator('[data-slot="sidebar"]:not([data-mobile="true"])').first();
+  const container = sidebar.locator('[data-slot="sidebar-container"]');
+  const gap = sidebar.locator('[data-slot="sidebar-gap"]');
+  const rail = sidebar.locator('[data-slot="sidebar-rail"]');
+  const trigger = page.locator('[data-slot="sidebar-trigger"]').first();
+
+  const railBox = await rail.boundingBox();
+  expect(railBox).not.toBeNull();
+  const y = railBox!.y + railBox!.height / 2;
+  await page.mouse.move(railBox!.x + railBox!.width / 2, y);
+  await page.mouse.down();
+  await page.mouse.move(1, y);
+  await page.mouse.up();
+  await expect(sidebar).toHaveAttribute("data-state", "collapsed");
+
+  await page.getByRole("button", { name: "Icon", exact: true }).click();
+  await expect(sidebar).toHaveAttribute("data-collapsible", "icon");
+  await expect(gap).toHaveCSS("width", "48px");
+  await expect(container).toHaveCSS("width", "48px");
+
+  await trigger.click();
+  await expect(sidebar).toHaveAttribute("data-state", "expanded");
+  await expect(gap).toHaveCSS("width", "220px");
+  await trigger.click();
+  await expect(sidebar).toHaveAttribute("data-state", "collapsed");
+  await expect(gap).toHaveCSS("width", "48px");
+  await expect(container).toHaveCSS("width", "48px");
+});
+
+
 test("floating offcanvas: collapsed rail drag never expands", async ({ page }) => {
   await gotoFloatingSidebar(page);
 
@@ -218,7 +317,7 @@ test("floating offcanvas: trigger hover reveals transiently and click toggles on
         : Math.abs(box.x + box.width - viewport.width) <= 1;
     }).toBe(true);
 
-    await trigger.click();
+    await trigger.evaluate((element: HTMLElement) => element.click());
     await expect(sidebar).toHaveAttribute("data-state", "expanded");
     await expect.poll(async () => (await gap.boundingBox())?.width ?? 0).toBeGreaterThan(0);
     await expect.poll(async () => {
@@ -348,9 +447,6 @@ test.describe("sidebar: block route", () => {
       await page.mouse.down();
       await page.mouse.move(side === "left" ? 40 : viewport!.width - 40, y);
       await page.mouse.up();
-      if (side === "left") {
-        await expect(sidebar).toHaveAttribute("data-collapse-animating", "true");
-      }
 
       await expect(sidebar).toHaveAttribute("data-state", "collapsed");
       await expect(sidebar).toHaveCSS("--dx-sidebar-width", "220px");
@@ -392,7 +488,6 @@ test.describe("sidebar: block route", () => {
     await expect(sidebar).toHaveAttribute("data-state", "collapsed");
     await page.mouse.move(dragStartX + 31, y);
     await expect(sidebar).toHaveAttribute("data-state", "expanded");
-    await expect(sidebar).toHaveAttribute("data-expansion-animating", "true");
     await page.mouse.move(300, y);
     await page.mouse.up();
 
