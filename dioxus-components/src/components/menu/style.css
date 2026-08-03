@@ -18,6 +18,9 @@
   pointer-events: none;
   transform-origin: top;
   will-change: transform, opacity;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
 }
 
 .dx_menu_content[data-state="closed"] {
@@ -153,4 +156,33 @@
 .dx_menu_sub_content[data-side="left"]::before {
   right: auto;
   left: 100%;
+}
+
+.dx_menu_item[hidden] {
+  display: none;
+}
+
+.dx_menu_filterable [data-slot="filterable-menu-input-section"] {
+  display: flex;
+  padding: var(--list-item-padding-y) var(--list-item-padding-x);
+  border-bottom: 1px solid var(--overlay-border);
+}
+
+.dx_menu_filterable [data-slot="filterable-menu-items"] {
+  display: flex;
+  flex-direction: column;
+}
+
+.dx_filterable_menu_input {
+  width: 100%;
+  min-width: 0;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+}
+
+.dx_filterable_menu_input::placeholder {
+  color: var(--surface-muted-fg);
 }

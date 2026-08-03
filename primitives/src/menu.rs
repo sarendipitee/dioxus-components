@@ -103,6 +103,111 @@ pub struct MenuProps {
     pub children: Element,
 }
 
+/// Props forwarded to the unstyled text input rendered by [`FilterableMenu`].
+#[derive(Props, Clone, PartialEq, Default)]
+pub struct FilterableMenuInputProps {
+    /// Callback fired after the menu items have been filtered.
+    #[props(default)]
+    pub oninput: Option<EventHandler<FormEvent>>,
+    /// Callback fired after the filter input mounts and receives focus.
+    #[props(default)]
+    pub onmounted: Option<EventHandler<MountedEvent>>,
+    /// Callback fired for keyboard events in the filter input.
+    #[props(default)]
+    pub onkeydown: Option<EventHandler<KeyboardEvent>>,
+    /// Additional attributes for the native text input.
+    #[props(extends = GlobalAttributes)]
+    #[props(extends = input)]
+    pub attributes: Vec<Attribute>,
+}
+
+/// Props for [`FilterableMenu`].
+#[derive(Props, Clone, PartialEq)]
+pub struct FilterableMenuProps {
+    /// Whether the menu is open.
+    pub open: Memo<bool>,
+    /// Callback to set the open state.
+    pub set_open: Callback<bool>,
+    /// Whether the menu and its items are disabled.
+    pub disabled: ReadSignal<bool>,
+    /// Whether focus should loop around when reaching the end.
+    pub roving_loop: ReadSignal<bool>,
+    /// Props forwarded to the filter text input.
+    #[props(default)]
+    pub filter_input_props: FilterableMenuInputProps,
+    /// Additional attributes for the menu root element.
+    #[props(extends = GlobalAttributes)]
+    pub attributes: Vec<Attribute>,
+    /// Menu items and other menu content.
+    pub children: Element,
+}
+
+/// An unstyled menu with a focused text input that filters its [`MenuItem`] descendants.
+///
+/// Filtering performs a case-insensitive substring match against each item's rendered text.
+/// Items are shown again when the query is empty. The input receives focus when it mounts.
+#[component]
+pub fn FilterableMenu(props: FilterableMenuProps) -> Element {
+    let filter_id = use_unique_id();
+    let filter_root_id = format!("{filter_id}-items");
+    let filter_input_props = props.filter_input_props;
+    let oninput = filter_input_props.oninput;
+    let onmounted = filter_input_props.onmounted;
+    let onkeydown = filter_input_props.onkeydown;
+    let filter_input_root_id = filter_root_id.clone();
+
+    rsx! {
+        Menu {
+            open: props.open,
+            set_open: props.set_open,
+            disabled: props.disabled,
+            roving_loop: props.roving_loop,
+            attributes: props.attributes,
+            div {
+                "data-slot": "filterable-menu-input-section",
+                input {
+                    r#type: "text",
+                    onmounted: move |event| {
+                        let data = event.data();
+                        spawn(async move {
+                            _ = data.set_focus(true).await;
+                        });
+                        if let Some(callback) = onmounted {
+                            callback.call(event);
+                        }
+                    },
+                    oninput: move |event: Event<FormData>| {
+                        let query = event.value();
+                        let mut eval = document::eval(
+                            "const root = document.getElementById(await dioxus.recv());\n                             const query = (await dioxus.recv()).trim().toLocaleLowerCase();\n                             if (root) {\n                               root.querySelectorAll('[role^=\"menuitem\"]').forEach((item) => {\n                                 item.hidden = !item.textContent.toLocaleLowerCase().includes(query);\n                               });\n                             }\n                             dioxus.send(true);",
+                        );
+                        let root_id = filter_input_root_id.clone();
+                        spawn(async move {
+                            let _ = eval.send(root_id);
+                            let _ = eval.send(query);
+                            let _ = eval.recv::<bool>().await;
+                        });
+                        if let Some(callback) = oninput {
+                            callback.call(event);
+                        }
+                    },
+                    onkeydown: move |event: Event<KeyboardData>| {
+                        event.stop_propagation();
+                        if let Some(callback) = onkeydown {
+                            callback.call(event);
+                        }
+                    },
+                    ..filter_input_props.attributes,
+                }
+            }
+            div {
+                id: filter_root_id.clone(),
+                "data-slot": "filterable-menu-items",
+                {props.children}
+            }
+        }
+    }
+}
 /// Shared root for a single menu surface.
 #[component]
 pub fn Menu(props: MenuProps) -> Element {
@@ -1292,6 +1397,32 @@ mod tests {
         }
     }
 
+    #[component]
+    fn FilterableMenuFixture() -> Element {
+        let open = use_memo(|| true);
+        let set_open = use_callback(|_| {});
+        let disabled = use_memo(|| false);
+        let roving_loop = use_memo(|| true);
+
+        rsx! {
+            FilterableMenu {
+                open,
+                set_open,
+                disabled,
+                roving_loop,
+                filter_input_props: FilterableMenuInputProps {
+                    attributes: attributes!(input { placeholder: "Filter actions" }),
+                    ..Default::default()
+                },
+                MenuItem::<String> {
+                    value: "copy".to_string(),
+                    index: 0usize,
+                    "Copy"
+                }
+            }
+        }
+    }
+
     #[test]
     fn menu_static_parts_render_expected_roles() {
         let mut dom = VirtualDom::new(MenuStaticMarkupFixture);
@@ -1302,6 +1433,17 @@ mod tests {
         assert!(html.contains("role=\"separator\""));
         assert!(html.contains("aria-orientation=\"horizontal\""));
         assert!(html.contains("role=\"group\""));
+    }
+
+    #[test]
+    fn filterable_menu_renders_filter_input_and_menu_items() {
+        let mut dom = VirtualDom::new(FilterableMenuFixture);
+        dom.rebuild_in_place();
+        let html = dioxus_ssr::render(&dom);
+
+        assert!(html.contains("type=\"text\""));
+        assert!(html.contains("placeholder=\"Filter actions\""));
+        assert!(html.contains("role=\"menuitem\""));
     }
 
     #[test]

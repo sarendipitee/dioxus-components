@@ -5,9 +5,10 @@ use crate::components::menubar::MenubarStyles;
 use dioxus::prelude::*;
 use dioxus_primitives::dioxus_attributes::attributes;
 use dioxus_primitives::menu::{
-    self, MenuCheckboxItemProps, MenuGroupProps, MenuItemIndicatorProps, MenuItemProps,
-    MenuItemSectionProps, MenuLabelProps, MenuRadioGroupProps, MenuRadioItemProps,
-    MenuSeparatorProps, MenuSubContentProps, MenuSubProps, MenuSubTriggerProps,
+    self, FilterableMenuInputProps as PrimitiveFilterableMenuInputProps, MenuCheckboxItemProps,
+    MenuGroupProps, MenuItemIndicatorProps, MenuItemProps, MenuItemSectionProps, MenuLabelProps,
+    MenuRadioGroupProps, MenuRadioItemProps, MenuSeparatorProps, MenuSubContentProps, MenuSubProps,
+    MenuSubTriggerProps,
 };
 use dioxus_primitives::{context_menu, dropdown_menu, menubar, merge_attributes};
 
@@ -35,6 +36,64 @@ pub struct MenuProps {
     pub attributes: Vec<Attribute>,
     /// The children of the menu content.
     pub children: Element,
+}
+
+/// Props forwarded to the styled filter input rendered by [`FilterableMenu`].
+pub type FilterableMenuInputProps = PrimitiveFilterableMenuInputProps;
+
+/// Props for [`FilterableMenu`].
+#[derive(Props, Clone, PartialEq)]
+pub struct FilterableMenuProps {
+    /// Whether the menu is open.
+    pub open: Memo<bool>,
+    /// Callback to set the open state.
+    pub set_open: Callback<bool>,
+    /// Whether the menu and its items are disabled.
+    pub disabled: ReadSignal<bool>,
+    /// Whether focus should loop around when reaching the end.
+    pub roving_loop: ReadSignal<bool>,
+    /// Props forwarded to the filter text input.
+    #[props(default)]
+    pub filter_input_props: FilterableMenuInputProps,
+    /// Additional attributes for the menu root element.
+    #[props(extends = GlobalAttributes)]
+    pub attributes: Vec<Attribute>,
+    /// Menu items and other menu content.
+    pub children: Element,
+}
+
+/// A styled filterable menu with a text input above its menu items.
+#[component]
+pub fn FilterableMenu(props: FilterableMenuProps) -> Element {
+    let filter_input_props = props.filter_input_props;
+    let filter_input_attributes = merge_attributes(vec![
+        attributes!(input {
+            class: Styles::dx_filterable_menu_input
+        }),
+        filter_input_props.attributes,
+    ]);
+    let attributes = merge_with_class(
+        "div",
+        Styles::dx_menu_filterable.to_string(),
+        props.attributes,
+    );
+
+    rsx! {
+        menu::FilterableMenu {
+            open: props.open,
+            set_open: props.set_open,
+            disabled: props.disabled,
+            roving_loop: props.roving_loop,
+            filter_input_props: PrimitiveFilterableMenuInputProps {
+                oninput: filter_input_props.oninput,
+                onmounted: filter_input_props.onmounted,
+                onkeydown: filter_input_props.onkeydown,
+                attributes: filter_input_attributes,
+            },
+            attributes,
+            {props.children}
+        }
+    }
 }
 
 fn merge_with_class(tag: &str, class_name: String, attributes: Vec<Attribute>) -> Vec<Attribute> {

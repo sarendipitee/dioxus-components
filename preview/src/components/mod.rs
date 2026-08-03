@@ -296,7 +296,7 @@ examples!(
     data_table[controlled, server_backed, expansion, virtualized, density, selectable],
     dialog[scrollable, nested],
     drag_and_drop_list[removable],
-    dropdown_menu[checkable, structure, presentation, nested_submenus],
+    dropdown_menu[checkable, structure, presentation, nested_submenus, filterable],
     file_drop_zone[
         images_only,
         max_size,
