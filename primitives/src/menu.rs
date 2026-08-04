@@ -618,6 +618,21 @@ pub fn MenuItem<T: Clone + PartialEq + 'static>(props: MenuItemProps<T>) -> Elem
     let index_value = props.index;
     let index = ReadSignal::new(use_memo(move || index_value));
     let disabled_value = props.disabled;
+    let has_search_text = props.search_text.is_some();
+    let mut warned_missing_search_text = use_signal(|| false);
+    use_effect(move || {
+        let query = (ctx.filter_query)();
+        if cfg!(debug_assertions)
+            && !has_search_text
+            && !query.is_empty()
+            && !warned_missing_search_text()
+        {
+            tracing::warn!(
+                "FilterableMenu item is missing `search_text`; it will not match filter queries"
+            );
+            warned_missing_search_text.set(true);
+        }
+    });
     let search_text = ReadSignal::new(use_memo(move || props.search_text.clone()));
     let visible = move || {
         let query = (ctx.filter_query)();

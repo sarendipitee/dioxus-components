@@ -61,7 +61,6 @@
   align-items: center;
   gap: var(--item-gap);
   padding: var(--list-item-padding-y) var(--list-item-padding-x);
-	margin: var(--content-gap);
   border-radius: calc(var(--radius) - var(--space));
   color: var(--overlay-fg);
   cursor: pointer;
@@ -163,8 +162,10 @@
 }
 
 [data-slot="filterable-menu-separator"] {
-  height: 1px;
-  margin: 0 var(--list-item-padding-x);
-  background: var(--overlay-border);
+	height: 1px;
+	margin-top: -2px;
+	background: var(--overlay-border);
+	margin-inline: calc(var(--content-gap) * -1);
+	margin-block: var(--content-gap);
 }
 

@@ -13,6 +13,10 @@
   text-transform: uppercase;
 }
 
+.dx_dropdown_menu_content, .dx_dropdown .dx_menu_sub_content {
+  padding: var(--content-gap);
+}
+
 .dx_dropdown_menu_content {
   /* Position (position/top/left) is owned by the floating-ui hook on web, which
      emits inline coords AND a `data-floating="true"` marker. The legacy CSS gap
@@ -23,7 +27,6 @@
      that the panel is portaled to the shared outlet. */
   z-index: var(--overlay-z);
   min-width: 200px;
-  padding: var(--space);
   animation: dx-slideIn 0.1s ease-out;
 
   /* Animation properties */

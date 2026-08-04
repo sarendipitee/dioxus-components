@@ -256,12 +256,14 @@
   --input-height-lg: var(--control-height-lg);
 
   /* Horizontal padding for small/default/large buttons and compact controls. */
-  --control-padding-x-sm: calc(var(--space) * 2);
+  --control-padding-x-sm: calc(var(--space) * 1.5);
   --control-padding-x-md: calc(var(--space) * 2);
   --control-padding-x-lg: calc(var(--space) * 3);
 
   /* Vertical padding for medium buttons and compact controls. */
+  --control-padding-y-sm: calc(var(--space) * 1.5);
   --control-padding-y-md: calc(var(--space) * 2);
+  --control-padding-y-lg: calc(var(--space) * 3);
 
   /* Gap between icon and label inside buttons and compact controls. */
   --control-gap: calc(var(--space) * 2);

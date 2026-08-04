@@ -111,6 +111,8 @@ test('dropdown menu shared wrappers', async ({ page }) => {
     .locator('.dx_menu_sub_content')
     .filter({ has: page.locator('.dx_menu_sub_trigger').filter({ hasText: /^Workspace Alpha \/ Projects$/ }) })
     .first();
+  await expect(alphaSubmenu).toHaveClass(/dx_dropdown_menu_content/);
+  await expect(alphaSubmenu).toHaveClass(/dx_dropdown_menu_sub_content/);
   await expect(alphaSubmenu).toHaveAttribute('data-side', 'left');
   const workspaceAlphaBox = await workspaceAlpha.boundingBox();
   const alphaSubmenuBox = await alphaSubmenu.boundingBox();

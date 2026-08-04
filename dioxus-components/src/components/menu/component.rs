@@ -1,8 +1,8 @@
 use crate::component_styles;
 use crate::components::context_menu::ContextMenuStyles;
 use crate::components::dropdown_menu::DropdownMenuStyles;
-use crate::components::menubar::MenubarStyles;
 use crate::components::input::{InputVariant, TextInput};
+use crate::components::menubar::MenubarStyles;
 use dioxus::prelude::*;
 use dioxus_primitives::dioxus_attributes::attributes;
 use dioxus_primitives::menu::{
@@ -112,10 +112,12 @@ fn styled_filter_input_props(
         oninput: props.oninput,
         onmounted: props.onmounted,
         onkeydown: props.onkeydown,
-        r#as: Some(Callback::new(|attributes: Vec<Attribute>| rsx! {
-            TextInput {
-                variant: InputVariant::Unstyled,
-                attributes,
+        r#as: Some(Callback::new(|attributes: Vec<Attribute>| {
+            rsx! {
+                TextInput {
+                    variant: InputVariant::Unstyled,
+                    attributes,
+                }
             }
         })),
         attributes,
@@ -133,10 +135,11 @@ fn merge_with_class(tag: &str, class_name: String, attributes: Vec<Attribute>) -
 
 fn merge_with_surface_class(
     tag: &str,
-    shared_class: String,
+    shared_class: impl Into<String>,
     surface_slot: MenuSurfaceSlot,
     attributes: Vec<Attribute>,
 ) -> Vec<Attribute> {
+    let shared_class = shared_class.into();
     let class_name = match current_surface_slot_class(surface_slot) {
         Some(surface_class) => format!("{shared_class} {surface_class}"),
         None => shared_class,
@@ -145,69 +148,47 @@ fn merge_with_surface_class(
     merge_with_class(tag, class_name, attributes)
 }
 
-fn current_surface_slot_class(slot: MenuSurfaceSlot) -> Option<String> {
+fn current_surface_slot_class(slot: MenuSurfaceSlot) -> Option<&'static str> {
     try_use_context::<StyledMenuSurface>().map(|surface| surface_slot_class(surface, slot))
 }
 
-fn surface_slot_class(surface: StyledMenuSurface, slot: MenuSurfaceSlot) -> String {
+fn surface_slot_class(surface: StyledMenuSurface, slot: MenuSurfaceSlot) -> &'static str {
     match surface {
         StyledMenuSurface::Dropdown => match slot {
-            MenuSurfaceSlot::Content => DropdownMenuStyles::dx_dropdown_menu_content.to_string(),
-            MenuSurfaceSlot::Item => DropdownMenuStyles::dx_dropdown_menu_item.to_string(),
-            MenuSurfaceSlot::Label => DropdownMenuStyles::dx_dropdown_menu_label.to_string(),
-            MenuSurfaceSlot::Separator => {
-                DropdownMenuStyles::dx_dropdown_menu_separator.to_string()
-            }
-            MenuSurfaceSlot::Indicator => {
-                DropdownMenuStyles::dx_dropdown_menu_item_indicator.to_string()
-            }
-            MenuSurfaceSlot::ItemSection => {
-                DropdownMenuStyles::dx_dropdown_menu_item_section.to_string()
-            }
-            MenuSurfaceSlot::CheckableItem => {
-                DropdownMenuStyles::dx_dropdown_menu_checkable_item.to_string()
-            }
-            MenuSurfaceSlot::Sub => DropdownMenuStyles::dx_dropdown_menu_sub.to_string(),
-            MenuSurfaceSlot::SubTrigger => {
-                DropdownMenuStyles::dx_dropdown_menu_sub_trigger.to_string()
-            }
-            MenuSurfaceSlot::SubContent => {
-                DropdownMenuStyles::dx_dropdown_menu_sub_content.to_string()
-            }
+            MenuSurfaceSlot::Content => DropdownMenuStyles::dx_dropdown_menu_content,
+            MenuSurfaceSlot::Item => DropdownMenuStyles::dx_dropdown_menu_item,
+            MenuSurfaceSlot::Label => DropdownMenuStyles::dx_dropdown_menu_label,
+            MenuSurfaceSlot::Separator => DropdownMenuStyles::dx_dropdown_menu_separator,
+            MenuSurfaceSlot::Indicator => DropdownMenuStyles::dx_dropdown_menu_item_indicator,
+            MenuSurfaceSlot::ItemSection => DropdownMenuStyles::dx_dropdown_menu_item_section,
+            MenuSurfaceSlot::CheckableItem => DropdownMenuStyles::dx_dropdown_menu_checkable_item,
+            MenuSurfaceSlot::Sub => DropdownMenuStyles::dx_dropdown_menu_sub,
+            MenuSurfaceSlot::SubTrigger => DropdownMenuStyles::dx_dropdown_menu_sub_trigger,
+            MenuSurfaceSlot::SubContent => DropdownMenuStyles::dx_dropdown_menu_sub_content,
         },
         StyledMenuSurface::Context => match slot {
-            MenuSurfaceSlot::Content => ContextMenuStyles::dx_context_menu_content.to_string(),
-            MenuSurfaceSlot::Item => ContextMenuStyles::dx_context_menu_item.to_string(),
-            MenuSurfaceSlot::Label => ContextMenuStyles::dx_context_menu_label.to_string(),
-            MenuSurfaceSlot::Separator => ContextMenuStyles::dx_context_menu_separator.to_string(),
-            MenuSurfaceSlot::Indicator => {
-                ContextMenuStyles::dx_context_menu_item_indicator.to_string()
-            }
-            MenuSurfaceSlot::ItemSection => {
-                ContextMenuStyles::dx_context_menu_item_section.to_string()
-            }
-            MenuSurfaceSlot::CheckableItem => {
-                ContextMenuStyles::dx_context_menu_checkable_item.to_string()
-            }
-            MenuSurfaceSlot::Sub => ContextMenuStyles::dx_context_menu_sub.to_string(),
-            MenuSurfaceSlot::SubTrigger => {
-                ContextMenuStyles::dx_context_menu_sub_trigger.to_string()
-            }
-            MenuSurfaceSlot::SubContent => {
-                ContextMenuStyles::dx_context_menu_sub_content.to_string()
-            }
+            MenuSurfaceSlot::Content => ContextMenuStyles::dx_context_menu_content,
+            MenuSurfaceSlot::Item => ContextMenuStyles::dx_context_menu_item,
+            MenuSurfaceSlot::Label => ContextMenuStyles::dx_context_menu_label,
+            MenuSurfaceSlot::Separator => ContextMenuStyles::dx_context_menu_separator,
+            MenuSurfaceSlot::Indicator => ContextMenuStyles::dx_context_menu_item_indicator,
+            MenuSurfaceSlot::ItemSection => ContextMenuStyles::dx_context_menu_item_section,
+            MenuSurfaceSlot::CheckableItem => ContextMenuStyles::dx_context_menu_checkable_item,
+            MenuSurfaceSlot::Sub => ContextMenuStyles::dx_context_menu_sub,
+            MenuSurfaceSlot::SubTrigger => ContextMenuStyles::dx_context_menu_sub_trigger,
+            MenuSurfaceSlot::SubContent => ContextMenuStyles::dx_context_menu_sub_content,
         },
         StyledMenuSurface::Menubar => match slot {
-            MenuSurfaceSlot::Content => MenubarStyles::dx_menubar_content.to_string(),
-            MenuSurfaceSlot::Item => MenubarStyles::dx_menubar_item.to_string(),
-            MenuSurfaceSlot::Label => MenubarStyles::dx_menubar_label.to_string(),
-            MenuSurfaceSlot::Separator => MenubarStyles::dx_menubar_separator.to_string(),
-            MenuSurfaceSlot::Indicator => MenubarStyles::dx_menubar_item_indicator.to_string(),
-            MenuSurfaceSlot::ItemSection => MenubarStyles::dx_menubar_item_section.to_string(),
-            MenuSurfaceSlot::CheckableItem => MenubarStyles::dx_menubar_checkable_item.to_string(),
-            MenuSurfaceSlot::Sub => MenubarStyles::dx_menubar_sub.to_string(),
-            MenuSurfaceSlot::SubTrigger => MenubarStyles::dx_menubar_sub_trigger.to_string(),
-            MenuSurfaceSlot::SubContent => MenubarStyles::dx_menubar_sub_content.to_string(),
+            MenuSurfaceSlot::Content => MenubarStyles::dx_menubar_content,
+            MenuSurfaceSlot::Item => MenubarStyles::dx_menubar_item,
+            MenuSurfaceSlot::Label => MenubarStyles::dx_menubar_label,
+            MenuSurfaceSlot::Separator => MenubarStyles::dx_menubar_separator,
+            MenuSurfaceSlot::Indicator => MenubarStyles::dx_menubar_item_indicator,
+            MenuSurfaceSlot::ItemSection => MenubarStyles::dx_menubar_item_section,
+            MenuSurfaceSlot::CheckableItem => MenubarStyles::dx_menubar_checkable_item,
+            MenuSurfaceSlot::Sub => MenubarStyles::dx_menubar_sub,
+            MenuSurfaceSlot::SubTrigger => MenubarStyles::dx_menubar_sub_trigger,
+            MenuSurfaceSlot::SubContent => MenubarStyles::dx_menubar_sub_content,
         },
     }
 }
@@ -266,7 +247,7 @@ pub fn Menu(props: MenuProps) -> Element {
 pub fn MenuItem<T: Clone + PartialEq + 'static>(props: MenuItemProps<T>) -> Element {
     let attributes = merge_with_surface_class(
         "div",
-        Styles::dx_menu_item.to_string(),
+        Styles::dx_menu_item,
         MenuSurfaceSlot::Item,
         props.attributes,
     );
@@ -291,7 +272,7 @@ pub fn MenuItem<T: Clone + PartialEq + 'static>(props: MenuItemProps<T>) -> Elem
 pub fn MenuLabel(props: MenuLabelProps) -> Element {
     let attributes = merge_with_surface_class(
         "div",
-        Styles::dx_menu_label.to_string(),
+        Styles::dx_menu_label,
         MenuSurfaceSlot::Label,
         props.attributes,
     );
@@ -309,7 +290,7 @@ pub fn MenuLabel(props: MenuLabelProps) -> Element {
 pub fn MenuSeparator(props: MenuSeparatorProps) -> Element {
     let attributes = merge_with_surface_class(
         "div",
-        Styles::dx_menu_separator.to_string(),
+        Styles::dx_menu_separator,
         MenuSurfaceSlot::Separator,
         props.attributes,
     );
@@ -335,7 +316,7 @@ pub fn MenuGroup(props: MenuGroupProps) -> Element {
 pub fn MenuItemIndicator(props: MenuItemIndicatorProps) -> Element {
     let attributes = merge_with_surface_class(
         "div",
-        Styles::dx_menu_item_indicator.to_string(),
+        Styles::dx_menu_item_indicator,
         MenuSurfaceSlot::Indicator,
         props.attributes,
     );
@@ -354,7 +335,7 @@ pub fn MenuItemIndicator(props: MenuItemIndicatorProps) -> Element {
 pub fn MenuItemSection(props: MenuItemSectionProps) -> Element {
     let attributes = merge_with_surface_class(
         "div",
-        Styles::dx_menu_item_section.to_string(),
+        Styles::dx_menu_item_section,
         MenuSurfaceSlot::ItemSection,
         props.attributes,
     );
@@ -455,7 +436,7 @@ pub fn MenuRadioItem<T: Clone + PartialEq + 'static>(props: MenuRadioItemProps<T
 pub fn MenuSub(props: MenuSubProps) -> Element {
     let attributes = merge_with_surface_class(
         "div",
-        Styles::dx_menu_sub.to_string(),
+        Styles::dx_menu_sub,
         MenuSurfaceSlot::Sub,
         props.attributes,
     );
@@ -511,8 +492,11 @@ pub fn MenuSubContent(props: MenuSubContentProps) -> Element {
     let attributes = merge_with_class(
         "div",
         format!(
-            "{} dx_dropdown {}{}",
+            "{} dx_dropdown {}{}{}",
             Styles::dx_menu_content,
+            current_surface_slot_class(MenuSurfaceSlot::Content)
+                .map(|class_name| format!(" {class_name}"))
+                .unwrap_or_default(),
             Styles::dx_menu_sub_content,
             current_surface_slot_class(MenuSurfaceSlot::SubContent)
                 .map(|class_name| format!(" {class_name}"))
