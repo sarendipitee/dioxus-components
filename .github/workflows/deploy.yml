@@ -36,7 +36,7 @@ jobs:
           mv dx ~/.cargo/bin/dx
 
       - name: Build with SSG
-        run: dx build -p preview --web --release --features fullstack --ssg --base-path dioxus-components
+        run: dx build -p preview --web --release --features fullstack --ssg --wasm-split --base-path dioxus-components
 
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v3

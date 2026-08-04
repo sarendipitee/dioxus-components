@@ -13,4 +13,4 @@ case "${1:-}" in
 esac
 
 "$(dirname -- "$0")/clean-preview-dx-assets.sh"
-exec dx "$command" -p preview --web --wasm-split --release --debug-symbols=false "$@"
+exec dx "$command" -p preview --web --wasm-split --features wasm-split --release --debug-symbols=false "$@"
