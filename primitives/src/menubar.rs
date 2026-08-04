@@ -284,6 +284,7 @@ pub fn MenubarMenu(props: MenubarMenuProps) -> Element {
         trigger_ref,
         overlay_id,
         filter_query: use_context::<MenuContext>().filter_query,
+        active_submenu: use_signal(|| None),
     });
 
     use_effect(move || {

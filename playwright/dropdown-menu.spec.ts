@@ -106,19 +106,27 @@ test('dropdown menu shared wrappers', async ({ page }) => {
   const workspaceAlpha = page.locator('.dx_menu_sub_trigger').filter({ hasText: /^Workspace Alpha$/ });
   await expect(workspaceAlpha).toHaveAttribute('data-state', 'closed');
   await expect(page.locator('.dx_menu_sub_trigger').filter({ hasText: /^Workspace Alpha \/ Projects$/ })).toHaveCount(0);
-  await workspaceAlpha.press('ArrowRight');
+  await workspaceAlpha.hover();
   const alphaSubmenu = page
     .locator('.dx_menu_sub_content')
     .filter({ has: page.locator('.dx_menu_sub_trigger').filter({ hasText: /^Workspace Alpha \/ Projects$/ }) })
     .first();
-  await expect(alphaSubmenu).toHaveClass(/dx_menu_content/);
-  await expect(alphaSubmenu).toHaveClass(/dx_menu_sub_content/);
+  await expect(alphaSubmenu).toBeVisible();
+  const projectsTrigger = page.locator('.dx_menu_sub_trigger').filter({ hasText: /^Workspace Alpha \/ Projects$/ });
+  await projectsTrigger.hover();
+  await expect(workspaceAlpha).toHaveAttribute('data-state', 'open');
+  await expect(projectsTrigger).toHaveAttribute('data-state', 'open');
+  const workspaceBeta = page.locator('.dx_menu_sub_trigger').filter({ hasText: /^Workspace Beta$/ });
+  await workspaceBeta.hover();
+  await expect(workspaceBeta).toHaveAttribute('data-state', 'open');
+  await expect(workspaceAlpha).toHaveAttribute('data-state', 'closed');
+  await workspaceAlpha.press('ArrowRight');
   await expect(alphaSubmenu).toHaveAttribute('data-side', 'left');
   const workspaceAlphaBox = await workspaceAlpha.boundingBox();
   const alphaSubmenuBox = await alphaSubmenu.boundingBox();
   if (!workspaceAlphaBox || !alphaSubmenuBox) throw new Error('flipped submenu geometry unavailable');
   expect(alphaSubmenuBox.x + alphaSubmenuBox.width).toBeLessThanOrEqual(workspaceAlphaBox.x + 8);
-  await page.locator('.dx_menu_sub_trigger').filter({ hasText: /^Workspace Alpha \/ Projects$/ }).press('ArrowRight');
+  await projectsTrigger.press('ArrowRight');
   await page.locator('.dx_menu_sub_trigger').filter({ hasText: /^Workspace Alpha \/ Projects \/ Q3$/ }).press('ArrowRight');
   await page.getByRole('menuitem', { name: 'Workspace Alpha / Projects / Q3 / Launch' }).press('Enter');
   await expect(nestedDemo.getByText('Selected destination: Workspace Alpha / Projects / Q3 / Launch')).toBeVisible();

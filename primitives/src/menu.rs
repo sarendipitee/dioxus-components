@@ -32,6 +32,9 @@ pub struct MenuContext {
     pub(crate) trigger_ref: Signal<Option<Rc<MountedData>>>,
     pub(crate) overlay_id: Signal<Option<OverlayId>>,
     pub(crate) filter_query: Signal<String>,
+    /// The currently active direct-child submenu. Sibling submenus use this
+    /// coordination signal to close as soon as another trigger is entered.
+    pub(crate) active_submenu: Signal<Option<String>>,
 }
 
 /// Provides shared menu state to descendants in the current component scope.
@@ -48,6 +51,7 @@ pub(crate) fn use_menu_provider(
     let trigger_ref = use_signal(|| None);
     let overlay_id = use_signal(|| None);
     let filter_query = use_signal(String::new);
+    let active_submenu = use_signal(|| None);
     let disabled = use_memo(move || disabled());
     let ctx = use_context_provider(|| MenuContext {
         open,
@@ -59,6 +63,7 @@ pub(crate) fn use_menu_provider(
         trigger_ref,
         overlay_id,
         filter_query,
+        active_submenu,
     });
 
     use_effect(move || {
@@ -527,6 +532,7 @@ fn MenuContentRendered(props: MenuContentRenderedProps) -> Element {
         trigger_ref,
         overlay_id,
         filter_query,
+        active_submenu: use_signal(|| None),
     };
     use_context_provider(|| portal_ctx);
     use_context_provider(|| focus);
@@ -1048,8 +1054,18 @@ pub fn MenuSub(props: MenuSubProps) -> Element {
     let sub_id = use_unique_id();
     // The portaled submenu panel's content root id, written by `MenuSubContent`.
     let content_id = use_signal(String::new);
+    let active_id = trigger_id.clone();
+
+    use_effect(move || {
+        if open() && (parent_ctx.active_submenu)() != Some(active_id()) {
+            focus.blur();
+            set_open.call(false);
+        }
+    });
 
     use_effect_with_cleanup(move || {
+        // The trigger still lives inside `sub_id`, but the submenu content panel is
+        // portaled OUT to the shared overlay outlet.
         // The trigger still lives inside `sub_id`, but the submenu content panel is
         // portaled OUT to the shared overlay outlet — so it can no longer be found
         // by querying descendants of `sub_id`. Resolve the trigger from the sub
@@ -1097,7 +1113,11 @@ pub fn MenuSub(props: MenuSubProps) -> Element {
                     content.contains(pointTarget) ||
                     pointInRect(e.clientX, e.clientY, content.getBoundingClientRect(), padding)
                 );
-                if (!insideTrigger && !insideContent) dioxus.send(true);
+                // Nested submenu panels are portaled siblings of their parent panel.
+                // Treat any submenu panel under the pointer as part of the open
+                // hover path so an ancestor does not close while entering a child.
+                const insideNestedSubmenu = pointTarget.closest('[role=\"menu\"][data-side]');
+                if (!insideTrigger && !insideContent && !insideNestedSubmenu) dioxus.send(true);
             };
             document.addEventListener('pointermove', onMove, true);
             document.addEventListener('mousemove', onMove, true);
@@ -1186,6 +1206,7 @@ pub fn MenuSubTrigger<T: Clone + PartialEq + 'static>(props: MenuSubTriggerProps
         if !open() {
             sub_ctx.initial_focus.set(Some(FocusPlacement::First));
         }
+        (parent_ctx.active_submenu).set(Some((sub_ctx.trigger_id)()));
         sub_ctx.set_open.call(true);
     });
     let base = attributes!(div {
@@ -1280,8 +1301,8 @@ pub fn MenuSubContent(props: MenuSubContentProps) -> Element {
         trigger_ref: sub_ctx.trigger_ref,
         overlay_id,
         filter_query,
+        active_submenu: parent_ctx.active_submenu,
     });
-
     // Floating-element positioning for the submenu. A submenu naturally opens to the
     // right of its parent item, aligned to the item's top edge; flip() handles the
     // left side when there is no room (mirroring the old JS `hasRoomRight ? right :
