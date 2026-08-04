@@ -95,7 +95,7 @@
 
 .dx_menu_separator {
   height: 1px;
-  margin: var(--space) var(--list-item-padding-x);
+  margin: var(--list-item-padding-y) var(--list-item-padding-x);
   background: var(--overlay-border);
 }
 
