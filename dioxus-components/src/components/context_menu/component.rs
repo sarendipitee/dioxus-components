@@ -41,11 +41,7 @@ pub fn ContextMenu(props: ContextMenuProps) -> Element {
 /// Styled wrapper for the context menu trigger.
 #[component]
 pub fn ContextMenuTrigger(props: ContextMenuTriggerProps) -> Element {
-    let attributes = merge_with_class(
-        "button",
-        Styles::dx_context_menu_trigger,
-        props.attributes,
-    );
+    let attributes = merge_with_class("button", Styles::dx_context_menu_trigger, props.attributes);
 
     rsx! {
         context_menu::ContextMenuTrigger {

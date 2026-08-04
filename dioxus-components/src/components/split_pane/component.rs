@@ -29,8 +29,8 @@ pub fn SplitPane(props: SplitPaneProps) -> Element {
         "data-split-pane-id": "{measurement_id}"
     });
     let merged = merge_attributes(vec![base, props.attributes]);
-    let divider_class = (props.divider_class)()
-        .or_else(|| Some(String::from(Styles::dx_split_pane_divider)));
+    let divider_class =
+        (props.divider_class)().or_else(|| Some(String::from(Styles::dx_split_pane_divider)));
     let divider_size = use_memo(move || {
         let size = (props.divider_size)();
         if size > 0.0 {

@@ -162,10 +162,7 @@ pub fn FilterableMenu(props: FilterableMenuProps) -> Element {
 }
 
 #[component]
-fn FilterableMenuInputControl(
-    input_id: String,
-    props: FilterableMenuInputProps,
-) -> Element {
+fn FilterableMenuInputControl(input_id: String, props: FilterableMenuInputProps) -> Element {
     let mut query = use_context::<MenuContext>().filter_query;
     let oninput = props.oninput;
     let onmounted = props.onmounted;
@@ -184,23 +181,31 @@ fn FilterableMenuInputControl(
                     let _ = eval.send(input_id);
                     let _ = eval.recv::<bool>().await;
                 });
-                if let Some(callback) = onmounted { callback.call(event); }
+                if let Some(callback) = onmounted {
+                    callback.call(event);
+                }
             },
             oninput: move |event: Event<FormData>| {
                 query.set(event.value().trim().to_lowercase());
-                if let Some(callback) = oninput { callback.call(event); }
+                if let Some(callback) = oninput {
+                    callback.call(event);
+                }
             },
             onkeydown: move |event: Event<KeyboardData>| {
                 event.stop_propagation();
-                if let Some(callback) = onkeydown { callback.call(event); }
+                if let Some(callback) = onkeydown {
+                    callback.call(event);
+                }
             },
         }),
         props.attributes,
     ]);
-    if let Some(dynamic) = dynamic { dynamic.call(input_attributes) }
-    else { rsx! { input { ..input_attributes } } }
+    if let Some(dynamic) = dynamic {
+        dynamic.call(input_attributes)
+    } else {
+        rsx! { input { ..input_attributes } }
+    }
 }
-
 
 /// Props for filterable content rendered inside an existing menu root.
 #[derive(Props, Clone, PartialEq)]
@@ -979,7 +984,6 @@ pub fn MenuRadioItem<T: Clone + PartialEq + 'static>(props: MenuRadioItemProps<T
             {props.children}
         }
     }
-
 }
 
 #[derive(Clone, Copy)]
@@ -1054,7 +1058,7 @@ pub fn MenuSub(props: MenuSubProps) -> Element {
     let sub_id = use_unique_id();
     // The portaled submenu panel's content root id, written by `MenuSubContent`.
     let content_id = use_signal(String::new);
-    let active_id = trigger_id.clone();
+    let active_id = trigger_id;
 
     use_effect(move || {
         if open() && (parent_ctx.active_submenu)() != Some(active_id()) {
@@ -1438,6 +1442,7 @@ mod tests {
         let initial_focus = use_signal(|| None);
         let radio_value = use_signal(|| Some("one".to_string()));
         let filter_query = use_signal(String::new);
+        let active_submenu = use_signal(|| None);
 
         use_context_provider(|| MenuContext {
             open,
@@ -1449,6 +1454,7 @@ mod tests {
             trigger_ref,
             overlay_id,
             filter_query,
+            active_submenu,
         });
 
         rsx! {

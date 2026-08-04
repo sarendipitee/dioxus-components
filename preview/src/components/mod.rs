@@ -109,6 +109,7 @@ pub fn install_name(name: &str) -> &str {
 ///
 /// Schedule sub-pages live only under the Schedule sidebar grouping, so they are excluded from
 /// the catalog (which keeps a single `schedule` card).
+#[allow(dead_code)]
 pub fn in_catalog(name: &str) -> bool {
     !matches!(
         name,

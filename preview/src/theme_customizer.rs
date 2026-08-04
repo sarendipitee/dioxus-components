@@ -444,7 +444,6 @@ pub(crate) fn ThemeCustomizerProvider(children: Element) -> Element {
     use_context_provider(|| ctx);
     let theme_override_css = use_memo(move || compute_theme_override_css(&(ctx.tokens)()));
 
-
     use_effect(move || {
         if load_started() {
             return;
@@ -938,7 +937,7 @@ mod tests {
         else {
             panic!("accent token should be dual-valued");
         };
-        *light = "#2B7FFF".to_string();
+        *light = "#1769D0".to_string();
 
         assert_eq!(compute_theme_override_css(&tokens), None);
     }

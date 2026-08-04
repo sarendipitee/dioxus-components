@@ -29,7 +29,7 @@
   /* Muted surface recipe. Use for secondary panels, quiet grouped regions,
      subtle callouts, and low-emphasis rows. */
   --surface-muted: var(--is-light, #f5f5f5) var(--is-dark, #232323);
-  --surface-muted-fg: var(--is-light, #717171) var(--is-dark, #a1a1a1);
+  --surface-muted-fg: var(--is-light, #707070) var(--is-dark, #a1a1a1);
   --surface-muted-border: var(--is-light, #e5e5e5) var(--is-dark, #3e3e3e);
 
   /* Hover surface recipe. Use for neutral hover states on ghost controls,
@@ -88,12 +88,12 @@
 
   /* Accent recipe. Use for primary actions, selected accent controls, brand
      highlights, and links that are intentionally accent-colored. */
-  --accent: var(--is-light, #2b7fff) var(--is-dark, #2b7fff);
+  --accent: var(--is-light, #1769d0) var(--is-dark, #1769d0);
   --accent-fg: var(--is-light, #ffffff) var(--is-dark, #ffffff);
   --accent-border: var(--is-light, #0d69e7) var(--is-dark, #3c90ff);
 
   /* Accent hover recipe. Use for hovered primary/accent actions. */
-  --accent-hover: var(--is-light, #0d69e7) var(--is-dark, #3c90ff);
+  --accent-hover: var(--is-light, #0055d2) var(--is-dark, #0055d2);
   --accent-hover-fg: var(--is-light, #ffffff) var(--is-dark, #ffffff);
   --accent-hover-border: var(--is-light, #0055d2) var(--is-dark, #50a3ff);
 
@@ -105,7 +105,7 @@
   /* Accent subtle recipe. Use for low-emphasis accent badges, selected
      rows that should read as branded, and quiet accent callouts. */
   --accent-subtle: var(--is-light, #d4e9ff) var(--is-dark, #162946);
-  --accent-subtle-fg: var(--is-light, #2b7fff) var(--is-dark, #bbddff);
+  --accent-subtle-fg: var(--is-light, #1d5fae) var(--is-dark, #bbddff);
   --accent-subtle-border: var(--is-light, #99b9eb) var(--is-dark, #3a5581);
 
   /* Focus indicator color. Use for focus-visible rings and outlines only. */

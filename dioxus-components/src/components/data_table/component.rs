@@ -15,11 +15,12 @@ use dioxus_primitives::r#virtual::{
 use dioxus_primitives::TextOrElement;
 
 use crate::components::{
-    Button, ButtonSize, ButtonVariant, Checkbox, DropdownMenu, DropdownMenuTrigger, FilterableMenuContent,
-    Menu, MenuCheckboxItem, MenuItem, MenuItemIndicator, MenuRadioGroup, MenuRadioItem, MenuSub,
-    MenuSubContent, MenuSubTrigger, Pagination, PaginationContent, PaginationFirst, PaginationItem,
-    PaginationLast, PaginationNext, PaginationPrevious, Popover, PopoverContent, PopoverTrigger,
-    Select, SelectOption, Skeleton, TextInput, Tooltip, TooltipContent, TooltipTrigger,
+    Button, ButtonSize, ButtonVariant, Checkbox, DropdownMenu, DropdownMenuTrigger,
+    FilterableMenuContent, Menu, MenuCheckboxItem, MenuItem, MenuItemIndicator, MenuRadioGroup,
+    MenuRadioItem, MenuSub, MenuSubContent, MenuSubTrigger, Pagination, PaginationContent,
+    PaginationFirst, PaginationItem, PaginationLast, PaginationNext, PaginationPrevious, Popover,
+    PopoverContent, PopoverTrigger, Select, SelectOption, Skeleton, TextInput, Tooltip,
+    TooltipContent, TooltipTrigger,
 };
 
 #[component_styles("./style.css")]

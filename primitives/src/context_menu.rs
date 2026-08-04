@@ -9,9 +9,9 @@ use dioxus_attributes::attributes;
 use dioxus_core::Task;
 #[cfg(target_family = "wasm")]
 use gloo_timers::future::sleep;
+use std::time::Duration;
 #[cfg(not(target_family = "wasm"))]
 use tokio::time::sleep;
-use std::time::Duration;
 
 /// How long a touch must be held before the context menu opens.
 const LONG_PRESS_DURATION: Duration = Duration::from_millis(500);

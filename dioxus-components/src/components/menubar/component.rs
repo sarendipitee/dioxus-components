@@ -53,11 +53,7 @@ pub fn MenubarMenu(props: MenubarMenuProps) -> Element {
 /// Styled wrapper for a menubar trigger.
 #[component]
 pub fn MenubarTrigger(props: MenubarTriggerProps) -> Element {
-    let attributes = merge_with_class(
-        "button",
-        Styles::dx_menubar_trigger,
-        props.attributes,
-    );
+    let attributes = merge_with_class("button", Styles::dx_menubar_trigger, props.attributes);
 
     rsx! {
         menubar::MenubarTrigger { attributes, {props.children} }

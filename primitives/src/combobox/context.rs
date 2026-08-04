@@ -249,5 +249,4 @@ impl ComboboxPortalContext {
             .iter()
             .any(|selected| selected == value)
     }
-
 }

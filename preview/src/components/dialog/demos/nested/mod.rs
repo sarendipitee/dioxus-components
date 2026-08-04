@@ -1,7 +1,6 @@
 use crate::components::dialog::*;
 use dioxus::prelude::*;
 use dioxus_components::button::{Button, ButtonVariant};
-use dioxus_components::select::*;
 use strum::{EnumCount, IntoEnumIterator};
 
 #[derive(Debug, Clone, Copy, PartialEq, strum::EnumCount, strum::EnumIter, strum::Display)]

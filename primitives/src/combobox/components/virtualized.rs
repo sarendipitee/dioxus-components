@@ -6,9 +6,7 @@ use crate::dioxus_core::use_hook_with_cleanup;
 use dioxus::prelude::*;
 
 use super::super::{
-    context::{
-        ComboboxContext, ComboboxPortalContext, ComboboxPortalOptionRegistration,
-    },
+    context::{ComboboxContext, ComboboxPortalContext, ComboboxPortalOptionRegistration},
     hook::{ComboboxDropdownEventSource, VirtualizedComboboxNavigation},
 };
 use crate::{
@@ -18,8 +16,8 @@ use crate::{
     merge_attributes,
     overlay::{use_overlay_registration, OverlayKind, OverlayRegistration, RegisterArgs},
     portal::{use_portal, PortalIn},
-    ContentAlign, ContentSide,
     selection::{remove_option, sync_option},
+    ContentAlign, ContentSide,
 };
 
 /// Props for [`VirtualizedComboboxOptions`].
@@ -237,7 +235,9 @@ fn VirtualizedComboboxOptionsPortaled(props: VirtualizedComboboxOptionsPortaledP
     let unregister_option = use_callback(move |registration: ComboboxPortalOptionRegistration| {
         let option = registration.option;
         remove_option(unregister_selectable.options, &option.id);
-        unregister_selectable.focus_state.remove_item(option.tab_index);
+        unregister_selectable
+            .focus_state
+            .remove_item(option.tab_index);
         unregister_store.unregister_option(&option.id);
     });
 
@@ -577,12 +577,9 @@ async fn sync_scroll(container_id: String, scroll_top: u32) {
 
 #[cfg(test)]
 mod tests {
-    use super::super::{
-        Combobox, ComboboxInput, ComboboxOption, VirtualizedComboboxOptions,
-    };
+    use super::super::{Combobox, ComboboxInput, ComboboxOption, VirtualizedComboboxOptions};
     use crate::overlay::OverlayProvider;
     use dioxus::prelude::*;
-
 
     #[component]
     fn OpenVirtualizedHoverComboboxApp() -> Element {

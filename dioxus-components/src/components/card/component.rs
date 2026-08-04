@@ -76,8 +76,7 @@ pub fn CardTitle(
     #[props(extends=GlobalAttributes)] attributes: Vec<Attribute>,
     children: Element,
 ) -> Element {
-    let attributes =
-        card_slot_attributes(Styles::dx_card_title, "card-title", attributes);
+    let attributes = card_slot_attributes(Styles::dx_card_title, "card-title", attributes);
 
     rsx! {
         Heading {
@@ -96,11 +95,8 @@ pub fn CardDescription(
     #[props(extends=GlobalAttributes)] attributes: Vec<Attribute>,
     children: Element,
 ) -> Element {
-    let attributes = card_slot_attributes(
-        Styles::dx_card_description,
-        "card-description",
-        attributes,
-    );
+    let attributes =
+        card_slot_attributes(Styles::dx_card_description, "card-description", attributes);
 
     rsx! {
         Text {
@@ -192,11 +188,9 @@ fn render_card_header_title(title: TextOrElement<()>) -> Option<Element> {
         TextOrElement::Element(element) => {
             render_card_header_slot(Styles::dx_card_title, "card-title", element)
         }
-        TextOrElement::Render(render) => render_card_header_slot(
-            Styles::dx_card_title,
-            "card-title",
-            render.call(()),
-        ),
+        TextOrElement::Render(render) => {
+            render_card_header_slot(Styles::dx_card_title, "card-title", render.call(()))
+        }
     })
 }
 
@@ -218,11 +212,9 @@ fn render_card_header_description(description: TextOrElement<()>) -> Option<Elem
                 "{text}"
             }
         },
-        TextOrElement::Element(element) => render_card_header_slot(
-            Styles::dx_card_description,
-            "card-description",
-            element,
-        ),
+        TextOrElement::Element(element) => {
+            render_card_header_slot(Styles::dx_card_description, "card-description", element)
+        }
         TextOrElement::Render(render) => render_card_header_slot(
             Styles::dx_card_description,
             "card-description",

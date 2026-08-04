@@ -56,7 +56,6 @@ pub(crate) struct SelectableOption<T: Clone + PartialEq + 'static> {
     pub(crate) value: T,
 }
 
-
 pub(crate) struct SelectableOptionConfig<T: Clone + PartialEq + 'static> {
     pub(crate) id: ReadSignal<Option<String>>,
     pub(crate) index: ReadSignal<usize>,
@@ -340,7 +339,6 @@ pub(crate) fn use_selectable_option<T: Clone + PartialEq + 'static>(
         value,
     }
 }
-
 
 pub(crate) fn pointer_select_start(
     event: &Event<PointerData>,

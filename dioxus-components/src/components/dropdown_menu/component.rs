@@ -24,11 +24,7 @@ fn merge_with_class(tag: &str, class_name: &str, attributes: Vec<Attribute>) -> 
 pub fn DropdownMenu(props: DropdownMenuProps) -> Element {
     provide_styled_menu_surface(StyledMenuSurface::Dropdown);
 
-    let attributes = merge_with_class(
-        "div",
-        Styles::dx_dropdown_menu,
-        props.attributes,
-    );
+    let attributes = merge_with_class("div", Styles::dx_dropdown_menu, props.attributes);
 
     rsx! {
         dropdown_menu::DropdownMenu {

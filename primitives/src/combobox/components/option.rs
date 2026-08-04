@@ -3,9 +3,7 @@
 use dioxus::prelude::*;
 
 use super::super::{
-    context::{
-        ComboboxContext, ComboboxPortalContext, ComboboxPortalOptionRegistration,
-    },
+    context::{ComboboxContext, ComboboxPortalContext, ComboboxPortalOptionRegistration},
     hook::ComboboxDropdownEventSource,
 };
 use crate::{
@@ -97,19 +95,14 @@ pub fn ComboboxOption<T: PartialEq + Clone + 'static>(props: ComboboxOptionProps
         if portal_ctx.register_options {
             let listbox_id = listbox.id.clone();
             let id = use_memo(move || {
-                id_signal()
-                    .unwrap_or_else(|| format!("{listbox_id}-option-{}", index()))
+                id_signal().unwrap_or_else(|| format!("{listbox_id}-option-{}", index()))
             });
             let disabled = disabled_snapshot;
             let registration_value = props.value.clone();
             let option_value = props.value.clone();
             let text_value_override = props.text_value.clone();
             let text_value = use_memo(move || {
-                option_text_value(
-                    &option_value,
-                    text_value_override.clone(),
-                    "ComboboxOption",
-                )
+                option_text_value(&option_value, text_value_override.clone(), "ComboboxOption")
             });
             let down_pos: Signal<Option<(f64, f64)>> = use_signal(|| None);
 

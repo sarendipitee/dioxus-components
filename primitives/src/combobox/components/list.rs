@@ -346,7 +346,6 @@ mod tests {
         }
     }
 
-
     #[component]
     fn OpenHoverComboboxApp() -> Element {
         rsx! {

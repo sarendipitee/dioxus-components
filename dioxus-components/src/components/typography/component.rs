@@ -334,6 +334,7 @@ pub fn Heading(props: HeadingProps) -> Element {
     }
 }
 
+#[allow(clippy::too_many_arguments)]
 fn typography_attributes(
     class: &str,
     size: TypographySize,
