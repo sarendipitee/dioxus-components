@@ -187,11 +187,11 @@ test("filter menu filters column choices", async ({ page }) => {
 });
 
 test("multiselect filter menu filters its options", async ({ page }) => {
-  await page.goto(FILTER_URL);
   const menu = await openFilterMenu(page);
   await menu.getByRole("menuitem", { name: "Status" }).click();
   const submenu = page.locator('[role="menu"][data-state="open"]').last();
   const input = submenu.getByRole("textbox", { name: "Filter menu items" });
+  await expect(submenu).toHaveClass(/dx_data_table_filter_options/);
   await expect(input).toBeFocused();
   await input.pressSequentially("paid");
   await expect(submenu.getByRole("menuitemcheckbox", { name: "Paid" })).toBeVisible();

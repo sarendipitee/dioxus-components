@@ -2572,6 +2572,7 @@ fn render_filter_menu<T: Clone + PartialEq + 'static>(
                     }
                     MenuItem::<String> {
                         value: "reset-filters",
+                        search_text: "Reset filters",
                         index: columns.iter().filter(|column| column.filter.is_some()).count(),
                         disabled: state.filters.is_empty() && state.global_filter.is_none(),
                         on_select: {
@@ -2793,11 +2794,11 @@ fn render_filter_submenu<T: Clone + PartialEq + 'static>(
                                 value: (!value.is_empty()).then_some(DataTableFilterValue::Option(value)),
                             })
                         },
-                        MenuRadioItem::<String> { value: String::new(), index: 0usize, "All"
+                        MenuRadioItem::<String> { value: String::new(), search_text: "All", index: 0usize, "All"
                             MenuItemIndicator { if selected.is_none() { "✓" } }
                         }
                         for (option_index, option) in options.iter().enumerate() {
-                            MenuRadioItem::<String> { value: option.value.clone(), index: option_index + 1, "{option.label}"
+                            MenuRadioItem::<String> { value: option.value.clone(), search_text: option.label.clone(), index: option_index + 1, "{option.label}"
                                 MenuItemIndicator { if selected.as_ref() == Some(&option.value) { "✓" } }
                             }
                         }
@@ -2815,6 +2816,7 @@ fn render_filter_submenu<T: Clone + PartialEq + 'static>(
                     for (option_index, option) in options.iter().enumerate() {
                         MenuCheckboxItem::<String> {
                             value: option.value.clone(),
+                            search_text: option.label.clone(),
                             index: option_index,
                             checked: selected.contains(&option.value),
                             close_on_select: false,
@@ -2945,10 +2947,11 @@ fn render_filter_submenu<T: Clone + PartialEq + 'static>(
         MenuSub {
             MenuSubTrigger::<String> {
                 value: column.id.clone(),
+                search_text: label.clone(),
                 index,
                 "{label}"
             }
-            MenuSubContent { class: Styles::dx_data_table_filter_submenu,
+            MenuSubContent { class: format!("{} {}", Styles::dx_data_table_filter_submenu, Styles::dx_data_table_filter_options),
                 {content}
             }
         }
