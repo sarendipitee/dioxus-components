@@ -922,17 +922,16 @@ body {
    sheet. `animation: none` is required because the dialog's open animation fills
    `backdrop-filter`, which would otherwise re-apply the blur. */
 [data-slot="sheet-root"]:has(.dx-theme-studio-sheet) .dx_dialog_backdrop {
-  background: transparent;
-  backdrop-filter: none;
   animation: none;
+  backdrop-filter: none;
+  background: transparent;
   pointer-events: none;
 }
 
 .dx-theme-studio-body {
-  flex: 1;
+  overflow: hidden auto;
   min-height: 0;
-  overflow-x: hidden;
-  overflow-y: auto;
+  flex: 1;
 }
 
 /* Pinned controls: actions, search, and tab switcher. */
@@ -942,10 +941,10 @@ body {
   top: 0;
   display: flex;
   flex-direction: column;
-  gap: 0.75rem;
   padding: 0.75rem 1.25rem;
   border-bottom: 1px solid var(--overlay-border);
   background: var(--overlay);
+  gap: 0.75rem;
 }
 
 .dx-theme-studio-toolbar {
@@ -968,8 +967,8 @@ body {
 
 .dx-theme-section-list {
   display: grid;
-  gap: 1rem;
   padding: 1rem 1.25rem 1.5rem;
+  gap: 1rem;
 }
 
 .dx-theme-css-panel {
@@ -977,8 +976,8 @@ body {
 }
 
 .dx-theme-empty {
-  margin: 0;
   padding: 1.5rem 0.5rem;
+  margin: 0;
   color: var(--fg-muted);
   text-align: center;
 }
@@ -993,11 +992,11 @@ body {
 
 .dx-theme-section-card {
   display: grid;
-  gap: 0.85rem;
   padding: 0.85rem 1rem 1rem;
   border: 1px solid var(--surface-border);
   border-radius: var(--radius-surface);
   background: var(--surface);
+  gap: 0.85rem;
 }
 
 .dx-theme-section-header {
@@ -1017,10 +1016,10 @@ body {
 
 .dx-theme-section-count {
   display: inline-flex;
-  align-items: center;
-  justify-content: center;
   min-width: 1.3rem;
   height: 1.3rem;
+  align-items: center;
+  justify-content: center;
   padding: 0 0.35rem;
   border-radius: 999px;
   background: var(--surface-muted);
@@ -1054,41 +1053,41 @@ body {
 }
 
 .dx-theme-token-name {
-  text-overflow: ellipsis;
-  font-family: Geist Mono, ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
-  font-size: var(--text-sm);
-  overflow: hidden;
-  margin-top: 1.5rem;
-  text-align: right;
-  width: 100%;
   display: table;
+  overflow: hidden;
+  width: 100%;
   padding-right: 1rem;
+  margin-top: 1.5rem;
+  font-family: "Geist Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: var(--text-sm);
+  text-align: right;
+  text-overflow: ellipsis;
 }
 
 .dx-theme-token-dot {
-  flex: none;
+  position: absolute;
+  display: block;
   width: 0.45rem;
   height: 0.45rem;
+  flex: none;
   border-radius: 50%;
   background: var(--accent);
-  display: block;
-  position: absolute;
 }
 
 .dx-theme-token-revert {
   display: inline-flex;
+  width: 1.4rem;
+  height: 1.4rem;
   flex: none;
   align-items: center;
   justify-content: center;
-  width: 1.4rem;
-  height: 1.4rem;
   padding: 0;
   border: none;
   border-radius: var(--radius-control);
   background: transparent;
   color: var(--fg-muted);
-  line-height: 1;
   cursor: pointer;
+  line-height: 1;
   transform: rotate(-90deg);
 }
 
@@ -1104,9 +1103,9 @@ body {
 
 .dx-theme-token-controls-dual {
   display: grid;
-  grid-template-columns: minmax(6rem, 0.9fr) minmax(0, 1fr) minmax(0, 1fr);
   align-items: end;
   gap: 0.6rem;
+  grid-template-columns: minmax(6rem, 0.9fr) minmax(0, 1fr) minmax(0, 1fr);
 }
 
 .dx-theme-token-controls-dual .dx-theme-token-name-cell {
