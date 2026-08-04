@@ -1,6 +1,5 @@
 use crate::component_styles;
 use crate::components::context_menu::ContextMenuStyles;
-use crate::components::dropdown_menu::DropdownMenuStyles;
 use crate::components::input::{InputVariant, TextInput};
 use crate::components::menubar::MenubarStyles;
 use dioxus::prelude::*;
@@ -155,16 +154,16 @@ fn current_surface_slot_class(slot: MenuSurfaceSlot) -> Option<&'static str> {
 fn surface_slot_class(surface: StyledMenuSurface, slot: MenuSurfaceSlot) -> &'static str {
     match surface {
         StyledMenuSurface::Dropdown => match slot {
-            MenuSurfaceSlot::Content => DropdownMenuStyles::dx_dropdown_menu_content,
-            MenuSurfaceSlot::Item => DropdownMenuStyles::dx_dropdown_menu_item,
-            MenuSurfaceSlot::Label => DropdownMenuStyles::dx_dropdown_menu_label,
-            MenuSurfaceSlot::Separator => DropdownMenuStyles::dx_dropdown_menu_separator,
-            MenuSurfaceSlot::Indicator => DropdownMenuStyles::dx_dropdown_menu_item_indicator,
-            MenuSurfaceSlot::ItemSection => DropdownMenuStyles::dx_dropdown_menu_item_section,
-            MenuSurfaceSlot::CheckableItem => DropdownMenuStyles::dx_dropdown_menu_checkable_item,
-            MenuSurfaceSlot::Sub => DropdownMenuStyles::dx_dropdown_menu_sub,
-            MenuSurfaceSlot::SubTrigger => DropdownMenuStyles::dx_dropdown_menu_sub_trigger,
-            MenuSurfaceSlot::SubContent => DropdownMenuStyles::dx_dropdown_menu_sub_content,
+            MenuSurfaceSlot::Content => Styles::dx_menu_content,
+            MenuSurfaceSlot::Item => Styles::dx_menu_item,
+            MenuSurfaceSlot::Label => Styles::dx_menu_label,
+            MenuSurfaceSlot::Separator => Styles::dx_menu_separator,
+            MenuSurfaceSlot::Indicator => Styles::dx_menu_item_indicator,
+            MenuSurfaceSlot::ItemSection => Styles::dx_menu_item_section,
+            MenuSurfaceSlot::CheckableItem => Styles::dx_menu_checkable_item,
+            MenuSurfaceSlot::Sub => Styles::dx_menu_sub,
+            MenuSurfaceSlot::SubTrigger => Styles::dx_menu_sub_trigger,
+            MenuSurfaceSlot::SubContent => Styles::dx_menu_sub_content,
         },
         StyledMenuSurface::Context => match slot {
             MenuSurfaceSlot::Content => ContextMenuStyles::dx_context_menu_content,

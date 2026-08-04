@@ -4,7 +4,7 @@
   display: inline-block;
 }
 
-.dx_dropdown_menu_label {
+.dx_dropdown .dx_menu_label {
   padding: var(--list-item-padding-y) var(--list-item-padding-x);
   color: var(--surface-muted-fg);
   font-size: var(--text-xs);
@@ -13,11 +13,11 @@
   text-transform: uppercase;
 }
 
-.dx_dropdown_menu_content, .dx_dropdown .dx_menu_sub_content {
+.dx_dropdown.dx_menu_content, .dx_dropdown .dx_menu_sub_content {
   padding: var(--content-gap);
 }
 
-.dx_dropdown_menu_content {
+.dx_dropdown.dx_menu_content {
   /* Position (position/top/left) is owned by the floating-ui hook on web, which
      emits inline coords AND a `data-floating="true"` marker. The legacy CSS gap
      (margin-top: var(--space)) now lives in the offset() middleware. On native the
@@ -40,14 +40,14 @@
    On native the marker is absent: mirror the legacy `top:100% left:0` geometry
    relative to the `position: relative` .dx_dropdown_menu wrapper. The ~8px gap
    matches offset()'s DEFAULT_OFFSET_GAP. */
-.dx_dropdown_menu_content:not([data-floating]) {
+.dx_dropdown.dx_menu_content:not([data-floating]) {
   position: absolute;
   top: 100%;
   left: 0;
   margin-top: var(--space);
 }
 
-.dx_dropdown_menu_content[data-state="closed"] {
+.dx_dropdown.dx_menu_content[data-state="closed"] {
   animation: dx-dropdown-menu-content-animate-out 150ms ease-in forwards;
   pointer-events: none;
 }
@@ -64,7 +64,7 @@
   }
 }
 
-.dx_dropdown_menu_content[data-state="open"] {
+.dx_dropdown.dx_menu_content[data-state="open"] {
   animation: dx-dropdown-menu-content-animate-in 150ms ease-out forwards;
 }
 
@@ -80,7 +80,7 @@
   }
 }
 
-.dx_dropdown_menu_item {
+.dx_dropdown .dx_menu_item {
   display: flex;
   align-items: center;
   padding: var(--list-item-padding-y) var(--list-item-padding-x);
@@ -93,34 +93,34 @@
   user-select: none;
 }
 
-.dx_dropdown_menu_checkable_item,
-.dx_dropdown_menu_sub_trigger {
+.dx_dropdown .dx_menu_checkable_item,
+.dx_dropdown .dx_menu_sub_trigger {
   justify-content: space-between;
 }
 
-.dx_dropdown_menu_sub {
+.dx_dropdown .dx_menu_sub {
   position: relative;
 }
 
-.dx_dropdown_menu_item[data-disabled="true"] {
+.dx_dropdown .dx_menu_item[data-disabled="true"] {
   color: var(--surface-disabled-fg);
   cursor: not-allowed;
 }
 
-.dx_dropdown_menu_item:hover:not([data-disabled="true"]),
-.dx_dropdown_menu_item:focus-visible,
-.dx_dropdown_menu_sub_trigger[data-state="open"] {
+.dx_dropdown .dx_menu_item:hover:not([data-disabled="true"]),
+.dx_dropdown .dx_menu_item:focus-visible,
+.dx_dropdown .dx_menu_sub_trigger[data-state="open"] {
   background: var(--surface-hover);
   color: var(--surface-hover-fg);
 }
 
-.dx_dropdown_menu_separator {
+.dx_dropdown .dx_menu_separator {
   height: 1px;
   margin: var(--space) var(--list-item-padding-x);
   background: var(--overlay-border);
 }
 
-.dx_dropdown_menu_item_indicator {
+.dx_dropdown .dx_menu_item_indicator {
   display: inline-flex;
   min-width: 1rem;
   align-items: center;
@@ -128,30 +128,30 @@
   color: inherit;
 }
 
-.dx_dropdown_menu_item_section {
+.dx_dropdown .dx_menu_item_section {
   margin-left: auto;
   padding-left: var(--surface-gap);
   color: var(--surface-muted-fg);
   font-size: var(--text-xs);
 }
 
-.dx_dropdown_menu_sub_trigger::after {
+.dx_dropdown .dx_menu_sub_trigger::after {
   content: "›";
   color: var(--surface-muted-fg);
 }
 
-.dx_dropdown_menu_sub_content {
+.dx_dropdown.dx_menu_sub_content {
   transform-origin: left top;
 }
 
-.dx_dropdown_menu_sub_content[data-side="left"] {
+.dx_dropdown.dx_menu_sub_content[data-side="left"] {
   transform-origin: right top;
 }
 
 /* Native fallback positioning for the submenu (web uses floating-ui inline
    coords; `:not([data-floating])` keeps these inert on web). Mirrors the legacy
    right-of-trigger geometry; the ~8px gap is owned by offset() on web. */
-.dx_dropdown_menu_sub_content:not([data-floating]) {
+.dx_dropdown.dx_menu_sub_content:not([data-floating]) {
   position: absolute;
   top: calc(var(--space) * -1);
   left: 100%;
@@ -159,14 +159,14 @@
   margin-left: var(--space);
 }
 
-.dx_dropdown_menu_sub_content:not([data-floating])[data-side="left"] {
+.dx_dropdown.dx_menu_sub_content:not([data-floating])[data-side="left"] {
   right: 100%;
   left: auto;
   margin-right: var(--space);
   margin-left: 0;
 }
 
-.dx_dropdown_menu_sub_content::before {
+.dx_dropdown.dx_menu_sub_content::before {
   position: absolute;
   top: 0;
   right: 100%;
@@ -175,7 +175,7 @@
   content: "";
 }
 
-.dx_dropdown_menu_sub_content[data-side="left"]::before {
+.dx_dropdown.dx_menu_sub_content[data-side="left"]::before {
   right: auto;
   left: 100%;
 }
