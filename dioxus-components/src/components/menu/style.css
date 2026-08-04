@@ -12,7 +12,6 @@
      that the panel is portaled to the shared outlet. */
   z-index: var(--overlay-z);
   min-width: 200px;
-  padding: var(--space);
   animation: dx-menu-content-animate-in 150ms ease-out forwards;
   opacity: 0;
   pointer-events: none;
@@ -62,6 +61,7 @@
   align-items: center;
   gap: var(--item-gap);
   padding: var(--list-item-padding-y) var(--list-item-padding-x);
+	margin: var(--content-gap);
   border-radius: calc(var(--radius) - var(--space));
   color: var(--overlay-fg);
   cursor: pointer;
@@ -95,7 +95,7 @@
 
 .dx_menu_separator {
   height: 1px;
-  margin: var(--list-item-padding-y) var(--list-item-padding-x);
+  margin-block: var(--list-item-padding-y);
   background: var(--overlay-border);
 }
 
