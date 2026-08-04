@@ -51,7 +51,7 @@ pub struct TooltipProps {
 #[component]
 pub fn Tooltip(props: TooltipProps) -> Element {
     let base = attributes!(div {
-        class: Styles::dx_tooltip.to_string(),
+        class: Styles::dx_tooltip,
     });
     let merged = merge_attributes(vec![base, props.attributes]);
 
@@ -90,7 +90,7 @@ pub fn Tooltip(props: TooltipProps) -> Element {
 #[component]
 pub fn TooltipTrigger(props: TooltipTriggerProps) -> Element {
     let base = attributes!(button {
-        class: Styles::dx_tooltip_trigger.to_string(),
+        class: Styles::dx_tooltip_trigger,
     });
     let merged = merge_attributes(vec![base, props.attributes]);
 

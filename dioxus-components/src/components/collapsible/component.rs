@@ -29,7 +29,7 @@ pub fn Collapsible(props: CollapsibleProps) -> Element {
 #[component]
 pub fn CollapsibleTrigger(props: CollapsibleTriggerProps) -> Element {
     let base = attributes!(button {
-        class: Styles::dx_collapsible_trigger.to_string(),
+        class: Styles::dx_collapsible_trigger,
     });
     let merged = merge_attributes(vec![base, props.attributes]);
 
@@ -52,7 +52,7 @@ pub fn CollapsibleTrigger(props: CollapsibleTriggerProps) -> Element {
 pub fn CollapsibleContent(props: CollapsibleContentProps) -> Element {
     rsx! {
         collapsible::CollapsibleContent {
-            class: Styles::dx_collapsible_content.to_string(),
+            class: Styles::dx_collapsible_content,
             id: props.id,
             attributes: props.attributes,
             {props.children}

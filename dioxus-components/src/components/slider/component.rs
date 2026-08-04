@@ -50,7 +50,7 @@ pub fn Slider(
             with_asterisk,
             disabled: is_disabled,
             slider::Slider {
-                class: Styles::dx_slider.to_string(),
+                class: Styles::dx_slider,
                 value,
                 default_value,
                 min,
@@ -62,9 +62,9 @@ pub fn Slider(
                 on_value_change,
                 label,
                 attributes,
-                slider::SliderTrack { class: Styles::dx_slider_track.to_string(),
-                    slider::SliderRange { class: Styles::dx_slider_range.to_string() }
-                    slider::SliderThumb { class: Styles::dx_slider_thumb.to_string() }
+                slider::SliderTrack { class: Styles::dx_slider_track,
+                    slider::SliderRange { class: Styles::dx_slider_range }
+                    slider::SliderThumb { class: Styles::dx_slider_thumb }
                 }
             }
         }
@@ -112,7 +112,7 @@ pub fn RangeSlider(
             with_asterisk,
             disabled: is_disabled,
             slider::RangeSlider {
-                class: Styles::dx_slider.to_string(),
+                class: Styles::dx_slider,
                 value,
                 default_value,
                 min,
@@ -124,10 +124,10 @@ pub fn RangeSlider(
                 on_value_change,
                 label,
                 attributes,
-                slider::SliderTrack { class: Styles::dx_slider_track.to_string(),
-                    slider::SliderRange { class: Styles::dx_slider_range.to_string() }
-                    slider::SliderThumb { class: Styles::dx_slider_thumb.to_string(), index: 0usize }
-                    slider::SliderThumb { class: Styles::dx_slider_thumb.to_string(), index: 1usize }
+                slider::SliderTrack { class: Styles::dx_slider_track,
+                    slider::SliderRange { class: Styles::dx_slider_range }
+                    slider::SliderThumb { class: Styles::dx_slider_thumb, index: 0usize }
+                    slider::SliderThumb { class: Styles::dx_slider_thumb, index: 1usize }
                 }
             }
         }

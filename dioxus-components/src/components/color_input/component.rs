@@ -274,7 +274,7 @@ fn ColorInputField(
     });
     let current_value = value();
     let base = attributes!(input {
-        class: Styles::dx_color_input.to_string(),
+        class: Styles::dx_color_input,
         r#type: "text",
         value: current_value.clone(),
         "aria-label": "Color value",

@@ -135,7 +135,7 @@ pub fn Sheet(props: SheetProps) -> Element {
                 }
 
                 if title.is_some() || description.is_some() {
-                    div { class: DialogStyles::dx_dialog_header.to_string(),
+                    div { class: DialogStyles::dx_dialog_header,
                         if let Some(title) = title {
                             {title}
                         }
@@ -148,7 +148,7 @@ pub fn Sheet(props: SheetProps) -> Element {
                 {props.children}
 
                 if let Some(f) = footer_el {
-                    div { class: DialogStyles::dx_dialog_footer.to_string(), {f} }
+                    div { class: DialogStyles::dx_dialog_footer, {f} }
                 }
             }
         }

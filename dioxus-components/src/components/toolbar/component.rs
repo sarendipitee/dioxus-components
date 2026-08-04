@@ -9,7 +9,7 @@ struct Styles;
 #[component]
 pub fn Toolbar(props: ToolbarProps) -> Element {
     let base = attributes!(div {
-        class: Styles::dx_toolbar.to_string(),
+        class: Styles::dx_toolbar,
     });
     let merged = merge_attributes(vec![base, props.attributes]);
 
@@ -40,7 +40,7 @@ pub fn ToolbarButton(props: ToolbarButtonProps) -> Element {
 #[component]
 pub fn ToolbarSeparator(props: ToolbarSeparatorProps) -> Element {
     let base = attributes!(div {
-        class: Styles::dx_toolbar_separator.to_string(),
+        class: Styles::dx_toolbar_separator,
     });
     let merged = merge_attributes(vec![base, props.attributes]);
 
@@ -61,7 +61,7 @@ pub fn ToolbarGroup(
     children: Element,
 ) -> Element {
     let base = attributes!(div {
-        class: Styles::dx_toolbar_group.to_string(),
+        class: Styles::dx_toolbar_group,
     });
     let merged = merge_attributes(vec![base, attributes]);
 

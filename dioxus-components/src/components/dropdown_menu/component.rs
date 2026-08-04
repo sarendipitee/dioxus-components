@@ -10,7 +10,7 @@ use dioxus_primitives::merge_attributes;
 #[component_styles("./style.css")]
 pub(crate) struct Styles;
 
-fn merge_with_class(tag: &str, class_name: String, attributes: Vec<Attribute>) -> Vec<Attribute> {
+fn merge_with_class(tag: &str, class_name: &str, attributes: Vec<Attribute>) -> Vec<Attribute> {
     let base = match tag {
         "button" => attributes!(button { class: class_name }),
         _ => attributes!(div { class: class_name }),
@@ -26,7 +26,7 @@ pub fn DropdownMenu(props: DropdownMenuProps) -> Element {
 
     let attributes = merge_with_class(
         "div",
-        Styles::dx_dropdown_menu.to_string(),
+        Styles::dx_dropdown_menu,
         props.attributes,
     );
 

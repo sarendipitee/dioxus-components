@@ -12,7 +12,7 @@ struct Styles;
 pub fn Navbar(props: NavbarProps) -> Element {
     rsx! {
         navbar::Navbar {
-            class: Styles::dx_navbar.to_string(),
+            class: Styles::dx_navbar,
             disabled: props.disabled,
             roving_loop: props.roving_loop,
             attributes: props.attributes,
@@ -25,7 +25,7 @@ pub fn Navbar(props: NavbarProps) -> Element {
 pub fn NavbarNav(props: NavbarNavProps) -> Element {
     rsx! {
         navbar::NavbarNav {
-            class: Styles::dx_navbar_nav.to_string(),
+            class: Styles::dx_navbar_nav,
             index: props.index,
             disabled: props.disabled,
             attributes: props.attributes,
@@ -45,7 +45,7 @@ pub fn NavbarTrigger(props: NavbarTriggerProps) -> Element {
         navbar::NavbarTrigger { attributes,
             {props.children}
             ChevronDown {
-                class: Styles::dx_navbar_expand_icon.to_string(),
+                class: Styles::dx_navbar_expand_icon,
                 size: "14px",
                 stroke: "var(--secondary-color-4)",
             }

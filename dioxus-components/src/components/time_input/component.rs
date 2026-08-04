@@ -238,7 +238,7 @@ pub fn TimeInput(
                 open: Some(open()),
                 on_open_change: move |value| open.set(value),
                 attributes: attributes!(div {
-                    class: Styles::dx_time_input_popover_root.to_string()
+                    class: Styles::dx_time_input_popover_root
                 }),
                 TimePicker {
                     on_value_change,
@@ -333,7 +333,7 @@ fn StyledTimePickerInput(
     rsx! {
         TimePickerInput {
             attributes: attributes!(div {
-                class: Styles::dx_time_input_field.to_string()
+                class: Styles::dx_time_input_field
             }),
             StyledTimePickerSegments {
                 with_seconds,
@@ -384,7 +384,7 @@ fn TimeInputPopoverContent(#[props(default)] id: Option<String>, children: Eleme
         PopoverContent {
             id,
             align: ContentAlign::Start,
-            class: Styles::dx_time_input_popover_content.to_string(),
+            class: Styles::dx_time_input_popover_content,
             {children}
         }
     }

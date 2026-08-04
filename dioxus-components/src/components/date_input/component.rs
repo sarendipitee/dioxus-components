@@ -254,7 +254,7 @@ pub fn DateRangePickerInput(
 #[component]
 fn DateInputPopover(props: PopoverProps) -> Element {
     let base = attributes!(div {
-        class: Styles::dx_date_input_popover_root.to_string()
+        class: Styles::dx_date_input_popover_root
     });
     let attributes = merge_attributes(vec![base, props.attributes]);
 
@@ -286,7 +286,7 @@ fn DateInputControl(
     rsx! {
         date_picker::DatePickerInput {
             attributes: attributes!(div {
-                class: Styles::dx_date_input_group.to_string(),
+                class: Styles::dx_date_input_group,
             }),
             open_on_focus: !disabled,
             on_format_day_placeholder,
@@ -311,7 +311,7 @@ fn DateRangeInputControl(disabled: bool) -> Element {
     rsx! {
         date_picker::DateRangePickerInput {
             attributes: attributes!(div {
-                class: Styles::dx_date_input_group.to_string(),
+                class: Styles::dx_date_input_group,
             }),
             open_on_focus: !disabled,
             date_picker::DateRangePickerInputValue {
@@ -380,10 +380,10 @@ fn DateInputPopoverTrigger(
 
     rsx! {
         PopoverOpenTrigger {
-            class: Styles::dx_date_input_popover_trigger.to_string(),
+            class: Styles::dx_date_input_popover_trigger,
             attributes,
             ChevronDown {
-                class: Styles::dx_date_input_trigger.to_string(),
+                class: Styles::dx_date_input_trigger,
                 size: "14px",
                 stroke: "oklch(var(--input-fg-muted))",
             }
@@ -401,7 +401,7 @@ fn DateInputPopoverContent(
 ) -> Element {
     rsx! {
         PopoverContent {
-            class: Styles::dx_date_input_popover_content.to_string(),
+            class: Styles::dx_date_input_popover_content,
             id,
             side,
             align,

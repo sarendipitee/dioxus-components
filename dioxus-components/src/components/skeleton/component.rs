@@ -8,7 +8,7 @@ struct Styles;
 #[component]
 pub fn Skeleton(#[props(extends=GlobalAttributes)] attributes: Vec<Attribute>) -> Element {
     let base = attributes!(div {
-        class: Styles::dx_skeleton.to_string(),
+        class: Styles::dx_skeleton,
     });
     let merged = merge_attributes(vec![base, attributes]);
 

@@ -9,7 +9,7 @@ struct Styles;
 pub fn ToggleGroup(props: ToggleGroupProps) -> Element {
     rsx! {
         toggle_group::ToggleGroup {
-            class: Styles::dx_toggle_group.to_string(),
+            class: Styles::dx_toggle_group,
             default_pressed: props.default_pressed,
             pressed: props.pressed,
             on_pressed_change: props.on_pressed_change,
@@ -27,7 +27,7 @@ pub fn ToggleGroup(props: ToggleGroupProps) -> Element {
 pub fn ToggleItem(props: ToggleItemProps) -> Element {
     rsx! {
         toggle_group::ToggleItem {
-            class: Styles::dx_toggle_item.to_string(),
+            class: Styles::dx_toggle_item,
             index: props.index,
             disabled: props.disabled,
             attributes: props.attributes,

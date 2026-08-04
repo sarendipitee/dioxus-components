@@ -8,7 +8,7 @@ struct Styles;
 pub fn Label(props: LabelProps) -> Element {
     rsx! {
         label::Label {
-            class: Styles::dx_label.to_string(),
+            class: Styles::dx_label,
             html_for: props.html_for,
             attributes: props.attributes,
             {props.children}

@@ -259,10 +259,10 @@ pub(crate) fn build_input_field_text_state(
 
 #[derive(Clone, PartialEq)]
 pub(crate) struct InputFieldTextClasses {
-    pub label: String,
-    pub required: String,
-    pub description: String,
-    pub error: String,
+    pub label: &'static str,
+    pub required: &'static str,
+    pub description: &'static str,
+    pub error: &'static str,
 }
 
 #[derive(Clone, PartialEq)]
@@ -305,7 +305,7 @@ pub(crate) fn InputFieldText(
                 attributes: {
                     let mut attributes = vec![Attribute::new(
                         "class",
-                        AttributeValue::Text(classes.label),
+                        AttributeValue::Text(classes.label.to_string()),
                         None,
                         false,
                     ), Attribute::new(
@@ -347,7 +347,7 @@ pub(crate) fn InputFieldText(
                         false,
                     ), Attribute::new(
                         "class",
-                        AttributeValue::Text(classes.description),
+                        AttributeValue::Text(classes.description.to_string()),
                         None,
                         false,
                     )];
@@ -377,7 +377,7 @@ pub(crate) fn InputFieldText(
                         false,
                     ), Attribute::new(
                         "class",
-                        AttributeValue::Text(classes.error),
+                        AttributeValue::Text(classes.error.to_string()),
                         None,
                         false,
                     )];
@@ -458,7 +458,7 @@ pub fn InputWrapper(props: InputWrapperProps) -> Element {
     use_context_provider(|| control_context);
 
     let base = attributes!(div {
-        class: Styles::dx_input_wrapper.to_string(),
+        class: Styles::dx_input_wrapper,
         "data-slot": "input-wrapper",
         "data-disabled": disabled,
         "data-error": field.invalid,
@@ -478,10 +478,10 @@ pub fn InputWrapper(props: InputWrapperProps) -> Element {
                 required,
                 with_asterisk,
                 classes: InputFieldTextClasses {
-                    label: Styles::dx_input_label.to_string(),
-                    required: Styles::dx_input_required.to_string(),
-                    description: Styles::dx_input_description.to_string(),
-                    error: Styles::dx_input_error.to_string(),
+                    label: Styles::dx_input_label,
+                    required: Styles::dx_input_required,
+                    description: Styles::dx_input_description,
+                    error: Styles::dx_input_error,
                 },
                 slots: InputFieldTextSlots {
                     label: Some("input-label"),
@@ -529,7 +529,7 @@ pub fn Input(
     children: Element,
 ) -> Element {
     let base = attributes!(div {
-        class: Styles::dx_input.to_string(),
+        class: Styles::dx_input,
         "data-slot": "input",
         "data-variant": variant.as_str(),
         "data-size": size.as_str(),
@@ -545,31 +545,31 @@ pub fn Input(
         div { ..attributes,
             if let Some(left_section) = left_section {
                 div {
-                    class: Styles::dx_input_section.to_string(),
+                    class: Styles::dx_input_section,
                     "data-slot": "input-left-section",
                     "data-position": "left",
                     {left_section}
                 }
             }
             div {
-                class: Styles::dx_input_control.to_string(),
+                class: Styles::dx_input_control,
                 "data-slot": "input-control",
                 {children}
             }
             if loading {
                 div {
-                    class: Styles::dx_input_section.to_string(),
+                    class: Styles::dx_input_section,
                     "data-slot": "input-loading-section",
                     "data-position": "right",
                     span {
-                        class: Styles::dx_input_spinner.to_string(),
+                        class: Styles::dx_input_spinner,
                         "data-slot": "input-spinner",
                         "aria-hidden": "true",
                     }
                 }
             } else if let Some(right_section) = right_section {
                 div {
-                    class: Styles::dx_input_section.to_string(),
+                    class: Styles::dx_input_section,
                     "data-slot": "input-right-section",
                     "data-position": "right",
                     {right_section}
@@ -598,7 +598,7 @@ pub fn InputClearButton(
     attributes: Vec<Attribute>,
 ) -> Element {
     let base = attributes!(button {
-        class: Styles::dx_input_clear_button.to_string(),
+        class: Styles::dx_input_clear_button,
         "data-slot": "input-clear-button",
         r#type: "button",
         "aria-label": aria_label,
@@ -787,7 +787,7 @@ pub fn TextInput(
 
     let native_base = attributes!(input {
         id: input_id.clone(),
-        class: Styles::dx_text_input_control.to_string(),
+        class: Styles::dx_text_input_control,
         "data-slot": "text-input-control",
         disabled: disabled,
         required: required,

@@ -44,7 +44,7 @@ pub fn RadioGroup(
             with_asterisk,
             disabled: is_disabled,
             radio_group::RadioGroup {
-                class: Styles::dx_radio_group.to_string(),
+                class: Styles::dx_radio_group,
                 value,
                 default_value,
                 on_value_change,

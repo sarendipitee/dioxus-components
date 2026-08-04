@@ -49,7 +49,7 @@ pub fn Switch(
     let switch_attributes = merge_attributes(vec![
         attributes!(button {
             id: field.id.clone(),
-            class: Styles::dx_switch.to_string(),
+            class: Styles::dx_switch,
             "aria-invalid": field.invalid,
             "aria-describedby": field.described_by.clone(),
         }),
@@ -58,7 +58,7 @@ pub fn Switch(
 
     rsx! {
         div {
-            class: Styles::dx_switch_field.to_string(),
+            class: Styles::dx_switch_field,
             "data-disabled": is_disabled,
             "data-error": field.invalid,
             "data-required": is_required,
@@ -71,9 +71,9 @@ pub fn Switch(
                 value,
                 on_checked_change,
                 attributes: switch_attributes,
-                switch::SwitchThumb { class: Styles::dx_switch_thumb.to_string() }
+                switch::SwitchThumb { class: Styles::dx_switch_thumb }
             }
-            div { class: Styles::dx_switch_label_container.to_string(),
+            div { class: Styles::dx_switch_label_container,
                 InputFieldText {
                     input_id: field.id,
                     label,
@@ -82,10 +82,10 @@ pub fn Switch(
                     required: is_required,
                     with_asterisk,
                     classes: InputFieldTextClasses {
-                        label: Styles::dx_switch_label.to_string(),
-                        required: Styles::dx_switch_required.to_string(),
-                        description: Styles::dx_switch_description.to_string(),
-                        error: Styles::dx_switch_error.to_string(),
+                        label: Styles::dx_switch_label,
+                        required: Styles::dx_switch_required,
+                        description: Styles::dx_switch_description,
+                        error: Styles::dx_switch_error,
                     },
                 }
             }

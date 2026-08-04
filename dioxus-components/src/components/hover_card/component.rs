@@ -10,7 +10,7 @@ struct Styles;
 pub fn HoverCard(props: HoverCardProps) -> Element {
     rsx! {
         hover_card::HoverCard {
-            class: Styles::dx_hover_card.to_string(),
+            class: Styles::dx_hover_card,
             open: props.open,
             default_open: props.default_open,
             on_open_change: props.on_open_change,
@@ -25,7 +25,7 @@ pub fn HoverCard(props: HoverCardProps) -> Element {
 pub fn HoverCardTrigger(props: HoverCardTriggerProps) -> Element {
     rsx! {
         hover_card::HoverCardTrigger {
-            class: Styles::dx_hover_card_trigger.to_string(),
+            class: Styles::dx_hover_card_trigger,
             id: props.id,
             attributes: props.attributes,
             {props.children}

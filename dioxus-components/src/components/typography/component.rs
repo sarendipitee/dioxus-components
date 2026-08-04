@@ -254,7 +254,7 @@ pub struct TextProps {
 #[component]
 pub fn Text(props: TextProps) -> Element {
     let attributes = typography_attributes(
-        Styles::dx_text.to_string(),
+        Styles::dx_text,
         props.size,
         props.tone,
         props.weight,
@@ -312,7 +312,7 @@ pub struct HeadingProps {
 #[component]
 pub fn Heading(props: HeadingProps) -> Element {
     let attributes = typography_attributes(
-        Styles::dx_heading.to_string(),
+        Styles::dx_heading,
         props.size,
         props.tone,
         props.weight,
@@ -335,7 +335,7 @@ pub fn Heading(props: HeadingProps) -> Element {
 }
 
 fn typography_attributes(
-    class: String,
+    class: &str,
     size: TypographySize,
     tone: TypographyTone,
     weight: TypographyWeight,

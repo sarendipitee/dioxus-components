@@ -289,7 +289,7 @@ pub fn NumberInput(
             }
             if !prefix.is_empty() {
                 span {
-                    class: Styles::dx_number_input_affix.to_string(),
+                    class: Styles::dx_number_input_affix,
                     "data-slot": "number-input-prefix",
                     "data-position": "prefix",
                     aria_hidden: "true",
@@ -306,7 +306,7 @@ pub fn NumberInput(
         Some(rsx! {
             if !suffix.is_empty() {
                 span {
-                    class: Styles::dx_number_input_affix.to_string(),
+                    class: Styles::dx_number_input_affix,
                     "data-slot": "number-input-suffix",
                     "data-position": "suffix",
                     aria_hidden: "true",
@@ -315,10 +315,10 @@ pub fn NumberInput(
             }
             if !hide_controls {
                 div {
-                    class: Styles::dx_number_input_controls.to_string(),
+                    class: Styles::dx_number_input_controls,
                     "data-slot": "number-input-controls",
                     button {
-                        class: Styles::dx_number_input_step_btn.to_string(),
+                        class: Styles::dx_number_input_step_btn,
                         "data-slot": "number-input-increment",
                         r#type: "button",
                         tabindex: "-1",
@@ -326,13 +326,13 @@ pub fn NumberInput(
                         disabled: increment_disabled,
                         onclick: move |_| step_fn_up(step),
                         span {
-                            class: Styles::dx_number_input_chevron.to_string(),
+                            class: Styles::dx_number_input_chevron,
                             "data-direction": "up",
                             aria_hidden: "true",
                         }
                     }
                     button {
-                        class: Styles::dx_number_input_step_btn.to_string(),
+                        class: Styles::dx_number_input_step_btn,
                         "data-slot": "number-input-decrement",
                         r#type: "button",
                         tabindex: "-1",
@@ -340,7 +340,7 @@ pub fn NumberInput(
                         disabled: decrement_disabled,
                         onclick: move |_| step_fn_down(-step),
                         span {
-                            class: Styles::dx_number_input_chevron.to_string(),
+                            class: Styles::dx_number_input_chevron,
                             "data-direction": "down",
                             aria_hidden: "true",
                         }

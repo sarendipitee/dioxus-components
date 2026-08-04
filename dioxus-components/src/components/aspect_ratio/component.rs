@@ -10,7 +10,7 @@ struct Styles;
 #[component]
 pub fn AspectRatio(props: AspectRatioProps) -> Element {
     let base = attributes!(div {
-        class: Styles::dx_aspect_ratio_container.to_string(),
+        class: Styles::dx_aspect_ratio_container,
     });
     let attributes = merge_attributes(vec![base, props.attributes]);
 

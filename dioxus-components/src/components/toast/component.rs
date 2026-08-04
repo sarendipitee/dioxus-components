@@ -78,7 +78,7 @@ fn StyledToast(props: ToastProps) -> Element {
 fn ToastIcon(children: Element) -> Element {
     rsx! {
         div {
-            class: Styles::dx_toast_icon.to_string(),
+            class: Styles::dx_toast_icon,
             "data-slot": "toast-icon",
             "aria-hidden": "true",
             {children}
@@ -90,7 +90,7 @@ fn ToastIcon(children: Element) -> Element {
 fn ToastContent(props: ToastContentProps) -> Element {
     rsx! {
         toast::ToastContent {
-            class: Styles::dx_toast_content.to_string(),
+            class: Styles::dx_toast_content,
             attributes: props.attributes,
             {props.children}
         }

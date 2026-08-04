@@ -12,7 +12,7 @@ pub(crate) struct Styles;
 #[component]
 pub fn Popover(props: PopoverProps) -> Element {
     let base = attributes!(div {
-        class: Styles::dx_popover.to_string()
+        class: Styles::dx_popover
     });
     let merged = merge_attributes(vec![base, props.attributes]);
 
@@ -78,7 +78,7 @@ pub fn PopoverContentDescription(
 #[component]
 pub fn PopoverTrigger(props: PopoverTriggerProps) -> Element {
     let base = attributes!(div {
-        class: Styles::dx_popover_trigger.to_string()
+        class: Styles::dx_popover_trigger
     });
     let merged = merge_attributes(vec![base, props.attributes]);
 
@@ -91,7 +91,7 @@ pub fn PopoverTrigger(props: PopoverTriggerProps) -> Element {
 #[component]
 pub fn PopoverOpenTrigger(props: PopoverTriggerProps) -> Element {
     let base = attributes!(div {
-        class: Styles::dx_popover_trigger.to_string()
+        class: Styles::dx_popover_trigger
     });
     let merged = merge_attributes(vec![base, props.attributes]);
 

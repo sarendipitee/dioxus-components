@@ -10,7 +10,7 @@ struct Styles;
 #[component]
 pub fn VirtualList(props: VirtualListProps) -> Element {
     let base = attributes!(div {
-        class: Styles::dx_virtual_list_container.to_string(),
+        class: Styles::dx_virtual_list_container,
     });
     let merged = merge_attributes(vec![base, props.attributes]);
 

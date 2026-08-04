@@ -51,7 +51,7 @@ pub fn DragAndDropList(props: DragAndDropListProps) -> Element {
                 .unwrap_or_else(|| idx.to_string());
             rsx! {
                 DragIcon { key: "{key}" }
-                div { class: Styles::dx_item_body_div.to_string(), {item} }
+                div { class: Styles::dx_item_body_div, {item} }
                 if is_removable {
                     RemoveButton {}
                 }
@@ -61,7 +61,7 @@ pub fn DragAndDropList(props: DragAndDropListProps) -> Element {
 
     rsx! {
         drag_and_drop_list::DragAndDropList {
-            class: Styles::dx_dnd_list.to_string(),
+            class: Styles::dx_dnd_list,
             items,
             aria_label: props.aria_label,
             attributes: props.attributes,
@@ -79,7 +79,7 @@ pub fn DragAndDropList(props: DragAndDropListProps) -> Element {
 pub fn DragAndDropListItem(props: DragAndDropListItemProps) -> Element {
     rsx! {
         drag_and_drop_list::DragAndDropListItem {
-            class: Styles::dx_dnd_list_item.to_string(),
+            class: Styles::dx_dnd_list_item,
             index: props.index,
             attributes: props.attributes,
             {props.children}
@@ -91,7 +91,7 @@ pub fn DragAndDropListItem(props: DragAndDropListItemProps) -> Element {
 pub fn DragAndDropListItems(props: DragAndDropListItemsProps) -> Element {
     rsx! {
         drag_and_drop_list::DragAndDropListItems {
-            class: Styles::dx_dnd_list_ul.to_string(),
+            class: Styles::dx_dnd_list_ul,
             aria_label: props.aria_label,
             attributes: props.attributes,
             for item in drag_and_drop_list::use_drag_and_drop_list_items() {
@@ -119,7 +119,7 @@ pub fn DragAndDropListItems(props: DragAndDropListItemsProps) -> Element {
 pub fn DragAndDropDropIndicator(props: DragAndDropDropIndicatorProps) -> Element {
     rsx! {
         drag_and_drop_list::DragAndDropDropIndicator {
-            class: Styles::dx_drop_indicator.to_string(),
+            class: Styles::dx_drop_indicator,
             index: props.index,
             position: props.position,
             attributes: props.attributes,
@@ -131,7 +131,7 @@ pub fn DragAndDropDropIndicator(props: DragAndDropDropIndicatorProps) -> Element
 fn DragIcon() -> Element {
     rsx! {
         GripVertical {
-            class: Styles::dx_item_icon.to_string(),
+            class: Styles::dx_item_icon,
             "aria-hidden": "true",
             size: "16px",
         }
@@ -149,7 +149,7 @@ pub fn RemoveButton(
     let label = format!("Remove item {}", index + 1);
     rsx! {
         button {
-            class: Styles::dx_remove_button.to_string(),
+            class: Styles::dx_remove_button,
             r#type: "button",
             aria_label: "{label}",
             draggable: "false",

@@ -146,7 +146,7 @@ pub fn PasswordInput(
             }
             if visibility_toggle {
                 button {
-                    class: Styles::dx_password_input_toggle.to_string(),
+                    class: Styles::dx_password_input_toggle,
                     "data-slot": "password-input-toggle",
                     r#type: "button",
                     tabindex: "-1",

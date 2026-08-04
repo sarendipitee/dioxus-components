@@ -77,7 +77,7 @@ pub fn CardTitle(
     children: Element,
 ) -> Element {
     let attributes =
-        card_slot_attributes(Styles::dx_card_title.to_string(), "card-title", attributes);
+        card_slot_attributes(Styles::dx_card_title, "card-title", attributes);
 
     rsx! {
         Heading {
@@ -97,7 +97,7 @@ pub fn CardDescription(
     children: Element,
 ) -> Element {
     let attributes = card_slot_attributes(
-        Styles::dx_card_description.to_string(),
+        Styles::dx_card_description,
         "card-description",
         attributes,
     );
@@ -182,7 +182,7 @@ fn render_card_header_title(title: TextOrElement<()>) -> Option<Element> {
                 weight: TypographyWeight::Semibold,
                 level: HeadingLevel::H3,
                 attributes: card_slot_attributes(
-                    Styles::dx_card_title.to_string(),
+                    Styles::dx_card_title,
                     "card-title",
                     Vec::new(),
                 ),
@@ -190,10 +190,10 @@ fn render_card_header_title(title: TextOrElement<()>) -> Option<Element> {
             }
         },
         TextOrElement::Element(element) => {
-            render_card_header_slot(Styles::dx_card_title.to_string(), "card-title", element)
+            render_card_header_slot(Styles::dx_card_title, "card-title", element)
         }
         TextOrElement::Render(render) => render_card_header_slot(
-            Styles::dx_card_title.to_string(),
+            Styles::dx_card_title,
             "card-title",
             render.call(()),
         ),
@@ -211,7 +211,7 @@ fn render_card_header_description(description: TextOrElement<()>) -> Option<Elem
                 size: TypographySize::Sm,
                 tone: TypographyTone::SurfaceMuted,
                 attributes: card_slot_attributes(
-                    Styles::dx_card_description.to_string(),
+                    Styles::dx_card_description,
                     "card-description",
                     Vec::new(),
                 ),
@@ -219,19 +219,19 @@ fn render_card_header_description(description: TextOrElement<()>) -> Option<Elem
             }
         },
         TextOrElement::Element(element) => render_card_header_slot(
-            Styles::dx_card_description.to_string(),
+            Styles::dx_card_description,
             "card-description",
             element,
         ),
         TextOrElement::Render(render) => render_card_header_slot(
-            Styles::dx_card_description.to_string(),
+            Styles::dx_card_description,
             "card-description",
             render.call(()),
         ),
     })
 }
 
-fn render_card_header_slot(class: String, slot: &'static str, element: Element) -> Element {
+fn render_card_header_slot(class: &str, slot: &'static str, element: Element) -> Element {
     let attributes = card_slot_attributes(class, slot, Vec::new());
 
     rsx! {
@@ -243,7 +243,7 @@ fn render_card_header_slot(class: String, slot: &'static str, element: Element) 
 }
 
 fn card_slot_attributes(
-    class: String,
+    class: &str,
     slot: &'static str,
     attributes: Vec<Attribute>,
 ) -> Vec<Attribute> {

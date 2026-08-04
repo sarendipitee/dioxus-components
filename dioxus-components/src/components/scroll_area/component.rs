@@ -12,7 +12,7 @@ struct Styles;
 #[component]
 pub fn ScrollArea(props: ScrollAreaProps) -> Element {
     let base = attributes!(div {
-        class: Styles::dx_scroll_area.to_string(),
+        class: Styles::dx_scroll_area,
     });
     let attributes = merge_attributes(vec![base, props.attributes]);
 

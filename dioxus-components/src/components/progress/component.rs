@@ -9,11 +9,11 @@ struct Styles;
 pub fn Progress(props: ProgressProps) -> Element {
     rsx! {
         progress::Progress {
-            class: Styles::dx_progress.to_string(),
+            class: Styles::dx_progress,
             value: props.value,
             max: props.max,
             attributes: props.attributes,
-            progress::ProgressIndicator { class: Styles::dx_progress_indicator.to_string() }
+            progress::ProgressIndicator { class: Styles::dx_progress_indicator }
         }
     }
 }

@@ -9,7 +9,7 @@ use dioxus_primitives::{dioxus_attributes::attributes, merge_attributes};
 #[component_styles("./style.css")]
 pub(crate) struct Styles;
 
-fn merge_with_class(tag: &str, class_name: String, attributes: Vec<Attribute>) -> Vec<Attribute> {
+fn merge_with_class(tag: &str, class_name: &str, attributes: Vec<Attribute>) -> Vec<Attribute> {
     let base = match tag {
         "button" => attributes!(button { class: class_name }),
         _ => attributes!(div { class: class_name }),
@@ -21,7 +21,7 @@ fn merge_with_class(tag: &str, class_name: String, attributes: Vec<Attribute>) -
 /// Styled wrapper for the menubar root.
 #[component]
 pub fn Menubar(props: MenubarProps) -> Element {
-    let attributes = merge_with_class("div", Styles::dx_menubar.to_string(), props.attributes);
+    let attributes = merge_with_class("div", Styles::dx_menubar, props.attributes);
 
     rsx! {
         menubar::Menubar {
@@ -38,7 +38,7 @@ pub fn Menubar(props: MenubarProps) -> Element {
 pub fn MenubarMenu(props: MenubarMenuProps) -> Element {
     provide_styled_menu_surface(StyledMenuSurface::Menubar);
 
-    let attributes = merge_with_class("div", Styles::dx_menubar_menu.to_string(), props.attributes);
+    let attributes = merge_with_class("div", Styles::dx_menubar_menu, props.attributes);
 
     rsx! {
         menubar::MenubarMenu {
@@ -55,7 +55,7 @@ pub fn MenubarMenu(props: MenubarMenuProps) -> Element {
 pub fn MenubarTrigger(props: MenubarTriggerProps) -> Element {
     let attributes = merge_with_class(
         "button",
-        Styles::dx_menubar_trigger.to_string(),
+        Styles::dx_menubar_trigger,
         props.attributes,
     );
 

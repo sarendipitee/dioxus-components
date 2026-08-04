@@ -216,7 +216,7 @@ pub fn Select<T: Clone + PartialEq + 'static>(props: SelectProps<T>) -> Element 
     let placeholder = ReadSignal::new(use_memo(move || props.placeholder.read().clone()));
 
     let base = attributes!(div {
-        class: Styles::dx_select.to_string()
+        class: Styles::dx_select
     });
     let merged = merge_attributes(vec![base, props.attributes]);
     let input_id = props.id.unwrap_or_else(use_select_input_id);
@@ -251,7 +251,7 @@ pub fn Select<T: Clone + PartialEq + 'static>(props: SelectProps<T>) -> Element 
                 described_by: props.described_by,
                 select::SelectTrigger {
                     id: input_id,
-                    class: Styles::dx_select_trigger.to_string(),
+                    class: Styles::dx_select_trigger,
                     "aria-describedby": aria_describedby,
                     "aria-invalid": props.error.is_some(),
                     Input {
@@ -265,7 +265,7 @@ pub fn Select<T: Clone + PartialEq + 'static>(props: SelectProps<T>) -> Element 
                         right_section: props.right_section.unwrap_or_else(|| rsx! {
                             ChevronDown { class: "dx-select-expand-icon", size: "14px", stroke: "currentColor" }
                         }),
-                        attributes: attributes!(div { class : Styles::dx_select_input.to_string(), }),
+                        attributes: attributes!(div { class : Styles::dx_select_input, }),
                         select::SelectValue { placeholder }
                     }
                 }
@@ -281,7 +281,7 @@ pub fn SelectMulti<T: Clone + PartialEq + 'static>(props: SelectMultiProps<T>) -
     let typeahead_timeout = ReadSignal::new(use_memo(move || (props.typeahead_timeout)()));
 
     let base = attributes!(div {
-        class: Styles::dx_select.to_string()
+        class: Styles::dx_select
     });
     let merged = merge_attributes(vec![base, props.attributes]);
     let input_id = props.id.unwrap_or_else(use_select_input_id);
@@ -316,7 +316,7 @@ pub fn SelectMulti<T: Clone + PartialEq + 'static>(props: SelectMultiProps<T>) -
                 described_by: props.described_by,
                 select::SelectTrigger {
                     id: input_id,
-                    class: Styles::dx_select_trigger.to_string(),
+                    class: Styles::dx_select_trigger,
                     "aria-describedby": aria_describedby,
                     "aria-invalid": props.error.is_some(),
                     Input {
@@ -330,7 +330,7 @@ pub fn SelectMulti<T: Clone + PartialEq + 'static>(props: SelectMultiProps<T>) -
                         right_section: props.right_section.unwrap_or_else(|| rsx! {
                             ChevronDown { class: "dx-select-expand-icon", size: "14px", stroke: "currentColor" }
                         }),
-                        attributes: attributes!(div { class : Styles::dx_select_input.to_string(), }),
+                        attributes: attributes!(div { class : Styles::dx_select_input, }),
                         select::SelectValue {}
                     }
                 }
@@ -343,7 +343,7 @@ pub fn SelectMulti<T: Clone + PartialEq + 'static>(props: SelectMultiProps<T>) -
 #[component]
 pub fn SelectGroupLabel(props: SelectGroupLabelProps) -> Element {
     let base = attributes!(div {
-        class: Styles::dx_select_group_label.to_string()
+        class: Styles::dx_select_group_label
     });
     let merged = merge_attributes(vec![base, props.attributes]);
 
@@ -355,7 +355,7 @@ pub fn SelectGroupLabel(props: SelectGroupLabelProps) -> Element {
 #[component]
 pub fn SelectOption<T: Clone + PartialEq + 'static>(props: SelectOptionProps<T>) -> Element {
     let base = attributes!(div {
-        class: Styles::dx_select_option.to_string()
+        class: Styles::dx_select_option
     });
     let merged = merge_attributes(vec![base, props.attributes]);
 

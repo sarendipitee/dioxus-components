@@ -73,7 +73,7 @@ pub fn Button(
     children: Element,
 ) -> Element {
     let base = attributes!(button {
-        class: Styles::dx_button.to_string(),
+        class: Styles::dx_button,
         "data-style": variant.class(),
         "data-size": size.class(),
     });

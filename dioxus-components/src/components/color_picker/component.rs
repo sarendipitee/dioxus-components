@@ -153,7 +153,7 @@ pub fn ColorSwatch(props: ColorSwatchProps) -> Element {
         div {
             role: "img",
             aria_label: format!("Selected color {hex_color}"),
-            class: Styles::dx_color_swatch.to_string(),
+            class: Styles::dx_color_swatch,
             style: "--swatch-color: {hex_color}",
             ..props.attributes,
             {props.children}
@@ -224,12 +224,12 @@ fn ColorSlider(props: ColorSliderProps) -> Element {
     rsx! {
 
         div {
-            class: Styles::dx_color_slider_container.to_string(),
+            class: Styles::dx_color_slider_container,
             ..props.attributes,
-            label { class: Styles::dx_color_slider_title.to_string(), {props.title} }
-            output { class: Styles::dx_color_slider_output.to_string(), "{display_value}" }
+            label { class: Styles::dx_color_slider_title, {props.title} }
+            output { class: Styles::dx_color_slider_output, "{display_value}" }
             Slider {
-                class: Styles::dx_color_slider.to_string(),
+                class: Styles::dx_color_slider,
                 label: "Color Slider",
                 horizontal: true,
                 max: 360.0,
@@ -247,9 +247,9 @@ fn ColorSlider(props: ColorSliderProps) -> Element {
                     current_hue.set(h);
                     ctx.set_hue(h);
                 },
-                SliderTrack { class: Styles::dx_color_slider_track.to_string(),
+                SliderTrack { class: Styles::dx_color_slider_track,
                     SliderThumb {
-                        class: Styles::dx_color_slider_thumb.to_string(),
+                        class: Styles::dx_color_slider_thumb,
                         aria_label: "Hue",
                         aria_valuetext: format!("{:.0}°", current_hue()),
                         background_color: format_color_hex(thumb_color()),
@@ -290,13 +290,13 @@ mod tests {
 fn ColorArea(props: ColorAreaProps) -> Element {
     rsx! {
         color_picker::ColorArea {
-            class: Styles::dx_color_area_container.to_string(),
+            class: Styles::dx_color_area_container,
             step: props.step,
             attributes: props.attributes,
-            color_picker::AreaTrack { class: Styles::dx_color_area_track.to_string(),
-                color_picker::AreaThumb { class: Styles::dx_color_area_thumb.to_string(),
-                    color_picker::AreaThumbSaturationInput { class: Styles::dx_color_area_input.to_string() }
-                    color_picker::AreaThumbValueInput { class: Styles::dx_color_area_input.to_string() }
+            color_picker::AreaTrack { class: Styles::dx_color_area_track,
+                color_picker::AreaThumb { class: Styles::dx_color_area_thumb,
+                    color_picker::AreaThumbSaturationInput { class: Styles::dx_color_area_input }
+                    color_picker::AreaThumbValueInput { class: Styles::dx_color_area_input }
                 }
             }
             {props.children}
@@ -319,7 +319,7 @@ pub struct ColorPickerSelectProps {
 pub fn ColorPickerSelect(props: ColorPickerSelectProps) -> Element {
     rsx! {
         div {
-            class: Styles::dx_color_picker_dialog.to_string(),
+            class: Styles::dx_color_picker_dialog,
             ..props.attributes,
             ColorArea {}
             ColorSlider { title: "Hue" }

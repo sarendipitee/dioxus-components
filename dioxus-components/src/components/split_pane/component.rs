@@ -25,12 +25,12 @@ pub fn SplitPane(props: SplitPaneProps) -> Element {
     let measurement_id = use_hook(|| SPLIT_PANE_ID.fetch_add(1, Ordering::Relaxed));
     let mut measured_divider_size = use_signal(|| DEFAULT_DIVIDER_SIZE);
     let base = attributes!(div {
-        class: Styles::dx_split_pane.to_string(),
+        class: Styles::dx_split_pane,
         "data-split-pane-id": "{measurement_id}"
     });
     let merged = merge_attributes(vec![base, props.attributes]);
-    let divider_class =
-        (props.divider_class)().or_else(|| Some(Styles::dx_split_pane_divider.to_string()));
+    let divider_class = (props.divider_class)()
+        .or_else(|| Some(String::from(Styles::dx_split_pane_divider)));
     let divider_size = use_memo(move || {
         let size = (props.divider_size)();
         if size > 0.0 {
@@ -198,7 +198,7 @@ pub fn SplitPane(props: SplitPaneProps) -> Element {
 #[component]
 pub fn Pane(props: PaneProps) -> Element {
     let base = attributes!(div {
-        class: Styles::dx_split_pane_pane.to_string()
+        class: Styles::dx_split_pane_pane
     });
     let merged = merge_attributes(vec![base, props.attributes]);
 
@@ -224,7 +224,7 @@ pub fn SplitPaneDivider(props: SplitPaneDividerProps) -> Element {
             style: props.style,
             divider: props.divider,
             attributes: props.attributes,
-            span { class: Styles::dx_split_pane_divider_handle.to_string() }
+            span { class: Styles::dx_split_pane_divider_handle }
             {props.children}
         }
     }

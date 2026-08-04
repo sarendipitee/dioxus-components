@@ -2402,7 +2402,7 @@ fn render_label_header<T: Clone + PartialEq + 'static>(
         .title_class_name
         .as_deref()
         .map(|class| format!("{} {class}", Styles::dx_data_table_head_label))
-        .unwrap_or_else(|| Styles::dx_data_table_head_label.to_string());
+        .unwrap_or_else(|| Styles::dx_data_table_head_label.to_owned());
     let title_style = column.title_style.clone();
     if column.sortable.is_some() {
         let next_sorting = next_sorting_for_column(state, &column.id);

@@ -92,7 +92,7 @@ pub fn Textarea(
     let invalid = field.invalid;
 
     let textarea_base = attributes!(textarea {
-        class: Styles::dx_textarea.to_string(),
+        class: Styles::dx_textarea,
         "data-slot": "textarea",
         "data-style": variant.class(),
     });

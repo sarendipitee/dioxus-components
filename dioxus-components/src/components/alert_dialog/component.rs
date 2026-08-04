@@ -104,7 +104,7 @@ pub fn AlertDialog(props: AlertDialogProps) -> Element {
 
     let content_attributes = merge_attributes(vec![
         attributes!(div {
-            class: DialogStyles::dx_dialog.to_string(),
+            class: DialogStyles::dx_dialog,
             "data-slot": "alert-dialog-content",
         }),
         props.attributes,
@@ -119,11 +119,11 @@ pub fn AlertDialog(props: AlertDialogProps) -> Element {
             on_open_change: props.on_open_change,
 
             alert_dialog::AlertDialogContent {
-                backdrop_class: DialogStyles::dx_dialog_backdrop.to_string(),
+                backdrop_class: DialogStyles::dx_dialog_backdrop,
                 attributes: content_attributes,
 
                 if title.is_some() || description.is_some() {
-                    div { class: DialogStyles::dx_dialog_header.to_string(),
+                    div { class: DialogStyles::dx_dialog_header,
                         if let Some(title) = title {
                             {title}
                         }
@@ -136,7 +136,7 @@ pub fn AlertDialog(props: AlertDialogProps) -> Element {
                 {props.children}
 
                 if cancel_el.is_some() || confirm_el.is_some() {
-                    div { class: DialogStyles::dx_dialog_footer.to_string(),
+                    div { class: DialogStyles::dx_dialog_footer,
                         if let Some(c) = cancel_el {
                             AlertDialogButton {
                                 variant: ButtonVariant::Secondary,

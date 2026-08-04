@@ -34,7 +34,7 @@ pub struct TableOfContentsProps {
 #[component]
 pub fn TableOfContents(props: TableOfContentsProps) -> Element {
     let base = attributes!(nav {
-        class: Styles::dx_table_of_contents.to_string(),
+        class: Styles::dx_table_of_contents,
     });
     let merged = merge_attributes(vec![base, props.attributes]);
 

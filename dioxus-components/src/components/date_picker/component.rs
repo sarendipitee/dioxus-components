@@ -152,7 +152,7 @@ pub struct DateRangePickerProps {
 #[component]
 pub fn DatePicker(props: DatePickerProps) -> Element {
     let base = attributes!(div {
-        class: Styles::dx_date_picker.to_string()
+        class: Styles::dx_date_picker
     });
     let merged = merge_attributes(vec![base, props.attributes]);
     let month_count = props.month_count.max(1);
@@ -178,7 +178,7 @@ pub fn DatePicker(props: DatePickerProps) -> Element {
 #[component]
 pub fn DateRangePicker(props: DateRangePickerProps) -> Element {
     let base = attributes!(div {
-        class: Styles::dx_date_picker.to_string()
+        class: Styles::dx_date_picker
     });
     let merged = merge_attributes(vec![base, props.attributes]);
     let month_count = props.month_count.max(1);
@@ -219,7 +219,7 @@ pub fn DatePickerSurface(
 
     rsx! {
         div {
-            class: Styles::dx_date_picker_surface.to_string(),
+            class: Styles::dx_date_picker_surface,
             ..attributes,
             date_picker::DatePickerCalendar {
                 calendar: CalendarRoot,
@@ -249,7 +249,7 @@ pub fn DateRangePickerSurface(
 
     rsx! {
         div {
-            class: Styles::dx_date_picker_surface.to_string(),
+            class: Styles::dx_date_picker_surface,
             ..attributes,
             date_picker::DateRangePickerCalendar {
                 calendar: RangeCalendarRoot,
@@ -265,7 +265,7 @@ pub fn DateRangePickerSurface(
 pub(crate) fn DatePickerYearSegment(props: DatePickerYearSegmentProps) -> Element {
     rsx! {
         date_picker::DatePickerYearSegment {
-            class: Styles::dx_date_segment.to_string(),
+            class: Styles::dx_date_segment,
             attributes: props.attributes,
         }
     }
@@ -275,7 +275,7 @@ pub(crate) fn DatePickerYearSegment(props: DatePickerYearSegmentProps) -> Elemen
 pub(crate) fn DatePickerMonthSegment(props: DatePickerMonthSegmentProps) -> Element {
     rsx! {
         date_picker::DatePickerMonthSegment {
-            class: Styles::dx_date_segment.to_string(),
+            class: Styles::dx_date_segment,
             attributes: props.attributes,
         }
     }
@@ -285,7 +285,7 @@ pub(crate) fn DatePickerMonthSegment(props: DatePickerMonthSegmentProps) -> Elem
 pub(crate) fn DatePickerDaySegment(props: DatePickerDaySegmentProps) -> Element {
     rsx! {
         date_picker::DatePickerDaySegment {
-            class: Styles::dx_date_segment.to_string(),
+            class: Styles::dx_date_segment,
             attributes: props.attributes,
         }
     }
@@ -295,7 +295,7 @@ pub(crate) fn DatePickerDaySegment(props: DatePickerDaySegmentProps) -> Element 
 pub(crate) fn DatePickerSeparator(props: DatePickerSeparatorProps) -> Element {
     rsx! {
         date_picker::DatePickerSeparator {
-            class: Styles::dx_date_segment.to_string(),
+            class: Styles::dx_date_segment,
             symbol: props.symbol,
             attributes: props.attributes,
         }

@@ -9,7 +9,7 @@ struct Styles;
 #[component]
 pub fn Separator(props: SeparatorProps) -> Element {
     let base = attributes!(div {
-        class: Styles::dx_separator.to_string(),
+        class: Styles::dx_separator,
     });
     let merged = merge_attributes(vec![base, props.attributes]);
 

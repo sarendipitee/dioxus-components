@@ -16,11 +16,11 @@ pub enum AvatarImageSize {
 }
 
 impl AvatarImageSize {
-    fn to_class(self) -> String {
+    fn to_class(self) -> &'static str {
         match self {
-            AvatarImageSize::Small => Styles::dx_avatar_sm.to_string(),
-            AvatarImageSize::Medium => Styles::dx_avatar_md.to_string(),
-            AvatarImageSize::Large => Styles::dx_avatar_lg.to_string(),
+            AvatarImageSize::Small => Styles::dx_avatar_sm,
+            AvatarImageSize::Medium => Styles::dx_avatar_md,
+            AvatarImageSize::Large => Styles::dx_avatar_lg,
         }
     }
 }
@@ -33,10 +33,10 @@ pub enum AvatarShape {
 }
 
 impl AvatarShape {
-    fn to_class(self) -> String {
+    fn to_class(self) -> &'static str {
         match self {
-            AvatarShape::Circle => Styles::dx_avatar_circle.to_string(),
-            AvatarShape::Rounded => Styles::dx_avatar_rounded.to_string(),
+            AvatarShape::Circle => Styles::dx_avatar_circle,
+            AvatarShape::Rounded => Styles::dx_avatar_rounded,
         }
     }
 }
@@ -110,7 +110,7 @@ pub struct AvatarImageProps {
 #[component]
 pub fn AvatarImage(props: AvatarImageProps) -> Element {
     let base = attributes!(img {
-        class: Styles::dx_avatar_image.to_string(),
+        class: Styles::dx_avatar_image,
         draggable: "false",
     });
     let merged = merge_attributes(vec![base, props.attributes]);
@@ -136,7 +136,7 @@ pub struct AvatarFallbackProps {
 #[component]
 pub fn AvatarFallback(props: AvatarFallbackProps) -> Element {
     let base = attributes!(span {
-        class: Styles::dx_avatar_fallback.to_string(),
+        class: Styles::dx_avatar_fallback,
     });
     let merged = merge_attributes(vec![base, props.attributes]);
 

@@ -69,7 +69,7 @@ pub fn Checkbox(props: StyledCheckboxProps) -> Element {
     let checkbox_attributes = merge_attributes(vec![
         attributes!(button {
             id: field.id.clone(),
-            class: Styles::dx_checkbox.to_string(),
+            class: Styles::dx_checkbox,
             "aria-invalid": field.invalid,
             "aria-describedby": field.described_by.clone(),
         }),
@@ -78,7 +78,7 @@ pub fn Checkbox(props: StyledCheckboxProps) -> Element {
 
     rsx! {
         div {
-            class: Styles::dx_checkbox_field.to_string(),
+            class: Styles::dx_checkbox_field,
             "data-disabled": disabled,
             "data-error": field.invalid,
             "data-required": required,
@@ -93,25 +93,25 @@ pub fn Checkbox(props: StyledCheckboxProps) -> Element {
                 attributes: checkbox_attributes,
                 match props.children {
                     Some(children) => rsx! {
-                        checkbox::CheckboxIndicator { class: Styles::dx_checkbox_indicator.to_string(),
+                        checkbox::CheckboxIndicator { class: Styles::dx_checkbox_indicator,
                             {children}
                         }
                     },
                     None => rsx! {
                         checkbox::CheckboxIndicator {
                             state: CheckboxState::Checked,
-                            class: Styles::dx_checkbox_indicator.to_string(),
+                            class: Styles::dx_checkbox_indicator,
                             Check { size: "1rem" }
                         }
                         checkbox::CheckboxIndicator {
                             state: CheckboxState::Indeterminate,
-                            class: Styles::dx_checkbox_indicator.to_string(),
+                            class: Styles::dx_checkbox_indicator,
                             Minus { size: "1rem" }
                         }
                     },
                 }
             }
-            div { class: Styles::dx_checkbox_label_container.to_string(),
+            div { class: Styles::dx_checkbox_label_container,
                 InputFieldText {
                     input_id: field.id,
                     label: props.label,
@@ -119,10 +119,10 @@ pub fn Checkbox(props: StyledCheckboxProps) -> Element {
                     error: props.error,
                     required,
                     classes: InputFieldTextClasses {
-                        label: Styles::dx_checkbox_label.to_string(),
-                        required: Styles::dx_checkbox_required.to_string(),
-                        description: Styles::dx_checkbox_description.to_string(),
-                        error: Styles::dx_checkbox_error.to_string(),
+                        label: Styles::dx_checkbox_label,
+                        required: Styles::dx_checkbox_required,
+                        description: Styles::dx_checkbox_description,
+                        error: Styles::dx_checkbox_error,
                     },
                 }
             }

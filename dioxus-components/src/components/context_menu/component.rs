@@ -9,7 +9,7 @@ use dioxus_primitives::{dioxus_attributes::attributes, merge_attributes};
 #[component_styles("./style.css")]
 pub(crate) struct Styles;
 
-fn merge_with_class(tag: &str, class_name: String, attributes: Vec<Attribute>) -> Vec<Attribute> {
+fn merge_with_class(tag: &str, class_name: &str, attributes: Vec<Attribute>) -> Vec<Attribute> {
     let base = match tag {
         "button" => attributes!(button { class: class_name }),
         _ => attributes!(div { class: class_name }),
@@ -23,7 +23,7 @@ fn merge_with_class(tag: &str, class_name: String, attributes: Vec<Attribute>) -
 pub fn ContextMenu(props: ContextMenuProps) -> Element {
     provide_styled_menu_surface(StyledMenuSurface::Context);
 
-    let attributes = merge_with_class("div", Styles::dx_context_menu.to_string(), props.attributes);
+    let attributes = merge_with_class("div", Styles::dx_context_menu, props.attributes);
 
     rsx! {
         context_menu::ContextMenu {
@@ -43,7 +43,7 @@ pub fn ContextMenu(props: ContextMenuProps) -> Element {
 pub fn ContextMenuTrigger(props: ContextMenuTriggerProps) -> Element {
     let attributes = merge_with_class(
         "button",
-        Styles::dx_context_menu_trigger.to_string(),
+        Styles::dx_context_menu_trigger,
         props.attributes,
     );
 
