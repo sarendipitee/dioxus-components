@@ -416,6 +416,7 @@ fn MenuContentPortaled(props: MenuContentPortaledProps) -> Element {
         .initial_focus
         .cloned()
         .map(|placement| matches!(placement, FocusPlacement::Last));
+    let filter_query = ctx.filter_query.cloned();
     let content_overlay_id = reg.id();
     let overlay_z = reg.z();
 
@@ -430,6 +431,7 @@ fn MenuContentPortaled(props: MenuContentPortaledProps) -> Element {
                 roving_loop,
                 initial_focus,
                 content_overlay_id,
+                filter_query,
                 overlay_z,
                 role: props.role,
                 attributes: props.attributes.clone(),
@@ -453,6 +455,7 @@ struct MenuContentRenderedProps {
     initial_focus: Option<bool>,
     content_overlay_id: Option<OverlayId>,
     overlay_z: Option<String>,
+    filter_query: String,
     role: &'static str,
     attributes: Vec<Attribute>,
     children: Element,
@@ -469,7 +472,7 @@ fn MenuContentRendered(props: MenuContentRenderedProps) -> Element {
 
     let open = use_memo(use_reactive(&props.is_open, |is_open| is_open));
     let disabled = use_memo(use_reactive(&props.is_disabled, |is_disabled| is_disabled));
-
+    let filter_query = use_signal(|| props.filter_query.clone());
     let mut trigger_id = use_signal(|| props.aria_labelledby.clone());
     use_effect(use_reactive(
         &props.aria_labelledby,
@@ -523,7 +526,7 @@ fn MenuContentRendered(props: MenuContentRenderedProps) -> Element {
         trigger_id,
         trigger_ref,
         overlay_id,
-        filter_query: use_context::<MenuContext>().filter_query,
+        filter_query,
     };
     use_context_provider(|| portal_ctx);
     use_context_provider(|| focus);
@@ -962,7 +965,6 @@ pub fn MenuRadioItem<T: Clone + PartialEq + 'static>(props: MenuRadioItemProps<T
 struct MenuSubContext {
     open: Memo<bool>,
     set_open: Callback<bool>,
-    close_parent_all: Callback<()>,
     disabled: Memo<bool>,
     focus: FocusState,
     initial_focus: Signal<Option<FocusPlacement>>,
@@ -1026,7 +1028,6 @@ pub fn MenuSub(props: MenuSubProps) -> Element {
     }));
     let mut focus = FocusState::new(ReadSignal::new(roving_loop));
     let initial_focus = use_signal(|| None);
-    let close_parent_all = use_callback(move |_| parent_ctx.set_open.call(false));
     let trigger_id = use_unique_id();
     let trigger_ref = use_signal(|| None);
     let sub_id = use_unique_id();
@@ -1114,7 +1115,6 @@ pub fn MenuSub(props: MenuSubProps) -> Element {
     use_context_provider(|| MenuSubContext {
         open,
         set_open,
-        close_parent_all,
         disabled,
         focus,
         initial_focus,
@@ -1249,6 +1249,23 @@ pub fn MenuSubContent(props: MenuSubContentProps) -> Element {
         (sub_ctx.open)()
     });
     use_context_provider(|| sub_ctx.focus);
+    // `MenuContent` consumes `MenuContext`, not `MenuSubContext`. Re-provide the
+    // submenu state only around its content so this panel follows this submenu's
+    // open state while the trigger continues to use the parent menu context.
+    let parent_ctx: MenuContext = use_context();
+    let overlay_id = use_signal(|| *parent_ctx.overlay_id.peek());
+    let filter_query = use_signal(String::new);
+    use_context_provider(|| MenuContext {
+        open: sub_ctx.open,
+        set_open: sub_ctx.set_open,
+        disabled: sub_ctx.disabled,
+        focus: sub_ctx.focus,
+        initial_focus: sub_ctx.initial_focus,
+        trigger_id: sub_ctx.trigger_id,
+        trigger_ref: sub_ctx.trigger_ref,
+        overlay_id,
+        filter_query,
+    });
 
     // Floating-element positioning for the submenu. A submenu naturally opens to the
     // right of its parent item, aligned to the item's top edge; flip() handles the
@@ -1303,6 +1320,35 @@ mod tests {
     use super::*;
 
     #[component]
+    fn ClosedSubmenuFixture() -> Element {
+        let open = use_memo(|| true);
+        let set_open = use_callback(|_| {});
+
+        rsx! {
+            Menu {
+                open,
+                set_open,
+                disabled: false,
+                roving_loop: true,
+                MenuSub {
+                    MenuSubTrigger::<String> {
+                        value: "child",
+                        index: 0usize,
+                        "Child"
+                    }
+                    MenuSubContent {
+                        MenuItem::<String> {
+                            value: "grandchild",
+                            index: 0usize,
+                            "Grandchild"
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    #[component]
     fn MenuStaticMarkupFixture() -> Element {
         rsx! {
             MenuLabel { "Actions" }
@@ -1355,6 +1401,7 @@ mod tests {
         let checked = use_signal(|| true);
         let initial_focus = use_signal(|| None);
         let radio_value = use_signal(|| Some("one".to_string()));
+        let filter_query = use_signal(String::new);
 
         use_context_provider(|| MenuContext {
             open,
@@ -1365,6 +1412,7 @@ mod tests {
             trigger_id,
             trigger_ref,
             overlay_id,
+            filter_query,
         });
 
         rsx! {
@@ -1397,6 +1445,16 @@ mod tests {
                 }
             }
         }
+    }
+
+    #[test]
+    fn closed_submenu_does_not_render_with_open_parent_menu() {
+        let mut dom = VirtualDom::new(ClosedSubmenuFixture);
+        dom.rebuild_in_place();
+        let html = dioxus_ssr::render(&dom);
+
+        assert!(html.contains("Child"));
+        assert!(!html.contains("Grandchild"));
     }
 
     #[test]

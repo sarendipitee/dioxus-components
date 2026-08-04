@@ -104,6 +104,8 @@ test('dropdown menu shared wrappers', async ({ page }) => {
   await nestedMenuButton.click();
   await expect(nestedMenuElement).toHaveAttribute('data-state', 'open');
   const workspaceAlpha = page.locator('.dx_menu_sub_trigger').filter({ hasText: /^Workspace Alpha$/ });
+  await expect(workspaceAlpha).toHaveAttribute('data-state', 'closed');
+  await expect(page.locator('.dx_menu_sub_trigger').filter({ hasText: /^Workspace Alpha \/ Projects$/ })).toHaveCount(0);
   await workspaceAlpha.press('ArrowRight');
   const alphaSubmenu = page
     .locator('.dx_menu_sub_content')
