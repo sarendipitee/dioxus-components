@@ -1,6 +1,13 @@
 [workspace]
 resolver = "3"
-members = ["primitives", "preview", "test-harness", "dioxus-attributes", "dioxus-components", "themes"]
+members = [
+	"primitives",
+	"preview",
+	"test-harness",
+	"dioxus-attributes",
+	"dioxus-components",
+	"themes",
+]
 
 [workspace.dependencies]
 dioxus-components = { path = "dioxus-components" }
@@ -8,8 +15,8 @@ dioxus-attributes = { path = "dioxus-attributes" }
 dioxus-primitives = { path = "primitives" }
 tracing = { version = "0.1", features = ["std"] }
 
-dioxus = "0.7.8"
-dioxus-rsx = "0.7.8"
+dioxus = "0.7.10"
+dioxus-rsx = "0.7.10"
 
 [profile.release]
 opt-level = "z"

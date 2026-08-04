@@ -329,7 +329,10 @@ fn NavigationLayout() -> Element {
             href: asset!("/assets/dioxus-code-themes.css"),
         }
         Navbar {}
-        Outlet::<Route> {}
+        SuspenseBoundary {
+            fallback: |_| rsx! { div { class: "dx-route-loading", "Loading…" } },
+            Outlet::<Route> {}
+        }
         Footer {}
     }
 }
