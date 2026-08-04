@@ -21,9 +21,8 @@ floating-ui-dom = "0.6.0"
 floating-ui-utils = "0.6.0"
 
 [dependencies]
-dioxus.workspace = true
+dioxus = { workspace = true, features = ["launch", "lib"] }
 dioxus-attributes = { path = "../dioxus-attributes" }
-dioxus-sdk-time = "0.7.0"
 time = { version = "0.3.44", features = ["std", "macros", "parsing", "local-offset"] }
 num-integer = "0.1.46"
 tracing.workspace = true
@@ -31,7 +30,7 @@ serde = { version = "1.0", features = ["derive"] }
 palette = "0.7.6"
 gpui-pretext = "0.6.2"
 wasm-bindgen = "0.2.105"
-web-sys = { version = "0.3.82", features = ["CanvasRenderingContext2d", "CssStyleDeclaration", "DataTransfer", "DataTransferItem", "DataTransferItemList", "Document", "DragEvent", "Element", "Event", "EventTarget", "File", "FileList", "HtmlCanvasElement", "HtmlInputElement", "HtmlTextAreaElement", "TextMetrics", "Window"] }
+web-sys = { version = "0.3.82", features = ["CanvasRenderingContext2d", "CssStyleDeclaration", "DataTransfer", "DataTransferItem", "DataTransferItemList", "Document", "DragEvent", "Element", "Event", "EventTarget", "File", "FileList", "HtmlCanvasElement", "HtmlInputElement", "HtmlTextAreaElement", "Location", "TextMetrics", "Window"] }
 
 [build-dependencies]
 lazy-js-bundle = "0.7.9"

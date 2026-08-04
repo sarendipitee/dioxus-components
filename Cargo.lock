@@ -2477,7 +2477,6 @@ version = "0.0.1"
 dependencies = [
  "dioxus",
  "dioxus-attributes",
- "dioxus-sdk-time",
  "dioxus-ssr",
  "floating-ui-dioxus",
  "floating-ui-dom",
@@ -2542,18 +2541,6 @@ dependencies = [
  "quote",
  "rustversion",
  "syn 2.0.119",
-]
-
-[[package]]
-name = "dioxus-sdk-time"
-version = "0.7.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "80c25ae93a3f72e734873b97fbd09d9b1b6adff97205fb0ffd8543e3564fb78e"
-dependencies = [
- "dioxus",
- "futures",
- "gloo-timers",
- "tokio",
 ]
 
 [[package]]
@@ -6402,10 +6389,14 @@ dependencies = [
  "dioxus-code",
  "dioxus-components",
  "dioxus-components-themes",
+ "dioxus-core",
+ "dioxus-core-macro",
+ "dioxus-html",
  "dioxus-i18n",
  "dioxus-icons",
  "dioxus-primitives",
  "dioxus-router",
+ "dioxus-signals",
  "dioxus-ssr",
  "gloo-timers",
  "manganis",

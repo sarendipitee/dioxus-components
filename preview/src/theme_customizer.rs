@@ -444,12 +444,6 @@ pub(crate) fn ThemeCustomizerProvider(children: Element) -> Element {
     use_context_provider(|| ctx);
     let theme_override_css = use_memo(move || compute_theme_override_css(&(ctx.tokens)()));
 
-    let current_route: Route = router().current();
-    use_effect(use_reactive!(|current_route| {
-        if matches!(current_route, Route::Theme { .. }) && !(ctx.open)() {
-            ctx.open.set(true);
-        }
-    }));
 
     use_effect(move || {
         if load_started() {
@@ -522,8 +516,6 @@ pub(crate) fn ThemeCustomizerProvider(children: Element) -> Element {
 
 #[component]
 pub(crate) fn ThemePage() -> Element {
-    let mut ctx = use_theme_customizer();
-
     rsx! {
       main { class: "dx-home-page", role: "main",
         section { class: "dx-home-section",
@@ -536,7 +528,6 @@ pub(crate) fn ThemePage() -> Element {
           }
           div { class: "dx-theme-page-actions",
             div { class: "dx-theme-page-button-row",
-              Button { onclick: move |_| ctx.open.set(true), "Open theme studio" }
               Link { to: Route::docs(),
                 Button { variant: ButtonVariant::Outline, "Browse docs" }
               }
@@ -545,7 +536,7 @@ pub(crate) fn ThemePage() -> Element {
               }
             }
             p { class: "dx-theme-page-note",
-              "Reset removes the injected override stylesheet and clears persisted edits."
+              "Use the preview-wide theme studio control to edit or reset tokens."
             }
           }
         }

@@ -1,4 +1,5 @@
-use dioxus::prelude::*;
+use dioxus_core_macro::rsx;
+use dioxus_html as dioxus_elements;
 use quote::ToTokens;
 fn main() {
     let out_dir = std::env::var("OUT_DIR").unwrap();

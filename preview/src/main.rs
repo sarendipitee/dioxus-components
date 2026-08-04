@@ -1444,6 +1444,7 @@ fn LegacyComponentBlockDemo(
 
 #[component]
 fn Home(iframe: Option<bool>, dark_mode: Option<bool>) -> Element {
+    let _ = (iframe, dark_mode);
     rsx! {
         main { class: "dx-home-page", role: "main",
             div { id: "hero",
@@ -1476,10 +1477,10 @@ fn Home(iframe: Option<bool>, dark_mode: Option<bool>) -> Element {
                     span { class: "dx-section-eyebrow", "Catalog" }
                     h2 { class: "dx-section-title", "All components" }
                     p { class: "dx-section-summary",
-                        "Every primitive in the library, with live previews and a copy-paste install command for each one."
+                        "Browse the full component catalog and live demos from the documentation sidebar."
                     }
                 }
-                ComponentGallery {}
+                Link { to: Route::docs(), class: "dx-hero-cta-primary", "Browse components" }
             }
         }
     }

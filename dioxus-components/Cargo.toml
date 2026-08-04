@@ -13,7 +13,7 @@ repository = "https://github.com/DioxusLabs/components"
 build = "build.rs"
 
 [dependencies]
-dioxus = { workspace = true, features = ["router"] }
+dioxus = { workspace = true, features = ["router", "lib"] }
 dioxus-attributes.workspace = true
 dioxus-icons = "0.1.0"
 dioxus-primitives.workspace = true

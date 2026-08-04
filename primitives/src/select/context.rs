@@ -2,7 +2,10 @@
 
 use dioxus::prelude::*;
 use dioxus_core::Task;
-use dioxus_sdk_time::sleep;
+#[cfg(target_family = "wasm")]
+use gloo_timers::future::sleep;
+#[cfg(not(target_family = "wasm"))]
+use tokio::time::sleep;
 
 use std::rc::Rc;
 use std::time::Duration;
