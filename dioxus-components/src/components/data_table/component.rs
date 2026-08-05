@@ -5,6 +5,7 @@ use std::sync::atomic::{AtomicUsize, Ordering as AtomicOrdering};
 
 use crate::component_styles;
 use dioxus::prelude::*;
+use dioxus_icons::lucide::ChevronRight;
 use dioxus_icons::lucide::{ArrowDown, ArrowUp, ArrowUpDown, Plus, Search, SlidersHorizontal, X};
 use dioxus_primitives::checkbox::CheckboxState;
 use dioxus_primitives::r#virtual::types::VirtualItem;
@@ -1857,6 +1858,7 @@ fn render_data_row<T: Clone + PartialEq + 'static>(
             "data-row-id": row.id.as_str(),
             "aria-selected": row.selected.to_string(),
             "data-clickable": model.on_row_click.is_some().then_some("true"),
+            "data-expanded": row.expanded.to_string(),
             onclick: {
                 let actions = actions.clone();
                 let on_row_click = model.on_row_click.cloned();
@@ -1893,8 +1895,7 @@ fn render_data_row<T: Clone + PartialEq + 'static>(
                     onclick: move |event: MouseEvent| event.stop_propagation(),
                     Button {
                         variant: ButtonVariant::Ghost,
-                        size: ButtonSize::Sm,
-                        class: Styles::dx_data_table_icon_button,
+                        size: ButtonSize::Icon,
                         r#type: "button",
                         "aria-expanded": row.expanded.to_string(),
                         "aria-label": "Toggle row expansion",
@@ -1903,11 +1904,7 @@ fn render_data_row<T: Clone + PartialEq + 'static>(
                             let row_id = row.id.clone();
                             move |_| actions.toggle_row_expanded.call(row_id.clone())
                         },
-                        if row.expanded {
-                            "-"
-                        } else {
-                            "+"
-                        }
+                        ChevronRight {}
                     }
                 }
             }

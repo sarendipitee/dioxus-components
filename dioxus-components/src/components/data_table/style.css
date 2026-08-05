@@ -371,25 +371,6 @@
     line-height: 0;
 }
 
-.dx_data_table_icon_button {
-    min-width: var(--control-height-md);
-    min-height: var(--control-height-md);
-    padding: var(--space) var(--control-padding-x-md);
-    border: 1px solid var(--input-border);
-    border-radius: var(--radius-control);
-    background: var(--surface);
-    color: var(--surface-fg);
-    cursor: pointer;
-    font: inherit;
-}
-
-.dx_data_table_icon_button:disabled {
-    cursor: not-allowed;
-    border-color: var(--input-disabled-border);
-    background: var(--input-disabled);
-    color: var(--input-disabled-fg);
-    opacity: 1;
-}
 
 .dx_data_table_row {
     transition: background-color 120ms ease;
@@ -397,6 +378,16 @@
 
 .dx_data_table_row[data-clickable="true"] {
     cursor: pointer;
+}
+
+
+.dx_data_table_expansion_cell > button {
+	transition: 0.3s ease transform;
+}
+
+.dx_data_table_row[data-expanded="true"]
+.dx_data_table_expansion_cell button {
+    transform: rotate(90deg);
 }
 
 .dx_data_table_row:hover {
