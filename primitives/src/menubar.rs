@@ -279,6 +279,7 @@ pub fn MenubarMenu(props: MenubarMenuProps) -> Element {
     use_context_provider(|| MenuContext {
         open: is_open,
         set_open: set_menu_open,
+        parent_set_open: None,
         disabled: shared_disabled,
         focus,
         initial_focus,
@@ -446,13 +447,6 @@ pub fn MenubarTrigger(props: MenubarTriggerProps) -> Element {
                 }
             },
             onmounted,
-            onpointerup: move |_| {
-                if !disabled() {
-                    let new_open = if is_open() { None } else { Some(index.cloned()) };
-                    ctx.set_open_menu.call(new_open);
-                    ctx.focus.set_focus(Some(index.cloned()));
-                }
-            },
             onmouseenter: move |_| {
                 if !disabled() && (ctx.open_menu)().is_some() {
                     ctx.focus.set_focus(Some(index.cloned()));

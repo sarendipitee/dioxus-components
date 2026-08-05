@@ -20,11 +20,11 @@ use crate::{
 use dioxus::prelude::*;
 use dioxus_attributes::attributes;
 
-/// Shared menu state provided to triggers, content, and items.
 #[derive(Clone, Copy, PartialEq)]
 pub struct MenuContext {
     pub(crate) open: Memo<bool>,
     pub(crate) set_open: Callback<bool>,
+    pub(crate) parent_set_open: Option<Callback<bool>>,
     pub(crate) disabled: Memo<bool>,
     pub(crate) focus: FocusState,
     pub(crate) initial_focus: Signal<Option<FocusPlacement>>,
@@ -56,6 +56,7 @@ pub(crate) fn use_menu_provider(
     let ctx = use_context_provider(|| MenuContext {
         open,
         set_open,
+        parent_set_open: None,
         disabled,
         focus,
         initial_focus,
@@ -432,6 +433,8 @@ fn MenuContentPortaled(props: MenuContentPortaledProps) -> Element {
         PortalIn { portal,
             MenuContentRendered {
                 set_open,
+                parent_set_open: ctx.parent_set_open,
+                active_submenu: ctx.active_submenu,
                 is_open,
                 panel_id,
                 aria_labelledby,
@@ -453,7 +456,8 @@ fn MenuContentPortaled(props: MenuContentPortaledProps) -> Element {
 #[derive(Props, Clone, PartialEq)]
 struct MenuContentRenderedProps {
     set_open: Callback<bool>,
-    /// Open snapshot threaded from the non-portaled parent — see the matching
+    parent_set_open: Option<Callback<bool>>,
+    active_submenu: Signal<Option<String>>,
     /// note on `DialogPortalBodyProps::is_open`.
     is_open: bool,
     panel_id: String,
@@ -468,9 +472,6 @@ struct MenuContentRenderedProps {
     attributes: Vec<Attribute>,
     children: Element,
 }
-
-/// The rendered menu panel, a direct child of `PortalIn`. Re-provides a
-/// portal-owned [`MenuContext`] (with `overlay_id` now set) so in-panel consumers
 /// (`MenuItem`, `MenuSub`, `MenuSubContent`, the focus state, …) resolve their
 /// context up the *portaled* render chain. Emits `--overlay-z` from the manager.
 #[component]
@@ -524,10 +525,10 @@ fn MenuContentRendered(props: MenuContentRenderedProps) -> Element {
     ));
 
     // Re-provide portal-owned menu state INSIDE the portal. Descendants may call
-    // the root-owned setter, but all reactive reads stay owned by this subtree.
     let portal_ctx = MenuContext {
         open,
         set_open,
+        parent_set_open: props.parent_set_open,
         disabled,
         focus,
         initial_focus,
@@ -535,7 +536,7 @@ fn MenuContentRendered(props: MenuContentRenderedProps) -> Element {
         trigger_ref,
         overlay_id,
         filter_query,
-        active_submenu: use_signal(|| None),
+        active_submenu: props.active_submenu,
     };
     use_context_provider(|| portal_ctx);
     use_context_provider(|| focus);
@@ -668,19 +669,19 @@ pub fn MenuItem<T: Clone + PartialEq + 'static>(props: MenuItemProps<T>) -> Elem
         focus_onmounted(evt);
     };
     let down_pos: Signal<Option<(f64, f64)>> = use_signal(|| None);
-
     let mut select = move |value: T| {
         if !disabled() {
             props.on_select.call(value);
             if props.close_on_select {
                 ctx.focus.blur();
                 ctx.set_open.call(false);
+                if let Some(parent_set_open) = ctx.parent_set_open {
+                    parent_set_open.call(false);
+                }
             }
         }
     };
-
     let keydown_value = props.value.clone();
-
     rsx! {
         div {
             role: props.role,
@@ -688,9 +689,11 @@ pub fn MenuItem<T: Clone + PartialEq + 'static>(props: MenuItemProps<T>) -> Elem
             hidden: !visible(),
             "data-disabled": unavailable(),
             "data-highlighted": focused(),
-            onpointerdown: move |event| {
-                pointer_select_start(&event, disabled(), down_pos);
+            onmouseenter: move |_| {
+                ctx.active_submenu.set(None);
+                ctx.focus.set_focus(Some(index_value));
             },
+            onpointerdown: move |event| { pointer_select_start(&event, disabled(), down_pos); },
             onpointerup: move |event| {
                 if pointer_select_commit(&event, disabled(), down_pos) {
                     select(props.value.clone());
@@ -698,9 +701,7 @@ pub fn MenuItem<T: Clone + PartialEq + 'static>(props: MenuItemProps<T>) -> Elem
                     event.stop_propagation();
                 }
             },
-            onpointercancel: move |_| {
-                pointer_select_cancel(down_pos);
-            },
+            onpointercancel: move |_| { pointer_select_cancel(down_pos); },
             onkeydown: move |event: Event<KeyboardData>| {
                 if event.key() == Key::Enter || event.key() == Key::Character(" ".to_string()) {
                     select(keydown_value.clone());
@@ -708,11 +709,7 @@ pub fn MenuItem<T: Clone + PartialEq + 'static>(props: MenuItemProps<T>) -> Elem
                     event.stop_propagation();
                 }
             },
-            onblur: move |_| {
-                if focused() {
-                    ctx.focus.blur();
-                }
-            },
+            onblur: move |_| { if focused() { ctx.focus.blur(); } },
             aria_disabled: disabled(),
             onmounted: onmounted,
             ..props.attributes,
@@ -1058,6 +1055,12 @@ pub fn MenuSub(props: MenuSubProps) -> Element {
     let mut focus = FocusState::new(ReadSignal::new(roving_loop));
     let initial_focus = use_signal(|| None);
     let trigger_id = use_unique_id();
+    use_effect(move || {
+        let active = (parent_ctx.active_submenu)();
+        if open() && active.as_deref().is_some_and(|id| id != &(trigger_id)()) {
+            set_open.call(false);
+        }
+    });
     let trigger_ref = use_signal(|| None);
     let sub_id = use_unique_id();
     // The portaled submenu panel's content root id, written by `MenuSubContent`.
@@ -1203,6 +1206,11 @@ pub fn MenuSubTrigger<T: Clone + PartialEq + 'static>(props: MenuSubTriggerProps
         sub_ctx.set_open.call(true);
     });
     let base = attributes!(div {
+        onmouseenter: move |_| {
+            if !(sub_ctx.disabled)() {
+                open_submenu.call(());
+            }
+        },
         onpointermove: move |_| {
             if !(sub_ctx.disabled)() {
                 open_submenu.call(());
@@ -1237,6 +1245,7 @@ pub fn MenuSubTrigger<T: Clone + PartialEq + 'static>(props: MenuSubTriggerProps
                 on_select: move |value: T| {
                     open_submenu.call(());
                     on_select.call(value);
+                    parent_ctx.set_open.call(false);
                 },
                 id: sub_ctx.trigger_id,
                 aria_haspopup: "menu",
@@ -1287,6 +1296,7 @@ pub fn MenuSubContent(props: MenuSubContentProps) -> Element {
     use_context_provider(|| MenuContext {
         open: sub_ctx.open,
         set_open: sub_ctx.set_open,
+        parent_set_open: Some(parent_ctx.set_open),
         disabled: sub_ctx.disabled,
         focus: sub_ctx.focus,
         initial_focus: sub_ctx.initial_focus,

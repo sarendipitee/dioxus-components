@@ -16,6 +16,10 @@ test("pointer navigation", async ({ page }) => {
   const submenu = page.locator(".dx_menu_sub_content").first();
   await expect(submenu).toHaveAttribute("data-state", "open");
   await expect(submenu.getByRole("menuitem", { name: "Copy link" })).toBeVisible();
+  await fileMenuContent.getByRole("menuitem", { name: "New" }).hover();
+  await expect(submenu).toHaveAttribute("data-state", "closed");
+  await shareItem.hover();
+  await expect(submenu).toHaveAttribute("data-state", "open");
   await expect(shareItem).toHaveCSS("background-color", "rgb(247, 247, 247)");
   const shareBox = await shareItem.boundingBox();
   const submenuBox = await submenu.boundingBox();
