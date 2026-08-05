@@ -97,6 +97,7 @@
 
 .dx_context_menu_item:hover:not([data-disabled="true"]),
 .dx_context_menu_item:focus-visible,
+.dx_context_menu_item[data-highlighted="true"],
 .dx_context_menu_sub_trigger[data-state="open"] {
   background: var(--surface-hover);
   color: var(--surface-hover-fg);
