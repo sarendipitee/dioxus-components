@@ -20,7 +20,7 @@ const COLOR_AREA_MAX: f64 = 100.0;
 const COLOR_AREA_RANGE: f64 = COLOR_AREA_MAX - COLOR_AREA_MIN;
 
 fn color_hex(color: Color) -> String {
-    format!("#{color:X}")
+    format!("#{:02X}{:02X}{:02X}", color.red, color.green, color.blue)
 }
 
 fn area_value_from_hsv(hsv: Hsv<encoding::Srgb, f64>) -> ClientPoint {

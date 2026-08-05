@@ -93,7 +93,10 @@
     box-sizing: border-box;
     flex-grow: 1;
     border-radius: 10px;
-    background: linear-gradient(to top, black, transparent), linear-gradient(to right, white, transparent), var(--area-color);
+    background-image:
+        linear-gradient(to top, black, transparent),
+        linear-gradient(to right, white, transparent),
+        linear-gradient(var(--area-color), var(--area-color));
 }
 
 .dx_color_area_thumb {
