@@ -262,7 +262,9 @@ pub fn MenubarMenu(props: MenubarMenuProps) -> Element {
     let initial_focus = use_signal(|| None);
     let trigger_id = use_unique_id();
     let trigger_ref = use_signal(|| None);
+    let active_submenu = use_signal(|| None);
     let overlay_id = use_signal(|| None);
+    let filter_query = use_signal(String::new);
     let mut menu_ctx = use_context_provider(|| MenubarMenuContext {
         index: props.index,
         focus,
@@ -283,8 +285,8 @@ pub fn MenubarMenu(props: MenubarMenuProps) -> Element {
         trigger_id,
         trigger_ref,
         overlay_id,
-        filter_query: use_context::<MenuContext>().filter_query,
-        active_submenu: use_signal(|| None),
+        filter_query,
+        active_submenu,
     });
 
     use_effect(move || {
@@ -436,6 +438,13 @@ pub fn MenubarTrigger(props: MenubarTriggerProps) -> Element {
     rsx! {
         button {
             id: shared_menu_ctx.trigger_id,
+            onclick: move |_| {
+                if !disabled() {
+                    let new_open = if is_open() { None } else { Some(index.cloned()) };
+                    ctx.set_open_menu.call(new_open);
+                    ctx.focus.set_focus(Some(index.cloned()));
+                }
+            },
             onmounted,
             onpointerup: move |_| {
                 if !disabled() {

@@ -569,6 +569,10 @@ fn MenuContentRendered(props: MenuContentRenderedProps) -> Element {
                     }
                     Key::Home => focus.focus_first(),
                     Key::End => focus.focus_last(),
+                    Key::Tab => {
+                        focus.blur();
+                        set_open.call(false);
+                    }
                     _ => return,
                 }
                 event.prevent_default();
@@ -680,8 +684,10 @@ pub fn MenuItem<T: Clone + PartialEq + 'static>(props: MenuItemProps<T>) -> Elem
     rsx! {
         div {
             role: props.role,
+            tabindex: if focused() { "0" } else { "-1" },
             hidden: !visible(),
             "data-disabled": unavailable(),
+            "data-highlighted": focused(),
             onpointerdown: move |event| {
                 pointer_select_start(&event, disabled(), down_pos);
             },
@@ -707,8 +713,8 @@ pub fn MenuItem<T: Clone + PartialEq + 'static>(props: MenuItemProps<T>) -> Elem
                     ctx.focus.blur();
                 }
             },
-            onmounted,
             aria_disabled: disabled(),
+            onmounted: onmounted,
             ..props.attributes,
             {props.children}
         }
@@ -1056,14 +1062,6 @@ pub fn MenuSub(props: MenuSubProps) -> Element {
     let sub_id = use_unique_id();
     // The portaled submenu panel's content root id, written by `MenuSubContent`.
     let content_id = use_signal(String::new);
-    let active_id = trigger_id;
-
-    use_effect(move || {
-        if open() && (parent_ctx.active_submenu)() != Some(active_id()) {
-            focus.blur();
-            set_open.call(false);
-        }
-    });
 
     use_effect_with_cleanup(move || {
         // The trigger still lives inside `sub_id`, but the submenu content panel is
@@ -1076,10 +1074,6 @@ pub fn MenuSub(props: MenuSubProps) -> Element {
         // the listener) once `MenuSubContent` publishes the panel id, so the
         // hover-leave predicate picks up the portaled panel.
         let panel_id = content_id();
-        // Dropped-tolerant: this effect re-runs when `content_id` changes, which
-        // happens as `MenuSubContent` unmounts during a close cascade — at which
-        // point `sub_id` (a `use_unique_id` signal) may already be freed. Bail
-        // rather than panic on a read of a dropped signal.
         let Some(sub_id_value) = sub_id.try_peek().ok().map(|v| v.clone()) else {
             return Box::new(|| {}) as Box<dyn FnOnce()>;
         };
@@ -1115,9 +1109,6 @@ pub fn MenuSub(props: MenuSubProps) -> Element {
                     content.contains(pointTarget) ||
                     pointInRect(e.clientX, e.clientY, content.getBoundingClientRect(), padding)
                 );
-                // Nested submenu panels are portaled siblings of their parent panel.
-                // Treat any submenu panel under the pointer as part of the open
-                // hover path so an ancestor does not close while entering a child.
                 const insideNestedSubmenu = pointTarget.closest('[role=\"menu\"][data-side]');
                 if (!insideTrigger && !insideContent && !insideNestedSubmenu) dioxus.send(true);
             };

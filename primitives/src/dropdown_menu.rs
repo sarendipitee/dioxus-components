@@ -151,7 +151,6 @@ pub fn DropdownMenuTrigger(props: DropdownMenuTriggerProps) -> Element {
             if disabled() {
                 return;
             }
-
             match event.key() {
                 Key::ArrowDown => {
                     if !open() {
@@ -175,7 +174,6 @@ pub fn DropdownMenuTrigger(props: DropdownMenuTriggerProps) -> Element {
                 }
                 _ => return,
             }
-
             event.prevent_default();
             event.stop_propagation();
         },
@@ -193,8 +191,6 @@ pub fn DropdownMenuTrigger(props: DropdownMenuTriggerProps) -> Element {
         }
     }
 }
-
-/// The props for the [`DropdownMenuContent`] component.
 pub type DropdownMenuContentProps = menu::MenuContentProps;
 
 /// The contents of a [`DropdownMenu`].

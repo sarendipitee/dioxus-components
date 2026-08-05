@@ -79,7 +79,7 @@ impl ComboboxContext {
                 self.selectable.initial_focus.set(None);
             } else {
                 self.store.request_initial_selection_at(index);
-                self.store.resolve_pending_initial_selection_at(index);
+                self.store.select_option(index);
                 self.selectable.initial_focus.set(Some(index));
             }
         } else {
@@ -111,7 +111,7 @@ impl ComboboxContext {
                 self.selectable.initial_focus.set(None);
             } else {
                 self.store.request_initial_selection_at(index);
-                self.store.resolve_pending_initial_selection_at(index);
+                self.store.select_option(index);
                 self.selectable.initial_focus.set(Some(index));
             }
         } else {
