@@ -25,7 +25,7 @@ use dioxus_primitives::toast::{use_toast, ToastOptions};
 
 /// Top-level page component for the `/overlay-nesting` route.
 ///
-/// Wraps the matrix in a local [`ToastProvider`] (so the toast-over-modal case
+/// Wraps the matrix in a local [`ToastProvider()`] (so the toast-over-modal case
 /// has a toast queue + outlet) and a `transform: translateZ(0)` container that
 /// activates the stacking-context trap the overlay manager must defeat.
 #[component]

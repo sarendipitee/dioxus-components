@@ -283,10 +283,10 @@ struct PopoverPortaledProps {
 }
 
 /// The portaled half of a popover: registers the overlay entry as
-/// [`OverlayKind::Floating`], renders the panel through the shared
-/// [`OverlayOutlet`], and re-provides [`PopoverCtx`] inside the portal so any
-/// in-panel consumers resolve their context up the *portaled* render chain
-/// (context does not inherit through the portal).
+/// [`OverlayKind::Floating`], renders the panel through the shared overlay outlet,
+/// and re-provides [`PopoverCtx`] inside the portal so any in-panel consumers
+/// resolve their context up the *portaled* render chain (context does not inherit
+/// through the portal).
 ///
 /// The Escape + outside-click dismissal that the popover used to own
 /// (`use_global_escape_listener` / `use_outside_dismiss`) is now handled by the
@@ -413,7 +413,7 @@ pub struct PopoverContentRenderedProps {
 }
 
 /// The rendered content of the popover, rendered as a child of `PortalIn` (so
-/// this is where [`PopoverCtx`] is re-provided). Floating layout is snapshotted
+/// this is where `PopoverCtx` is re-provided). Floating layout is snapshotted
 /// in the non-portaled parent and forwarded here as plain values.
 #[component]
 pub fn PopoverContentRendered(props: PopoverContentRenderedProps) -> Element {

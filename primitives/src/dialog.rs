@@ -365,7 +365,7 @@ struct DialogPortaledProps {
 }
 
 /// The portaled half of a dialog: registers the overlay entry, renders the
-/// backdrop + content through the shared [`OverlayOutlet`], and **re-provides
+/// backdrop + content through the shared overlay outlet, and **re-provides
 /// `DialogCtx` inside the portal** so `DialogClose`/`DialogTitle`/
 /// `DialogDescription` (and `AlertDialogAction`/`AlertDialogCancel`) resolve
 /// their context up the *portaled* render chain — context does not inherit

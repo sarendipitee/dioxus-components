@@ -20,7 +20,7 @@
 //!
 //! ## Context does NOT inherit through the portal
 //!
-//! Dioxus resolves context up the *render* tree (where [`PortalOut`] sits), not
+//! Dioxus resolves context up the *render* tree (where `PortalOut` sits), not
 //! the *definition* tree. A context provided above a registering component is
 //! therefore invisible to that component's portaled content. Each overlay must
 //! **re-provide** every context its portaled descendants consume, inside the
@@ -463,7 +463,7 @@ pub fn OverlayProvider(children: Element) -> Element {
 }
 
 /// The single portal outlet. Iterates live entries sorted by (band, order) and
-/// emits one keyed [`PortalOut`] per entry, so reordering never remounts a live
+/// emits one keyed `PortalOut` per entry, so reordering never remounts a live
 /// overlay (preserves animation + focus state).
 ///
 /// Note: the portaled content itself is supplied by each overlay's `PortalIn`

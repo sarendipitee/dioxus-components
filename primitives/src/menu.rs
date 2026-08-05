@@ -302,10 +302,8 @@ pub struct MenuContentProps {
 ///
 /// This is the Root-tree half: it keeps the component's own [`MenuContext`] (for
 /// the trigger that stays in the tree), drives `use_animated_open`, and while open
-/// renders the panel through the shared overlay outlet via [`MenuContentPortaled`].
-/// The panel DOM and the `MenuContext` re-provide live in the portaled body — see
-/// [`MenuContentRendered`] (context does NOT inherit through the portal, plan
-/// §4.2).
+/// renders the panel through the shared overlay outlet.
+/// The panel DOM and the `MenuContext` re-provide live in the portaled body.
 #[component]
 pub fn MenuContent(props: MenuContentProps) -> Element {
     let ctx: MenuContext = use_context();

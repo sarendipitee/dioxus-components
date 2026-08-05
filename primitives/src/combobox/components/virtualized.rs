@@ -55,8 +55,8 @@ pub struct VirtualizedComboboxOptionsProps {
 /// A virtualized combobox listbox that preserves listbox/option semantics.
 ///
 /// Root-tree half: provides `ListboxContext` and portals the open listbox through
-/// the overlay manager. The virtualization state + DOM live in
-/// [`VirtualizedComboboxOptionsRendered`], the portaled body.
+/// the overlay manager. The virtualization state + DOM live in the portaled
+/// body.
 #[component]
 pub fn VirtualizedComboboxOptions(props: VirtualizedComboboxOptionsProps) -> Element {
     let ctx = use_context::<ComboboxContext>();

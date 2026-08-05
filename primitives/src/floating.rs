@@ -2,12 +2,12 @@
 //!
 //! This module exposes a single internal abstraction, [`use_position`], reused by
 //! every overlay primitive (popover, tooltip, hover card, menus, select, combobox)
-//! so the wasm-gating, middleware configuration, leak-safe reposition wiring, and the
-//! [`Placement`](floating_ui_dioxus::Placement) ↔ [`ContentSide`]/[`ContentAlign`]
+//! so the wasm-gating, middleware configuration, leak-safe reposition wiring, and
+//! the `floating_ui_dioxus::Placement` ↔ [`ContentSide`]/[`ContentAlign`]
 //! mapping live in exactly one place.
 //!
 //! On the web (`cfg(target_family = "wasm")`) it delegates to
-//! [`floating_ui_dioxus::use_floating`] for real collision handling (offset + flip +
+//! `floating_ui_dioxus::use_floating` for real collision handling (offset + flip +
 //! shift). On native/desktop builds the floating-ui crates are absent, so the hook is
 //! inert and preserves the existing CSS-only `data-side`/`data-align` behavior. Both
 //! implementations share the same signature and return the same dioxus-core-only
@@ -68,7 +68,7 @@ pub(crate) struct PositionState {
 /// `style`, resolved `data-side`/`data-align`, and an until-positioned visibility
 /// guard.
 ///
-/// On the web this wires [`floating_ui_dioxus::use_floating`] with
+/// On the web this wires `floating_ui_dioxus::use_floating` with
 /// `offset`/`flip`/`shift` middleware (using [`DEFAULT_OFFSET_GAP`]), an absolute
 /// positioning strategy, and `transform: false` (it writes `top`/`left`, never
 /// `transform`, so CSS animation transforms are not clobbered). Repositioning on
@@ -258,8 +258,7 @@ pub(crate) fn style_prop(style: &str, prop: &str) -> String {
         .unwrap_or_default()
 }
 
-/// Map a requested ([`ContentSide`], [`ContentAlign`]) to a floating-ui
-/// [`Placement`](floating_ui_dioxus::Placement).
+/// Map a requested ([`ContentSide`], [`ContentAlign`]) to a floating-ui placement.
 ///
 /// [`ContentAlign::Center`] maps to the un-suffixed placement (e.g. `Top`); `Start`
 /// and `End` map to the `*Start`/`*End` variants.
@@ -282,7 +281,7 @@ fn placement_from(side: ContentSide, align: ContentAlign) -> floating_ui_dioxus:
     }
 }
 
-/// Map a resolved floating-ui [`Placement`](floating_ui_dioxus::Placement) back to a
+/// Map a resolved floating-ui placement back to a
 /// ([`ContentSide`], [`ContentAlign`]) pair for `data-side`/`data-align`.
 #[cfg(target_family = "wasm")]
 fn placement_to(placement: floating_ui_dioxus::Placement) -> (ContentSide, ContentAlign) {

@@ -327,7 +327,7 @@ struct TooltipPortaledProps {
 /// The portaled half of a tooltip: registers the overlay entry as
 /// [`OverlayKind::Hint`] (`modal: false`, `dismissable: false` — hints never
 /// participate in the manager's dismiss stack), renders the panel through the
-/// shared [`OverlayOutlet`], and re-provides [`TooltipCtx`] inside the portal.
+/// shared overlay outlet, and re-provides [`TooltipCtx`] inside the portal.
 ///
 /// The tooltip keeps its own hover / focus / Escape open-close logic on the
 /// trigger (which stays in the main tree); it does NOT route through the manager

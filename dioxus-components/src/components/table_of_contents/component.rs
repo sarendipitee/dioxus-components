@@ -10,7 +10,7 @@ struct Styles;
 
 #[derive(Props, Clone, PartialEq)]
 pub struct TableOfContentsProps {
-    /// Options passed to [`use_scroll_spy`].
+    /// Options passed to `use_scroll_spy`.
     #[props(default)]
     pub scroll_spy_options: ScrollSpyOptions,
 

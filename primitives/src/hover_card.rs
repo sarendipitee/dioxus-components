@@ -335,7 +335,7 @@ struct HoverCardPortaledProps {
 /// The portaled half of a hover card: registers the overlay entry as
 /// [`OverlayKind::Hint`] (`modal: false`, `dismissable: false` — hints never
 /// participate in the manager's dismiss stack), renders the panel through the
-/// shared [`OverlayOutlet`], and re-provides [`HoverCardCtx`] inside the portal.
+/// shared overlay outlet, and re-provides [`HoverCardCtx`] inside the portal.
 ///
 /// The hover card keeps its own hover / focus open-close logic (on the trigger,
 /// which stays in the main tree, and on the panel's own mouse handlers); it does
