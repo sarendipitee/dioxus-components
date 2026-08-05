@@ -15,6 +15,7 @@
 
 .dx_dropdown.dx_menu_content, .dx_dropdown .dx_menu_sub_content {
   padding: var(--content-gap);
+  margin: 0;
 }
 
 .dx_dropdown.dx_menu_content {

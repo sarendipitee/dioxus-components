@@ -21,6 +21,9 @@
   flex-direction: column;
   gap: 2px;
 }
+.dx_menu_content {
+  margin: 0;
+}
 
 .dx_menu_content[data-state="closed"] {
   animation: dx-menu-content-animate-out 150ms ease-in forwards;
