@@ -47,6 +47,23 @@ test("split pane divider exposes separator semantics and focus", async ({ page }
   await expect(divider).toBeFocused();
 });
 
+test("omitted divider size stays stable while observed styles mutate", async ({ page }) => {
+  await gotoSplitPane(page, "main");
+
+  const divider = splitPaneDivider(page);
+  const initialSize = await divider.evaluate((element) => element.getBoundingClientRect().width);
+
+  await page.evaluate(() => {
+    const root = document.querySelector('[data-split-pane-id]');
+    if (!root) throw new Error("split pane root not found");
+    for (let index = 0; index < 20; index += 1) {
+      root.classList.toggle("observer-regression", index % 2 === 0);
+    }
+  });
+
+  await expect.poll(() => divider.evaluate((element) => element.getBoundingClientRect().width)).toBe(initialSize);
+});
+
 test("horizontal keyboard resize changes the committed pane size", async ({ page }) => {
   await gotoSplitPane(page, "main");
 

@@ -118,11 +118,15 @@ pub fn SplitPane(props: SplitPaneProps) -> Element {
                     return parsePx(getComputedStyle(root).getPropertyValue("--split-pane-divider-size"));
                 }}
 
+                // Ignore observer notifications caused by applying the same measured size.
+                let lastPublishedSize = null;
+
                 function publish() {{
                     cancelAnimationFrame(frame);
                     frame = requestAnimationFrame(() => {{
                         const size = dividerSize();
-                        if (size > 0) {{
+                        if (size > 0 && (lastPublishedSize === null || Math.abs(size - lastPublishedSize) > 0.01)) {{
+                            lastPublishedSize = size;
                             dioxus.send(size);
                         }}
                     }});
