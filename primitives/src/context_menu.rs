@@ -38,7 +38,7 @@ async fn visual_viewport_offset() -> (f64, f64) {
 #[derive(Clone, Copy)]
 struct ContextMenuCtx {
     // Position of the context menu
-    position: Signal<(i32, i32)>,
+    position: Signal<(f64, f64)>,
 
     // Set briefly after a touch long-press opens the menu. Used to (a) swallow
     // Android Chrome's spurious `contextmenu` ~500ms later, and (b) ignore the
@@ -129,7 +129,7 @@ pub struct ContextMenuProps {
 #[component]
 pub fn ContextMenu(props: ContextMenuProps) -> Element {
     let (open, set_open) = use_controlled(props.open, props.default_open, props.on_open_change);
-    let position = use_signal(|| (0, 0));
+    let position = use_signal(|| (0.0_f64, 0.0_f64));
     let root_id = use_unique_id();
     let long_press_just_fired = use_signal(|| false);
 
@@ -245,7 +245,7 @@ pub fn ContextMenuTrigger(props: ContextMenuTriggerProps) -> Element {
             let mut position = ctx.position;
             spawn(async move {
                 let (off_x, off_y) = visual_viewport_offset().await;
-                position.set(((p.x + off_x) as i32, (p.y + off_y) as i32));
+                position.set((p.x + off_x, p.y + off_y));
                 set_open.call(true);
             });
             event.prevent_default();
@@ -273,7 +273,7 @@ pub fn ContextMenuTrigger(props: ContextMenuTriggerProps) -> Element {
             }
             long_press_task.set(None);
             let (off_x, off_y) = visual_viewport_offset().await;
-            position.set(((p.x + off_x) as i32, (p.y + off_y) as i32));
+            position.set((p.x + off_x, p.y + off_y));
             set_open.call(true);
             // Stay armed long enough to catch Android's compat `contextmenu`,
             // then disarm so future mouse right-clicks aren't suppressed.
@@ -388,8 +388,7 @@ pub struct ContextMenuContentProps {
 pub fn ContextMenuContent(props: ContextMenuContentProps) -> Element {
     let ctx: ContextMenuCtx = use_context();
     let mut menu_ctx: MenuContext = use_context();
-    let position = ctx.position;
-    let (x, y) = position();
+    let (x, y) = (ctx.position)();
     let open = menu_ctx.open;
 
     // The panel is portaled to the overlay outlet, so it no longer lives inside the

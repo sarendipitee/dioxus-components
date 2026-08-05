@@ -20,6 +20,7 @@ use crate::{
 use dioxus::prelude::*;
 use dioxus_attributes::attributes;
 
+/// Shared state for a menu and its descendants.
 #[derive(Clone, Copy, PartialEq)]
 pub struct MenuContext {
     pub(crate) open: Memo<bool>,
@@ -615,6 +616,9 @@ pub struct MenuItemProps<T: Clone + PartialEq + 'static> {
     /// all other items.
     #[props(default)]
     pub on_mounted: Option<Callback<Rc<MountedData>>>,
+    /// Whether this item owns an openable submenu.
+    #[props(default)]
+    pub is_submenu_trigger: bool,
     /// Text used for matching when rendered inside a filterable menu.
     #[props(default)]
     pub search_text: Option<String>,
@@ -685,12 +689,10 @@ pub fn MenuItem<T: Clone + PartialEq + 'static>(props: MenuItemProps<T>) -> Elem
     rsx! {
         div {
             role: props.role,
-            tabindex: if focused() { "0" } else { "-1" },
-            hidden: !visible(),
-            "data-disabled": unavailable(),
-            "data-highlighted": focused(),
             onmouseenter: move |_| {
-                ctx.active_submenu.set(None);
+                if !props.is_submenu_trigger {
+                    ctx.active_submenu.set(None);
+                }
                 ctx.focus.set_focus(Some(index_value));
             },
             onpointerdown: move |event| { pointer_select_start(&event, disabled(), down_pos); },
@@ -1240,8 +1242,8 @@ pub fn MenuSubTrigger<T: Clone + PartialEq + 'static>(props: MenuSubTriggerProps
                 value: props.value,
                 index: props.index,
                 disabled: props.disabled,
+                is_submenu_trigger: true,
                 search_text: props.search_text,
-                close_on_select: false,
                 on_select: move |value: T| {
                     open_submenu.call(());
                     on_select.call(value);
@@ -1446,6 +1448,7 @@ mod tests {
         use_context_provider(|| MenuContext {
             open,
             set_open,
+            parent_set_open: None,
             disabled,
             focus,
             initial_focus,

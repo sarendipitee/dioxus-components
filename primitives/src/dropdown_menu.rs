@@ -191,6 +191,7 @@ pub fn DropdownMenuTrigger(props: DropdownMenuTriggerProps) -> Element {
         }
     }
 }
+/// Props for dropdown menu content.
 pub type DropdownMenuContentProps = menu::MenuContentProps;
 
 /// The contents of a [`DropdownMenu`].

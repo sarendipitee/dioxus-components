@@ -35,6 +35,17 @@
   pointer-events: none;
   will-change: opacity;
 }
+.dx_context_menu_content.dx_dropdown {
+  margin: 0;
+  animation: none;
+  opacity: 1;
+  transform: none;
+  pointer-events: auto;
+}
+.dx_context_menu_content.dx_dropdown.dx_menu_content {
+  transform: none !important;
+  margin: 0 !important;
+}
 .dx_context_menu_content[data-state="closed"] {
   animation: none;
 }
@@ -45,11 +56,12 @@
 }
 
 .dx_context_menu_content[data-state="open"] {
-  animation: dx-context-menu-animate-in 150ms ease-out forwards;
+  animation: none;
+  opacity: 1;
 }
 
 @keyframes dx-context-menu-animate-in {
-  from { opacity: 0; }
+  from { opacity: 1; }
   to { opacity: 1; }
 }
 

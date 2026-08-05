@@ -8,15 +8,14 @@
 }
 
 .dx_menu_content {
-  /* z-index assigned by the overlay manager via `--overlay-z` (open order), now
-     that the panel is portaled to the shared outlet. */
+  /* Overlay positioning owns geometry; the surface must not transform while
+     pointer interactions move between portaled nested menus. */
   z-index: var(--overlay-z);
   min-width: 200px;
-  animation: dx-menu-content-animate-in 150ms ease-out forwards;
-  opacity: 0;
+  animation: none;
+  opacity: 1;
   pointer-events: none;
-  transform-origin: top;
-  will-change: transform, opacity;
+  transform: none;
   display: flex;
   flex-direction: column;
   gap: 2px;
@@ -26,7 +25,8 @@
 }
 
 .dx_menu_content[data-state="closed"] {
-  animation: dx-menu-content-animate-out 150ms ease-in forwards;
+  animation: none;
+  opacity: 0;
   pointer-events: none;
 }
 
@@ -43,7 +43,8 @@
 }
 
 .dx_menu_content[data-state="open"] {
-  animation: dx-menu-content-animate-in 150ms ease-out forwards;
+  animation: none;
+  opacity: 1;
   pointer-events: auto;
 }
 
