@@ -56,11 +56,6 @@ async function testScrollHeightStability(
   const maxHeight = Math.max(...scrollHeights);
   const heightVariance = maxHeight - minHeight;
 
-  console.log(`scrollHeight range: ${minHeight} - ${maxHeight} (variance: ${heightVariance}px)`);
-  console.log(`Measurements:`, measurements.map((m, i) =>
-    `step ${i + 1}: scrollTop=${m.scrollTop}, scrollHeight=${m.scrollHeight}`
-  ).join('\n'));
-
   // The bug: if scrollHeight changes during scrolling, the scrollbar thumb
   // position (scrollTop / scrollHeight) changes even though the user's mouse
   // hasn't moved proportionally. This causes the thumb to drift from the cursor.
@@ -71,19 +66,15 @@ async function testScrollHeightStability(
     `scrollHeight changed by ${heightVariance}px during scroll (tolerance: ${tolerancePx}px) - this causes scrollbar thumb to drift from mouse cursor`
   ).toBeLessThan(tolerancePx);
 
-  return { heightVariance, measurements };
+  return { heightVariance };
 }
 
-// Test with adaptive estimation (no estimate_size provided).
 // The demo uses 6 repeating item sizes, so adaptive estimation learns quickly.
 // Allow small margin since first few items may have slightly off estimates.
 test("scrollHeight stable with adaptive estimation", async ({ page }) => {
   // Allow up to 200px variance - adaptive estimation may have small drift
   // as it learns item sizes, but should still be much better than 500px+ without fix
-  const { heightVariance } = await testScrollHeightStability(page, 200);
-
-  // Bonus: with repeating sizes, adaptive estimation should actually achieve near-zero variance
-  console.log(`Adaptive estimation achieved ${heightVariance}px variance`);
+  await testScrollHeightStability(page, 200);
 });
 
 // Stricter test - should achieve 0px variance with the stable_total_size fix
@@ -104,7 +95,6 @@ test("scrollHeight stable with random heights demo", async ({ page }) => {
   // Verify the demo loaded by checking for demo-specific content.
   const firstCard = page.getByRole("heading", { level: 3 }).first();
   const cardText = await firstCard.textContent();
-  console.log("First card text:", cardText);
   // The random heights demo shows "X repeats" in the heading.
   expect(cardText, "Demo should show 'repeats' count").toContain("repeats");
 
@@ -145,10 +135,6 @@ test("scrollHeight stable with random heights demo", async ({ page }) => {
   const maxHeight = Math.max(...scrollHeights);
   const heightVariance = maxHeight - minHeight;
 
-  console.log(`Random heights - scrollHeight range: ${minHeight} - ${maxHeight} (variance: ${heightVariance}px)`);
-  console.log(`Measurements:`, measurements.map((m, i) =>
-    `step ${i + 1}: scrollTop=${m.scrollTop}, scrollHeight=${m.scrollHeight}`
-  ).join('\n'));
 
   // With random heights and poor early estimates, we intentionally DON'T freeze
   // because a bad frozen value causes worse UX (sudden jumps) than gradual drift.
@@ -157,7 +143,6 @@ test("scrollHeight stable with random heights demo", async ({ page }) => {
   //
   // This test documents the expected drift behavior - it should improve over time
   // as the estimate converges. For better UX, users should provide estimate_size.
-  console.log(`Note: ${heightVariance}px drift is expected with poor early estimates`);
 
   // Just verify we're not seeing catastrophic variance (e.g., 50000px+)
   expect(

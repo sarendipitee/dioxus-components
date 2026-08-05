@@ -89,14 +89,14 @@ When removing unnecessary `.to_string()`, distinguish between:
 
 ## Validation
 
-Run the smallest relevant checks for the layer you changed:
+Use the repository scripts instead of invoking raw build/check or Playwright commands:
 
-- Primitive behavior: `cargo test -p dioxus-primitives`
-- Styled library build: `cargo check -p dioxus-components`
-- Preview or visual behavior: `scripts/preview-web.sh build` and targeted Playwright tests from `playwright/`
-- CSS changes: from `preview/`, run `npx stylelint "src/**/*.css"`
+- Full repository validation, including Rust tests, formatting, docs, CSS, theme checks, preview build, browser detection, and Chromium Playwright tests: `scripts/pre-push.sh`
+- Preview web build or serve only: `scripts/preview-web.sh build` or `scripts/preview-web.sh serve`
+- Do not run `cargo check`, `scripts/preview-web.sh` alternatives, or `npx playwright test` directly for validation. `scripts/pre-push.sh` selects a compatible system Chromium and configures the required Playwright environment.
+- If a targeted Playwright test is needed, run it through the repository setup after the preview build, preserving the script's `PLAYWRIGHT_CHROMIUM_EXECUTABLE` selection; do not bypass the script with an unconfigured raw Playwright invocation.
 
-If you cannot run a relevant check, report exactly which command was skipped and why.
+If you cannot run a relevant check, report exactly which repository script was skipped and why.
 
 ## General Expectations
 
