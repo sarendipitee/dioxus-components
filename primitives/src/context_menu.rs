@@ -144,7 +144,7 @@ pub fn ContextMenu(props: ContextMenuProps) -> Element {
             id: root_id,
             tabindex: 0, // Make the menu container focusable
             "data-state": if open() { "open" } else { "closed" },
-            "data-disabled": (props.disabled)(),
+            "data-disabled": (props.disabled)().then_some("true"),
             ..props.attributes,
             {props.children}
         }

@@ -105,7 +105,7 @@ pub fn DropdownMenu(props: DropdownMenuProps) -> Element {
     rsx! {
         div {
             "data-state": if open() { "open" } else { "closed" },
-            "data-disabled": (props.disabled)(),
+            "data-disabled": (props.disabled)().then_some("true"),
             ..attributes,
             {props.children}
         }
@@ -137,7 +137,7 @@ pub fn DropdownMenuTrigger(props: DropdownMenuTriggerProps) -> Element {
     let base = attributes!(span {
         id: ctx.trigger_id,
         "data-state": if open() { "open" } else { "closed" },
-        "data-disabled": disabled,
+        "data-disabled": disabled().then_some("true"),
         aria_disabled: disabled,
         aria_expanded: open,
         aria_haspopup: "menu",

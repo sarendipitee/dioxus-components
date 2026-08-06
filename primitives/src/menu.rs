@@ -1,6 +1,6 @@
 //! Shared menu primitives used by dropdown menus, context menus, and menubars.
 
-use std::{rc::Rc, time::Duration};
+use std::rc::Rc;
 
 use crate::{
     floating::{style_prop, use_position},
@@ -19,10 +19,6 @@ use crate::{
 };
 use dioxus::prelude::*;
 use dioxus_attributes::attributes;
-#[cfg(target_family = "wasm")]
-use gloo_timers::future::sleep;
-#[cfg(not(target_family = "wasm"))]
-use tokio::time::sleep;
 
 /// Shared state for a menu and its descendants.
 #[derive(Clone, Copy, PartialEq)]
@@ -645,8 +641,7 @@ pub fn MenuItem<T: Clone + PartialEq + 'static>(props: MenuItemProps<T>) -> Elem
     let disabled = move || (ctx.disabled)() || disabled_value;
     let unavailable = move || disabled() || !visible();
     let forward_mounted = props.on_mounted;
-    let mut mounted_ref: Signal<Option<Rc<MountedData>>> = use_signal(|| None);
-    let focus_onmounted = use_focus_controlled_item_disabled(index, unavailable);
+    let mut focus_onmounted = use_focus_controlled_item_disabled(index, unavailable);
     use_effect(move || {
         let _ = ctx.focus.items_revision();
         let _ = ctx.focus.current_focus();
@@ -657,29 +652,13 @@ pub fn MenuItem<T: Clone + PartialEq + 'static>(props: MenuItemProps<T>) -> Elem
                 }
             }
         }
-        if focused() && !disabled() {
-            if let Some(mounted) = mounted_ref() {
-                spawn(async move {
-                    sleep(Duration::from_millis(0)).await;
-                    let _ = mounted.set_focus(true).await;
-                });
-            }
-        }
     });
-    let mut focus_onmounted = focus_onmounted;
     let onmounted = move |evt: MountedEvent| {
         let mounted = evt.data();
-        mounted_ref.set(Some(mounted.clone()));
         if let Some(cb) = forward_mounted {
-            cb.call(mounted.clone());
+            cb.call(mounted);
         }
         focus_onmounted(evt);
-        if focused() && !disabled() {
-            spawn(async move {
-                sleep(Duration::from_millis(0)).await;
-                let _ = mounted.set_focus(true).await;
-            });
-        }
     };
     let down_pos: Signal<Option<(f64, f64)>> = use_signal(|| None);
     let mut select = move |value: T| {
@@ -724,7 +703,7 @@ pub fn MenuItem<T: Clone + PartialEq + 'static>(props: MenuItemProps<T>) -> Elem
             // Roving focus is updated by the focus controller; clearing it from
             // blur races portaled submenu focus and resets the pending target.
             aria_disabled: disabled(),
-            "data-disabled": disabled(),
+            "data-disabled": disabled().then_some("true"),
             // MountedData::set_focus requires a focusable element. Keep only the
             // roving-focus item tabbable so native focus follows trigger arrows.
             tabindex: if focused() { "0" } else { "-1" },
@@ -1214,22 +1193,27 @@ pub fn MenuSubTrigger<T: Clone + PartialEq + 'static>(props: MenuSubTriggerProps
     let mut sub_ctx: MenuSubContext = use_context();
     let mut trigger_ref = sub_ctx.trigger_ref;
     let open = sub_ctx.open;
+    let disabled_value = props.disabled;
     let on_select = props.on_select;
     let open_submenu = use_callback(move |_| {
+        // Pointer-move fires continuously while the cursor is over a trigger.
+        // Once this submenu is open, rewriting the coordination/open signals
+        // needlessly reconciles its portaled content under the pointer and can
+        // detach the trigger before Playwright (or a user) completes the hover.
         if !open() {
             sub_ctx.initial_focus.set(Some(FocusPlacement::First));
+            (parent_ctx.active_submenu).set(Some((sub_ctx.trigger_id)()));
+            sub_ctx.set_open.call(true);
         }
-        (parent_ctx.active_submenu).set(Some((sub_ctx.trigger_id)()));
-        sub_ctx.set_open.call(true);
     });
     let base = attributes!(div {
         onmouseenter: move |_| {
-            if !(sub_ctx.disabled)() {
+            if !(sub_ctx.disabled)() && !disabled_value {
                 open_submenu.call(());
             }
         },
         onpointermove: move |_| {
-            if !(sub_ctx.disabled)() {
+            if !(sub_ctx.disabled)() && !disabled_value {
                 open_submenu.call(());
             }
         },
@@ -1246,7 +1230,7 @@ pub fn MenuSubTrigger<T: Clone + PartialEq + 'static>(props: MenuSubTriggerProps
             role: "presentation",
             style: "display: contents;",
             onkeydown: move |event: Event<KeyboardData>| {
-                if event.key() == Key::ArrowRight && !(sub_ctx.disabled)() {
+                if event.key() == Key::ArrowRight && !(sub_ctx.disabled)() && !disabled_value {
                     // `open_submenu` records a pending first-item placement. The
                     // submenu panel is portaled and its items mount afterward, so
                     // focusing synchronously here observes an empty item registry.
@@ -1314,6 +1298,9 @@ pub fn MenuSubContent(props: MenuSubContentProps) -> Element {
     let parent_ctx: MenuContext = use_context();
     let overlay_id = use_signal(|| *parent_ctx.overlay_id.peek());
     let filter_query = use_signal(String::new);
+    // Coordinate only submenus that are direct children of this content. A
+    // nested trigger must not replace its ancestor's active sibling id.
+    let active_submenu = use_signal(|| None);
     use_context_provider(|| MenuContext {
         open: sub_ctx.open,
         set_open: sub_ctx.set_open,
@@ -1325,7 +1312,7 @@ pub fn MenuSubContent(props: MenuSubContentProps) -> Element {
         trigger_ref: sub_ctx.trigger_ref,
         overlay_id,
         filter_query,
-        active_submenu: parent_ctx.active_submenu,
+        active_submenu,
     });
     // Floating-element positioning for the submenu. A submenu naturally opens to the
     // right of its parent item, aligned to the item's top edge; flip() handles the

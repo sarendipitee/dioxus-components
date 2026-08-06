@@ -304,7 +304,7 @@ pub fn MenubarMenu(props: MenubarMenuProps) -> Element {
         div {
             role: "menu",
             "data-state": if is_open() { "open" } else { "closed" },
-            "data-disabled": (ctx.disabled)() || (props.disabled)(),
+            "data-disabled": ((ctx.disabled)() || (props.disabled)()).then_some("true"),
 
             onkeydown: move |event: Event<KeyboardData>| {
                 match event.key() {

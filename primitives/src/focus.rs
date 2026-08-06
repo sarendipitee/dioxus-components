@@ -37,6 +37,8 @@ pub(crate) fn use_focus_control_disabled(
 ) -> impl FnMut(MountedEvent) {
     let mut controlled_ref: Signal<Option<Rc<MountedData>>> = use_signal(|| None);
     use_effect(move || {
+        let _ = ctx.current_focus();
+        let _ = ctx.items_revision();
         if disabled() {
             return;
         }

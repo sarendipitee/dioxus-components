@@ -108,9 +108,11 @@ fn sync_option_state(options: &mut Vec<OptionState>, option_state: OptionState) 
         .iter()
         .position(|option| option.id == option_state.id)
     {
+        if options[position] == option_state {
+            return;
+        }
         options.remove(position);
     }
-
     if let Some(position) = options
         .iter()
         .position(|option| option.tab_index == option_state.tab_index)
