@@ -26,6 +26,16 @@ pub fn Demo() -> Element {
                     placeholder: "project-slug",
                 }
             }
+            InputBase {
+                label: rsx! { "Environment" },
+                description: rsx! { "InputBase provides ids, described-by wiring, and shell state." },
+                error: rsx! { "Only lowercase letters are allowed." },
+                left_section: rsx! { span { "env" } },
+                input {
+                    style: "width: 100%; border: 0; background: transparent; outline: none;",
+                    value: "staging",
+                }
+            }
         }
     }
 }

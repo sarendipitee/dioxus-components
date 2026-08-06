@@ -29,7 +29,7 @@
 
 .dx_table_of_contents a[data-active="true"] {
   background: var(--accent-subtle);
-  color: var(--accent-subtle-fg);
+  color: var(--fg-muted);
   border-radius: var(--radius);
   font-weight: 500;
 }

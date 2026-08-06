@@ -74,8 +74,8 @@ fn TableOfContentsControl(
         a {
             href: "#{item.id}",
             style,
-            "data-active": if active { "true" } else { "false" },
-            "data-depth": "{item.depth}",
+            "data-active": if active { "true".to_string() } else { "false".to_string() },
+            "data-depth": item.depth.to_string(),
             "{item.value}"
         }
     }
