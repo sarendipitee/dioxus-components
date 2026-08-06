@@ -2870,6 +2870,7 @@ fn render_filter_submenu<T: Clone + PartialEq + 'static>(
                     {
                         MenuRadioItem::<String> {
                             value,
+                            search_text: option_label,
                             index: option_index,
                             "{option_label}"
                             MenuItemIndicator {

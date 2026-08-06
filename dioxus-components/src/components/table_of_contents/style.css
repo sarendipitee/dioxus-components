@@ -15,6 +15,7 @@
   outline: none;
   transition: background-color 120ms ease, color 120ms ease;
   margin-left: calc(var(--depth, 0) * var(--depth-offset, var(--space)));
+  border-radius: var(--radius);
 }
 
 .dx_table_of_contents a:hover {
@@ -27,8 +28,8 @@
 }
 
 .dx_table_of_contents a[data-active="true"] {
-  background: var(--surface-active);
-  color: var(--surface-active-fg);
-  border-radius: calc(var(--radius) / 2);
+  background: var(--accent-subtle);
+  color: var(--accent-subtle-fg);
+  border-radius: var(--radius);
   font-weight: 500;
 }

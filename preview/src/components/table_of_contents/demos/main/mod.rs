@@ -1,6 +1,27 @@
 use dioxus::prelude::*;
 use dioxus_components::table_of_contents::*;
-use dioxus_primitives::scroll_spy::{ScrollSpyOptions, ScrollSpyScrollHost};
+use dioxus_primitives::scroll_spy::{ScrollSpyData, ScrollSpyOptions, ScrollSpyScrollHost};
+
+fn initial_toc_data() -> Vec<ScrollSpyData> {
+    vec![
+        ("overview", "Overview", 2),
+        ("installation", "Installation", 2),
+        ("configuration", "Configuration", 3),
+        ("offsets", "Offsets", 4),
+        ("api", "API", 2),
+        ("reinitialization", "Reinitialization", 3),
+        ("styling", "Styling", 2),
+        ("accessibility", "Accessibility", 3),
+        ("usage-notes", "Usage Notes", 2),
+    ]
+    .into_iter()
+    .map(|(id, value, depth)| ScrollSpyData {
+        id: id.to_string(),
+        value: value.to_string(),
+        depth,
+    })
+    .collect()
+}
 
 #[component]
 pub fn Demo() -> Element {
@@ -8,7 +29,7 @@ pub fn Demo() -> Element {
         selector: "article :is(h2, h3, h4)".to_string(),
         scroll_host: ScrollSpyScrollHost::Selector("[data-toc-demo-scroll-region]".to_string()),
         offset: 88.0,
-        ..Default::default()
+        initial_data: initial_toc_data(),
     };
 
     rsx! {
