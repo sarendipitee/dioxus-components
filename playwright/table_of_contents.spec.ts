@@ -49,25 +49,25 @@ test("renders links for every heading", async ({ page }) => {
 });
 
 test("links have data-depth attribute", async ({ page }) => {
-  const { links } = await loadPage(page);
+  const { nav } = await loadPage(page);
 
-  const overview = links.locator('[href="#overview"]');
+  const overview = nav.locator('a[href="#overview"]');
   await expect(overview).toHaveAttribute("data-depth", "2");
 
-  const config = links.locator('[href="#configuration"]');
+  const config = nav.locator('a[href="#configuration"]');
   await expect(config).toHaveAttribute("data-depth", "3");
 
-  const offsets = links.locator('[href="#offsets"]');
+  const offsets = nav.locator('a[href="#offsets"]');
   await expect(offsets).toHaveAttribute("data-depth", "4");
 });
 
 test("active state changes on scroll", async ({ page }) => {
-  const { links } = await loadPage(page);
+  const { nav } = await loadPage(page);
 
   const scrollRegion = page.locator("[data-toc-demo-scroll-region]");
 
-  const overviewLink = links.locator('[href="#overview"]');
-  const installationLink = links.locator('[href="#installation"]');
+  const overviewLink = nav.locator('a[href="#overview"]');
+  const installationLink = nav.locator('a[href="#installation"]');
 
   await expect(overviewLink).toHaveAttribute("data-active", "true");
 
