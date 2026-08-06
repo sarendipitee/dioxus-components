@@ -135,7 +135,7 @@ impl FocusState {
         }
     }
 
-    fn items_revision(&self) -> u64 {
+    pub(crate) fn items_revision(&self) -> u64 {
         (self.items_revision)()
     }
 

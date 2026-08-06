@@ -646,6 +646,7 @@ pub fn MenuItem<T: Clone + PartialEq + 'static>(props: MenuItemProps<T>) -> Elem
     // placement before any child item has mounted. Resolve that pending request
     // from the first mounted item after registration has populated the controller.
     use_effect(move || {
+        let _ = ctx.focus.items_revision();
         if (ctx.open)() {
             if let Some(placement) = (ctx.initial_focus)() {
                 if ctx.focus.try_focus_placement(placement) {
