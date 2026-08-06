@@ -178,13 +178,15 @@ pub fn use_scroll_spy(options: ScrollSpyOptions) -> ScrollSpyState {
 
             spawn(async move {
                 while let Ok(message) = eval.recv::<ScrollSpyMessage>().await {
-                    data.set(
-                        message
-                            .data
-                            .into_iter()
-                            .filter_map(scroll_spy_data_from_match)
-                            .collect(),
-                    );
+                    if !message.data.is_empty() || data.read().is_empty() {
+                        data.set(
+                            message
+                                .data
+                                .into_iter()
+                                .filter_map(scroll_spy_data_from_match)
+                                .collect(),
+                        );
+                    }
                     active.set(message.active);
                     if message.kind == "initialized" {
                         initialized.set(true);
