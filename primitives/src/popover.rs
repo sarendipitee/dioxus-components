@@ -235,21 +235,38 @@ pub fn PopoverContent(props: PopoverContentProps) -> Element {
         }
         let is_modal = is_modal();
         if !is_modal {
-            // If the dialog is not modal, we don't need to trap focus.
+            // If the popover is non-modal, no focus trap is needed.
             return;
         }
 
+        // The focus-trap asset is loaded asynchronously. Wait for it instead of
+        // attempting to call the global before the deferred script has executed;
+        // this is particularly important when a popover is opened immediately
+        // after the preview page mounts.
         let eval = document::eval(
             r#"let id = await dioxus.recv();
             let is_open = await dioxus.recv();
-            let dialog = document.getElementById(id);
-
-            if (is_open) {
+            const getDialog = () => document.getElementById(id);
+            const install = () => {
+                const dialog = getDialog();
+                if (!dialog) return false;
+                if (!is_open) {
+                    if (dialog.trap) {
+                        dialog.trap.remove();
+                        dialog.trap = null;
+                    }
+                    return true;
+                }
+                if (!window.createFocusTrap) return false;
                 dialog.trap = window.createFocusTrap(dialog);
-            }
-            if (!is_open && dialog.trap) {
-                dialog.trap.remove();
-                dialog.trap = null;
+                return true;
+            };
+            if (!install()) {
+                await new Promise(resolve => {
+                    const timer = setInterval(() => {
+                        if (install()) { clearInterval(timer); resolve(); }
+                    }, 16);
+                });
             }"#,
         );
         let _ = eval.send(id.to_string());

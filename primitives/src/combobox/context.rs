@@ -87,8 +87,10 @@ impl ComboboxContext {
                 .request_initial_selection(ComboboxIndexTarget::First);
             self.selectable.initial_focus.set(None);
         }
-        self.selectable.focus_state.set_focus(initial_focus);
+        // Opening clears stale focus. Open first, then apply the requested
+        // logical index so ArrowDown preserves its initial highlight.
         self.set_open(true);
+        self.selectable.focus_state.set_focus(initial_focus);
     }
 
     pub fn open_with_empty_query_and_focus_last(&mut self) {
@@ -119,8 +121,10 @@ impl ComboboxContext {
                 .request_initial_selection(ComboboxIndexTarget::Last);
             self.selectable.initial_focus.set(None);
         }
-        self.selectable.focus_state.set_focus(initial_focus);
+        // See the first-option path above: set_open resets stale focus, so it
+        // must precede the new logical focus assignment.
         self.set_open(true);
+        self.selectable.focus_state.set_focus(initial_focus);
     }
 
     pub fn focused_option_id(&self) -> Option<String> {

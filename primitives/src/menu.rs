@@ -421,11 +421,6 @@ fn MenuContentPortaled(props: MenuContentPortaledProps) -> Element {
     let panel_id = id.cloned();
     let aria_labelledby = trigger_id.cloned();
     let is_disabled = (ctx.disabled)();
-    let roving_loop = (ctx.focus.roving_loop)();
-    let initial_focus = ctx
-        .initial_focus
-        .cloned()
-        .map(|placement| matches!(placement, FocusPlacement::Last));
     let filter_query = ctx.filter_query.cloned();
     let content_overlay_id = reg.id();
     let overlay_z = reg.z();
@@ -440,8 +435,8 @@ fn MenuContentPortaled(props: MenuContentPortaledProps) -> Element {
                 panel_id,
                 aria_labelledby,
                 is_disabled,
-                roving_loop,
-                initial_focus,
+                focus: ctx.focus,
+                initial_focus: ctx.initial_focus,
                 content_overlay_id,
                 filter_query,
                 overlay_z,
@@ -464,8 +459,8 @@ struct MenuContentRenderedProps {
     panel_id: String,
     aria_labelledby: String,
     is_disabled: bool,
-    roving_loop: bool,
-    initial_focus: Option<bool>,
+    focus: FocusState,
+    initial_focus: Signal<Option<FocusPlacement>>,
     content_overlay_id: Option<OverlayId>,
     overlay_z: Option<String>,
     filter_query: String,
@@ -491,29 +486,10 @@ fn MenuContentRendered(props: MenuContentRenderedProps) -> Element {
         },
     ));
 
-    let mut roving_loop = use_signal(|| props.roving_loop);
-    use_effect(use_reactive(&props.roving_loop, move |next| {
-        roving_loop.set(next);
-    }));
-    let mut focus = use_hook(|| FocusState::new(ReadSignal::new(roving_loop)));
-    let mut initial_focus = use_signal(|| {
-        props.initial_focus.map(|last| {
-            if last {
-                FocusPlacement::Last
-            } else {
-                FocusPlacement::First
-            }
-        })
-    });
-    use_effect(use_reactive(&props.initial_focus, move |next| {
-        initial_focus.set(next.map(|last| {
-            if last {
-                FocusPlacement::Last
-            } else {
-                FocusPlacement::First
-            }
-        }));
-    }));
+    // The trigger and the portaled panel must share one focus controller. Recreating
+    // it here disconnects trigger ArrowDown/ArrowUp from the mounted menu items.
+    let mut focus = props.focus;
+    let initial_focus = props.initial_focus;
     use_deferred_focus(focus, initial_focus, move || *open.read());
 
     let trigger_ref = use_signal(|| None);
@@ -688,6 +664,7 @@ pub fn MenuItem<T: Clone + PartialEq + 'static>(props: MenuItemProps<T>) -> Elem
     let keydown_value = props.value.clone();
     rsx! {
         div {
+            style: if !visible() { "display: none;" } else { "" },
             role: props.role,
             onmouseenter: move |_| {
                 if !props.is_submenu_trigger {
@@ -713,6 +690,9 @@ pub fn MenuItem<T: Clone + PartialEq + 'static>(props: MenuItemProps<T>) -> Elem
             },
             onblur: move |_| { if focused() { ctx.focus.blur(); } },
             aria_disabled: disabled(),
+            // MountedData::set_focus requires a focusable element. Keep only the
+            // roving-focus item tabbable so native focus follows trigger arrows.
+            tabindex: if focused() { "0" } else { "-1" },
             onmounted: onmounted,
             ..props.attributes,
             {props.children}

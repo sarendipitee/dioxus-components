@@ -245,7 +245,11 @@ fn use_animated_open(
         }
     });
 
-    move || show_in_dom() || animating()
+    // Mount synchronously when opening. The previous effect-only latch could leave
+    // mount-on-open portals absent for an entire flush, so PortalIn never published
+    // content to the outlet and floating refs never settled. Keep the close latch for
+    // exit animations, while the live open signal is authoritative for visibility.
+    move || open.cloned() || show_in_dom() || animating()
 }
 
 /// The side where the content will be displayed relative to the trigger

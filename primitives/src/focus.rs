@@ -67,6 +67,9 @@ pub(crate) fn use_deferred_focus(
     active: impl Fn() -> bool + Copy + 'static,
 ) {
     use_effect(move || {
+        // Registering portaled items happens after the opening key event. Track
+        // registrations so a pending ArrowDown/ArrowUp placement retries then.
+        let _ = ctx.items_revision();
         if !active() {
             placement.set(None);
             return;
@@ -118,6 +121,7 @@ pub(crate) struct FocusState {
     pub(crate) recent_focus: Signal<Option<usize>>,
     pub(crate) current_focus: Signal<Option<usize>>,
     items: Signal<BTreeMap<usize, bool>>,
+    items_revision: Signal<u64>,
 }
 
 impl FocusState {
@@ -127,7 +131,12 @@ impl FocusState {
             recent_focus: Signal::new(None),
             current_focus: Signal::new(None),
             items: Signal::new(BTreeMap::new()),
+            items_revision: Signal::new(0),
         }
+    }
+
+    fn items_revision(&self) -> u64 {
+        (self.items_revision)()
     }
 
     pub(crate) fn set_focus(&mut self, index: Option<usize>) {
@@ -284,6 +293,8 @@ impl FocusState {
             return;
         }
         self.items.write().insert(index, disabled);
+        self.items_revision
+            .with_mut(|revision| *revision = revision.wrapping_add(1));
 
         let Some(focused) = *self.current_focus.peek() else {
             return;
@@ -301,6 +312,10 @@ impl FocusState {
 
     pub(crate) fn remove_item(&mut self, index: usize) {
         let removed = self.items.write().remove(&index).is_some();
+        if removed {
+            self.items_revision
+                .with_mut(|revision| *revision = revision.wrapping_add(1));
+        }
         if removed && (self.current_focus)() == Some(index) {
             self.set_focus(None);
         }
