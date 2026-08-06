@@ -370,10 +370,14 @@ fn PopoverPortaled(props: PopoverPortaledProps) -> Element {
     let floating_position = style_prop(&floating_style, "position");
     let floating_top = style_prop(&floating_style, "top");
     let floating_left = style_prop(&floating_style, "left");
-    let floating_visibility = if (pos.is_positioned)() {
-        "visible".to_string()
+    let floating_visibility = if !is_open || (pos.is_positioned)() {
+        if is_open {
+            "visible".to_string()
+        } else {
+            "hidden".to_string()
+        }
     } else {
-        "hidden".to_string()
+        "visible".to_string()
     };
     let floating_side = *pos.side.read();
     let floating_align = *pos.align.read();

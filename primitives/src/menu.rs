@@ -641,6 +641,18 @@ pub fn MenuItem<T: Clone + PartialEq + 'static>(props: MenuItemProps<T>) -> Elem
     let disabled = move || (ctx.disabled)() || disabled_value;
     let unavailable = move || disabled() || !visible();
     let mut focus_onmounted = use_focus_controlled_item_disabled(index, unavailable);
+    // A submenu panel is portaled, so the open keyboard event can set its
+    // placement before any child item has mounted. Resolve that pending request
+    // from the first mounted item after registration has populated the controller.
+    use_effect(move || {
+        if (ctx.open)() {
+            if let Some(placement) = (ctx.initial_focus)() {
+                if ctx.focus.try_focus_placement(placement) {
+                    ctx.initial_focus.set(None);
+                }
+            }
+        }
+    });
     let forward_mounted = props.on_mounted;
     let onmounted = move |evt: MountedEvent| {
         if let Some(cb) = forward_mounted {
@@ -688,8 +700,10 @@ pub fn MenuItem<T: Clone + PartialEq + 'static>(props: MenuItemProps<T>) -> Elem
                     event.stop_propagation();
                 }
             },
-            onblur: move |_| { if focused() { ctx.focus.blur(); } },
+            // Roving focus is updated by the focus controller; clearing it from
+            // blur races portaled submenu focus and resets the pending target.
             aria_disabled: disabled(),
+            "data-disabled": disabled(),
             // MountedData::set_focus requires a focusable element. Keep only the
             // roving-focus item tabbable so native focus follows trigger arrows.
             tabindex: if focused() { "0" } else { "-1" },
@@ -1198,12 +1212,12 @@ pub fn MenuSubTrigger<T: Clone + PartialEq + 'static>(props: MenuSubTriggerProps
                 open_submenu.call(());
             }
         },
-        onblur: move |_| {
-            if !open() {
-                parent_ctx.focus.blur();
-            }
-        },
+        // Opening a submenu transfers native focus into its portaled panel. The
+        // trigger can blur while the open signal is propagating; do not clear the
+        // shared parent focus state during that handoff.
     });
+    // Focus is owned by the shared roving controller; item blur must not
+    // clear it while a submenu transfers focus through the portal.
     let attributes = merge_attributes(vec![base, props.attributes]);
 
     rsx! {
@@ -1212,8 +1226,10 @@ pub fn MenuSubTrigger<T: Clone + PartialEq + 'static>(props: MenuSubTriggerProps
             style: "display: contents;",
             onkeydown: move |event: Event<KeyboardData>| {
                 if event.key() == Key::ArrowRight && !(sub_ctx.disabled)() {
+                    // `open_submenu` records a pending first-item placement. The
+                    // submenu panel is portaled and its items mount afterward, so
+                    // focusing synchronously here observes an empty item registry.
                     open_submenu.call(());
-                    sub_ctx.focus.focus_first();
                     event.prevent_default();
                     event.stop_propagation();
                 }
@@ -1265,6 +1281,8 @@ pub fn MenuSubContent(props: MenuSubContentProps) -> Element {
             let _ = content_id.try_write().map(|mut w| *w = next);
         }
     });
+    // The first focus request may run before the portaled item registry exists;
+    // retry from the submenu's context after its content has mounted.
     use_deferred_focus(sub_ctx.focus, sub_ctx.initial_focus, move || {
         (sub_ctx.open)()
     });
