@@ -2557,8 +2557,11 @@ fn render_filter_menu<T: Clone + PartialEq + 'static>(
 ) -> Element {
     rsx! {
         DropdownMenu { class: Styles::dx_data_table_filter_menu,
-            DropdownMenuTrigger { "aria-label": "Add filter",
-                Button { variant: ButtonVariant::Outline,
+            DropdownMenuTrigger {
+                button {
+                    class: Styles::dx_data_table_filter,
+                    type: "button",
+                    aria_label: "Filter",
                     Plus { size: "14", "aria-hidden": "true" }
                     "Filter"
                 }

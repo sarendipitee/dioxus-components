@@ -202,34 +202,34 @@ pub fn ColorInput(props: ColorInputProps) -> Element {
                 is_modal: false,
                 open: Some(popover_open()),
                 on_open_change: move |v| set_popover_open.call(v),
-                ColorPickerRoot {
-                    color,
-                    on_color_change,
+                ColorInputPopoverContextProvider {
+                    open: popover_open,
+                    set_open: set_popover_open,
                     disabled,
-                    attributes,
-                    ColorInputPopoverContextProvider {
-                        open: popover_open,
-                        set_open: set_popover_open,
-                        disabled,
-                        Input {
-                            variant,
-                            size,
-                            radius,
-                            disabled: is_disabled,
-                            error: error.is_some(),
-                            loading,
-                            left_section: rsx! {
-                                ColorSwatch { class: Styles::dx_color_input_color_swatch, color }
-                            },
-                            right_section,
-                            ColorInputField {
-                                value: draft_value,
-                                canonical_value: value,
-                                popover_id: popover_id.clone(),
-                                on_color_change,
-                            }
+                    Input {
+                        variant,
+                        size,
+                        radius,
+                        disabled: is_disabled,
+                        error: error.is_some(),
+                        loading,
+                        left_section: rsx! {
+                            ColorSwatch { class: Styles::dx_color_input_color_swatch, color }
+                        },
+                        right_section,
+                        ColorInputField {
+                            value: draft_value,
+                            canonical_value: value,
+                            popover_id: popover_id.clone(),
+                            on_color_change,
                         }
-                        PopoverContent { id: popover_id,
+                    }
+                    PopoverContent { id: popover_id,
+                        ColorPickerRoot {
+                            color,
+                            on_color_change,
+                            disabled,
+                            attributes,
                             ColorPickerSurface { {children} }
                         }
                     }
