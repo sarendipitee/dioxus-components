@@ -212,23 +212,18 @@ fn VirtualizedComboboxOptionsPortaled(props: VirtualizedComboboxOptionsPortaledP
     let register_option = use_callback(move |registration: ComboboxPortalOptionRegistration| {
         let option = registration.option;
         let index = option.tab_index;
-        let disabled = option.disabled;
         sync_option(registration_selectable.options, option.clone());
         registration_selectable
             .focus_state
-            .add_update_item(index, disabled);
+            .add_update_item(index, option.disabled);
         registration_store.register_option(
             option.id,
             index,
-            disabled,
+            option.disabled,
             registration.visible,
             registration.selected,
         );
-        if let Some(resolved) = registration_store.resolve_pending_initial_selection_at(index) {
-            registration_selectable
-                .focus_state
-                .set_focus(Some(resolved.index));
-        }
+        registration_store.resolve_pending_initial_selection_at(index);
     });
     let mut unregister_selectable = props.ctx.selectable;
     let unregister_store = props.ctx.store;
@@ -334,10 +329,14 @@ fn VirtualizedComboboxOptionsRendered(props: VirtualizedComboboxOptionsRenderedP
     let mut render_signal = use_signal(|| should_render);
 
     use_effect(move || {
-        render_signal.set(should_render);
+        if *render_signal.peek() != should_render {
+            render_signal.set(should_render);
+        }
     });
-    // Context providers initialize once. Keep a portal-local signal so every
-    // root-side snapshot update reaches descendants after portal mounting.
+
+    // Context providers initialize once. Keep the portal-local snapshot in sync
+    // so option state such as data-highlighted and selection follows root-side
+    // navigation updates after the portal has mounted.
     let mut portal_ctx = use_context_provider(|| Signal::new(props.portal_ctx.clone()));
     use_effect(use_reactive(&props.portal_ctx, move |next| {
         portal_ctx.set(next);

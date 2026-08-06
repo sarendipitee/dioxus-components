@@ -299,7 +299,6 @@ impl ComboboxStore {
         (self.virtualized_navigation)().and_then(|navigation| navigation.initial_index(target))
     }
 
-    /// Requests initial highlighting for an exact virtual option index.
     pub(crate) fn request_virtual_initial_selection(&self, index: usize) {
         let mut pending = self.pending_virtual_initial_selection;
         pending.set(Some(index));
@@ -437,7 +436,7 @@ impl ComboboxStore {
         active: bool,
     ) {
         let mut options = self.options;
-        sync_combobox_option(
+        let changed = sync_combobox_option(
             &mut options.write(),
             ComboboxOptionState {
                 key: ComboboxOptionKey { id, index },
@@ -446,6 +445,9 @@ impl ComboboxStore {
                 active,
             },
         );
+        if !changed {
+            return;
+        }
         if self
             .highlighted_option_index()
             .is_some_and(|idx| !has_enabled_visible_index(&self.options.read(), idx))
@@ -556,8 +558,14 @@ fn focus_mounted(mount: Signal<Option<Rc<MountedData>>>) {
     }
 }
 
-fn sync_combobox_option(options: &mut Vec<ComboboxOptionState>, option: ComboboxOptionState) {
+fn sync_combobox_option(
+    options: &mut Vec<ComboboxOptionState>,
+    option: ComboboxOptionState,
+) -> bool {
     if let Some(position) = options.iter().position(|item| item.key.id == option.key.id) {
+        if options[position] == option {
+            return false;
+        }
         if options[position].key.index == option.key.index {
             options[position] = option;
         } else {
@@ -567,6 +575,7 @@ fn sync_combobox_option(options: &mut Vec<ComboboxOptionState>, option: Combobox
     } else {
         insert_combobox_option(options, option);
     }
+    true
 }
 
 fn insert_combobox_option(options: &mut Vec<ComboboxOptionState>, option: ComboboxOptionState) {
