@@ -334,4 +334,12 @@ impl FocusState {
             }
         }
     }
+
+    pub(crate) fn focus_mounted(&self, index: usize, mounted: Rc<MountedData>) {
+        if self.is_focused(index) && self.is_enabled(index) {
+            spawn(async move {
+                let _ = mounted.set_focus(true).await;
+            });
+        }
+    }
 }

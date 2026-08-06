@@ -640,6 +640,7 @@ pub fn MenuItem<T: Clone + PartialEq + 'static>(props: MenuItemProps<T>) -> Elem
     let focused = move || ctx.focus.is_focused(index_value);
     let disabled = move || (ctx.disabled)() || disabled_value;
     let unavailable = move || disabled() || !visible();
+    let forward_mounted = props.on_mounted;
     let mut focus_onmounted = use_focus_controlled_item_disabled(index, unavailable);
     // A submenu panel is portaled, so the open keyboard event can set its
     // placement before any child item has mounted. Resolve that pending request
@@ -653,12 +654,17 @@ pub fn MenuItem<T: Clone + PartialEq + 'static>(props: MenuItemProps<T>) -> Elem
             }
         }
     });
-    let forward_mounted = props.on_mounted;
     let onmounted = move |evt: MountedEvent| {
+        let mounted = evt.data();
         if let Some(cb) = forward_mounted {
-            cb.call(evt.data());
+            cb.call(mounted.clone());
         }
         focus_onmounted(evt);
+        if focused() && !disabled() {
+            spawn(async move {
+                let _ = mounted.set_focus(true).await;
+            });
+        }
     };
     let down_pos: Signal<Option<(f64, f64)>> = use_signal(|| None);
     let mut select = move |value: T| {
