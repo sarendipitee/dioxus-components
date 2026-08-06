@@ -1,6 +1,6 @@
 //! Shared menu primitives used by dropdown menus, context menus, and menubars.
 
-use std::rc::Rc;
+use std::{rc::Rc, time::Duration};
 
 use crate::{
     floating::{style_prop, use_position},
@@ -19,6 +19,10 @@ use crate::{
 };
 use dioxus::prelude::*;
 use dioxus_attributes::attributes;
+#[cfg(target_family = "wasm")]
+use gloo_timers::future::sleep;
+#[cfg(not(target_family = "wasm"))]
+use tokio::time::sleep;
 
 /// Shared state for a menu and its descendants.
 #[derive(Clone, Copy, PartialEq)]
@@ -656,6 +660,7 @@ pub fn MenuItem<T: Clone + PartialEq + 'static>(props: MenuItemProps<T>) -> Elem
         if focused() && !disabled() {
             if let Some(mounted) = mounted_ref() {
                 spawn(async move {
+                    sleep(Duration::from_millis(0)).await;
                     let _ = mounted.set_focus(true).await;
                 });
             }
@@ -667,9 +672,9 @@ pub fn MenuItem<T: Clone + PartialEq + 'static>(props: MenuItemProps<T>) -> Elem
         if let Some(cb) = forward_mounted {
             cb.call(mounted.clone());
         }
-        focus_onmounted(evt);
         if focused() && !disabled() {
             spawn(async move {
+                sleep(Duration::from_millis(0)).await;
                 let _ = mounted.set_focus(true).await;
             });
         }
