@@ -39,19 +39,14 @@ function isBuildRunning(build = buildProcess) {
   return Boolean(build && build.exitCode === null && !build.killed);
 }
 
-// On Unix, kill the whole process group (detached spawn sets pgid = pid).
-// On Windows, fall back to build.kill() since process groups work differently.
+// The build is spawned directly (without a detached shell), so terminating the
+// child is sufficient and lets Playwright reap the complete webServer tree.
 function signalBuild(build, signal) {
   if (!isBuildRunning(build)) {
     return;
   }
 
   try {
-    if (build.pid && process.platform !== "win32") {
-      process.kill(-build.pid, signal);
-      return;
-    }
-
     build.kill(signal);
   } catch (error) {
     // ESRCH = process already gone; ignore it.
@@ -123,8 +118,6 @@ if (process.stdin.isTTY) {
 async function runBuild() {
   await new Promise((resolve, reject) => {
     buildProcess = spawn("dx", ["build", "--web"], {
-      // detached = new process group so signalBuild can kill the whole tree.
-      detached: process.platform !== "win32",
       stdio: "inherit",
     });
 
