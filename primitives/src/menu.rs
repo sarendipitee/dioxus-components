@@ -646,7 +646,7 @@ pub fn MenuItem<T: Clone + PartialEq + 'static>(props: MenuItemProps<T>) -> Elem
     let unavailable = move || disabled() || !visible();
     let forward_mounted = props.on_mounted;
     let mut mounted_ref: Signal<Option<Rc<MountedData>>> = use_signal(|| None);
-    let mut focus_onmounted = use_focus_controlled_item_disabled(index, unavailable);
+    let focus_onmounted = use_focus_controlled_item_disabled(index, unavailable);
     use_effect(move || {
         let _ = ctx.focus.items_revision();
         let _ = ctx.focus.current_focus();
@@ -666,12 +666,14 @@ pub fn MenuItem<T: Clone + PartialEq + 'static>(props: MenuItemProps<T>) -> Elem
             }
         }
     });
+    let mut focus_onmounted = focus_onmounted;
     let onmounted = move |evt: MountedEvent| {
         let mounted = evt.data();
         mounted_ref.set(Some(mounted.clone()));
         if let Some(cb) = forward_mounted {
             cb.call(mounted.clone());
         }
+        focus_onmounted(evt);
         if focused() && !disabled() {
             spawn(async move {
                 sleep(Duration::from_millis(0)).await;
