@@ -414,6 +414,11 @@ pub fn SidebarRail(#[props(extends = GlobalAttributes)] attributes: Vec<Attribut
     let ctx = use_sidebar();
     let resize = use_context::<SidebarResizeCtx>();
     let rail_id = use_hook(|| SIDEBAR_RAIL_ID.fetch_add(1, Ordering::Relaxed));
+    // Keep the click decision on the Rust event path. The evaluator reports its
+    // result asynchronously, after the browser may already have dispatched click.
+    let mut pointer_active = use_signal(|| false);
+    let mut pointer_dragged = use_signal(|| false);
+    let mut pointer_start_x = use_signal(|| 0.0_f64);
     let mut dragged = use_signal(|| false);
     let base = attributes!(button {
         class: Styles::dx_sidebar_rail,
@@ -427,19 +432,23 @@ pub fn SidebarRail(#[props(extends = GlobalAttributes)] attributes: Vec<Attribut
             aria_label: "Resize Sidebar",
             tabindex: -1,
             title: "Drag to resize sidebar",
-            "data-resizing": "false",
             "data-sidebar-rail-id": rail_id,
             onpointerdown: move |event| {
                 if event.trigger_button() != Some(dioxus::html::input_data::MouseButton::Primary) {
                     return;
                 }
-                event.prevent_default();
                 let was_collapsed = (ctx.state)() == SidebarState::Collapsed;
-                let start_x = event.client_coordinates().x;
+                pointer_active.set(true);
+                pointer_dragged.set(false);
+                pointer_start_x.set(event.client_coordinates().x);
+                if !was_collapsed {
+                    event.prevent_default();
+                }
                 let start_width = (resize.width)();
                 let min = (resize.min_width)().max(0.0);
                 let max = (resize.max_width)().max(min);
                 dragged.set(false);
+                let start_x = event.client_coordinates().x;
 
                 spawn(async move {
                     let mut eval = document::eval(&format!(r#"
@@ -482,9 +491,8 @@ pub fn SidebarRail(#[props(extends = GlobalAttributes)] attributes: Vec<Attribut
                                 event.preventDefault();
                                 apply(event.clientX);
                             }}
-                            cleanup();
                             const openFromClick = {was_collapsed} && !moved;
-                            if (moved || openFromClick) {{
+                            if (moved) {{
                                 rail.addEventListener('click', event => {{
                                     event.preventDefault();
                                     event.stopImmediatePropagation();
@@ -546,12 +554,21 @@ pub fn SidebarRail(#[props(extends = GlobalAttributes)] attributes: Vec<Attribut
                     }
                 });
             },
-            onclick: move |_| {
-                if dragged() {
-                    dragged.set(false);
-                } else {
-                    ctx.toggle();
+            onpointermove: move |event| {
+                if pointer_active()
+                    && (event.client_coordinates().x - pointer_start_x()).abs() >= 30.0
+                {
+                    pointer_dragged.set(true);
                 }
+            },
+            onpointerup: move |_| {
+                pointer_active.set(false);
+            },
+            onpointercancel: move |_| {
+                pointer_active.set(false);
+            },
+            onclick: move |_| {
+                ctx.toggle();
             },
             ..merged,
         }
