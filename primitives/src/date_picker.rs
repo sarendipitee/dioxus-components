@@ -408,6 +408,7 @@ pub fn DatePickerPortalContextProvider(
     children
 }
 
+/// Date-picker popover content with controlled or default open state.
 #[component]
 pub fn DatePickerPopover(props: DatePickerPopoverProps) -> Element {
     let base_ctx = use_context::<BaseDatePickerContext>();

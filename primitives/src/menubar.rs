@@ -602,7 +602,7 @@ pub struct MenubarContentProps {
 /// - `data-state`: Indicates if the menu is open or closed. Values are `open` or `closed`.
 #[component]
 pub fn MenubarContent(props: MenubarContentProps) -> Element {
-    let mut menu_ctx: MenubarMenuContext = use_context();
+    let menu_ctx: MenubarMenuContext = use_context();
     let shared_menu_ctx: MenuContext = use_context();
     use_deferred_focus(menu_ctx.focus, menu_ctx.initial_focus, move || {
         (shared_menu_ctx.open)()
