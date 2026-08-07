@@ -1,7 +1,7 @@
 import { test, expect, type Locator, type Page } from "@playwright/test";
 
 const URL = "/components/accordion";
-const LOAD_TIMEOUT = 20 * 60 * 1000;
+const LOAD_TIMEOUT = 30 * 1000;
 
 async function loadAccordion(page: Page) {
   await page.goto(URL, { timeout: LOAD_TIMEOUT, waitUntil: 'networkidle' });

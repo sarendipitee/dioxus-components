@@ -6,7 +6,7 @@ async function testScrollHeightStability(
   tolerancePx: number
 ) {
   await page.goto("/components/virtual_list", {
-    timeout: 20 * 60 * 1000,
+    timeout: 30 * 1000,
   });
 
   const container = page.getByRole("list").first();
@@ -86,7 +86,7 @@ test("scrollHeight remains stable during continuous scroll", async ({ page }) =>
 // This reproduces production failure where adaptive estimation struggles
 test("scrollHeight stable with random heights demo", async ({ page }) => {
   await page.goto("/components/virtual_list/block#random_heights", {
-    timeout: 20 * 60 * 1000,
+    timeout: 30 * 1000,
   });
 
   const container = page.getByRole("list").first();
@@ -153,7 +153,7 @@ test("scrollHeight stable with random heights demo", async ({ page }) => {
 
 test("virtual list virtualizes rows and updates on scroll", async ({ page }) => {
   await page.goto("/components/virtual_list/block#main", {
-    timeout: 20 * 60 * 1000,
+    timeout: 30 * 1000,
   });
 
   const container = page.getByRole("list").first();

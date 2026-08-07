@@ -21,7 +21,7 @@ const visualStyle = (option: Locator) =>
     });
 
 test("keyboard focus gives Select options a visual cue", async ({ page }) => {
-    await page.goto("/components/select", { timeout: 20 * 60 * 1000 });
+    await page.goto("/components/select", { timeout: 30 * 1000 });
 
     const selectTrigger = singleSelectTrigger(page);
     await selectTrigger.click();
@@ -39,7 +39,7 @@ test("keyboard focus gives Select options a visual cue", async ({ page }) => {
 });
 
 test("keyboard focus gives SelectMulti options a visual cue", async ({ page }) => {
-    await page.goto("/components/select/block#multi", { timeout: 20 * 60 * 1000 });
+    await page.goto("/components/select/block#multi", { timeout: 30 * 1000 });
 
     const selectTrigger = multiSelectTrigger(page);
     await selectTrigger.click();
@@ -58,7 +58,7 @@ test("keyboard focus gives SelectMulti options a visual cue", async ({ page }) =
 
 test("test", async ({ page }) => {
     await page.goto("/components/select", {
-        timeout: 20 * 60 * 1000,
+        timeout: 30 * 1000,
         waitUntil: "domcontentloaded",
     });
     // Find Select a fruit...
@@ -136,7 +136,7 @@ test("tabbing out of menu closes the select menu", async ({ page }) => {
 
 test("multi-select toggles options and stays open", async ({ page }) => {
     await page.goto("/components/select/block#multi", {
-        timeout: 20 * 60 * 1000,
+        timeout: 30 * 1000,
     });
     const selectTrigger = multiSelectTrigger(page);
     // Default values from the demo: Pepperoni and Mushroom
@@ -174,7 +174,7 @@ test("multi-select toggles options and stays open", async ({ page }) => {
 
 test("mobile: multi-select tapping options keeps the dropdown open", async ({ page }) => {
     await page.goto("/components/select/block#multi", {
-        timeout: 20 * 60 * 1000,
+        timeout: 30 * 1000,
     });
     const selectTrigger = multiSelectTrigger(page);
     await selectTrigger.tap();
@@ -199,7 +199,7 @@ test("mobile: multi-select tapping options keeps the dropdown open", async ({ pa
 
 test("multi-select keyboard toggles and exposes aria-multiselectable", async ({ page }) => {
     await page.goto("/components/select/block#multi", {
-        timeout: 20 * 60 * 1000,
+        timeout: 30 * 1000,
     });
     const selectTrigger = multiSelectTrigger(page);
     await selectTrigger.click();

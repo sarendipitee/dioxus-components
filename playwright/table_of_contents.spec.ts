@@ -1,7 +1,7 @@
 import { test, expect, type Page } from "@playwright/test";
 
 const URL = "/components/table_of_contents";
-const LOAD_TIMEOUT = 20 * 60 * 1000;
+const LOAD_TIMEOUT = 30 * 1000;
 
 async function loadPage(page: Page) {
   await page.goto(URL, { timeout: LOAD_TIMEOUT, waitUntil: "networkidle" });

@@ -28,7 +28,7 @@ const visualStyle = (option: Locator) =>
     });
 
 test("opens from the focused input with the keyboard", async ({ page }) => {
-    await page.goto(URL, { timeout: 20 * 60 * 1000 });
+    await page.goto(URL, { timeout: 30 * 1000 });
     await page.waitForLoadState("domcontentloaded");
 
     const trigger = input(page);
@@ -49,7 +49,7 @@ test("opens from the focused input with the keyboard", async ({ page }) => {
 });
 
 test("ArrowUp opens at the last option with a visual active item", async ({ page }) => {
-    await page.goto(URL, { timeout: 20 * 60 * 1000 });
+    await page.goto(URL, { timeout: 30 * 1000 });
     await page.waitForLoadState("domcontentloaded");
 
     const trigger = input(page);
@@ -68,7 +68,7 @@ test("ArrowUp opens at the last option with a visual active item", async ({ page
 });
 
 test("Home and End move active option and select it", async ({ page }) => {
-    await page.goto(URL, { timeout: 20 * 60 * 1000 });
+    await page.goto(URL, { timeout: 30 * 1000 });
     await page.waitForLoadState("domcontentloaded");
 
     const trigger = input(page);
@@ -98,7 +98,7 @@ test("Home and End move active option and select it", async ({ page }) => {
 });
 
 test("filters and selects with the keyboard", async ({ page }) => {
-    await page.goto(URL, { timeout: 20 * 60 * 1000 });
+    await page.goto(URL, { timeout: 30 * 1000 });
     await page.waitForLoadState("domcontentloaded");
 
     const trigger = input(page);
@@ -125,7 +125,7 @@ test("filters and selects with the keyboard", async ({ page }) => {
 });
 
 test("shows an empty state when no options match", async ({ page }) => {
-    await page.goto(URL, { timeout: 20 * 60 * 1000 });
+    await page.goto(URL, { timeout: 30 * 1000 });
     await page.waitForLoadState("domcontentloaded");
 
     const trigger = input(page);
@@ -137,7 +137,7 @@ test("shows an empty state when no options match", async ({ page }) => {
 });
 
 test("arrow keys stay on visible filtered options", async ({ page }) => {
-    await page.goto(URL, { timeout: 20 * 60 * 1000 });
+    await page.goto(URL, { timeout: 30 * 1000 });
     await page.waitForLoadState("domcontentloaded");
 
     const trigger = input(page);
@@ -163,7 +163,7 @@ test("arrow keys stay on visible filtered options", async ({ page }) => {
 });
 
 test("keeps filtered options in source order", async ({ page }) => {
-    await page.goto(URL, { timeout: 20 * 60 * 1000 });
+    await page.goto(URL, { timeout: 30 * 1000 });
     await page.waitForLoadState("domcontentloaded");
 
     const trigger = input(page);
@@ -195,7 +195,7 @@ test("keeps filtered options in source order", async ({ page }) => {
 });
 
 test("keeps filtered options during keyboard close animation", async ({ page }) => {
-    await page.goto(URL, { timeout: 20 * 60 * 1000 });
+    await page.goto(URL, { timeout: 30 * 1000 });
     await page.waitForLoadState("domcontentloaded");
 
     const trigger = input(page);
@@ -220,7 +220,7 @@ test("keeps filtered options during keyboard close animation", async ({ page }) 
 });
 
 test("clicking an option commits and closes", async ({ page }) => {
-    await page.goto(URL, { timeout: 20 * 60 * 1000 });
+    await page.goto(URL, { timeout: 30 * 1000 });
     await page.waitForLoadState("domcontentloaded");
 
     const trigger = input(page);
@@ -232,7 +232,7 @@ test("clicking an option commits and closes", async ({ page }) => {
 });
 
 test("tabbing away closes the list", async ({ page }) => {
-    await page.goto(URL, { timeout: 20 * 60 * 1000 });
+    await page.goto(URL, { timeout: 30 * 1000 });
     await page.waitForLoadState("domcontentloaded");
 
     const trigger = input(page);
@@ -244,7 +244,7 @@ test("tabbing away closes the list", async ({ page }) => {
 });
 
 test("disabled options are exposed but skipped by keyboard selection", async ({ page }) => {
-    await page.goto(demoUrl("disabled"), { timeout: 20 * 60 * 1000 });
+    await page.goto(demoUrl("disabled"), { timeout: 30 * 1000 });
     await page.waitForLoadState("domcontentloaded");
 
     await expect(page.getByRole("combobox", { name: "Disabled combobox" })).toBeDisabled();
@@ -273,7 +273,7 @@ test("disabled options are exposed but skipped by keyboard selection", async ({ 
 });
 
 test("controlled value and controlled open stay in sync", async ({ page }) => {
-    await page.goto(demoUrl("controlled"), { timeout: 20 * 60 * 1000 });
+    await page.goto(demoUrl("controlled"), { timeout: 30 * 1000 });
     await page.waitForLoadState("domcontentloaded");
 
     const trigger = page.getByRole("combobox", { name: "Controlled framework" });
@@ -296,7 +296,7 @@ test("controlled value and controlled open stay in sync", async ({ page }) => {
 });
 
 test("dynamic option mutation keeps list open, while an ordinary outside click dismisses it", async ({ page }) => {
-    await page.goto(demoUrl("dynamic"), { timeout: 20 * 60 * 1000 });
+    await page.goto(demoUrl("dynamic"), { timeout: 30 * 1000 });
     await page.waitForLoadState("domcontentloaded");
 
     const trigger = page.getByRole("combobox", { name: "Dynamic framework" });
@@ -341,7 +341,7 @@ test("dynamic option mutation keeps list open, while an ordinary outside click d
 });
 
 test("delayed option arrival replaces empty state and supports keyboard selection", async ({ page }) => {
-    await page.goto(demoUrl("dynamic"), { timeout: 20 * 60 * 1000 });
+    await page.goto(demoUrl("dynamic"), { timeout: 30 * 1000 });
     await page.waitForLoadState("domcontentloaded");
 
     const trigger = page.getByRole("combobox", { name: "Dynamic framework" });
@@ -370,7 +370,7 @@ test("delayed option arrival replaces empty state and supports keyboard selectio
 });
 
 test("virtualized demo shows visible options when opened", async ({ page }) => {
-    await page.goto(demoUrl("virtualized"), { timeout: 20 * 60 * 1000 });
+    await page.goto(demoUrl("virtualized"), { timeout: 30 * 1000 });
     await page.waitForLoadState("domcontentloaded");
 
     const trigger = page.getByRole("combobox", { name: "Virtualized option picker" });
@@ -387,7 +387,7 @@ test("virtualized demo shows visible options when opened", async ({ page }) => {
 });
 
 test("virtualized ArrowUp opens at final logical option", async ({ page }) => {
-    await page.goto(demoUrl("virtualized"), { timeout: 20 * 60 * 1000 });
+    await page.goto(demoUrl("virtualized"), { timeout: 30 * 1000 });
     await page.waitForLoadState("domcontentloaded");
 
     const trigger = page.getByRole("combobox", { name: "Virtualized option picker" });
@@ -405,7 +405,7 @@ test("virtualized ArrowUp opens at final logical option", async ({ page }) => {
 });
 
 test("virtualized demo keeps scrollHeight stable while scrolling", async ({ page }) => {
-    await page.goto(demoUrl("virtualized"), { timeout: 20 * 60 * 1000 });
+    await page.goto(demoUrl("virtualized"), { timeout: 30 * 1000 });
     await page.waitForLoadState("domcontentloaded");
 
     const trigger = page.getByRole("combobox", { name: "Virtualized option picker" });
@@ -513,7 +513,7 @@ test("touch selection commits and closes", async ({ browser, browserName }) => {
     const context = await browser.newContext(iphone);
     try {
         const page = await context.newPage();
-        await page.goto(URL, { timeout: 20 * 60 * 1000 });
+        await page.goto(URL, { timeout: 30 * 1000 });
         await page.waitForLoadState("domcontentloaded");
 
         const trigger = input(page);

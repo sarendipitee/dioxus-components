@@ -7,8 +7,8 @@ import { test, expect } from "@playwright/test";
 
 test("visibility toggle reveals and hides the value", async ({ page }) => {
   await page.goto("/components/password_input", {
-    timeout: 20 * 60 * 1000,
-  }); // Increase timeout to 20 minutes
+    timeout: 30 * 1000,
+  });
 
   const frame = page.locator("#component-preview-frame").first();
   const control = frame.locator('input[data-slot="password-input-control"]');
@@ -35,7 +35,7 @@ test("controlled visibility drives a field without its own toggle", async ({
   page,
 }) => {
   await page.goto("/components/password_input", {
-    timeout: 20 * 60 * 1000,
+    timeout: 30 * 1000,
   });
 
   const frame = page
@@ -71,7 +71,7 @@ test("loading and disabled states adjust the trailing toggle", async ({
   page,
 }) => {
   await page.goto("/components/password_input", {
-    timeout: 20 * 60 * 1000,
+    timeout: 30 * 1000,
   });
 
   const frame = page

@@ -1,7 +1,7 @@
 import { test, expect, type Page } from '@playwright/test';
 
 const PAGE_URL = '/components/color_picker';
-const PAGE_TIMEOUT = 20 * 60 * 1000;
+const PAGE_TIMEOUT = 30 * 1000;
 
 async function loadPicker(page: Page) {
   await page.goto(PAGE_URL, { timeout: PAGE_TIMEOUT });

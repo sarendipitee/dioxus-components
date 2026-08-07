@@ -2,8 +2,8 @@ import { test, expect } from "@playwright/test";
 
 test("test", async ({ page }) => {
   await page.goto("/components/calendar", {
-    timeout: 20 * 60 * 1000,
-  }); // Increase timeout to 20 minutes
+    timeout: 30 * 1000,
+  });
   await page.waitForLoadState('networkidle');
 
   const calendar = page.locator("#component-preview-frame").first();
@@ -78,7 +78,7 @@ test("test", async ({ page }) => {
 
 test("year navigation by moving 52 weeks with arrow keys", async ({ page }) => {
   await page.goto("/components/calendar", {
-    timeout: 20 * 60 * 1000,
+    timeout: 30 * 1000,
   });
 
   const calendar = page.locator("#component-preview-frame").first();
@@ -142,7 +142,7 @@ test("year navigation by moving 52 weeks with arrow keys", async ({ page }) => {
 
 test("shift + arrow keys navigation", async ({ page }) => {
   await page.goto("/components/calendar", {
-    timeout: 20 * 60 * 1000,
+    timeout: 30 * 1000,
   });
 
   const calendar = page.locator("#component-preview-frame").first();
@@ -192,7 +192,7 @@ async function testArrowKeyNavigation(
   expectedOrder: "ascending" | "descending"
 ) {
   await page.goto("/components/calendar", {
-    timeout: 20 * 60 * 1000,
+    timeout: 30 * 1000,
   });
 
   const calendar = page.locator("#component-preview-frame").first();

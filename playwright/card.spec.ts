@@ -4,7 +4,7 @@ const CARD_DEMO_URL = "/components/card/block#main";
 
 async function gotoCardDemo(page: Page) {
   await page.goto(CARD_DEMO_URL, {
-    timeout: 20 * 60 * 1000,
+    timeout: 30 * 1000,
     waitUntil: "load",
   });
 }

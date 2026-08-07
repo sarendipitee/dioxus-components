@@ -4,7 +4,7 @@ const SHEET_DEMO_URL = "/components/sheet/block#main";
 
 async function gotoSheetDemo(page: Page) {
   await page.goto(SHEET_DEMO_URL, {
-    timeout: 20 * 60 * 1000,
+    timeout: 30 * 1000,
     waitUntil: "load",
   });
 }
@@ -191,7 +191,7 @@ test("sheet backdrop covers viewport and catches clicks", async ({ page }) => {
 
 test("closing a nested sheet does not crash the page", async ({ page }) => {
   await page.goto("/components/sheet/block#nested", {
-    timeout: 20 * 60 * 1000,
+    timeout: 30 * 1000,
     waitUntil: "load",
   });
 
@@ -219,7 +219,7 @@ test("closing a nested sheet does not crash the page", async ({ page }) => {
 
 test("same-side nested sheets get sheet depth styling", async ({ page }) => {
   await page.goto("/components/sheet/block#nested", {
-    timeout: 20 * 60 * 1000,
+    timeout: 30 * 1000,
     waitUntil: "load",
   });
 
@@ -244,7 +244,7 @@ test("same-side nested sheets get sheet depth styling", async ({ page }) => {
 
 test("opposite-side nested sheets do not get sheet depth styling", async ({ page }) => {
   await page.goto("/overlay-nesting", {
-    timeout: 20 * 60 * 1000,
+    timeout: 30 * 1000,
     waitUntil: "load",
   });
 
@@ -287,7 +287,7 @@ test("tearing down outer scope while inner is still animating does not crash", a
   // snapshot fix in dialog.rs, any reactive read of the freed inner Dialog
   // signals from the portaled body causes a heap-corruption abort.
   await page.goto("/components/sheet/block#nested", {
-    timeout: 20 * 60 * 1000,
+    timeout: 30 * 1000,
     waitUntil: "load",
   });
 

@@ -5,7 +5,7 @@ test.describe("homepage", () => {
   test("hero should not have any automatically detectable accessibility issues", async ({
     page,
   }) => {
-    await page.goto("/", { timeout: 20 * 60 * 1000 }); // Increase timeout to 20 minutes
+    await page.goto("/", { timeout: 30 * 1000 });
 
     await expect(page.locator("#hero")).toBeVisible();
 
@@ -23,7 +23,7 @@ test.describe("details", () => {
   test("should not have any automatically detectable accessibility issues", async ({
     page,
   }) => {
-    await page.goto("/components/calendar", { timeout: 20 * 60 * 1000 }); // Increase timeout to 20 minutes
+    await page.goto("/components/calendar", { timeout: 30 * 1000 });
 
     await expect(
       page.getByRole("heading", { name: /^calendar$/i }).first(),

@@ -5,8 +5,8 @@ import { test, expect } from "@playwright/test";
 // to its own input wrapper to stay scoped to a single instance.
 test("steppers and arrow keys adjust the controlled value", async ({ page }) => {
   await page.goto("/components/number_input", {
-    timeout: 20 * 60 * 1000,
-  }); // Increase timeout to 20 minutes
+    timeout: 30 * 1000,
+  });
 
   const quantity = page.getByRole("textbox", { name: "Quantity" }).first();
   const value = page.locator("#number-value").first();
@@ -34,7 +34,7 @@ test("steppers and arrow keys adjust the controlled value", async ({ page }) => 
 
 test("min/max bounds disable the steppers", async ({ page }) => {
   await page.goto("/components/number_input", {
-    timeout: 20 * 60 * 1000,
+    timeout: 30 * 1000,
   });
 
   const quantity = page.getByRole("textbox", { name: "Quantity" }).first();

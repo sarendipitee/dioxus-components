@@ -4,7 +4,7 @@ test("date input popover keeps centered horizontal placement while opening", asy
   page,
 }) => {
   await page.goto("/components/date_input", {
-    timeout: 20 * 60 * 1000,
+    timeout: 30 * 1000,
   });
 
   const dueDateLabel = page.getByText("Due date", { exact: true });

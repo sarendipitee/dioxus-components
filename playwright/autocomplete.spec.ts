@@ -3,7 +3,7 @@ import { expect, test } from "@playwright/test";
 const URL = "/components/autocomplete/block#server_backed";
 
 test("server-backed autocomplete replaces loading state with matching results", async ({ page }) => {
-    await page.goto(URL, { timeout: 20 * 60 * 1000 });
+    await page.goto(URL, { timeout: 30 * 1000 });
     await page.waitForLoadState("domcontentloaded");
 
     const demo = page.locator("#dx-preview-block-root");

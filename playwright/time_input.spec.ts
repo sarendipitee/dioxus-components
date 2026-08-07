@@ -12,7 +12,7 @@ test("time input column picker click updates the displayed value", async ({
   page,
 }) => {
   await page.goto("/components/time_input", {
-    timeout: 20 * 60 * 1000,
+    timeout: 30 * 1000,
   });
 
   // The main preview demo renders a 24-hour input seeded to 14:45.

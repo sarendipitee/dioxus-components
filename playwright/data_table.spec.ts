@@ -8,7 +8,7 @@ const VIRTUALIZED_URL =
 test("virtualized table mounts only a small window of rows", async ({
   page,
 }) => {
-  await page.goto(VIRTUALIZED_URL, { timeout: 20 * 60 * 1000 });
+  await page.goto(VIRTUALIZED_URL, { timeout: 30 * 1000 });
 
   const surface = page.locator('[data-slot="data-table-surface"]').first();
   await expect(surface).toBeVisible({ timeout: 60000 });
@@ -30,7 +30,7 @@ test("virtualized table mounts only a small window of rows", async ({
 });
 
 test("virtualized table mounts off-screen rows on scroll", async ({ page }) => {
-  await page.goto(VIRTUALIZED_URL, { timeout: 20 * 60 * 1000 });
+  await page.goto(VIRTUALIZED_URL, { timeout: 30 * 1000 });
 
   const surface = page.locator('[data-slot="data-table-surface"]').first();
   await expect(surface).toBeVisible({ timeout: 60000 });
@@ -81,7 +81,7 @@ test("virtualized table mounts off-screen rows on scroll", async ({ page }) => {
 test("virtualized table keeps column widths stable during scroll", async ({
   page,
 }) => {
-  await page.goto(VIRTUALIZED_URL, { timeout: 20 * 60 * 1000 });
+  await page.goto(VIRTUALIZED_URL, { timeout: 30 * 1000 });
 
   const surface = page.locator('[data-slot="data-table-surface"]').first();
   await expect(surface).toBeVisible({ timeout: 60000 });

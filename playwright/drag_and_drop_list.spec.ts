@@ -3,7 +3,7 @@ import AxeBuilder from "@axe-core/playwright";
 
 const URL = "/components/drag_and_drop_list";
 const REMOVABLE_URL = "/components/drag_and_drop_list/block#removable";
-const LOAD_TIMEOUT = 20 * 60 * 1000;
+const LOAD_TIMEOUT = 30 * 1000;
 
 /** Navigate to the DnD page and return the first main demo list. */
 async function loadMainList(page: import("@playwright/test").Page) {

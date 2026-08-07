@@ -2,8 +2,8 @@ import { test, expect } from "@playwright/test";
 
 test("test", async ({ page }) => {
   await page.goto("/components/input", {
-    timeout: 20 * 60 * 1000,
-  }); // Increase timeout to 20 minutes
+    timeout: 30 * 1000,
+  });
 
   const shellInput = page.getByPlaceholder("release-notes").first();
   await shellInput.fill("customer-portal");
@@ -14,7 +14,7 @@ test("test", async ({ page }) => {
 
 test("shared input shell wires descriptions and sections", async ({ page }) => {
   await page.goto("/components/input", {
-    timeout: 20 * 60 * 1000,
+    timeout: 30 * 1000,
   });
 
   const labeledShellInput = page.getByPlaceholder("project-slug").first();
@@ -62,7 +62,7 @@ test("shared input shell wires descriptions and sections", async ({ page }) => {
 
 test("picker inputs wire generated ids and descriptions to controls", async ({ page }) => {
   await page.goto("/components/color_input", {
-    timeout: 20 * 60 * 1000,
+    timeout: 30 * 1000,
   });
 
   const colorLabel = page.getByText("Accent color", { exact: true });
@@ -89,7 +89,7 @@ test("picker inputs wire generated ids and descriptions to controls", async ({ p
   ).not.toContainText("Hue");
 
   await page.goto("/components/date_input", {
-    timeout: 20 * 60 * 1000,
+    timeout: 30 * 1000,
   });
 
   const dueDateLabel = page.getByText("Due date", { exact: true });
@@ -128,7 +128,7 @@ test("picker inputs wire generated ids and descriptions to controls", async ({ p
   await expect(page.getByRole("dialog")).toContainText("Su");
 
   await page.goto("/components/time_input", {
-    timeout: 20 * 60 * 1000,
+    timeout: 30 * 1000,
   });
 
   const timeLabel = page.getByText("Start time", { exact: true });

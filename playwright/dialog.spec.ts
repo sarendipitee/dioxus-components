@@ -14,7 +14,7 @@ async function computedColorForCssColor(locator: Locator, color: string) {
 }
 
 test('test', async ({ page }) => {
-  await page.goto('/components/dialog/block#main', { timeout: 20 * 60 * 1000 }); // Increase timeout to 20 minutes
+  await page.goto('/components/dialog/block#main', { timeout: 30 * 1000 });
   await page.getByRole('button', { name: 'Open Dialog', exact: true }).click();
   // Assert the dialog is open
   const dialog = page.getByRole('dialog');
@@ -33,7 +33,7 @@ test('test', async ({ page }) => {
 });
 
 test('closing a nested dialog does not replay the outer open animation', async ({ page }) => {
-  await page.goto('/components/dialog/block#nested', { timeout: 20 * 60 * 1000 });
+  await page.goto('/components/dialog/block#nested', { timeout: 30 * 1000 });
 
   await page.getByRole('button', { name: 'Open Dialog', exact: true }).click();
   const outer = page.getByRole('dialog', { name: 'Manage task' });
@@ -65,7 +65,7 @@ test('dialog title and description keep primitive ARIA with shared typography', 
   page,
 }) => {
   await page.goto('/components/dialog/block#main', {
-    timeout: 20 * 60 * 1000,
+    timeout: 30 * 1000,
     waitUntil: 'load',
   });
   await page.getByRole('button', { name: 'Open Dialog', exact: true }).click();

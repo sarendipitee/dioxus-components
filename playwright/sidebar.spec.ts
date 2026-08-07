@@ -4,7 +4,7 @@ const SIDEBAR_RENDER_TIMEOUT = 30 * 1000;
 
 async function gotoSidebarBlock(page: Page) {
   await page.goto("/components/sidebar/block#main", {
-    timeout: 20 * 60 * 1000,
+    timeout: 30 * 1000,
     waitUntil: 'load'
   });
 
@@ -15,7 +15,7 @@ async function gotoSidebarBlock(page: Page) {
 
 async function gotoFloatingSidebar(page: Page) {
   await page.goto("/components/sidebar/block#floating", {
-    timeout: 20 * 60 * 1000,
+    timeout: 30 * 1000,
     waitUntil: 'load'
   });
 
@@ -362,7 +362,7 @@ test("floating offcanvas: trigger hover reveals transiently and click toggles on
 });
 test("sidebar: preview page renders block", async ({ page }) => {
   await page.goto("/components/sidebar", {
-    timeout: 20 * 60 * 1000,
+    timeout: 30 * 1000,
     waitUntil: 'load'
   });
   const iframe = page.locator("iframe").first();
@@ -457,7 +457,7 @@ test.describe("sidebar: block route", () => {
 
   test("desktop: collapsed inset rail drag reopens the sidebar", async ({ page }) => {
     await page.goto("/components/sidebar/block#inset", {
-      timeout: 20 * 60 * 1000,
+      timeout: 30 * 1000,
       waitUntil: "load",
     });
 
