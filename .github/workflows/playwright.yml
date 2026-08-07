@@ -63,7 +63,7 @@ jobs:
       - name: Install Playwright Browsers
         run: cd ./playwright && npx playwright install --with-deps
       - name: Run Playwright tests
-        run: cd ./playwright && npx playwright test --shard=${{ matrix.shardIndex }}/${{ matrix.shardTotal }}
+        run: cd ./playwright && npx playwright test --project=chromium --project=firefox --project=webkit --shard=${{ matrix.shardIndex }}/${{ matrix.shardTotal }}
       - name: Upload blob report to GitHub Actions Artifacts
         if: ${{ !cancelled() }}
         uses: actions/upload-artifact@v4
