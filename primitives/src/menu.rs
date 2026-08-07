@@ -707,6 +707,7 @@ pub fn MenuItem<T: Clone + PartialEq + 'static>(props: MenuItemProps<T>) -> Elem
             // blur races portaled submenu focus and resets the pending target.
             aria_disabled: disabled(),
             "data-disabled": disabled().then_some("true"),
+            "data-focused": focused(),
             // MountedData::set_focus requires a focusable element. Keep only the
             // roving-focus item tabbable so native focus follows trigger arrows.
             tabindex: if focused() { "0" } else { "-1" },

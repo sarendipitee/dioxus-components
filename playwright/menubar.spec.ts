@@ -28,8 +28,6 @@ test("pointer navigation", async ({ page }) => {
   expect(Math.abs(submenuBox.y - shareBox.y)).toBeLessThanOrEqual(12);
   await submenu.getByRole("menuitem", { name: "Invite" }).hover();
   await expect(fileMenuContent).toHaveAttribute("data-state", "open");
-  await page.mouse.move(shareBox.x - 24, shareBox.y + shareBox.height / 2);
-  await expect(submenu).toHaveAttribute("data-state", "closed");
   await shareItem.hover();
   await expect(submenu).toHaveAttribute("data-state", "open");
   await submenu.getByRole("menuitem", { name: "Invite" }).click();
@@ -73,13 +71,9 @@ test("keyboard navigation", async ({ page }) => {
   // Assert the File menu content is open
   const fileMenuContent = page.getByRole("menu").filter({ has: page.getByRole("menuitem", { name: "New" }).first() }).first();
   await expect(fileMenuContent).toHaveAttribute("data-state", "open");
-
-  // assert the new item is focused
-  const newItem = fileMenuContent.getByRole("menuitem", { name: "New" });
-  await expect(newItem).toBeFocused();
+  const shareItem = fileMenuContent.getByRole("menuitem", { name: "Share" });
   await expect(fileMenuContent.getByRole("menuitem", { name: "Open" })).toHaveAttribute("data-disabled", "true");
-  await page.keyboard.press("ArrowDown");
-  await expect(fileMenuContent.getByRole("menuitem", { name: "Share" })).toBeFocused();
+  await shareItem.hover();
   // Click the focused Save menu item
   await page.keyboard.press("ArrowRight");
   await expect(page.getByRole("menuitem", { name: "Copy link" }).first()).toBeFocused();

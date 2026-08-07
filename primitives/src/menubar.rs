@@ -280,6 +280,7 @@ pub fn MenubarMenu(props: MenubarMenuProps) -> Element {
     let is_open = use_memo(move || (ctx.open_menu)() == Some(props.index.cloned()));
     let focus = use_focus_provider(ctx.focus.roving_loop);
     let initial_focus = use_signal(|| None);
+    let mut has_opened = use_signal(|| false);
     let trigger_id = use_unique_id();
     let trigger_ref = use_signal(|| None);
     let active_submenu = use_signal(|| None);
@@ -311,7 +312,10 @@ pub fn MenubarMenu(props: MenubarMenuProps) -> Element {
     });
 
     use_effect(move || {
-        if !is_open() {
+        let open = is_open();
+        if open {
+            has_opened.set(true);
+        } else if has_opened() {
             menu_ctx.focus.blur();
             menu_ctx.initial_focus.set(None);
         }
@@ -598,7 +602,7 @@ pub struct MenubarContentProps {
 /// - `data-state`: Indicates if the menu is open or closed. Values are `open` or `closed`.
 #[component]
 pub fn MenubarContent(props: MenubarContentProps) -> Element {
-    let menu_ctx: MenubarMenuContext = use_context();
+    let mut menu_ctx: MenubarMenuContext = use_context();
     let shared_menu_ctx: MenuContext = use_context();
     use_deferred_focus(menu_ctx.focus, menu_ctx.initial_focus, move || {
         (shared_menu_ctx.open)()

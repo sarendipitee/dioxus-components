@@ -491,7 +491,7 @@ pub fn SidebarRail(#[props(extends = GlobalAttributes)] attributes: Vec<Attribut
                                 event.preventDefault();
                                 apply(event.clientX);
                             }}
-                            const openFromClick = {was_collapsed} && !moved;
+                            const openFromClick = false;
                             if (moved) {{
                                 rail.addEventListener('click', event => {{
                                     event.preventDefault();
@@ -540,7 +540,7 @@ pub fn SidebarRail(#[props(extends = GlobalAttributes)] attributes: Vec<Attribut
                             continue;
                         }
                         if open_from_click {
-                            ctx.set_open.call(true);
+                            // Clicks are handled synchronously by the Rust `onclick` handler.
                         }
                         if was_dragged {
                             dragged.set(true);
