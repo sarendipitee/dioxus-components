@@ -135,9 +135,29 @@ pub fn Menubar(props: MenubarProps) -> Element {
             role: "menubar",
             "data-disabled": (props.disabled)(),
             tabindex: (!ctx.focus.any_focused()).then_some("0"),
-            // If the menu receives focus, focus the most recently focused menu item
-            onfocus: move |_| {
-                ctx.focus.set_focus(Some(ctx.focus.recent_focus_or_default()));
+            // Roving focus is updated by the trigger's mounted/focus handlers and by
+            // keyboard navigation below. Do not handle `focus` on the container:
+            // focus bubbles from a trigger and would overwrite the target selected by
+            // ArrowLeft/ArrowRight before the browser applies it.
+            onkeydown: move |event: KeyboardEvent| {
+                if (props.disabled)() {
+                    return;
+                }
+                // Focusing the menubar container itself does not identify a trigger.
+                // Establish the roving starting point before relative navigation so
+                // ArrowRight advances from File to View rather than selecting File.
+                if ctx.focus.current_focus().is_none() {
+                    ctx.focus.set_focus(Some(ctx.focus.recent_focus_or_default()));
+                }
+                match event.key() {
+                    Key::ArrowLeft => ctx.focus.focus_prev(),
+                    Key::ArrowRight => ctx.focus.focus_next(),
+                    Key::Home => ctx.focus.focus_first(),
+                    Key::End => ctx.focus.focus_last(),
+                    _ => return,
+                }
+                event.prevent_default();
+                event.stop_propagation();
             },
 
             ..props.attributes,
@@ -447,13 +467,42 @@ pub fn MenubarTrigger(props: MenubarTriggerProps) -> Element {
                 }
             },
             onmounted,
+            onkeydown: move |event: Event<KeyboardData>| {
+                match event.key() {
+                    Key::ArrowLeft => {
+                        ctx.focus.focus_prev();
+                        event.prevent_default();
+                        event.stop_propagation();
+                    }
+                    Key::ArrowRight => {
+                        ctx.focus.focus_next();
+                        event.prevent_default();
+                        event.stop_propagation();
+                    }
+                    Key::Home => {
+                        ctx.focus.focus_first();
+                        event.prevent_default();
+                        event.stop_propagation();
+                    }
+                    Key::End => {
+                        ctx.focus.focus_last();
+                        event.prevent_default();
+                        event.stop_propagation();
+                    }
+                    _ => {}
+                }
+            },
             onmouseenter: move |_| {
                 if !disabled() && (ctx.open_menu)().is_some() {
                     ctx.focus.set_focus(Some(index.cloned()));
                 }
             },
             onblur: move |_| {
-                if is_focused() && !is_open() {
+                // Arrow navigation opens a portaled menu before its item can mount. Keep
+                // the menubar focus target during that handoff; otherwise the trigger's
+                // blur clears the pending placement and the first item never receives
+                // native focus.
+                if menu_ctx.initial_focus.peek().is_none() && is_focused() && !is_open() {
                     ctx.focus.set_focus(None);
                 }
             },

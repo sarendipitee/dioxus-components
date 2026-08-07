@@ -45,7 +45,19 @@ pub(crate) fn use_focus_control_disabled(
         ctx.control_mount_focus(index.cloned(), controlled_ref);
     });
 
-    move |data: Event<MountedData>| controlled_ref.set(Some(data.data()))
+    move |data: Event<MountedData>| {
+        let mounted = data.data();
+        controlled_ref.set(Some(mounted.clone()));
+        // A portaled item can mount after the focus state effect has already
+        // observed the target. Re-check here so the browser focus handoff is
+        // tied to the actual mount, rather than relying on another signal
+        // revision to rerun the effect.
+        if !disabled() && ctx.is_focused(index.cloned()) {
+            spawn(async move {
+                let _ = mounted.set_focus(true).await;
+            });
+        }
+    }
 }
 
 pub(crate) fn use_focus_controlled_item_disabled(

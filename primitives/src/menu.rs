@@ -477,7 +477,10 @@ fn MenuContentRendered(props: MenuContentRenderedProps) -> Element {
 
     let open = use_memo(use_reactive(&props.is_open, |is_open| is_open));
     let disabled = use_memo(use_reactive(&props.is_disabled, |is_disabled| is_disabled));
-    let filter_query = use_signal(|| props.filter_query.clone());
+    let mut filter_query = use_signal(|| props.filter_query.clone());
+    use_effect(use_reactive(&props.filter_query, move |query| {
+        filter_query.set(query);
+    }));
     let mut trigger_id = use_signal(|| props.aria_labelledby.clone());
     use_effect(use_reactive(
         &props.aria_labelledby,
@@ -1053,7 +1056,7 @@ pub fn MenuSub(props: MenuSubProps) -> Element {
     let trigger_id = use_unique_id();
     use_effect(move || {
         let active = (parent_ctx.active_submenu)();
-        if open() && active.as_deref().is_some_and(|id| id != &(trigger_id)()) {
+        if open() && active.as_deref() != Some(&(trigger_id)()) {
             set_open.call(false);
         }
     });
@@ -1085,6 +1088,7 @@ pub fn MenuSub(props: MenuSubProps) -> Element {
                 x <= rect.right + padding &&
                 y >= rect.top - padding &&
                 y <= rect.bottom + padding;
+            const padding = 8;
             const onMove = e => {
                 const root = document.getElementById(subId);
                 if (!root) return;
@@ -1094,12 +1098,14 @@ pub fn MenuSub(props: MenuSubProps) -> Element {
                 // the panel is not portaled.
                 const content = (contentId && document.getElementById(contentId))
                     ?? root.querySelector('[role=\"menu\"]');
-                const padding = 8;
+                // The portaled panel may not exist during the first pointer event
+                // that opens it. Do not interpret that mount gap as a pointer leave.
+                if (!content) return;
                 const pointTarget = document.elementFromPoint(e.clientX, e.clientY);
-                if (!pointTarget) {
-                    dioxus.send(true);
-                    return;
-                }
+                // During portal mount/unmount the browser can briefly return no
+                // hit-test target. Treat that transient state as indeterminate;
+                // closing here races the submenu open transition.
+                if (!pointTarget) return;
                 const insideTrigger = trigger && (
                     trigger.contains(pointTarget) ||
                     pointInRect(e.clientX, e.clientY, trigger.getBoundingClientRect(), padding)
@@ -1111,19 +1117,12 @@ pub fn MenuSub(props: MenuSubProps) -> Element {
                 const insideNestedSubmenu = pointTarget.closest('[role=\"menu\"][data-side]');
                 if (!insideTrigger && !insideContent && !insideNestedSubmenu) dioxus.send(true);
             };
-            document.addEventListener('pointermove', onMove, true);
-            document.addEventListener('mousemove', onMove, true);
-            document.addEventListener('pointerout', onMove, true);
-            document.addEventListener('mouseout', onMove, true);
-            document.addEventListener('pointerleave', onMove, true);
-            document.addEventListener('mouseleave', onMove, true);
-            await dioxus.recv();
-            document.removeEventListener('pointermove', onMove, true);
-            document.removeEventListener('mousemove', onMove, true);
-            document.removeEventListener('pointerout', onMove, true);
-            document.removeEventListener('mouseout', onMove, true);
-            document.removeEventListener('pointerleave', onMove, true);
-            document.removeEventListener('mouseleave', onMove, true);",
+                document.addEventListener('pointermove', onMove, true);
+                document.addEventListener('mousemove', onMove, true);
+                await dioxus.recv();
+                document.removeEventListener('pointermove', onMove, true);
+                document.removeEventListener('mousemove', onMove, true);
+            ",
         );
         let _ = eval.send(vec![sub_id_value, panel_id]);
         spawn(async move {
@@ -1244,11 +1243,11 @@ pub fn MenuSubTrigger<T: Clone + PartialEq + 'static>(props: MenuSubTriggerProps
                 index: props.index,
                 disabled: props.disabled,
                 is_submenu_trigger: true,
+                close_on_select: false,
                 search_text: props.search_text,
                 on_select: move |value: T| {
                     open_submenu.call(());
                     on_select.call(value);
-                    parent_ctx.set_open.call(false);
                 },
                 id: sub_ctx.trigger_id,
                 aria_haspopup: "menu",

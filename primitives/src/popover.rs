@@ -275,7 +275,7 @@ pub fn PopoverContent(props: PopoverContentProps) -> Element {
 
     rsx! {
         document::Script { src: FOCUS_TRAP_JS, defer: true }
-        if render() {
+        if open() || render() {
             PopoverPortaled {
                 ctx,
                 id,
