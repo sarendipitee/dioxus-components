@@ -227,15 +227,6 @@ fn VirtualizedComboboxOptionsPortaled(props: VirtualizedComboboxOptionsPortaledP
             registration.visible,
             registration.selected,
         );
-        if registration_store
-            .resolve_pending_initial_selection_at(index)
-            .is_some()
-        {
-            // The requested virtual row is registered after opening. Restore
-            // focus state now that the selectable item exists; setting it
-            // during open (before virtualization mounts) is necessarily a no-op.
-            registration_selectable.focus_state.set_focus(Some(index));
-        }
     });
     let mut unregister_selectable = props.ctx.selectable;
     let unregister_store = props.ctx.store;

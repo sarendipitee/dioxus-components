@@ -73,6 +73,7 @@ impl ComboboxContext {
                 })
                 .flatten()
         });
+        self.set_open(true);
         if let Some(index) = initial_focus {
             if virtual_initial_focus.is_some() {
                 self.store.request_virtual_initial_selection(index);
@@ -87,9 +88,6 @@ impl ComboboxContext {
                 .request_initial_selection(ComboboxIndexTarget::First);
             self.selectable.initial_focus.set(None);
         }
-        // Opening clears stale focus. Open first, then apply the requested
-        // logical index so ArrowDown preserves its initial highlight.
-        self.set_open(true);
         self.selectable.focus_state.set_focus(initial_focus);
     }
 
@@ -107,6 +105,7 @@ impl ComboboxContext {
                 })
                 .flatten()
         });
+        self.set_open(true);
         if let Some(index) = initial_focus {
             if virtual_initial_focus.is_some() {
                 self.store.request_virtual_initial_selection(index);
@@ -121,9 +120,6 @@ impl ComboboxContext {
                 .request_initial_selection(ComboboxIndexTarget::Last);
             self.selectable.initial_focus.set(None);
         }
-        // See the first-option path above: set_open resets stale focus, so it
-        // must precede the new logical focus assignment.
-        self.set_open(true);
         self.selectable.focus_state.set_focus(initial_focus);
     }
 
@@ -132,7 +128,7 @@ impl ComboboxContext {
             .store
             .highlighted_option_index()
             .or_else(|| self.store.pending_virtual_initial_selection())
-            .or_else(|| (self.selectable.focus_state.current_focus)());
+            .or_else(|| self.selectable.focus_state.current_focus());
         index
             .and_then(|index| {
                 self.selectable

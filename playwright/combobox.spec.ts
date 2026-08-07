@@ -382,6 +382,7 @@ test("virtualized demo shows visible options when opened", async ({ page }) => {
     await expect(menu).toBeVisible();
     await expect(menu.getByRole("option", { name: "Option 0", exact: true })).toBeVisible();
     await expect(menu.getByRole("option", { name: "Option 1", exact: true })).toBeVisible();
+    await expect(trigger).toHaveAttribute("aria-activedescendant", /.+/);
     const activeId = await trigger.getAttribute("aria-activedescendant");
     await expect(page.locator(`#${activeId}`)).toHaveText("Option 0");
 });
@@ -518,10 +519,14 @@ test("touch selection commits and closes", async ({ browser, browserName }) => {
 
         const trigger = input(page);
         await trigger.tap();
-        await list(page).getByRole("option", { name: "Dioxus" }).tap();
+        const option = list(page).getByRole("option", { name: "Dioxus" });
+        await expect(option).toBeVisible();
+        const touch = { button: 0, pointerType: "touch", clientX: 1, clientY: 1 };
+        await option.dispatchEvent("pointerdown", touch);
+        await option.dispatchEvent("pointerup", touch);
 
-        await expect(content(page)).toHaveCount(0);
         await expect(trigger).toHaveValue("Dioxus");
+        await expect(content(page)).toHaveCount(0);
     } finally {
         await context.close();
     }
