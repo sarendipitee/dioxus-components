@@ -49,7 +49,7 @@ pub fn ComboboxOptions(props: ComboboxOptionsProps) -> Element {
     let listbox_ctx: ListboxContext = use_context();
 
     rsx! {
-        if render() {
+        if render() || open() {
             ComboboxOptionsRegistration {
                 id: listbox.id.cloned(),
                 children: props.children.clone(),
@@ -58,7 +58,7 @@ pub fn ComboboxOptions(props: ComboboxOptionsProps) -> Element {
                 ctx,
                 id: listbox.id,
                 open,
-                should_render: (listbox_ctx.render)(),
+                should_render: (listbox_ctx.render)() || open(),
                 attributes: props.attributes.clone(),
                 children: props.children,
             }
@@ -252,12 +252,14 @@ struct ComboboxOptionsRenderedProps {
 #[component]
 fn ComboboxOptionsRendered(props: ComboboxOptionsRenderedProps) -> Element {
     let should_render = props.should_render;
-
-    let mut render_signal = use_signal(|| should_render);
-    use_effect(use_reactive(&should_render, move |should_render| {
-        render_signal.set(should_render);
-    }));
     let is_open = (props.is_open)();
+    let mut render_signal = use_signal(|| should_render || is_open);
+    use_effect(use_reactive(
+        &(should_render, is_open),
+        move |(should_render, is_open)| {
+            render_signal.set(should_render || is_open);
+        },
+    ));
     // Context providers initialize once. Keep a portal-local signal so every
     // root-side snapshot update reaches descendants after portal mounting.
     let mut portal_ctx = use_context_provider(|| Signal::new(props.portal_ctx.clone()));

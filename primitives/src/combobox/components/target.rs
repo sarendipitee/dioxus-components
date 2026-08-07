@@ -7,7 +7,16 @@ use crate::{dioxus_attributes::attributes, merge_attributes, use_unique_id};
 
 fn active_descendant(ctx: ComboboxContext, open: Memo<bool>) -> Memo<Option<String>> {
     use_memo(move || {
-        if !open() {
+        let is_open = open();
+        // Virtualized options register asynchronously after the popup opens. Explicitly
+        // subscribe to both the option registry and list identity so the memo reruns
+        // when the target row mounts and when the listbox id is published.
+        let _registered_options = ctx.selectable.options.read().len();
+        let _list_id = ctx.selectable.list_id();
+        let _highlighted = ctx.store.highlighted_option_index();
+        let _pending = ctx.store.pending_virtual_initial_selection();
+        let _focused = ctx.selectable.focus_state.current_focus();
+        if !is_open {
             return None;
         }
         ctx.focused_option_id()

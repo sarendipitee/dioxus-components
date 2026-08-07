@@ -81,7 +81,11 @@ pub fn VirtualizedComboboxOptions(props: VirtualizedComboboxOptionsProps) -> Ele
         ctx_dismiss.set_open(false);
     });
 
-    if !render() {
+    // The target publishes aria-activedescendant as soon as the dropdown opens.
+    // Keep the portaled registration/body mounted in that same render even when
+    // the exit-animation memo has not flipped yet; otherwise the target points
+    // at an option that cannot exist in the DOM.
+    if !render() && !open() {
         return rsx! {};
     }
 
@@ -223,7 +227,15 @@ fn VirtualizedComboboxOptionsPortaled(props: VirtualizedComboboxOptionsPortaledP
             registration.visible,
             registration.selected,
         );
-        registration_store.resolve_pending_initial_selection_at(index);
+        if registration_store
+            .resolve_pending_initial_selection_at(index)
+            .is_some()
+        {
+            // The requested virtual row is registered after opening. Restore
+            // focus state now that the selectable item exists; setting it
+            // during open (before virtualization mounts) is necessarily a no-op.
+            registration_selectable.focus_state.set_focus(Some(index));
+        }
     });
     let mut unregister_selectable = props.ctx.selectable;
     let unregister_store = props.ctx.store;
@@ -326,11 +338,15 @@ struct VirtualizedComboboxOptionsRenderedProps {
 fn VirtualizedComboboxOptionsRendered(props: VirtualizedComboboxOptionsRenderedProps) -> Element {
     let is_open = props.is_open;
     let should_render = props.should_render;
-    let mut render_signal = use_signal(|| should_render);
+    // Opening can become observable one render before the animated render
+    // signal. Keep the portal DOM and its ListboxContext available in that
+    // frame so aria-activedescendant always resolves to a mounted option.
+    let body_render = should_render || is_open;
+    let mut render_signal = use_signal(|| body_render);
 
     use_effect(move || {
-        if *render_signal.peek() != should_render {
-            render_signal.set(should_render);
+        if *render_signal.peek() != body_render {
+            render_signal.set(body_render);
         }
     });
 
@@ -517,16 +533,13 @@ fn VirtualizedComboboxOptionsRendered(props: VirtualizedComboboxOptionsRenderedP
     let attributes = merge_attributes(vec![props.attributes.clone(), floating_attrs]);
 
     rsx! {
-        if should_render {
+        if body_render {
             div {
                 id: props.id.clone(),
                 role: "listbox",
                 "data-state": if is_open { "open" } else { "closed" },
                 onmounted: on_mounted,
                 onscroll: on_scroll,
-                onpointerdown: move |event| {
-                    event.prevent_default();
-                },
                 ..attributes,
                 // Canvas: flex-shrink:0 is critical — the listbox is a flex column container,
                 // and without it the browser compresses this div to fit the max-height,

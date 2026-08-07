@@ -98,7 +98,7 @@ pub fn ComboboxOption<T: PartialEq + Clone + 'static>(props: ComboboxOptionProps
                 id_signal().unwrap_or_else(|| format!("{listbox_id}-option-{}", index()))
             });
             let disabled = disabled_snapshot;
-            let registration_value = props.value.clone();
+            let _registration_value = props.value.clone();
             let option_value = props.value.clone();
             let text_value_override = props.text_value.clone();
             let text_value = use_memo(move || {
@@ -106,23 +106,28 @@ pub fn ComboboxOption<T: PartialEq + Clone + 'static>(props: ComboboxOptionProps
             });
             let down_pos: Signal<Option<(f64, f64)>> = use_signal(|| None);
 
+            // Registration mutates root-owned selectable/store signals. Keep the
+            // effect itself non-reactive: reading option signals inside it causes
+            // cleanup + re-registration on every portal snapshot update, which
+            // feeds back into the same snapshot and can starve the renderer.
+            let registration = ComboboxPortalOptionRegistration {
+                option: OptionState {
+                    tab_index: index(),
+                    value: RcPartialEqValue::new(props.value.clone()),
+                    text_value: text_value.cloned(),
+                    id: id.cloned(),
+                    disabled,
+                },
+                visible,
+                selected,
+            };
             use_effect_with_cleanup({
                 let register_option = portal_ctx.register_option;
                 let unregister_option = portal_ctx.unregister_option;
                 move || {
-                    let registration = ComboboxPortalOptionRegistration {
-                        option: OptionState {
-                            tab_index: index(),
-                            value: RcPartialEqValue::new(registration_value.clone()),
-                            text_value: text_value.cloned(),
-                            id: id.cloned(),
-                            disabled,
-                        },
-                        visible,
-                        selected,
-                    };
                     register_option.call(registration.clone());
-                    move || unregister_option.call(registration)
+                    let cleanup_registration = registration.clone();
+                    move || unregister_option.call(cleanup_registration)
                 }
             });
 
@@ -174,20 +179,17 @@ pub fn ComboboxOption<T: PartialEq + Clone + 'static>(props: ComboboxOptionProps
         let down_pos: Signal<Option<(f64, f64)>> = use_signal(|| None);
 
         return rsx! {
-            if render() && visible {
+            if visible {
                 div {
                     role: "option",
                     id,
-
                     aria_selected: selected,
                     aria_disabled: disabled,
                     aria_label: props.aria_label.clone(),
                     aria_roledescription: props.aria_roledescription.clone(),
-
                     "data-highlighted": highlighted,
                     "data-disabled": disabled,
                     "data-selected": selected,
-
                     onmouseenter: move |_: Event<MouseData>| {
                         if !disabled {
                             portal_ctx.hover_option.call(index_value);
@@ -204,7 +206,6 @@ pub fn ComboboxOption<T: PartialEq + Clone + 'static>(props: ComboboxOptionProps
                     onpointercancel: move |_| {
                         pointer_select_cancel(down_pos);
                     },
-
                     ..props.attributes,
                     {props.children}
                 }

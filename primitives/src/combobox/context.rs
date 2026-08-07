@@ -128,8 +128,12 @@ impl ComboboxContext {
     }
 
     pub fn focused_option_id(&self) -> Option<String> {
-        self.store
+        let index = self
+            .store
             .highlighted_option_index()
+            .or_else(|| self.store.pending_virtual_initial_selection())
+            .or_else(|| (self.selectable.focus_state.current_focus)());
+        index
             .and_then(|index| {
                 self.selectable
                     .options
@@ -139,6 +143,11 @@ impl ComboboxContext {
                     .map(|option| option.id.clone())
             })
             .or_else(|| self.selectable.focused_option_id())
+            .or_else(|| {
+                let index = index?;
+                let list_id = self.selectable.list_id()?;
+                Some(format!("{list_id}-option-{index}"))
+            })
     }
     pub fn focus_next_visible(&mut self) {
         self.selectable.focus_next_where(self.predicate());
