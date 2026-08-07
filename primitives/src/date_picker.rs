@@ -16,27 +16,24 @@ use std::{fmt::Display, str::FromStr};
 use time::{macros::date, Date, Month, OffsetDateTime, Weekday};
 
 /// The context provided by the [`DatePicker`] component to its children.
-#[derive(Copy, Clone)]
-struct BaseDatePickerContext {
+#[derive(Copy, Clone, PartialEq)]
+pub(crate) struct BaseDatePickerContext {
     // State
     open: Signal<bool>,
     read_only: ReadSignal<bool>,
     close_on_input_focus: bool,
-
     // Configuration
     disabled: ReadSignal<bool>,
     focus: FocusState,
     enabled_date_range: DateRange,
     available_ranges: Memo<AvailableRanges>,
 }
-
 /// The context provided by the [`DatePicker`] component to its children.
-#[derive(Copy, Clone)]
-struct DatePickerContext {
+#[derive(Copy, Clone, PartialEq)]
+pub(crate) struct DatePickerContext {
     on_value_change: Callback<Option<Date>>,
     selected_date: ReadSignal<Option<Date>>,
 }
-
 impl DatePickerContext {
     fn set_date(&mut self, date: Option<Date>) {
         let value = { self.selected_date.peek().cloned() };
@@ -166,7 +163,7 @@ pub fn DatePicker(props: DatePickerProps) -> Element {
 }
 
 /// The context provided by the [`DateRangePicker`] component to its children.
-#[derive(Copy, Clone)]
+#[derive(Copy, Clone, PartialEq)]
 pub struct DateRangePickerContext {
     // Currently selected date range
     date_range: ReadSignal<Option<DateRange>>,
@@ -378,6 +375,39 @@ pub struct DatePickerPopoverProps {
 ///    }
 ///}
 /// ```
+/// Opaque snapshot of date-picker contexts needed by portaled calendar content.
+#[derive(Clone, Copy, PartialEq)]
+pub struct DatePickerPortalContext {
+    base: BaseDatePickerContext,
+    date: Option<DatePickerContext>,
+    range: Option<DateRangePickerContext>,
+}
+
+/// Captures date-picker contexts before content crosses a portal boundary.
+pub fn use_date_picker_portal_context() -> DatePickerPortalContext {
+    DatePickerPortalContext {
+        base: use_context::<BaseDatePickerContext>(),
+        date: try_use_context::<DatePickerContext>(),
+        range: try_use_context::<DateRangePickerContext>(),
+    }
+}
+
+/// Re-provides captured date-picker contexts inside a portal.
+#[component]
+pub fn DatePickerPortalContextProvider(
+    context: DatePickerPortalContext,
+    children: Element,
+) -> Element {
+    use_context_provider(|| context.base);
+    if let Some(date) = context.date {
+        use_context_provider(|| date);
+    }
+    if let Some(range) = context.range {
+        use_context_provider(|| range);
+    }
+    children
+}
+
 #[component]
 pub fn DatePickerPopover(props: DatePickerPopoverProps) -> Element {
     let base_ctx = use_context::<BaseDatePickerContext>();

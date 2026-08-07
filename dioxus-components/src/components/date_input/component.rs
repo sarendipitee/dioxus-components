@@ -1,6 +1,9 @@
 use crate::component_styles;
 use dioxus::prelude::*;
 use dioxus_icons::lucide::ChevronDown;
+use dioxus_primitives::date_picker::{
+    use_date_picker_portal_context, DatePickerPortalContextProvider,
+};
 use dioxus_primitives::popover::PopoverProps;
 use dioxus_primitives::{
     calendar::DateRange, date_picker, dioxus_attributes::attributes, merge_attributes, ContentAlign,
@@ -112,7 +115,7 @@ pub fn DateInput(
             date_picker::DatePickerPopover {
                 popover_root: DateInputPopover,
                 open: None,
-                close_on_input_focus: false,
+                close_on_input_focus: true,
                 InputBase {
                     label,
                     description,
@@ -222,7 +225,7 @@ pub fn DateRangePickerInput(
             date_picker::DatePickerPopover {
                 popover_root: DateInputPopover,
                 open: None,
-                close_on_input_focus: false,
+                close_on_input_focus: true,
                 InputBase {
                     label,
                     description,
@@ -399,6 +402,7 @@ fn DateInputPopoverContent(
     #[props(extends = GlobalAttributes)] attributes: Vec<Attribute>,
     children: Element,
 ) -> Element {
+    let context = use_date_picker_portal_context();
     rsx! {
         PopoverContent {
             class: Styles::dx_date_input_popover_content,
@@ -406,7 +410,7 @@ fn DateInputPopoverContent(
             side,
             align,
             attributes,
-            {children}
+            DatePickerPortalContextProvider { context, {children} }
         }
     }
 }
