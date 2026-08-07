@@ -66,8 +66,8 @@ export default defineConfig({
   forbidOnly: !!process.env.CI,
   /* Retry on CI only */
   retries: process.env.CI ? 2 : 0,
-  /* Hosted CI shards stay serial; local runs use every logical CPU. */
-  workers: process.env.CI ? 1 : "100%",
+  /* WASM pages become flaky when browser workers saturate local CPUs. */
+  workers: process.env.CI ? 1 : 4,
   /* Reporter to use. See https://playwright.dev/docs/test-reporters */
   reporter: process.env.CI ? [["list"], ["html", { open: "never" }]] : "list",
   /* Shared settings for all the projects below. See https://playwright.dev/docs/api/class-testoptions. */

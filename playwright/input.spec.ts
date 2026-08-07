@@ -110,7 +110,7 @@ test("picker inputs wire generated ids and descriptions to controls", async ({ p
   await expect(dueDateChevron).toBeVisible();
   await expect(dueDateShell.locator("[data-slot='input-right-section']")).toBeVisible();
   await dueDateChevron.click();
-  const dateDialog = page.getByRole("dialog");
+  const dateDialog = page.locator('[role="dialog"][data-state="open"]');
   await expect(dateDialog).toContainText("Su");
   await dueDateInput.focus();
   await expect(dateDialog).toContainText("Su");
@@ -125,7 +125,7 @@ test("picker inputs wire generated ids and descriptions to controls", async ({ p
     .filter({ has: page.locator(`#${rangeInputId}`) });
   await expect(rangeShell.locator('[aria-label="Show Calendar"]')).toBeVisible();
   await rangeInput.focus();
-  await expect(page.getByRole("dialog")).toContainText("Su");
+  await expect(page.locator('[role="dialog"][data-state="open"]').last()).toContainText("Su");
 
   await page.goto("/components/time_input", {
     timeout: 30 * 1000,
