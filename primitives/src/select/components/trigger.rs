@@ -82,18 +82,18 @@ pub fn SelectTrigger(props: SelectTriggerProps) -> Element {
             onkeydown: move |event| {
                 match event.key() {
                     Key::ArrowUp => {
-                        ctx.set_open(true);
                         ctx.selectable
-                            .focus_state
-                            .set_focus(ctx.selectable.focus_state.last_enabled_index());
+                            .initial_focus
+                            .set(ctx.selectable.focus_state.last_enabled_index());
+                        ctx.set_open(true);
                         event.prevent_default();
                         event.stop_propagation();
                     }
                     Key::ArrowDown => {
-                        ctx.set_open(true);
                         ctx.selectable
-                            .focus_state
-                            .set_focus(ctx.selectable.focus_state.first_enabled_index());
+                            .initial_focus
+                            .set(ctx.selectable.focus_state.first_enabled_index());
+                        ctx.set_open(true);
                         event.prevent_default();
                         event.stop_propagation();
                     }

@@ -489,13 +489,13 @@ fn SelectListRendered(props: SelectListRenderedProps) -> Element {
             onmounted: move |evt| {
                 let mounted = evt.data();
                 listbox_ref.set(Some(mounted.clone()));
+                on_floating_mounted.call(mounted.clone());
                 if focused {
-                    let focus_target = mounted.clone();
+                    let focus_target = mounted;
                     spawn(async move {
                         _ = focus_target.set_focus(true).await;
                     });
                 }
-                on_floating_mounted.call(mounted);
             },
             onkeydown,
             onblur: move |_| {

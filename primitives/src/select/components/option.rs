@@ -164,7 +164,13 @@ pub fn SelectOption<T: PartialEq + Clone + 'static>(props: SelectOptionProps<T>)
                     id,
                     tabindex: if focused { "0" } else { "-1" },
                     onmounted: move |event| {
-                        option_ref.set(Some(event.data()));
+                        let mounted = event.data();
+                        option_ref.set(Some(mounted.clone()));
+                        if focused {
+                            spawn(async move {
+                                _ = mounted.set_focus(true).await;
+                            });
+                        }
                     },
 
                     aria_selected: selected,
