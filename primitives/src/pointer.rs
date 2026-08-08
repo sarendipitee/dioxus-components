@@ -51,6 +51,9 @@ static POINTERS: GlobalSignal<Vec<Pointer>> = Global::new(|| {
 pub(crate) fn track_pointer_down(pointer_id: i32, position: ClientPoint) {
     add_pointer(pointer_id, position);
 }
+pub(crate) fn stop_tracking_pointer(pointer_id: i32) {
+    remove_pointer(pointer_id);
+}
 
 pub(crate) fn pointer_position(pointer_id: i32) -> Option<ClientPoint> {
     POINTERS

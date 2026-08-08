@@ -149,7 +149,9 @@ impl MoveInteraction {
     }
 
     pub(crate) fn end_pointer(&mut self) {
-        self.active_pointer_id.take();
+        if let Some(pointer_id) = self.active_pointer_id.take() {
+            pointer::stop_tracking_pointer(pointer_id);
+        }
         self.last_pointer_position.set(None);
         self.dragging.set(false);
     }
