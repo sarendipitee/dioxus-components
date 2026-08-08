@@ -4,6 +4,12 @@ set -eu
 repo_root=$(git rev-parse --show-toplevel)
 cd "$repo_root"
 
+# Rust doctests invoke linkers that use TMPDIR for large temporary outputs. Keep
+# those outputs on the repository filesystem rather than a constrained /tmp tmpfs.
+TMPDIR="$repo_root/target/tmp/pre-push"
+mkdir -p "$TMPDIR"
+export TMPDIR
+
 # Linux desktop builds use GTK/WebKit system libraries. Prefer the distro
 # pkg-config metadata so Homebrew's Linux pkg-config does not hide libffi,
 # bzip2, and the GTK dependency files.
