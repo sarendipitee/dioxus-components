@@ -41,9 +41,10 @@ async function dispatchDragLifecycle(
     targetIndex: number;
     drop?: "list" | "document";
     end?: boolean;
+    targetYRatio?: number;
   },
 ) {
-  await page.evaluate(async ({ sourceIndex, targetIndex, drop, end = true }) => {
+  await page.evaluate(async ({ sourceIndex, targetIndex, drop, end = true, targetYRatio = 0.8 }) => {
     const list = document.querySelector('ul[aria-roledescription="sortable list"]');
     const items = list?.querySelectorAll('li[aria-roledescription="sortable item"]');
     const source = items?.[sourceIndex];
@@ -69,7 +70,7 @@ async function dispatchDragLifecycle(
     const targetRect = target.getBoundingClientRect();
     dispatch(target, "dragover", {
       clientX: targetRect.left + targetRect.width / 2,
-      clientY: targetRect.top + targetRect.height * 0.8,
+      clientY: targetRect.top + targetRect.height * targetYRatio,
     });
     await new Promise(requestAnimationFrame);
 
@@ -95,14 +96,63 @@ test.describe("Keyboard focus management", () => {
     await expect(items.first()).toHaveAttribute("tabindex", "0");
     await expect(items.nth(1)).toHaveAttribute("tabindex", "-1");
   });
-
-  test("arrow up from first wraps to last", async ({ page }) => {
+  test("ArrowUp at first announces the boundary without moving", async ({ page }) => {
     const list = await loadMainList(page);
     const items = getItems(list);
-    const lastIndex = (await items.count()) - 1;
+    const liveRegion = getLiveRegion(list);
+    const count = await items.count();
+
     await items.first().click();
+    await page.keyboard.press("Enter");
     await page.keyboard.press("ArrowUp");
+
+    await expect(items.first()).toBeFocused();
+    await expect(liveRegion).toContainText(`You are already at position 1 of ${count}`);
+  });
+
+  test("ArrowDown at last announces the boundary without moving", async ({ page }) => {
+    const list = await loadMainList(page);
+    const items = getItems(list);
+    const liveRegion = getLiveRegion(list);
+    const lastIndex = (await items.count()) - 1;
+    const count = lastIndex + 1;
+
+    await items.nth(lastIndex).click();
+    await page.keyboard.press("Enter");
+    await page.keyboard.press("ArrowDown");
+
     await expect(items.nth(lastIndex)).toBeFocused();
+    await expect(liveRegion).toContainText(
+      `You are already at position ${count} of ${count}`,
+    );
+  });
+
+  test("keyboard drop commits the rendered DOM order", async ({ page }) => {
+    const list = await loadMainList(page);
+    const items = getItems(list);
+    const sourceText = await itemText(items.first());
+    const secondText = await itemText(items.nth(1));
+
+    await items.first().click();
+    await page.keyboard.press("Enter");
+    await page.keyboard.press("ArrowDown");
+    await page.keyboard.press("Enter");
+
+    await expect.poll(() => itemText(items.first())).toBe(secondText);
+    await expect.poll(() => itemText(items.nth(1))).toBe(sourceText);
+  });
+
+  test("list exposes keyboard instructions and live region semantics", async ({ page }) => {
+    const list = await loadMainList(page);
+    const instructions = page.locator("#dnd-instructions");
+    const liveRegion = getLiveRegion(list);
+
+    await expect(list).toHaveAttribute("aria-describedby", "dnd-instructions");
+    await expect(instructions).toContainText("Press Enter to start reordering");
+    await expect(instructions).toContainText("Use Arrow keys to change position");
+    await expect(liveRegion).toHaveAttribute("role", "status");
+    await expect(liveRegion).toHaveAttribute("aria-live", "assertive");
+    await expect(liveRegion).toHaveAttribute("aria-atomic", "true");
   });
 
   test("arrow down from last wraps to first", async ({ page }) => {
@@ -254,30 +304,117 @@ test.describe("Drag and drop lifecycle", () => {
     });
   }
 
+  test("upper-half pointer drag commits before the target", async ({ page }) => {
+    const list = await loadMainList(page);
+    const items = getItems(list);
+    const sourceText = await itemText(items.nth(3));
+    const targetText = await itemText(items.nth(1));
+    await dispatchDragLifecycle(page, {
+      sourceIndex: 3,
+      targetIndex: 1,
+      drop: "document",
+      targetYRatio: 0.2,
+    });
+    await expect.poll(() => itemText(items.nth(1))).toBe(sourceText);
+    await expect.poll(() => itemText(items.nth(2))).toBe(targetText);
+  });
+
   test("mouse drag shows the drop-indicator line", async ({ page }) => {
     const list = await loadMainList(page);
-
     await dispatchDragLifecycle(page, {
       sourceIndex: 2,
       targetIndex: 3,
       end: false,
     });
-
     await expect(page.locator("[data-position]")).toHaveCount(1);
     await expect.poll(() => dropIndicatorOpacity(page)).toBeGreaterThan(0.5);
   });
 
-  test("keyboard drag shows the drop-indicator line", async ({ page }) => {
+  test("focus moves to item at same index after removal", async ({
+    page,
+  }) => {
+    const list = await loadRemovableList(page);
+    const items = getItems(list);
+    const initialCount = await items.count();
+    const removeButtons = list.getByRole("button", { name: /Remove item/ });
+    await removeButtons.nth(2).click();
+    await expect(items).toHaveCount(initialCount - 1);
+    await expect(items.nth(2)).toBeFocused();
+  });
+
+  test("non-removable list ignores Delete and Backspace", async ({ page }) => {
     const list = await loadMainList(page);
     const items = getItems(list);
-    await items.nth(2).click();
-    await expect(items.nth(2)).toBeFocused();
-    await page.keyboard.press("Enter");
-    await page.keyboard.press("ArrowDown");
+    const liveRegion = getLiveRegion(list);
+    const initialCount = await items.count();
+    const initialOrder = await Promise.all(
+      Array.from({ length: initialCount }, (_, index) => itemText(items.nth(index))),
+    );
 
-    await expect.poll(() => dropIndicatorOpacity(page)).toBeGreaterThan(0.5);
+    await items.nth(1).click();
+    await page.keyboard.press("Delete");
+    await page.keyboard.press("Backspace");
 
-    await page.keyboard.press("Escape");
+    await expect(items).toHaveCount(initialCount);
+    await expect.poll(async () =>
+      Promise.all(
+        Array.from({ length: initialCount }, (_, index) => itemText(items.nth(index))),
+      ),
+    ).toEqual(initialOrder);
+    await expect(liveRegion).not.toContainText("Removed item");
+  });
+
+  test("removal announces position and remaining count", async ({ page }) => {
+    const list = await loadRemovableList(page);
+    const items = getItems(list);
+    const liveRegion = getLiveRegion(list);
+    const initialCount = await items.count();
+
+    await items.nth(1).getByRole("button", { name: /Remove item/ }).click();
+
+    await expect(liveRegion).toContainText(
+      `Removed item from position 2. ${initialCount - 1} items remaining`,
+    );
+  });
+
+  test("Delete removes the focused item and preserves focus", async ({ page }) => {
+    const list = await loadRemovableList(page);
+    const items = getItems(list);
+    const liveRegion = getLiveRegion(list);
+    const initialCount = await items.count();
+
+    await items.nth(1).click();
+    await page.keyboard.press("Delete");
+
+    await expect(items).toHaveCount(initialCount - 1);
+    await expect(items.nth(1)).toBeFocused();
+    await expect(liveRegion).toContainText(
+      `Removed item from position 2. ${initialCount - 1} items remaining`,
+    );
+  });
+
+  test("remove button is non-draggable and does not grab its item", async ({
+    page,
+  }) => {
+    const list = await loadRemovableList(page);
+    const item = getItems(list).first();
+    const removeButton = item.getByRole("button", { name: /Remove item/ });
+
+    await expect(removeButton).toHaveAttribute("draggable", "false");
+    await removeButton.dispatchEvent("dragstart");
+    await expect(item).not.toHaveAttribute("aria-grabbed", "true");
+  });
+
+  test("focus moves to new last item when removing last item", async ({
+    page,
+  }) => {
+    const list = await loadRemovableList(page);
+    const items = getItems(list);
+    const initialCount = await items.count();
+    const removeButtons = list.getByRole("button", { name: /Remove item/ });
+    await removeButtons.nth(initialCount - 1).click();
+    await expect(items).toHaveCount(initialCount - 1);
+    await expect(items.nth(initialCount - 2)).toBeFocused();
   });
 
   test("mouse drop to the side commits without cancelling the native drop", async ({
@@ -362,6 +499,42 @@ test.describe("Remove behavior", () => {
       return texts;
     }).not.toContain(movedText);
   });
+  test("removal announces position and remaining count", async ({ page }) => {
+    const list = await loadRemovableList(page);
+    const items = getItems(list);
+    const liveRegion = getLiveRegion(list);
+    const initialCount = await items.count();
+
+    await items.nth(1).getByRole("button", { name: /Remove item/ }).click();
+    await expect(liveRegion).toContainText(
+      `Removed item from position 2. ${initialCount - 1} items remaining`,
+    );
+  });
+
+  test("Delete removes the focused item and preserves focus", async ({ page }) => {
+    const list = await loadRemovableList(page);
+    const items = getItems(list);
+    const liveRegion = getLiveRegion(list);
+    const initialCount = await items.count();
+
+    await items.nth(1).click();
+    await page.keyboard.press("Delete");
+    await expect(items).toHaveCount(initialCount - 1);
+    await expect(items.nth(1)).toBeFocused();
+    await expect(liveRegion).toContainText(
+      `Removed item from position 2. ${initialCount - 1} items remaining`,
+    );
+  });
+
+  test("remove button is non-draggable and does not grab its item", async ({ page }) => {
+    const list = await loadRemovableList(page);
+    const item = getItems(list).first();
+    const removeButton = item.getByRole("button", { name: /Remove item/ });
+    await expect(removeButton).toHaveAttribute("draggable", "false");
+    await removeButton.dispatchEvent("dragstart");
+    await expect(item).not.toHaveAttribute("aria-grabbed", "true");
+  });
+
 });
 
 test.describe("Axe automated scan", () => {

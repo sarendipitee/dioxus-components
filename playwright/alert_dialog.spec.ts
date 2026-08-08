@@ -12,6 +12,33 @@ test('opens and closes on cancel', async ({ page }) => {
   await expect(dialog).toHaveCount(0);
 });
 
+test('is modal, traps focus, and restores focus to the trigger', async ({ page }) => {
+  await page.goto('/components/alert_dialog', { timeout: 30 * 1000 });
+  const trigger = page.getByRole('button', { name: 'Leave page' });
+  await trigger.click();
+
+  const dialog = page.getByRole('alertdialog', { name: 'Unsaved changes' });
+  const cancel = dialog.getByRole('button', { name: 'Stay' });
+  const confirm = dialog.getByRole('button', { name: 'Leave', exact: true });
+
+  await expect(dialog).toHaveAttribute('aria-modal', 'true');
+  await expect(dialog).toHaveAccessibleDescription(
+    'You have unsaved changes that will be lost. Are you sure you want to leave this page?',
+  );
+  await expect(cancel).toBeFocused();
+
+  await page.keyboard.press('Tab');
+  await expect(confirm).toBeFocused();
+  await page.keyboard.press('Tab');
+  await expect(cancel).toBeFocused();
+  await page.keyboard.press('Shift+Tab');
+  await expect(confirm).toBeFocused();
+
+  await cancel.click();
+  await expect(dialog).toHaveCount(0);
+  await expect(trigger).toBeFocused();
+});
+
 test('fires on_click and closes on action', async ({ page }) => {
   await page.goto('/components/alert_dialog', { timeout: 30 * 1000 });
   await page.getByRole('button', { name: 'Leave page' }).click();

@@ -1,21 +1,57 @@
 import { test, expect } from "@playwright/test";
 
-test("test", async ({ page }) => {
-  await page.goto("/components/hover_card");
-  let tooltip = page.getByRole("tooltip");
-  // tabbing to the trigger element should show the tooltip
-  await page.locator("#component-preview-frame").focus();
-  await page.keyboard.press("Tab");
-  await expect(tooltip).toBeVisible();
-  // tabbing out of the trigger element should hide the tooltip
-  await page.keyboard.press("Tab");
+const route = "/components/hover_card";
+
+function hoverCard(page: import("@playwright/test").Page) {
+  const trigger = page.getByRole("button", { name: "Dioxus" });
+  const tooltip = page.getByRole("tooltip");
+  return { trigger, tooltip };
+}
+
+test.beforeEach(async ({ page }) => {
+  await page.goto(route);
+});
+
+test("hover card is initially closed", async ({ page }) => {
+  const { tooltip } = hoverCard(page);
+
   await expect(tooltip).toHaveCount(0);
+});
 
-  // hovering over the trigger element should show the tooltip
-  await page.getByRole("button", { name: "Dioxus" }).hover();
+test("focus opens the hover card and blur closes it", async ({ page }) => {
+  const { trigger, tooltip } = hoverCard(page);
+
+  await trigger.focus();
   await expect(tooltip).toBeVisible();
 
-  // moving the mouse away from the trigger element should hide the tooltip
-  await page.mouse.move(0, 0);
+  await trigger.blur();
+  await expect(tooltip).toHaveCount(0);
+});
+
+test("aria-describedby references the tooltip only while open", async ({ page }) => {
+  const { trigger, tooltip } = hoverCard(page);
+
+  await expect(trigger).not.toHaveAttribute("aria-describedby", /.+/);
+
+  await trigger.focus();
+  await expect(tooltip).toBeVisible();
+  const tooltipId = await tooltip.getAttribute("id");
+  expect(tooltipId).toBeTruthy();
+  await expect(trigger).toHaveAttribute("aria-describedby", tooltipId!);
+
+  await trigger.blur();
+  await expect(tooltip).toHaveCount(0);
+  await expect(trigger).not.toHaveAttribute("aria-describedby", /.+/);
+});
+
+test("pointer entry opens the hover card and pointer exit closes it", async ({
+  page,
+}) => {
+  const { trigger, tooltip } = hoverCard(page);
+
+  await trigger.hover();
+  await expect(tooltip).toBeVisible();
+
+  await page.locator("#component-preview-frame").hover({ position: { x: 2, y: 2 } });
   await expect(tooltip).toHaveCount(0);
 });

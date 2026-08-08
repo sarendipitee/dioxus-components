@@ -140,6 +140,43 @@ test("preview page loads with header, controls, and events", async ({
     "Clicked all-day slot",
   );
 });
+test("event and time slot keyboard activation updates the main status", async ({ page }) => {
+  const root = await loadMain(page);
+  const status = page.locator("[data-schedule-main-status]");
+  const event = visibleEvent(root, "Planning sync");
+  await expect(event).toHaveAttribute("role", "button");
+  await expect(event).toHaveAttribute("tabindex", "0");
+
+  await event.focus();
+  await event.press("Enter");
+  await expect(status).toContainText("Clicked event Planning sync");
+  await event.press("Space");
+  await expect(status).toContainText("Clicked event Planning sync");
+
+  const slot = root.locator("[data-schedule-time-slot]").first();
+  await expect(slot).toHaveAttribute("role", "button");
+  await expect(slot).toHaveAttribute("tabindex", "0");
+  await slot.focus();
+  await slot.press("Enter");
+  await expect(status).toContainText("Clicked time slot");
+});
+
+test("overlapping events expose shared multi-column layout metadata", async ({ page }) => {
+  const root = await loadMain(page);
+  const planning = visibleEvent(root, "Planning sync");
+  const review = visibleEvent(root, "Design review");
+  await expect(planning).toBeVisible();
+  await expect(review).toBeVisible();
+  const columns = Number(await planning.getAttribute("data-layout-columns"));
+  expect(columns).toBeGreaterThan(1);
+  await expect(review).toHaveAttribute("data-layout-columns", String(columns));
+  const planningColumn = await planning.getAttribute("data-layout-column");
+  const reviewColumn = await review.getAttribute("data-layout-column");
+  expect(planningColumn).not.toBeNull();
+  expect(reviewColumn).not.toBeNull();
+  expect(planningColumn).not.toBe(reviewColumn);
+});
+
 
 test("week view renders day headers above the all-day lane and timed grid", async ({
   page,
@@ -325,6 +362,7 @@ test("event drag/drop and resize callbacks are reflected in the preview", async 
   await expect(resizeHandle).toBeVisible();
   await expect(startResizeHandle).toBeVisible();
   await expect(startResizeHandle).toHaveCSS("top", "0px");
+
   await expect(resizeHandle).toHaveCSS("bottom", "0px");
   await startResizeEventEnd(resizeRoot, resizableEvent, laterSlot);
   await expect(resizeRoot.locator("[data-schedule-resize-preview]")).toBeVisible();
@@ -333,6 +371,46 @@ test("event drag/drop and resize callbacks are reflected in the preview", async 
   await expect(page.getByText("Resized Planning sync")).not.toContainText(
     "10:30",
   );
+});
+test("controlled schedule reports view and next-date changes", async ({ page }) => {
+  const root = await loadDemo(page, "controlled");
+  const status = page.locator("[data-schedule-controlled-status]");
+
+  await root
+    .locator("[data-schedule-view-controls]")
+    .getByRole("button", { name: "Month", exact: true })
+    .click();
+  await expect(root).toHaveAttribute("data-view", "month");
+  await expect(status).toContainText("View changed to Month");
+
+  await root.getByRole("button", { name: "Next" }).click();
+  await expect(status).toContainText("Date changed to");
+});
+
+test("internationalized schedule exposes French labels and bounded workday grid", async ({ page }) => {
+  const root = await loadDemo(page, "internationalized");
+  await expect(root).toHaveAttribute("data-locale", "fr-FR");
+  await expect(root.getByRole("button", { name: "Précédent" })).toBeVisible();
+  await expect(root.getByRole("button", { name: "Aujourd’hui" })).toBeVisible();
+  await expect(root.getByRole("button", { name: "Suivant" })).toBeVisible();
+  await expect(viewButton(page, "day")).toHaveText("Jour");
+  await expect(viewButton(page, "week")).toHaveText("Semaine");
+  await expect(viewButton(page, "month")).toHaveText("Mois");
+  await expect(viewButton(page, "year")).toHaveText("Année");
+  await viewButton(page, "week").click();
+  await expect(root.locator("[data-schedule-day-header]").first()).toContainText("lun.");
+  const slots = root.locator("[data-schedule-time-slot]");
+  await expect(slots).toHaveCount(140);
+  await expect(slots.first()).toHaveAttribute("data-schedule-time-slot", /08:00/);
+  await expect(slots.nth(19)).toHaveAttribute("data-schedule-time-slot", /17:30/);
+});
+
+test("custom event demo renders its custom body", async ({ page }) => {
+  const root = await loadDemo(page, "custom_event");
+  const custom = root.locator("[data-schedule-custom-event]").first();
+  await expect(custom).toBeVisible();
+  await expect(custom).toContainText("Planning sync");
+  await expect(custom).toContainText("custom body");
 });
 
 test("external drops expose external data in the preview", async ({ page }) => {

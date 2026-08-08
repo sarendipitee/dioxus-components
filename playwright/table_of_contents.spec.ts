@@ -24,6 +24,66 @@ test("renders styled TOC nav with CSS module class", async ({ page }) => {
   expect(allClasses).toContain("dx_table_of_contents");
 });
 
+test("exposes accessible navigation identity and active current state", async ({ page }) => {
+  const { nav } = await loadPage(page);
+
+  await expect(nav).toHaveAttribute("aria-label", "On this page");
+  await expect(nav).toHaveAttribute("data-testid", "table-of-contents");
+
+  await expect(nav.locator('a[href="#overview"]')).toHaveAttribute(
+    "aria-current",
+    "location",
+  );
+  await expect(nav.locator('a[href="#installation"]')).not.toHaveAttribute(
+    "aria-current",
+  );
+});
+
+test("indents nested headings by their hierarchy depth", async ({ page }) => {
+  const { nav } = await loadPage(page);
+
+  for (const [href, marginLeft] of [
+    ["#overview", "20px"],
+    ["#configuration", "40px"],
+    ["#offsets", "60px"],
+  ] as const) {
+    await expect(nav.locator(`a[href="${href}"]`)).toHaveCSS(
+      "margin-left",
+      marginLeft,
+    );
+  }
+});
+
+test("clicking a TOC link updates the hash and scrolls the internal region", async ({ page }) => {
+  const { nav } = await loadPage(page);
+  const scrollRegion = page.locator("[data-toc-demo-scroll-region]");
+
+  const link = nav.locator('a[href="#installation"]');
+  const linkBox = await link.boundingBox();
+  expect(linkBox).not.toBeNull();
+  await page.mouse.click(
+    linkBox!.x + linkBox!.width / 2,
+    linkBox!.y + linkBox!.height / 2,
+  );
+  await expect(page).toHaveURL(/#installation$/);
+  await expect
+    .poll(async () => scrollRegion.evaluate((element) => element.scrollTop))
+    .toBeGreaterThan(0);
+
+});
+
+test("supports keyboard focus-visible navigation and Enter activation", async ({ page }) => {
+  const { nav } = await loadPage(page);
+  const links = nav.locator("a");
+
+  await links.first().focus();
+  await page.keyboard.press("Tab");
+  await expect(links.nth(1)).toBeFocused();
+  await expect(links.nth(1)).toHaveCSS("box-shadow", /rgb\(/);
+  await page.keyboard.press("Enter");
+  await expect(page).toHaveURL(/#installation$/);
+});
+
 test("renders links for every heading", async ({ page }) => {
   const { links } = await loadPage(page);
 

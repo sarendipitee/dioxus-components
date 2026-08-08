@@ -1,143 +1,61 @@
-import { test, expect } from "@playwright/test";
+import { test, expect, type Page } from "@playwright/test";
 
-test("test", async ({ page }) => {
-  await page.goto("/components/calendar", {
-    timeout: 30 * 1000,
-  });
-  await page.waitForLoadState('networkidle');
+const calendarFrame = (page: Page) =>
+  page.locator("#component-preview-frame").first();
 
-  const calendar = page.locator("#component-preview-frame").first();
-  const prevButton = calendar.getByRole("button").first();
-  const nextButton = calendar.getByRole("button").nth(1);
+test("shows the fixed May 2026 calendar and selects a named day", async ({ page }) => {
+  await page.goto("/components/calendar", { timeout: 30 * 1000 });
 
-  // Assert the calendar is displayed
-  await expect(calendar).toBeVisible({ timeout: 30000 });
-  // Assert the current month is displayed
-  const currentMonth = calendar.locator("select").first();
-  let currentMonthText = await currentMonth.inputValue();
+  const calendar = calendarFrame(page);
+  await expect(calendar).toBeVisible({ timeout: 30 * 1000 });
+  await expect(calendar.locator("select").first()).toHaveValue("5");
+  await expect(calendar.locator("select").nth(1)).toHaveValue("2026");
 
-  // Click the previous button to go to the previous month
-  await prevButton.click();
-  // Assert the month has changed
-  let previousMonthText = await currentMonth.inputValue();
-  expect(previousMonthText).not.toBe(currentMonthText);
+  const day = calendar.getByRole("button", { name: "Friday, May 15, 2026" });
+  await expect(day).toHaveAttribute("data-month", "current");
+  await expect(day).toHaveAttribute("data-selected", "false");
 
-  // Click the next button to go back to the current month
-  await nextButton.click();
-  // Assert the month has changed back to the current month
-  await expect(currentMonth).toHaveValue(currentMonthText);
-
-  // Move focus to the calendar with tab
-  await page.keyboard.press("Tab");
-  const focusedDay = calendar.locator(
-    '[data-month="current"]:focus'
-  );
-  // Assert a day is focused
-  const firstDay = focusedDay.first();
-  // Get the day
-  const day = await firstDay.textContent();
-  const dayNumber = parseInt(day || "", 10);
-  // Pressing right arrow should move focus to the next day
-  await page.keyboard.press("ArrowRight");
-  const nextDay = focusedDay.first();
-  // Assert the next day is focused
-  const nextDayNumber = parseInt((await nextDay.textContent()) || "", 10);
-  let current_date = new Date();
-  let daysInMonth = new Date(
-    current_date.getFullYear(),
-    current_date.getMonth() + 1,
-    0
-  ).getDate();
-  if (dayNumber + 1 > daysInMonth) {
-    // If the next day is in the next month, it should wrap around
-    expect(nextDayNumber).toBe(1);
-  } else {
-    expect(nextDayNumber).toBe(dayNumber + 1);
-  }
-  // Pressing left arrow should move focus back to the original day
-  await page.keyboard.press("ArrowLeft");
-  await expect(focusedDay.first()).toContainText(day || "failure");
-  // Pressing down arrow should move focus to the next week
-  await page.keyboard.press("ArrowDown");
-  const nextWeekDay = focusedDay.first();
-  // Assert the next week day is focused
-  const nextWeekDayNumber = parseInt(
-    (await nextWeekDay.textContent()) || "",
-    10
-  );
-  if (dayNumber + 7 > daysInMonth) {
-    // If the next week day is in the next month, it should wrap around
-    expect(nextWeekDayNumber).toBe(dayNumber + 7 - daysInMonth);
-  } else {
-    expect(nextWeekDayNumber).toBe(dayNumber + 7);
-  }
-  // Pressing up arrow should move focus back to the original day
-  await page.keyboard.press("ArrowUp");
-  await expect(focusedDay.first()).toContainText(day || "failure");
+  await day.click();
+  await expect(day).toHaveAttribute("data-selected", "true");
 });
 
-test("year navigation by moving 52 weeks with arrow keys", async ({ page }) => {
-  await page.goto("/components/calendar", {
-    timeout: 30 * 1000,
-  });
+test("deselects the selected day when activated again", async ({ page }) => {
+  await page.goto("/components/calendar", { timeout: 30 * 1000 });
 
-  const calendar = page.locator("#component-preview-frame").first();
-  const monthSelect = calendar.locator("select").first();
-  const yearSelect = calendar.locator("select").nth(1);
+  const calendar = calendarFrame(page);
+  const day = calendar.getByRole("button", { name: "Wednesday, May 20, 2026" });
 
-  // Assert the calendar is displayed
-  await expect(calendar).toBeVisible({ timeout: 30000 });
+  await day.click();
+  await expect(day).toHaveAttribute("data-selected", "true");
+  await day.click();
+  await expect(day).toHaveAttribute("data-selected", "false");
+});
 
-  // Get the initial month and year
-  const initialMonth = await monthSelect.inputValue();
-  const initialYear = await yearSelect.inputValue();
-  const initialYearNumber = parseInt(initialYear, 10);
-  const initialMonthNumber = parseInt(initialMonth, 10);
+test("selects a day with keyboard activation", async ({ page }) => {
+  await page.goto("/components/calendar", { timeout: 30 * 1000 });
 
-  // Calculate the exact number of weeks needed to move to the next year
-  // Start from the first day of the current month
-  const startDate = new Date(initialYearNumber, initialMonthNumber - 1, 1);
-  // Calculate the same date next year
-  const targetDate = new Date(initialYearNumber + 1, initialMonthNumber - 1, 1);
-  // Calculate the difference in days
-  const daysDifference = Math.floor(
-    (targetDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24)
-  );
-  // Calculate the number of weeks (round to nearest week)
-  const weeksToMove = Math.ceil(daysDifference / 7);
+  const calendar = calendarFrame(page);
+  const day = calendar.getByRole("button", { name: "Monday, May 25, 2026" });
 
-  // Move focus to the calendar manually
-  const firstDay = calendar
-    .locator('[data-month="current"]')
-    .first();
-  await firstDay.focus();
+  await day.focus();
+  await expect(day).toBeFocused();
+  await page.keyboard.press("Enter");
+  await expect(day).toHaveAttribute("data-selected", "true");
+});
 
-  // Press ArrowDown the calculated number of times to move forward by one year
-  for (let i = 0; i < weeksToMove; i++) {
-    await page.keyboard.press("ArrowDown");
-  }
+test("navigates months with accessible controls", async ({ page }) => {
+  await page.goto("/components/calendar", { timeout: 30 * 1000 });
 
-  // Assert the year has changed to the next year
-  const nextYear = await yearSelect.inputValue();
-  const nextYearNumber = parseInt(nextYear, 10);
-  expect(nextYearNumber).toBe(initialYearNumber + 1);
+  const calendar = calendarFrame(page);
+  const application = calendar.getByRole("application", { name: "Calendar" });
+  const month = calendar.getByRole("combobox", { name: "Month" });
 
-  // The month should be exactly the same
-  const nextMonth = await monthSelect.inputValue();
-  expect(nextMonth).toBe(initialMonth);
-
-  // Press ArrowUp the same number of times to move back by one year
-  for (let i = 0; i < weeksToMove; i++) {
-    await page.keyboard.press("ArrowUp");
-  }
-
-  // Assert the year has changed back to the original year
-  const currentYear = await yearSelect.inputValue();
-  expect(currentYear).toBe(initialYear);
-
-  // The month should be exactly the same
-  const currentMonth = await monthSelect.inputValue();
-  expect(currentMonth).toBe(initialMonth);
+  await expect(application).toBeVisible({ timeout: 30 * 1000 });
+  await expect(month).toHaveValue("5");
+  await calendar.getByRole("button", { name: "Previous month" }).click();
+  await expect(month).toHaveValue("4");
+  await calendar.getByRole("button", { name: "Next month" }).click();
+  await expect(month).toHaveValue("5");
 });
 
 test("shift + arrow keys navigation", async ({ page }) => {

@@ -8,7 +8,6 @@ test('pointer navigation', async ({ page }) => {
 
   // Assert the context menu is visible
   const contextMenu = page.getByRole('menu').first();
-  await page.waitForTimeout(600);
   await expect(contextMenu).toHaveAttribute('data-state', 'open');
   await expect(page.locator('.dx_menu_label', { hasText: 'Canvas' }).first()).toBeVisible();
   await expect(page.getByRole('menuitem', { name: 'Edit' }).first()).toContainText('⌘E');
@@ -69,8 +68,8 @@ test('menu lands at the tap coordinates on touch long-press', async ({ page }) =
     }));
   }, { x: tapX, y: tapY, pointerId });
 
-  await page.waitForTimeout(600);
-  await expect(contextMenu).toHaveAttribute('data-state', 'open');
+  // Poll through the 500 ms long-press threshold instead of sleeping after it.
+  await expect(contextMenu).toHaveAttribute('data-state', 'open', { timeout: 1_500 });
   const menuBox = await contextMenu.boundingBox();
   if (!menuBox) throw new Error('menu has no bounding box');
   // The menu's top-left should be at the tap coords (give or take a px for
@@ -108,8 +107,8 @@ test('touch long-press opens the context menu', async ({ page }) => {
     }));
   }, { x, y, pointerId });
 
-  await page.waitForTimeout(600);
-  await expect(contextMenu).toHaveAttribute('data-state', 'open');
+  // Poll through the 500 ms long-press threshold instead of sleeping after it.
+  await expect(contextMenu).toHaveAttribute('data-state', 'open', { timeout: 1_500 });
 
   // Release the touch after the menu has opened; it should stay open.
   await trigger.evaluate((el, { x, y, pointerId }) => {
@@ -123,7 +122,6 @@ test('touch long-press opens the context menu', async ({ page }) => {
     }));
   }, { x, y, pointerId });
 
-  await page.waitForTimeout(600);
   await expect(contextMenu).toHaveAttribute('data-state', 'open');
 });
 
@@ -152,8 +150,8 @@ test('pen long-press opens the context menu', async ({ page }) => {
     }));
   }, { x, y, pointerId });
 
-  await page.waitForTimeout(600);
-  await expect(contextMenu).toHaveAttribute('data-state', 'open');
+  // Poll through the 500 ms long-press threshold instead of sleeping after it.
+  await expect(contextMenu).toHaveAttribute('data-state', 'open', { timeout: 1_500 });
 });
 
 test('mouse pointerdown does not arm the long-press timer', async ({ page }) => {
@@ -180,8 +178,8 @@ test('mouse pointerdown does not arm the long-press timer', async ({ page }) => 
     }));
   }, { x, y, pointerId });
 
-  // Hold past the long-press threshold; the menu must remain closed because
-  // mouse pointers should only open via the native `contextmenu` event.
+  // This wait is intentional: absence cannot be polled to prove mouse did not
+  // arm a timer, so observe beyond the 500 ms long-press threshold.
   await page.waitForTimeout(700);
   await expect(page.getByRole('menu')).toHaveCount(0);
 });
@@ -296,7 +294,8 @@ test('touch released before long-press threshold does not open the menu', async 
     }));
   }, { x, y, pointerId });
 
-  // Quick tap — release well before the long-press threshold.
+  // This short wait is intentional: release before the 500 ms threshold so
+  // the test exercises cancellation of an armed long press.
   await page.waitForTimeout(50);
   await trigger.evaluate((el, { x, y, pointerId }) => {
     el.dispatchEvent(new PointerEvent('pointerup', {
@@ -309,7 +308,8 @@ test('touch released before long-press threshold does not open the menu', async 
     }));
   }, { x, y, pointerId });
 
-  // Wait past the long-press threshold; menu must remain closed.
+  // This wait is intentional: absence cannot be polled to prove the canceled
+  // timer stays canceled, so observe beyond the 500 ms long-press threshold.
   await page.waitForTimeout(700);
   await expect(page.getByRole('menu')).toHaveCount(0);
 });
@@ -346,4 +346,114 @@ test('keyboard navigation', async ({ page }) => {
   await expect(contextMenu).toHaveCount(0);
   // Assert the selected item is displayed
   await expect(page.getByText('Selected: Bring to front')).toBeVisible();
+});
+
+test('exposes menu roles and ARIA states', async ({ page }) => {
+  await page.goto('/components/context_menu', { timeout: 30 * 1000 });
+  const trigger = page.getByRole('button', { name: 'right click here' }).first();
+  await trigger.click({ button: 'right' });
+
+  const menu = page.getByRole('menu').first();
+  await expect(menu).toBeVisible();
+  await expect(page.getByRole('menuitem', { name: 'Edit' }).first()).toBeVisible();
+  await expect(page.getByRole('menuitem', { name: 'Undo' }).first()).toHaveAttribute('aria-disabled', 'true');
+  await expect(page.getByRole('menuitem', { name: 'Arrange' }).first()).toBeVisible();
+  await expect(page.getByRole('menuitemcheckbox', { name: 'Show line numbers' }).first()).toHaveAttribute('aria-checked', 'true');
+  await expect(page.getByRole('menuitemradio', { name: 'Preview' }).first()).toHaveAttribute('aria-checked', 'true');
+  await expect(page.getByRole('menuitemradio', { name: 'Code' }).first()).toHaveAttribute('aria-checked', 'false');
+  await expect(page.getByRole('separator')).toHaveCount(2);
+});
+
+test('dismisses outside and with Escape, restores focus, and reopens', async ({ page }) => {
+  await page.goto('/components/context_menu', { timeout: 30 * 1000 });
+  const trigger = page.getByRole('button', { name: 'right click here' }).first();
+  const menu = page.getByRole('menu').first();
+
+  await trigger.click({ button: 'right' });
+  await expect(menu).toBeVisible();
+  await page.mouse.click(5, 5);
+  await expect(menu).toHaveCount(0);
+  await expect(trigger).toBeFocused();
+
+  await trigger.click({ button: 'right' });
+  await expect(menu).toBeVisible();
+  await page.keyboard.press('Escape');
+  await expect(menu).toHaveCount(0);
+  await expect(trigger).toBeFocused();
+  await trigger.click({ button: 'right' });
+  await expect(menu).toBeVisible();
+});
+
+test('keyboard traversal skips disabled Undo and opens and closes Arrange submenu', async ({ page }) => {
+  await page.goto('/components/context_menu', { timeout: 30 * 1000 });
+  const trigger = page.getByRole('button', { name: 'right click here' }).first();
+  const edit = page.getByRole('menuitem', { name: 'Edit' }).first();
+  const undo = page.getByRole('menuitem', { name: 'Undo' }).first();
+  const arrange = page.getByRole('menuitem', { name: 'Arrange' }).first();
+  const submenu = page.locator('.dx_menu_sub_content').first();
+
+  await trigger.click({ button: 'right' });
+  await edit.focus();
+  await page.keyboard.press('ArrowDown');
+  await expect(undo).not.toBeFocused();
+  await expect(arrange).toBeFocused();
+  await page.keyboard.press('ArrowRight');
+  await expect(submenu).toHaveAttribute('data-state', 'open');
+  await expect(submenu.getByRole('menuitem', { name: 'Bring to front' })).toBeFocused();
+  await page.keyboard.press('ArrowLeft');
+  await expect(submenu).toHaveAttribute('data-state', 'closed');
+  await expect(arrange).toBeFocused();
+});
+
+test('toggles Show line numbers with pointer and keyboard activation', async ({ page }) => {
+  await page.goto('/components/context_menu', { timeout: 30 * 1000 });
+  const trigger = page.getByRole('button', { name: 'right click here' }).first();
+  const checkbox = page.getByRole('menuitemcheckbox', { name: 'Show line numbers' }).first();
+
+  await trigger.click({ button: 'right' });
+  await checkbox.click();
+  await expect(checkbox).toHaveAttribute('aria-checked', 'false');
+  await expect(page.getByText('Line numbers: false')).toBeVisible();
+
+  await trigger.click({ button: 'right' });
+  await checkbox.focus();
+  await page.keyboard.press('Space');
+  await expect(checkbox).toHaveAttribute('aria-checked', 'true');
+  await expect(page.getByText('Line numbers: true')).toBeVisible();
+});
+
+test('selects Code radio with pointer and keyboard activation', async ({ page }) => {
+  await page.goto('/components/context_menu', { timeout: 30 * 1000 });
+  const trigger = page.getByRole('button', { name: 'right click here' }).first();
+  const code = page.getByRole('menuitemradio', { name: 'Code' }).first();
+
+  await trigger.click({ button: 'right' });
+  await code.scrollIntoViewIfNeeded();
+  await code.click();
+  await expect(code).toHaveAttribute('aria-checked', 'true');
+  await expect(page.getByText('Panel: code')).toBeVisible();
+
+  await trigger.click({ button: 'right' });
+  await code.focus();
+  await page.keyboard.press('Enter');
+  await expect(code).toHaveAttribute('aria-checked', 'true');
+  await expect(page.getByText('Panel: code')).toBeVisible();
+});
+
+test('disabled Undo cannot activate', async ({ page }) => {
+  await page.goto('/components/context_menu', { timeout: 30 * 1000 });
+  const trigger = page.getByRole('button', { name: 'right click here' }).first();
+  const undo = page.getByRole('menuitem', { name: 'Undo' }).first();
+
+  await trigger.click({ button: 'right' });
+  await expect(undo).toHaveAttribute('aria-disabled', 'true');
+  await undo.scrollIntoViewIfNeeded();
+  await undo.click();
+  await expect(page.getByText('Selected: Edit')).toBeVisible();
+  await expect(page.getByRole('menu')).toBeVisible();
+
+  await undo.focus();
+  await page.keyboard.press('Enter');
+  await expect(page.getByText('Selected: Edit')).toBeVisible();
+  await expect(page.getByRole('menu')).toBeVisible();
 });

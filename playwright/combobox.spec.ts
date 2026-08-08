@@ -26,6 +26,67 @@ const visualStyle = (option: Locator) =>
             outlineWidth: style.outlineWidth,
         };
     });
+test("exposes listbox ARIA state and linkage across open and close", async ({ page }) => {
+    await page.goto(URL, { timeout: 30 * 1000 });
+    await page.waitForLoadState("domcontentloaded");
+
+    const trigger = input(page);
+    await expect(trigger).toHaveAttribute("aria-haspopup", "listbox");
+    await expect(trigger).toHaveAttribute("aria-expanded", "false");
+
+    await trigger.click();
+    await expect(trigger).toHaveAttribute("aria-expanded", "true");
+    const controls = await trigger.getAttribute("aria-controls");
+    expect(controls).toBeTruthy();
+    await expect.poll(() =>
+        page.evaluate((id) => {
+            const linked = id ? document.getElementById(id) : null;
+            return linked?.getAttribute("role") === "listbox" && linked.checkVisibility();
+        }, controls),
+    ).toBe(true);
+
+    await page.keyboard.press("Escape");
+    await expect(content(page)).toHaveCount(0);
+    await expect(trigger).toHaveAttribute("aria-expanded", "false");
+});
+
+test("Escape dismisses without changing the committed value or focus", async ({ page }) => {
+    await page.goto(URL, { timeout: 30 * 1000 });
+    await page.waitForLoadState("domcontentloaded");
+
+    const trigger = input(page);
+    await trigger.click();
+    await list(page).getByRole("option", { name: "Dioxus" }).click();
+    await expect(trigger).toHaveValue("Dioxus");
+
+    await trigger.click();
+    await page.keyboard.type("next");
+    await page.keyboard.press("Escape");
+    await expect(trigger).toHaveAttribute("aria-expanded", "false");
+    await expect(content(page)).toHaveCount(0);
+    await expect(trigger).toHaveValue("Dioxus");
+    await expect(trigger).toBeFocused();
+});
+
+test("clearing a committed selection removes its selected state on reopen", async ({ page }) => {
+    await page.goto(URL, { timeout: 30 * 1000 });
+    await page.waitForLoadState("domcontentloaded");
+
+    const trigger = input(page);
+    await trigger.click();
+    await list(page).getByRole("option", { name: "Dioxus" }).click();
+    await expect(trigger).toHaveValue("Dioxus");
+
+    await trigger.press("Control+A");
+    await trigger.press("Backspace");
+    await expect(trigger).toHaveValue("");
+    await page.keyboard.press("Escape");
+    await trigger.click();
+    await expect(list(page).getByRole("option", { name: "Dioxus" })).toHaveAttribute(
+        "aria-selected",
+        "false",
+    );
+});
 
 test("opens from the focused input with the keyboard", async ({ page }) => {
     await page.goto(URL, { timeout: 30 * 1000 });

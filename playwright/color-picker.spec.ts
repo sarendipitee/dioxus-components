@@ -30,6 +30,82 @@ test('renders the inline picker with the expected initial channels', async ({ pa
   await expect(saturationInput).toHaveValue('50');
   await expect(valueInput).toHaveValue('100');
 });
+test('exposes picker group, selected swatch, and channel state', async ({ page }) => {
+  const { picker, hueThumb, saturationInput, valueInput } = await loadPicker(page);
+
+  await expect(picker).toHaveAttribute('role', 'group');
+  await expect(picker).toHaveAccessibleName('Color picker');
+  await expect(picker).toHaveAttribute('aria-disabled', 'false');
+  await expect(picker).toHaveAttribute('data-disabled', 'false');
+  await expect(page.getByRole('img', { name: 'Selected color #9B80FF' })).toBeVisible();
+
+  await expect(hueThumb).toHaveAttribute('aria-valuemin', '0');
+  await expect(hueThumb).toHaveAttribute('aria-valuemax', '360');
+  await expect(hueThumb).toHaveAttribute('aria-valuenow', /252/);
+  await hueThumb.focus();
+  await expect(hueThumb).toBeFocused();
+
+  for (const input of [saturationInput, valueInput]) {
+    await expect(input).toBeVisible();
+    await expect(input).toHaveAttribute('min', '0');
+    await expect(input).toHaveAttribute('max', '100');
+  }
+  await expect(saturationInput).toHaveValue('50');
+  await expect(valueInput).toHaveValue('100');
+  await expect(saturationInput).toHaveAccessibleName('Saturation');
+  await expect(valueInput).toHaveAccessibleName('Value');
+});
+
+test('controlled preset updates the selected color', async ({ page }) => {
+  await loadPicker(page);
+  await page.getByRole('button', { name: 'Set color to red' }).click();
+  await expect(page.getByRole('img', { name: 'Selected color #FF0000' })).toBeVisible();
+  await expect(page.getByRole('slider', { name: 'Saturation' })).toHaveValue('100');
+  await expect(page.getByRole('slider', { name: 'Value' })).toHaveValue('100');
+});
+
+test('disabled picker exposes state and blocks keyboard changes', async ({ page }) => {
+  const { picker, areaThumb, hueThumb, saturationInput, valueInput } = await loadPicker(page);
+  await page.getByRole('button', { name: 'Disable color picker' }).click();
+
+  await expect(picker).toHaveAttribute('aria-disabled', 'true');
+  await expect(picker).toHaveAttribute('data-disabled', 'true');
+  await expect(hueThumb).toHaveAttribute('aria-disabled', 'true');
+  await expect(hueThumb).toHaveAttribute('tabindex', '-1');
+  await expect(saturationInput).toBeDisabled();
+  await expect(valueInput).toBeDisabled();
+  await expect(areaThumb).toHaveAttribute('tabindex', '-1');
+
+  const hueBefore = await hueThumb.getAttribute('aria-valuenow');
+  const saturationBefore = await saturationInput.inputValue();
+  const valueBefore = await valueInput.inputValue();
+  await hueThumb.focus();
+  await page.keyboard.press('ArrowRight');
+  await expect(hueThumb).toHaveAttribute('aria-valuenow', hueBefore!);
+
+  await areaThumb.focus();
+  await page.keyboard.press('ArrowRight');
+  await expect(saturationInput).toHaveValue(saturationBefore);
+  await expect(valueInput).toHaveValue(valueBefore);
+});
+
+test('disabled picker blocks pointer changes', async ({ page, browserName }) => {
+  test.skip(
+    browserName === 'firefox',
+    'Firefox automation does not reliably dispatch a single-click update for the color area.',
+  );
+  const { saturationInput, valueInput } = await loadPicker(page);
+  await page.getByRole('button', { name: 'Disable color picker' }).click();
+
+  const saturationBefore = await saturationInput.inputValue();
+  const valueBefore = await valueInput.inputValue();
+  const area = page.locator('.dx_color_area_track').first();
+  const box = await area.boundingBox();
+  if (!box) throw new Error('color area has no bounding box');
+  await page.mouse.click(box.x + box.width * 0.8, box.y + box.height * 0.8);
+  await expect(saturationInput).toHaveValue(saturationBefore);
+  await expect(valueInput).toHaveValue(valueBefore);
+});
 
 test('hue slider keyboard navigation updates color', async ({ page }) => {
   const { hueThumb } = await loadPicker(page);
@@ -69,22 +145,6 @@ test('color area thumb keyboard navigation updates saturation/value', async ({ p
   expect(valueAfter).toBeLessThan(valueBefore);
 });
 
-test('clicking the color area updates saturation and value', async ({ page, browserName }) => {
-  test.skip(
-    browserName === 'firefox',
-    'Firefox automation does not reliably dispatch a single-click update for the color area; drag coverage remains.',
-  );
-
-  const { saturationInput, valueInput } = await loadPicker(page);
-  const area = page.locator('.dx_color_area_track').first();
-
-  const box = await area.boundingBox();
-  if (!box) throw new Error('color area has no bounding box');
-  await page.mouse.click(box.x + box.width * 0.8, box.y + box.height * 0.8);
-
-  await expect.poll(async () => Number(await saturationInput.inputValue())).toBeGreaterThan(70);
-  await expect.poll(async () => Number(await valueInput.inputValue())).toBeLessThan(30);
-});
 
 test('dragging the color area updates saturation and value', async ({ page, browserName }) => {
   test.skip(

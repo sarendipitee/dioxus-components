@@ -184,3 +184,73 @@ test("virtual list virtualizes rows and updates on scroll", async ({ page }) => 
     expect(hasScrolledContent).toBe(true);
   }).toPass({ timeout: 15000 });
 });
+
+test("main virtual list exposes bounded accessible window and returns home", async ({ page }) => {
+  await page.goto("/components/virtual_list/block#main", { timeout: 30 * 1000 });
+
+  const list = page.getByRole("list").first();
+  await expect(list).toBeVisible({ timeout: 30000 });
+  const items = list.getByRole("listitem");
+  await expect(items.first()).toBeVisible({ timeout: 30000 });
+
+  const initial = await items.evaluateAll((elements) =>
+    elements.map((element) => ({
+      index: Number(element.getAttribute("data-virtual-index")),
+      setSize: element.getAttribute("aria-setsize"),
+      posInSet: element.getAttribute("aria-posinset"),
+    }))
+  );
+  expect(initial.length).toBeGreaterThan(0);
+  expect(initial.length).toBeLessThan(2000);
+  expect(initial.some((item) => item.index === 0)).toBe(true);
+  for (const item of initial) {
+    expect(item.setSize).toBe("2000");
+    expect(item.posInSet).toBe(String(item.index + 1));
+  }
+
+  await list.evaluate((element) => {
+    element.scrollTop = element.scrollHeight;
+  });
+  await page.waitForTimeout(300);
+  await expect(list.locator('[data-virtual-index="1999"]')).toBeVisible({ timeout: 30000 });
+  const farItems = await items.evaluateAll((elements) =>
+    elements.map((element) => ({
+      index: Number(element.getAttribute("data-virtual-index")),
+      setSize: element.getAttribute("aria-setsize"),
+      posInSet: element.getAttribute("aria-posinset"),
+    }))
+  );
+  expect(farItems.some((item) => item.index === 1999)).toBe(true);
+  for (const item of farItems) {
+    expect(item.setSize).toBe("2000");
+    expect(item.posInSet).toBe(String(item.index + 1));
+  }
+  const farIndices = farItems.map((item) => item.index);
+  expect(Math.max(...farIndices)).toBe(1999);
+  expect(Math.min(...farIndices)).toBeGreaterThan(0);
+
+  await list.focus();
+  await list.press("Home");
+  await expect(list.locator('[data-virtual-index="0"]')).toBeVisible({ timeout: 30000 });
+});
+
+test("states fixture forwards global attributes and clears and resets", async ({ page }) => {
+  await page.goto("/components/virtual_list/block#states", { timeout: 30 * 1000 });
+
+  const list = page.getByTestId("virtual-list-states");
+  await expect(list).toBeVisible({ timeout: 30000 });
+  await expect(list).toHaveAttribute("id", "virtual-list-states");
+  await expect(list).toHaveAttribute("data-testid", "virtual-list-states");
+  await expect(list).toHaveAttribute("aria-label", "Virtual list state fixture");
+  await expect(list).toHaveClass(/virtual-list-states/);
+  await expect(page.getByTestId("virtual-list-states-count")).toHaveText("40 items");
+  await expect(page.getByTestId("virtual-list-state-row").first()).toBeVisible();
+
+  await page.getByRole("button", { name: "Clear list" }).click();
+  await expect(page.getByTestId("virtual-list-states-count")).toHaveText("0 items");
+  await expect(page.getByTestId("virtual-list-state-row")).toHaveCount(0);
+
+  await page.getByRole("button", { name: "Reset list" }).click();
+  await expect(page.getByTestId("virtual-list-states-count")).toHaveText("40 items");
+  await expect(page.getByTestId("virtual-list-state-row").first()).toBeVisible();
+});

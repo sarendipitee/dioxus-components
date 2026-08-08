@@ -12,9 +12,12 @@ test("pointer navigation", async ({ page }) => {
   await expect(fileMenuContent.getByRole("separator")).toHaveCount(1);
   await expect(fileMenuContent.getByRole("menuitemcheckbox", { name: "Status bar" })).toHaveAttribute("data-state", "checked");
   const shareItem = fileMenuContent.getByRole("menuitem", { name: "Share" });
+  await expect(shareItem).toHaveAttribute("aria-haspopup", "menu");
+  await expect(shareItem).toHaveAttribute("aria-expanded", "false");
   await shareItem.hover();
   const submenu = page.locator(".dx_menu_sub_content").first();
   await expect(submenu).toHaveAttribute("data-state", "open");
+  await expect(shareItem).toHaveAttribute("aria-expanded", "true");
   await expect(submenu.getByRole("menuitem", { name: "Copy link" })).toBeVisible();
   await fileMenuContent.getByRole("menuitem", { name: "New" }).hover();
   await expect(submenu).toHaveAttribute("data-state", "closed");
@@ -81,4 +84,87 @@ test("keyboard navigation", async ({ page }) => {
   // Assert the menu is closed after clicking a menu item
   await expect(fileMenuContent).toHaveCount(0);
   await expect(page.getByText("Selected: Copy link")).toBeVisible();
+});
+
+test("trigger exposes menu popup and expanded state", async ({ page }) => {
+  await page.goto("/components/menubar", { timeout: 30 * 1000 });
+  const fileTrigger = page.getByRole("menuitem", { name: "File" }).first();
+  await expect(fileTrigger).toHaveAttribute("aria-haspopup", "menu");
+  await expect(fileTrigger).toHaveAttribute("aria-expanded", "false");
+  await fileTrigger.click({ force: true });
+  await expect(fileTrigger).toHaveAttribute("aria-expanded", "true");
+  await fileTrigger.click();
+  await expect(fileTrigger).toHaveAttribute("aria-expanded", "false");
+});
+
+test("switching triggers closes the previous menu", async ({ page }) => {
+  await page.goto("/components/menubar", { timeout: 30 * 1000 });
+  const fileTrigger = page.getByRole("menuitem", { name: "File" }).first();
+  const viewTrigger = page.getByRole("menuitem", { name: "View" }).first();
+  await fileTrigger.click();
+  await expect(fileTrigger).toHaveAttribute("aria-expanded", "true");
+  await viewTrigger.hover();
+  await expect(fileTrigger).toHaveAttribute("aria-expanded", "false");
+  await expect(viewTrigger).toHaveAttribute("aria-expanded", "true");
+  await expect(page.getByRole("menuitemradio", { name: "Date modified" })).toBeVisible();
+});
+
+test("checkbox toggles and radio selection update their outputs", async ({ page }) => {
+  await page.goto("/components/menubar", { timeout: 30 * 1000 });
+  const fileTrigger = page.getByRole("menuitem", { name: "File" }).first();
+  await fileTrigger.click();
+  let statusBar = page.getByRole("menuitemcheckbox", { name: "Status bar" });
+  await expect(statusBar).toHaveAttribute("data-state", "checked");
+  await statusBar.click();
+  await expect(page.getByText("Status bar: false", { exact: true })).toBeVisible();
+
+  statusBar = page.getByRole("menuitemcheckbox", { name: "Status bar" });
+  await expect(statusBar).toHaveAttribute("data-state", "unchecked");
+
+  const viewTrigger = page.getByRole("menuitem", { name: "View" }).first();
+  await viewTrigger.hover();
+  let viewMenu = page.getByRole("menu").filter({ has: page.getByRole("menuitemradio", { name: "Name" }).first() }).first();
+  let dateModified = viewMenu.getByRole("menuitemradio", { name: "Date modified" });
+  await expect(dateModified).toHaveAttribute("data-state", "unchecked");
+  await dateModified.click();
+  await expect(page.getByText("Sort: date", { exact: true })).toBeVisible();
+});
+
+test("disabled item cannot activate", async ({ page }) => {
+  await page.goto("/components/menubar", { timeout: 30 * 1000 });
+  const fileTrigger = page.getByRole("menuitem", { name: "File" }).first();
+  await expect(fileTrigger).toBeVisible();
+  await fileTrigger.click();
+  const openItem = page.getByRole("menuitem", { name: "Open" });
+  await expect(openItem).toHaveAttribute("data-disabled", "true");
+  await openItem.click({ force: true });
+  await expect(page.getByText("Selected: New", { exact: true })).toBeVisible();
+  await expect(page.getByRole("menuitem", { name: "New" })).toBeVisible();
+});
+
+test("Escape dismisses menu and restores trigger focus", async ({ page }) => {
+  await page.goto("/components/menubar", { timeout: 30 * 1000 });
+  const fileTrigger = page.getByRole("menuitem", { name: "File" }).first();
+  await fileTrigger.click();
+  await page.keyboard.press("Escape");
+  await expect(fileTrigger).toHaveAttribute("aria-expanded", "false");
+  await expect(fileTrigger).toBeFocused();
+});
+
+test("Tab dismisses menu and moves focus outside menubar", async ({ page }) => {
+  await page.goto("/components/menubar", { timeout: 30 * 1000 });
+  const fileTrigger = page.getByRole("menuitem", { name: "File" }).first();
+  await fileTrigger.click();
+  await page.keyboard.press("Tab");
+  await expect(fileTrigger).toHaveAttribute("aria-expanded", "false");
+  await expect(fileTrigger).not.toBeFocused();
+});
+
+test("outside pointer dismisses an open menu", async ({ page }) => {
+  await page.goto("/components/menubar", { timeout: 30 * 1000 });
+  const fileTrigger = page.getByRole("menuitem", { name: "File" }).first();
+  await fileTrigger.click();
+  await page.mouse.click(1, page.viewportSize()!.height - 1);
+  await expect(fileTrigger).toHaveAttribute("aria-expanded", "false");
+  await expect(page.getByRole("menuitem", { name: "New" })).toHaveCount(0);
 });

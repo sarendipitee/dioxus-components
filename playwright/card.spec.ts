@@ -8,6 +8,74 @@ async function gotoCardDemo(page: Page) {
     waitUntil: "load",
   });
 }
+test("card roots expose section slots and accessible content", async ({ page }) => {
+  await gotoCardDemo(page);
+
+  const preview = page.locator("#dx-preview-block-root");
+  const cards = preview.locator('[data-slot="card"]');
+  await expect(cards).toHaveCount(2);
+
+  const firstCard = cards.nth(0);
+  await expect(firstCard.locator('[data-slot="card-header"]')).toHaveCount(1);
+  await expect(firstCard.locator('[data-slot="card-content"]')).toHaveCount(1);
+  await expect(firstCard.locator('[data-slot="card-footer"]')).toHaveCount(1);
+  const action = firstCard.locator('[data-slot="card-action"]');
+  await expect(action).toHaveCount(1);
+  await expect(action.getByRole("button", { name: "Sign Up" })).toBeVisible();
+  await expect(cards.nth(1).locator('[data-slot="card-header"]')).toHaveCount(1);
+  await expect(cards.nth(1).locator('[data-slot="card-content"]')).toHaveCount(0);
+  await expect(cards.nth(1).locator('[data-slot="card-footer"]')).toHaveCount(0);
+
+  await expect(firstCard.getByRole("heading", { level: 3 })).toHaveText("Login to your account");
+  await expect(firstCard.locator('[data-slot="card-description"]')).toHaveText(
+    "Enter your email below to login to your account",
+  );
+  await expect(cards.nth(1).getByRole("heading", { level: 3 })).toHaveText("Team workspace");
+  await expect(cards.nth(1).locator('[data-slot="card-description"]')).toHaveText(
+    "Invite collaborators and manage access.",
+  );
+});
+
+test("card login form controls and actions preserve browser semantics", async ({ page }) => {
+  await gotoCardDemo(page);
+
+  const preview = page.locator("#dx-preview-block-root");
+  const firstCard = preview.locator('[data-slot="card"]').first();
+  const form = firstCard.locator('[data-slot="card-content"] #login-form');
+  const email = form.locator("#email");
+  const password = form.locator("#password");
+
+  await expect(email).toHaveAttribute("type", "email");
+  await expect(email).toHaveAttribute("placeholder", "m@example.com");
+  await expect(password).toHaveAttribute("type", "password");
+  await expect(password).not.toHaveAttribute("placeholder");
+  await expect(form.locator('label[for="email"]')).toHaveText("Email");
+  await expect(form.locator('label[for="password"]')).toHaveText("Password");
+  await expect(email).toHaveAccessibleName("Email");
+  await expect(password).toHaveAccessibleName("Password");
+
+  const signUp = firstCard.getByRole("button", { name: "Sign Up" });
+  const forgot = firstCard.getByRole("link", { name: "Forgot your password?" });
+  const login = firstCard.getByRole("button", { name: "Login", exact: true });
+  const google = firstCard.getByRole("button", { name: "Login with Google" });
+  await expect(signUp).toHaveAttribute("type", "button");
+  await expect(signUp).not.toHaveAttribute("form");
+  await expect(forgot).toHaveAttribute("href", "#");
+  await expect(login).toHaveAttribute("type", "submit");
+  await expect(login).toHaveAttribute("form", "login-form");
+  await expect(google).toHaveAttribute("type", "button");
+  await expect(google).not.toHaveAttribute("form");
+
+  await form.evaluate((element) => {
+    element.addEventListener("submit", (event) => {
+      event.preventDefault();
+      (element as HTMLFormElement).dataset.submitted = "true";
+    });
+  });
+  await login.click();
+  await expect(form).toHaveAttribute("data-submitted", "true");
+});
+
 
 async function computedColorForCssColor(locator: Locator, color: string) {
   return locator.evaluate((element: Element, cssColor: string) => {

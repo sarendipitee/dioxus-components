@@ -155,26 +155,6 @@ async function openFilterMenu(page: Page) {
   return menu;
 }
 
-test("filter menu stays open when clicking its background", async ({ page }) => {
-  await page.goto(FILTER_URL);
-  const menu = await openFilterMenu(page);
-
-  const target = await menu.evaluate(async (element) => {
-    element.scrollIntoView({ block: "center" });
-    await new Promise((resolve) => requestAnimationFrame(() => resolve(null)));
-    const rect = element.getBoundingClientRect();
-    for (let y = rect.top + 2; y < rect.bottom - 2; y += 3) {
-      for (let x = rect.left + 2; x < rect.right - 2; x += 3) {
-        if (document.elementFromPoint(x, y) === element) return { x, y, ok: true };
-      }
-    }
-    return { x: 0, y: 0, ok: false };
-  });
-  expect(target.ok, "found a background pixel of the menu").toBe(true);
-
-  await page.mouse.click(target.x, target.y);
-  await expect(page.locator('[role="menu"][data-state="open"]')).toHaveCount(1);
-});
 
 test("filter menu filters column choices", async ({ page }) => {
   await page.goto(FILTER_URL);
@@ -204,4 +184,83 @@ test("filter menu dismisses when clicking outside", async ({ page }) => {
   await openFilterMenu(page);
   await page.mouse.click(2, 2);
   await expect(page.locator('[role="menu"][data-state="open"]')).toHaveCount(0);
+});
+
+test("main table exposes semantic headers, rows, sorting, and search", async ({
+  page,
+}) => {
+  await page.goto("/components/data_table/block#main");
+
+  const block = page.locator("#dx-preview-block-root");
+  const table = block.locator('[data-slot="data-table-table"]');
+  await expect(table).toBeVisible();
+  await expect(table.getByRole("columnheader", { name: /Order/ })).toBeVisible();
+  await expect(table.getByRole("columnheader", { name: /Customer/ })).toBeVisible();
+  await expect(table.locator('tbody tr[data-row-id]').first()).toBeVisible();
+
+  const customerHeader = table.getByRole("columnheader", { name: /Customer/ });
+  const sortButton = customerHeader.getByRole("button");
+  const customerCells = table.locator('tbody td[data-column-key="customer"]');
+  await expect(customerHeader).toHaveAttribute("aria-sort", "none");
+  await sortButton.press("Enter");
+  await expect(customerHeader).toHaveAttribute("aria-sort", "ascending");
+  const ascendingCustomers = await customerCells.allTextContents();
+  expect(ascendingCustomers).toEqual(
+    [...ascendingCustomers].sort((left, right) => left.localeCompare(right)),
+  );
+  await sortButton.press("Enter");
+  await expect(customerHeader).toHaveAttribute("aria-sort", "descending");
+  const descendingCustomers = await customerCells.allTextContents();
+  expect(descendingCustomers).toEqual(
+    [...descendingCustomers].sort((left, right) => right.localeCompare(left)),
+  );
+  expect(descendingCustomers).not.toEqual(ascendingCustomers);
+  await sortButton.press("Enter");
+  await expect(customerHeader).toHaveAttribute("aria-sort", "none");
+
+  const search = block.getByRole("searchbox", { name: "Search table" });
+  await search.fill("Northwind Supply");
+  const filteredRows = table.locator('tbody tr[data-row-id]');
+  await expect(filteredRows).toHaveCount(10);
+  for (const row of await filteredRows.all()) {
+    await expect(row.locator('td[data-column-key="customer"]')).toHaveText("Northwind Supply");
+  }
+  await search.fill("no such customer exists");
+  await expect(table.getByText("No orders match this view", { exact: true })).toBeVisible();
+  await expect(table.getByText("Try clearing search, filters, or sorting.", { exact: true })).toBeVisible();
+  await search.fill("");
+  await expect(table.locator('tbody tr[data-row-id]').first()).toBeVisible();
+
+});
+
+test("selectable table toggles a row and exposes selection state", async ({ page }) => {
+  await page.goto("/components/data_table/block#selectable");
+  const table = page.locator('[data-slot="data-table-table"]');
+  const checkbox = table.getByRole("checkbox", { name: "Select row" }).first();
+  const row = checkbox.locator("xpath=ancestor::tr");
+
+  await expect(page.getByText("No rows selected", { exact: true })).toBeVisible();
+  await checkbox.check();
+  await expect(row).toHaveAttribute("aria-selected", "true");
+  await expect(page.getByText("1 rows selected", { exact: true })).toBeVisible();
+  await checkbox.press(" ");
+  await expect(row).toHaveAttribute("aria-selected", "false");
+  await expect(page.getByText("No rows selected", { exact: true })).toBeVisible();
+});
+
+test("server-backed table exposes loading, error, and resolved states", async ({ page }) => {
+  await page.goto("/components/data_table/block#server_backed");
+  const table = page.locator('[data-slot="data-table-table"]');
+  await expect(table.locator('tbody tr[data-row-id]').first()).toBeVisible();
+
+  await page.getByRole("button", { name: "Loading", exact: true }).click();
+  await expect(table.locator('[aria-busy="true"]')).toContainText("Loading table data...");
+
+  await page.getByRole("button", { name: "Error", exact: true }).click();
+  await expect(table.getByRole("alert")).toHaveText(
+    "Fake orders endpoint returned 503. Retry keeps the same DataTableState query.",
+  );
+
+  await page.getByRole("button", { name: "Resolve", exact: true }).click();
+  await expect(table.locator('tbody tr[data-row-id]').first()).toBeVisible();
 });

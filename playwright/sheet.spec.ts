@@ -320,3 +320,57 @@ test("tearing down outer scope while inner is still animating does not crash", a
   await page.keyboard.press("Escape");
   await expect(sheet1).toHaveCount(0);
 });
+
+test("controlled audit sheet exposes callbacks and ignores implicit dismissal", async ({ page }) => {
+  await gotoSheetDemo(page);
+
+  const opener = page.getByTestId("sheet-audit-open");
+  const status = page.getByTestId("sheet-audit-status");
+  const content = page.getByTestId("sheet-audit-content");
+
+  await expect(status).toHaveText("false:0:none");
+  await opener.click();
+  await expect(status).toHaveText("true:0:none");
+  await expect(content).toBeVisible();
+  await expect(content).toHaveRole("dialog", { name: "Audit sheet" });
+  await expect(content).toHaveAttribute("aria-modal", "true");
+  await expect(content).toHaveAttribute("id", "sheet-audit-content");
+  await expect(content).toHaveAttribute("data-testid", "sheet-audit-content");
+  await expect(content).toHaveAttribute("data-audit-scope", "controlled");
+  await expect(content).toHaveAttribute("aria-label", "Audit sheet");
+  await expect(content.locator('[data-slot="sheet-title"]')).toHaveCount(1);
+  await expect(content.locator('[data-slot="sheet-description"]')).toHaveCount(1);
+  await expect(content.locator(".dx_dialog_close")).toHaveCount(0);
+
+  await page.keyboard.press("Escape");
+  await expect(content).toBeVisible();
+  await expect(status).toHaveText("true:0:none");
+
+  await page.mouse.click(2, 2);
+  await expect(content).toBeVisible();
+  await expect(status).toHaveText("true:0:none");
+
+  const close = content.getByRole("button", { name: "Close audit sheet programmatically" });
+  await close.click();
+  await expect(status).toHaveText("false:1:closed");
+  await expect(content).toBeHidden();
+  await expect(opener).toBeFocused();
+});
+test("nonmodal sheet leaves outside controls interactive", async ({ page }) => {
+  await gotoSheetDemo(page);
+
+  const openButton = page.getByTestId("sheet-nonmodal-open");
+  const content = page.getByTestId("sheet-nonmodal-content");
+  const outsideButton = page.getByTestId("sheet-nonmodal-outside");
+
+  await openButton.click();
+  await expect(content).toBeVisible();
+  await expect(content).not.toHaveAttribute("aria-modal");
+
+  await outsideButton.click();
+  await expect(outsideButton).toBeFocused();
+  await expect(content).toBeVisible();
+
+  await content.getByRole("button", { name: "Close nonmodal sheet" }).click();
+  await expect(content).toBeHidden();
+});

@@ -140,3 +140,68 @@ test("picker inputs wire generated ids and descriptions to controls", async ({ p
     "Opens a column picker when focused.",
   );
 });
+
+test("text input controls expose labels, controlled output, and native attributes", async ({
+  page,
+}) => {
+  await page.goto("/components/text_input", { timeout: 30 * 1000 });
+
+  const email = page.getByRole("textbox", { name: "Email", exact: true }).first();
+  await expect(email).toBeVisible();
+  await expect(email).toHaveAttribute("name", "email");
+  await expect(email).toHaveAttribute("type", "email");
+  await expect(email).toHaveAttribute("form", "text-input-form");
+  await expect(email).toHaveAttribute("data-testid", "text-input-native");
+  await expect(email).toHaveAttribute("data-input-purpose", "account-email");
+
+  await email.fill("customer@example.com");
+  await expect(page.locator("#text-input-value").first()).toContainText(
+    "customer@example.com",
+  );
+});
+
+test("text input distinguishes required and asterisk-only fields", async ({ page }) => {
+  await page.goto("/components/text_input", { timeout: 30 * 1000 });
+
+  const required = page.getByRole("textbox", { name: "Display name", exact: true }).first();
+  const requiredShell = page
+    .locator("[data-slot='input-wrapper']")
+    .filter({ has: required });
+  await expect(required).toHaveAttribute("required", "true");
+  await expect(requiredShell.getByText("*", { exact: true })).toBeVisible();
+
+  const asteriskOnly = page
+    .getByRole("textbox", { name: "Organization", exact: true })
+    .first();
+  const asteriskShell = page
+    .locator("[data-slot='input-wrapper']")
+    .filter({ has: asteriskOnly });
+  await expect(asteriskOnly).not.toHaveAttribute("required");
+  await expect(asteriskShell.getByText("*", { exact: true })).toBeVisible();
+});
+
+test("text input state props reach the native control and shell", async ({ page }) => {
+  await page.goto("/components/text_input", { timeout: 30 * 1000 });
+
+  const disabled = page
+    .getByRole("textbox", { name: "Disabled field", exact: true })
+    .first();
+  await expect(disabled).toBeDisabled();
+  await expect(disabled).not.toBeEditable();
+
+  const readOnly = page
+    .getByRole("textbox", { name: "Read-only field", exact: true })
+    .first();
+  await expect(readOnly).toHaveAttribute("readonly", "true");
+  await expect(readOnly).toHaveValue(/.+/);
+
+  const loading = page
+    .getByRole("textbox", { name: "Loading field", exact: true })
+    .first();
+  const loadingShell = page
+    .locator("[data-slot='input']")
+    .filter({ has: loading });
+  await expect(loadingShell).toHaveAttribute("aria-busy", "true");
+  await expect(loadingShell).toHaveAttribute("data-loading", "true");
+  await expect(loadingShell.locator("[data-slot='input-spinner']")).toBeVisible();
+});

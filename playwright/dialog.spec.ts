@@ -111,3 +111,59 @@ test('dialog title and description keep primitive ARIA with shared typography', 
   expect(titleColor).toBe(dialogColor);
   expect(descriptionColor).toBe(mutedColor);
 });
+
+test('built-in Close button closes and controlled dialog reopens', async ({ page }) => {
+  await page.goto('/components/dialog/block#main', { timeout: 30 * 1000 });
+  const trigger = page.getByRole('button', { name: 'Open Dialog', exact: true });
+  await trigger.click();
+
+  const dialog = page.getByRole('dialog', { name: 'Item information' });
+  const close = dialog.getByRole('button', { name: 'Close', exact: true });
+  await expect(close).toHaveAttribute('type', 'button');
+  await expect(close).toHaveAccessibleName('Close');
+  await close.click();
+  await expect(dialog).toHaveCount(0);
+
+  await trigger.click();
+  await expect(dialog).toBeVisible();
+});
+
+test('footer Cancel closes and controlled dialog reopens', async ({ page }) => {
+  await page.goto('/components/dialog/block#main', { timeout: 30 * 1000 });
+  const trigger = page.getByRole('button', { name: 'Open Dialog', exact: true });
+  await trigger.click();
+
+  const dialog = page.getByRole('dialog', { name: 'Item information' });
+  await dialog.getByRole('button', { name: 'Cancel', exact: true }).click();
+  await expect(dialog).toHaveCount(0);
+
+  await trigger.click();
+  await expect(dialog).toBeVisible();
+});
+
+test('form dialog is modal, accessible, traps focus, and restores trigger focus', async ({
+  page,
+}) => {
+  await page.goto('/components/dialog/block#form', { timeout: 30 * 1000 });
+  const trigger = page.getByRole('button', { name: 'Edit Profile', exact: true });
+  await trigger.click();
+
+  const dialog = page.getByRole('dialog', { name: 'Edit profile' });
+  const close = dialog.getByRole('button', { name: 'Close', exact: true });
+  const save = dialog.getByRole('button', { name: 'Save changes', exact: true });
+  await expect(dialog).toHaveAttribute('aria-modal', 'true');
+  await expect(dialog).toHaveAccessibleName('Edit profile');
+  await expect(dialog).toHaveAccessibleDescription(
+    'Make changes to your profile here. Click save when you\'re done.'
+  );
+  await expect(close).toBeFocused();
+
+  await page.keyboard.press('Shift+Tab');
+  await expect(save).toBeFocused();
+  await page.keyboard.press('Tab');
+  await expect(close).toBeFocused();
+
+  await close.click();
+  await expect(dialog).toHaveCount(0);
+  await expect(trigger).toBeFocused();
+});

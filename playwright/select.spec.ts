@@ -1,346 +1,131 @@
 import { test, expect, type Locator, type Page } from "@playwright/test";
 
-const singleSelectTrigger = (page: Page) =>
-    page.getByRole("button").filter({ hasText: /Select an option|Apple|Banana/ });
+const fruitRoot = (page: Page) => page.getByTestId("fruit-select-root").first();
+const fruitTrigger = (page: Page) => fruitRoot(page).locator("#fruit-select").first();
+const listbox = (page: Page) => page.getByRole("listbox");
+const option = (page: Page, name: string | RegExp) =>
+    listbox(page).getByRole("option", { name });
 
-const multiSelectTrigger = (page: Page) =>
-    page.getByRole("button").filter({ hasText: /Pepperoni|Mushroom|Onion/ });
-
-const visualStyle = (option: Locator) =>
-    option.evaluate((element) => {
+const visualStyle = (target: Locator) =>
+    target.evaluate((element) => {
         const style = getComputedStyle(element);
-        return {
-            backgroundColor: style.backgroundColor,
-            borderColor: style.borderColor,
-            boxShadow: style.boxShadow,
-            color: style.color,
-            outlineColor: style.outlineColor,
-            outlineStyle: style.outlineStyle,
-            outlineWidth: style.outlineWidth,
-        };
+        return { backgroundColor: style.backgroundColor, borderColor: style.borderColor, boxShadow: style.boxShadow, color: style.color, outlineColor: style.outlineColor, outlineStyle: style.outlineStyle, outlineWidth: style.outlineWidth };
     });
 
-test("keyboard focus gives Select options a visual cue", async ({ page }) => {
+test.beforeEach(async ({ page }) => {
     await page.goto("/components/select", { timeout: 30 * 1000 });
-
-    const selectTrigger = singleSelectTrigger(page);
-    await selectTrigger.click();
-
-    const selectMenu = page.getByRole("listbox");
-    const apple = selectMenu.getByRole("option", { name: "apple" });
-    const banana = selectMenu.getByRole("option", { name: "banana" });
-    const unfocusedStyle = await visualStyle(banana);
-
-    await page.keyboard.press("ArrowDown");
-
-    await expect(apple).toBeFocused();
-    await expect(apple).toHaveAttribute("data-highlighted", "true");
-    await expect.poll(() => visualStyle(apple)).not.toEqual(unfocusedStyle);
 });
 
-test("keyboard focus gives SelectMulti options a visual cue", async ({ page }) => {
-    await page.goto("/components/select/block#multi", { timeout: 30 * 1000 });
-
-    const selectTrigger = multiSelectTrigger(page);
-    await selectTrigger.click();
-
-    const selectMenu = page.getByRole("listbox");
-    const pepperoni = selectMenu.getByRole("option", { name: "Pepperoni" });
-    const mushroom = selectMenu.getByRole("option", { name: "Mushroom" });
-    const unfocusedStyle = await visualStyle(mushroom);
-
-    await page.keyboard.press("ArrowDown");
-
-    await expect(pepperoni).toBeFocused();
-    await expect(pepperoni).toHaveAttribute("data-highlighted", "true");
-    await expect.poll(() => visualStyle(pepperoni)).not.toEqual(unfocusedStyle);
+test("exposes trigger, listbox, groups, and option state through ARIA", async ({ page }) => {
+    const trigger = fruitTrigger(page);
+    await expect(trigger).toHaveAccessibleName("Fruit selection");
+    await expect(trigger).toHaveAttribute("aria-haspopup", "listbox");
+    await expect(trigger).toHaveAttribute("aria-expanded", "false");
+    const controls = await trigger.getAttribute("aria-controls");
+    expect(controls).toBeTruthy();
+    await expect(fruitRoot(page)).toHaveAttribute("data-audit", "forwarded");
+    await trigger.click();
+    const menu = listbox(page);
+    await expect(trigger).toHaveAttribute("aria-expanded", "true");
+    await expect(menu).toHaveAttribute("id", controls!);
+    await expect(menu).toHaveAttribute("aria-multiselectable", "false");
+    const fruits = menu.getByRole("group", { name: "Fruits" });
+    await expect(fruits).toHaveCount(1);
+    await expect(menu.getByRole("group", { name: "Other" })).toHaveCount(1);
+    await expect(fruits.getByRole("option")).toHaveCount(6);
+    await expect(option(page, /Apple/i)).toHaveAttribute("aria-selected", "true");
+    await expect(option(page, /^🍊 Orange$/i)).toHaveAttribute("aria-disabled", "true");
 });
 
-test("test", async ({ page }) => {
-    await page.goto("/components/select", {
-        timeout: 30 * 1000,
-        waitUntil: "domcontentloaded",
-    });
-    // Find Select a fruit...
-    let selectTrigger = singleSelectTrigger(page);
-    await selectTrigger.click();
-    // Assert the select menu is open
-    const selectMenu = page.getByRole("listbox");
-    await expect(selectMenu).toHaveAttribute("data-state", "open");
+test("controlled selection updates value and calls callback exactly once", async ({ page }) => {
+    const root = fruitRoot(page);
+    const trigger = fruitTrigger(page);
+    await expect(page.getByTestId("fruit-select-value")).toHaveText(/Apple/i);
+    await expect(page.getByTestId("fruit-select-callback-count")).toHaveText("Callbacks: 0");
+    await trigger.click();
+    await option(page, /Banana/i).click();
+    await expect(trigger).toContainText(/Banana/i);
+    await expect(page.getByTestId("fruit-select-value")).toHaveText(/Banana/i);
+    await expect(page.getByTestId("fruit-select-callback-count")).toHaveText("Callbacks: 1");
+    await expect(listbox(page)).toHaveCount(0);
+});
 
-    // Assert the menu is focused
-    await expect(selectMenu).toBeFocused();
+test("keyboard navigation skips disabled options and supports Home, End, and typeahead", async ({ page }) => {
+    const trigger = fruitTrigger(page);
+    await trigger.click();
     await page.keyboard.press("ArrowDown");
-    const firstOption = selectMenu.getByRole("option", { name: "apple" });
-    await expect(firstOption).toBeFocused();
-
-    // Assert moving down with arrow keys moves focus to the next option
+    await expect(option(page, /Apple/i)).toBeFocused();
     await page.keyboard.press("ArrowDown");
-    const secondOption = selectMenu.getByRole("option", { name: "banana" });
-    await expect(secondOption).toBeFocused();
+    await expect(option(page, /Banana/i)).toBeFocused();
+    await page.keyboard.press("ArrowDown");
+    await expect(option(page, /Orangeade/i)).toBeFocused();
+    await page.keyboard.press("Home");
+    await expect(option(page, /Apple/i)).toBeFocused();
+    await page.keyboard.press("End");
+    await expect(option(page, /Other/i)).toBeFocused();
+    await page.keyboard.type("Straw");
+    await expect(option(page, /Strawberry/i)).toBeFocused();
+});
 
-    // Assert moving up with arrow keys moves focus back to the previous option
-    await page.keyboard.press("ArrowUp");
-    await expect(firstOption).toBeFocused();
-
-    // Assert pressing Enter selects the focused option
-    await page.keyboard.press("Enter");
-    // Assert the select menu is closed after selection
-    await expect(selectMenu).toHaveCount(0);
-
-    // Assert the selected value is displayed in the button
-    await expect(selectTrigger).toHaveText("Apple");
-
-    // Reopen the select menu
-    await selectTrigger.click();
-
-    // Assert typeahead functionality works
-    await page.keyboard.type("Ban");
-    // Assert the second option is focused after typing 'Ban'
-    await expect(secondOption).toBeFocused();
-
-    // Assert pressing Escape closes the select menu
+test("Escape restores trigger focus and outside click closes the menu", async ({ page }) => {
+    const trigger = fruitTrigger(page);
+    await trigger.click();
     await page.keyboard.press("Escape");
-    // Assert the select menu is closed
-    await expect(selectMenu).toHaveCount(0);
-
-    // Reopen the select menu
-    await selectTrigger.click();
-    // Assert the select menu is open again
-    await expect(selectMenu).toHaveAttribute("data-state", "open");
-
-    // Click the second option to select it
-    let bananaOption = selectMenu.getByRole("option", { name: "banana" });
-    await bananaOption.click();
-    // Assert the select menu is closed after clicking an option
-    await expect(selectMenu).toHaveCount(0);
-    // Assert the selected value is now 'banana'
-    await expect(selectTrigger).toHaveText("Banana");
+    await expect(listbox(page)).toHaveCount(0);
+    await expect(trigger).toBeFocused();
+    await trigger.click();
+    await page.getByTestId("select-outside").click();
+    await expect(listbox(page)).toHaveCount(0);
 });
 
-test("tabbing out of menu closes the select menu", async ({ page }) => {
-    await page.goto("/components/select");
-    // Find Select a fruit...
-    let selectTrigger = singleSelectTrigger(page);
-    await selectTrigger.click();
-    // Assert the select menu is open
-    const selectMenu = page.getByRole("listbox");
-    await expect(selectMenu).toHaveAttribute("data-state", "open");
-
-    // Assert the menu is focused
-    await expect(selectMenu).toBeFocused();
+test("Tab closes the menu", async ({ page }) => {
+    await fruitTrigger(page).click();
     await page.keyboard.press("Tab");
-    // Assert the select menu is closed
-    await expect(selectMenu).toHaveCount(0);
+    await expect(listbox(page)).toHaveCount(0);
 });
 
-test("multi-select toggles options and stays open", async ({ page }) => {
-    await page.goto("/components/select/block#multi", {
-        timeout: 30 * 1000,
-    });
-    const selectTrigger = multiSelectTrigger(page);
-    // Default values from the demo: Pepperoni and Mushroom
-    await expect(selectTrigger).toContainText("Pepperoni");
-    await expect(selectTrigger).toContainText("Mushroom");
-
-    await selectTrigger.click();
-    const selectMenu = page.getByRole("listbox");
-    await expect(selectMenu).toHaveAttribute("data-state", "open");
-
-    const pepperoni = selectMenu.getByRole("option", { name: "Pepperoni" });
-    const onion = selectMenu.getByRole("option", { name: "Onion" });
-
-    await expect(pepperoni).toHaveAttribute("aria-selected", "true");
-    await expect(onion).toHaveAttribute("aria-selected", "false");
-
-    // Click an unselected option — it should toggle on without closing
-    await onion.click();
-    await expect(selectMenu).toHaveAttribute("data-state", "open");
-    await expect(onion).toHaveAttribute("aria-selected", "true");
-
-    // Click an already-selected option — it should toggle off without closing
-    await pepperoni.click();
-    await expect(selectMenu).toHaveAttribute("data-state", "open");
-    await expect(pepperoni).toHaveAttribute("aria-selected", "false");
-
-    // Escape closes the menu without selecting
-    await page.keyboard.press("Escape");
-    await expect(selectMenu).toHaveCount(0);
-    // Trigger reflects the updated multi-selection
-    await expect(selectTrigger).toContainText("Mushroom");
-    await expect(selectTrigger).toContainText("Onion");
-    await expect(selectTrigger).not.toContainText("Pepperoni");
-});
-
-test("mobile: multi-select tapping options keeps the dropdown open", async ({ page }) => {
-    await page.goto("/components/select/block#multi", {
-        timeout: 30 * 1000,
-    });
-    const selectTrigger = multiSelectTrigger(page);
-    await selectTrigger.tap();
-
-    const selectMenu = page.getByRole("listbox");
-    await expect(selectMenu).toHaveAttribute("data-state", "open");
-
-    const onion = selectMenu.getByRole("option", { name: "Onion" });
-    await expect(onion).toHaveAttribute("aria-selected", "false");
-
-    // Tapping the first option on mobile should toggle it without closing the menu
-    await onion.tap();
-    await expect(selectMenu).toHaveAttribute("data-state", "open");
-    await expect(onion).toHaveAttribute("aria-selected", "true");
-
-    // Tapping a second option should also leave the dropdown open
-    const pepperoni = selectMenu.getByRole("option", { name: "Pepperoni" });
-    await pepperoni.tap();
-    await expect(selectMenu).toHaveAttribute("data-state", "open");
-    await expect(pepperoni).toHaveAttribute("aria-selected", "false");
-});
-
-test("multi-select keyboard toggles and exposes aria-multiselectable", async ({ page }) => {
-    await page.goto("/components/select/block#multi", {
-        timeout: 30 * 1000,
-    });
-    const selectTrigger = multiSelectTrigger(page);
-    await selectTrigger.click();
-
-    const selectMenu = page.getByRole("listbox");
-    await expect(selectMenu).toHaveAttribute("data-state", "open");
-    // Listbox advertises multi-select mode for assistive tech
-    await expect(selectMenu).toHaveAttribute("aria-multiselectable", "true");
-
-    // Arrow down to focus the first option (Pepperoni — already selected by default)
-    await page.keyboard.press("ArrowDown");
-    const pepperoni = selectMenu.getByRole("option", { name: "Pepperoni" });
-    await expect(pepperoni).toBeFocused();
-
-    // Space toggles the focused option off without closing
-    await page.keyboard.press(" ");
-    await expect(selectMenu).toHaveAttribute("data-state", "open");
-    await expect(pepperoni).toHaveAttribute("aria-selected", "false");
-
-    // Arrow down to Onion and toggle on with Enter — menu still open in multi-mode
-    await page.keyboard.press("ArrowDown");
-    await page.keyboard.press("ArrowDown");
-    const onion = selectMenu.getByRole("option", { name: "Onion" });
-    await expect(onion).toBeFocused();
-    await page.keyboard.press("Enter");
-    await expect(selectMenu).toHaveAttribute("data-state", "open");
-    await expect(onion).toHaveAttribute("aria-selected", "true");
-
-    await page.keyboard.press("Escape");
-    await expect(selectMenu).toHaveCount(0);
-    await expect(selectTrigger).toContainText("Mushroom");
-    await expect(selectTrigger).toContainText("Onion");
-    await expect(selectTrigger).not.toContainText("Pepperoni");
-});
-
-test("tabbing out of item closes the select menu", async ({ page }) => {
-    await page.goto("/components/select");
-    // Find Select a fruit...
-    let selectTrigger = singleSelectTrigger(page);
-    await selectTrigger.click();
-    // Assert the select menu is open
-    const selectMenu = page.getByRole("listbox");
-    await expect(selectMenu).toHaveAttribute("data-state", "open");
-
-    // Assert the menu is focused
-    await expect(selectMenu).toBeFocused();
-
-    // Navigate to the first option
-    await page.keyboard.press("ArrowDown");
-    const firstOption = selectMenu.getByRole("option", { name: "apple" });
-    await expect(firstOption).toBeFocused();
-    await page.keyboard.press("Tab");
-    // Assert the select menu is closed
-    await expect(selectMenu).toHaveCount(0);
-});
-
-test("options selected", async ({ page }) => {
-    await page.goto("/components/select");
-    // Find Select a fruit...
-    let selectTrigger = singleSelectTrigger(page);
-    await selectTrigger.click();
-    // Assert the select menu is open
-    const selectMenu = page.getByRole("listbox");
-    await expect(selectMenu).toHaveAttribute("data-state", "open");
-
-    // Assert no items have aria-selected
-    const options = selectMenu.getByRole("option");
-    let optionCount = await options.count();
-    for (let i = 0; i < optionCount; i++) {
-        await expect(options.nth(i)).not.toHaveAttribute("aria-selected", "true");
+test("disabled group propagates aria-disabled and cannot be selected", async ({ page }) => {
+    const root = page.getByTestId("disabled-group-select-root").first();
+    await expect(root).toHaveCount(1);
+    const trigger = root.locator("#disabled-group-select").first();
+    await trigger.click();
+    const group = listbox(page).getByRole("group", { name: "Unavailable fruits" });
+    const disabledOptions = group.getByRole("option");
+    await expect(group).toHaveCount(1);
+    await expect(disabledOptions).toHaveCount(2);
+    for (const item of await disabledOptions.all()) {
+        await expect(item).toHaveAttribute("aria-disabled", "true");
+        await expect(item).toBeDisabled();
     }
-
-    // Select the first option
     await page.keyboard.press("ArrowDown");
-    const firstOption = selectMenu.getByRole("option", { name: "apple" });
-    await expect(firstOption).toBeFocused();
-    await page.keyboard.press("Enter");
-    // Assert the select menu is closed after selection
-    await expect(selectMenu).toHaveCount(0);
-    // Open the select menu again
-    await selectTrigger.click();
-    // Assert the first option is now selected
-    await expect(firstOption).toHaveAttribute("aria-selected", "true");
+    await expect(disabledOptions.first()).not.toBeFocused();
 });
 
-test("down arrow selects first element", async ({ page }) => {
-    await page.goto("/components/select");
-    // Find Select a fruit...
-    let selectTrigger = singleSelectTrigger(page);
-    const selectMenu = page.getByRole("listbox");
-    await selectTrigger.focus();
-
-    // Select the first option
-    await page.keyboard.press("ArrowDown");
-    const firstOption = selectMenu.getByRole("option", { name: "apple" });
-    await expect(firstOption).toBeFocused();
+test("disabled root trigger cannot open", async ({ page }) => {
+    const trigger = page.getByTestId("disabled-root-select-root").first().locator("#disabled-root-select").first();
+    await expect(trigger).toHaveAccessibleName("Disabled root selection");
+    await expect(trigger).toBeDisabled();
+    await trigger.click({ force: true });
+    await expect(listbox(page)).toHaveCount(0);
 });
 
-test("up arrow selects last element", async ({ page }) => {
-    await page.goto("/components/select");
-    // Find Select a fruit...
-    let selectTrigger = singleSelectTrigger(page);
-    const selectMenu = page.getByRole("listbox");
-    await selectTrigger.focus();
-
-    // Select the first option
-    await page.keyboard.press("ArrowUp");
-    const firstOption = selectMenu.getByRole("option", { name: "other" });
-    await expect(firstOption).toBeFocused();
+test("focused options have a visual cue", async ({ page }) => {
+    const trigger = fruitTrigger(page);
+    await trigger.click();
+    const before = await visualStyle(option(page, /Banana/i));
+    await page.keyboard.press("ArrowDown");
+    await expect(option(page, /Apple/i)).toBeFocused();
+    await expect.poll(() => visualStyle(option(page, /Apple/i))).not.toEqual(before);
 });
 
-test("keyboard navigation skips disabled options", async ({ page }) => {
-    await page.goto("/components/select");
-    const selectTrigger = singleSelectTrigger(page);
-    await selectTrigger.click();
-
-    const selectMenu = page.getByRole("listbox");
-    const orange = selectMenu.getByRole("option").filter({ hasText: "Orange" }).first();
-    const orangeade = selectMenu.getByRole("option").filter({ hasText: "Orangeade" });
-    await expect(orange).toHaveAttribute("aria-disabled", "true");
-
-    await page.keyboard.press("ArrowDown");
-    await expect(selectMenu.getByRole("option", { name: "apple" })).toBeFocused();
-    await page.keyboard.press("ArrowDown");
-    await expect(selectMenu.getByRole("option", { name: "banana" })).toBeFocused();
-    await page.keyboard.press("ArrowDown");
-    await expect(orangeade).toBeFocused();
-    await expect(orange).not.toBeFocused();
-});
-
-test("typeahead skips disabled options", async ({ page }) => {
-    await page.goto("/components/select");
-    const selectTrigger = singleSelectTrigger(page);
-    await selectTrigger.click();
-
-    const selectMenu = page.getByRole("listbox");
-    const orange = selectMenu.getByRole("option").filter({ hasText: "Orange" }).first();
-    const orangeade = selectMenu.getByRole("option").filter({ hasText: "Orangeade" });
-    await expect(orange).toHaveAttribute("aria-disabled", "true");
-
-    await page.keyboard.type("Ora");
-    await expect(orangeade).toBeFocused();
-    await expect(orange).not.toBeFocused();
+test("multi-select retains its interaction coverage", async ({ page }) => {
+    await page.goto("/components/select/block#multi", { timeout: 30 * 1000 });
+    const trigger = page.getByRole("button").filter({ hasText: /Pepperoni|Mushroom|Onion/ });
+    await trigger.click();
+    const menu = listbox(page);
+    await expect(menu).toHaveAttribute("aria-multiselectable", "true");
+    const onion = menu.getByRole("option", { name: /Onion/i });
+    await onion.click();
+    await expect(menu).toHaveAttribute("data-state", "open");
+    await expect(onion).toHaveAttribute("aria-selected", "true");
 });

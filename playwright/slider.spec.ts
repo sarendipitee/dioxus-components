@@ -326,3 +326,119 @@ test('range collided thumbs drag left from just below collision', async ({ page 
   await expect(t0).toHaveAttribute('aria-valuenow', '70');
   await expect(t1).toHaveAttribute('aria-valuenow', '80');
 });
+
+test('inverted slider range fill uses positive endpoint geometry', async ({ page }) => {
+  await page.goto('/components/slider', { timeout: 30 * 1000 });
+  const fixture = page.locator('[data-testid="inverted-slider-fixture"]');
+  const slider = fixture.getByRole('slider', { name: 'Inverted Slider' });
+  const range = fixture.locator('[data-orientation="horizontal"]:has([role="slider"])').locator('[data-orientation="horizontal"]').first();
+  const style = await range.getAttribute('style');
+  expect(style).toMatch(/left:\s*30%/);
+  expect(style).toMatch(/right:\s*0%/);
+});
+
+test('range drag reverses immediately after crossing neighbor', async ({ page }) => {
+  await page.goto('/components/slider/block#range', { timeout: 30 * 1000 });
+  const thumbs = page.getByRole('slider', { name: 'Range Slider' });
+  const t0 = thumbs.nth(0);
+  const t1 = thumbs.nth(1);
+  const track = sliderTrack(sliderGroup(page, 'Range Slider'));
+  const start = await sliderTrackPoint(track, 0.2);
+  const past = await sliderTrackPoint(track, 0.9);
+  const reverse = await sliderTrackPoint(track, 0.75);
+  await page.mouse.move(start.x, start.y);
+  await page.mouse.down();
+  await page.mouse.move(past.x, past.y, { steps: 12 });
+  await page.mouse.move(reverse.x, reverse.y, { steps: 8 });
+  await page.mouse.up();
+  await expect(t0).toHaveAttribute('aria-valuenow', '75');
+  await expect(t1).toHaveAttribute('aria-valuenow', '80');
+});
+
+test('preview sliders expose baseline semantics and controlled readouts', async ({ page }) => {
+  await page.goto('/components/slider', { timeout: 30 * 1000 });
+
+  const vertical = page.getByRole('slider', { name: 'Vertical Slider' });
+  await expect(vertical).toHaveAttribute('aria-valuemin', '0');
+  await expect(vertical).toHaveAttribute('aria-valuemax', '100');
+  await expect(vertical).toHaveAttribute('aria-valuenow', '30');
+  await expect(vertical).toHaveAttribute('aria-orientation', 'vertical');
+
+  const demo = page.getByRole('slider', { name: 'Demo Slider' });
+  await expect(demo).toHaveAttribute('aria-valuenow', '50');
+  await demo.focus();
+  await page.keyboard.press('ArrowRight');
+  await expect(demo).toHaveAttribute('aria-valuenow', '51');
+  await expect(page.getByText('51%', { exact: true })).toBeVisible();
+});
+
+test('slider values clamp at both boundaries', async ({ page }) => {
+  await page.goto('/components/slider', { timeout: 30 * 1000 });
+  const thumb = page.getByRole('slider', { name: 'Demo Slider' });
+  await thumb.focus();
+  await page.keyboard.press('End');
+  await expect(thumb).toHaveAttribute('aria-valuenow', '100');
+  await page.keyboard.press('ArrowRight');
+  await expect(thumb).toHaveAttribute('aria-valuenow', '100');
+  await page.keyboard.press('Home');
+  await expect(thumb).toHaveAttribute('aria-valuenow', '0');
+  await page.keyboard.press('ArrowLeft');
+  await expect(thumb).toHaveAttribute('aria-valuenow', '0');
+});
+
+test('vertical and inverted pointer directions stay coherent', async ({ page }) => {
+  await page.goto('/components/slider', { timeout: 30 * 1000 });
+
+  const vertical = page.getByRole('slider', { name: 'Vertical Slider' });
+  const verticalTrack = vertical.locator('xpath=ancestor::*[@role="group"][1]').locator('[data-orientation="vertical"]:has([role="slider"])').first();
+  const verticalBox = await verticalTrack.boundingBox();
+  if (!verticalBox) throw new Error('vertical slider track has no bounding box');
+  await page.mouse.click(verticalBox.x + verticalBox.width / 2, verticalBox.y + 1);
+  await expect(vertical).toHaveAttribute('aria-valuenow', '100');
+  await page.mouse.click(verticalBox.x + verticalBox.width / 2, verticalBox.y + verticalBox.height - 1);
+  await expect(vertical).toHaveAttribute('aria-valuenow', '0');
+  await vertical.focus();
+  await page.keyboard.press('ArrowUp');
+  await expect(vertical).toHaveAttribute('aria-valuenow', '1');
+
+  const inverted = page.getByRole('slider', { name: 'Inverted Slider' });
+  const invertedTrack = inverted.locator('xpath=ancestor::*[@role="group"][1]').locator('[data-orientation="horizontal"]:has([role="slider"])').first();
+  const invertedBox = await invertedTrack.boundingBox();
+  if (!invertedBox) throw new Error('inverted slider track has no bounding box');
+  await page.mouse.click(invertedBox.x + 1, invertedBox.y + invertedBox.height / 2);
+  await expect(inverted).toHaveAttribute('aria-valuenow', '100');
+  await page.mouse.click(invertedBox.x + invertedBox.width - 1, invertedBox.y + invertedBox.height / 2);
+  await expect(inverted).toHaveAttribute('aria-valuenow', '0');
+  await inverted.focus();
+  await page.keyboard.press('ArrowRight');
+  await expect(inverted).toHaveAttribute('aria-valuenow', '0');
+});
+
+test('disabled slider is unavailable and ignores input', async ({ page }) => {
+  await page.goto('/components/slider', { timeout: 30 * 1000 });
+  const thumb = page.getByRole('slider', { name: 'Disabled Slider' });
+  await expect(thumb).toHaveAttribute('aria-disabled', 'true');
+  await expect(thumb).toHaveAttribute('tabindex', '-1');
+  const before = await thumb.getAttribute('aria-valuenow');
+  await thumb.focus();
+  await page.keyboard.press('ArrowRight');
+  const box = await thumb.boundingBox();
+  if (!box) throw new Error('disabled slider has no bounding box');
+  await page.mouse.click(box.x + box.width / 2 + 40, box.y + box.height / 2);
+  await expect(thumb).toHaveAttribute('aria-valuenow', before!);
+});
+
+test('field slider preserves global attributes and field semantics', async ({ page }) => {
+  await page.goto('/components/slider', { timeout: 30 * 1000 });
+  const group = page.locator('#slider-field-control');
+  await expect(group).toHaveAttribute('class', /slider-audit/);
+  await expect(group).toHaveAttribute('title', 'Slider audit field');
+  await expect(group).toHaveAttribute('data-audit', 'slider');
+  await expect(group).toContainText('Field Slider');
+  await expect(group).toContainText('Choose the preferred alert threshold.');
+  await expect(group).toContainText('A threshold is required.');
+  await expect(group.getByText('Field Slider', { exact: true })).toBeVisible();
+  await expect(group.getByText('Choose the preferred alert threshold.', { exact: true })).toBeVisible();
+  await expect(group.getByText('A threshold is required.', { exact: true })).toBeVisible();
+  await expect(group.getByRole('slider', { name: 'Field Slider' })).toHaveCount(1);
+});

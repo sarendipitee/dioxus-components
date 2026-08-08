@@ -551,3 +551,87 @@ test.describe("sidebar: block route", () => {
     await expect(trigger).toBeFocused();
   });
 });
+
+test.describe("sidebar: focused accessibility and modes", () => {
+  test("desktop trigger exposes relationship and keyboard activation", async ({ page }) => {
+    await gotoSidebarBlock(page);
+    const sidebar = page.locator('[data-slot="sidebar"]:not([data-mobile="true"])').first();
+    const trigger = page.locator('[data-slot="sidebar-trigger"]').first();
+
+    await expect(trigger).toHaveAccessibleName("Toggle Sidebar");
+    await expect(trigger).toHaveAttribute("aria-expanded", "true");
+    const controls = await trigger.getAttribute("aria-controls");
+    expect(controls).not.toBeNull();
+    await expect(page.locator(`#${controls}`)).toHaveAttribute("data-slot", "sidebar");
+
+    await trigger.focus();
+    await page.keyboard.press("Enter");
+    await expect(sidebar).toHaveAttribute("data-state", "collapsed");
+    await expect(trigger).toHaveAttribute("aria-expanded", "false");
+    await page.keyboard.press(" ");
+    await expect(sidebar).toHaveAttribute("data-state", "expanded");
+  });
+
+  test("desktop collapse variants and public state attrs are observable", async ({ page }) => {
+    await gotoSidebarBlock(page);
+    const sidebar = page.locator('[data-slot="sidebar"]:not([data-mobile="true"])').first();
+    const trigger = page.locator('[data-slot="sidebar-trigger"]').first();
+    await expect(sidebar).toHaveAttribute("data-variant", "sidebar");
+    await expect(sidebar).toHaveAttribute("data-side", "left");
+
+    for (const variant of ["Offcanvas", "Icon"] as const) {
+      await page.getByRole("button", { name: variant, exact: true }).click();
+      await expect(sidebar).toHaveAttribute("data-state", "expanded");
+      await expect(sidebar).toHaveAttribute("data-collapsible", "");
+      await trigger.click();
+      await expect(sidebar).toHaveAttribute("data-state", "collapsed");
+      await expect(sidebar).toHaveAttribute("data-collapsible", variant.toLowerCase());
+      await trigger.click();
+    }
+
+    await page.getByRole("button", { name: "None", exact: true }).click();
+    await expect(sidebar).not.toHaveAttribute("data-state", /.+/);
+    await expect(sidebar).not.toHaveAttribute("data-collapsible", /.+/);
+  });
+
+  test("Ctrl+B updates controlled callback-visible state", async ({ page }) => {
+    await gotoSidebarBlock(page);
+    const state = page.getByTestId("sidebar-open-state");
+    await expect(state).toHaveText("expanded");
+    await page.keyboard.press("Control+b");
+    await expect(state).toHaveText("collapsed");
+    await page.getByRole("button", { name: "Set sidebar expanded", exact: true }).click();
+    await expect(state).toHaveText("expanded");
+    await page.getByRole("button", { name: "Set sidebar collapsed", exact: true }).click();
+    await expect(state).toHaveText("collapsed");
+  });
+
+  test("forwards global attributes to the sidebar root", async ({ page }) => {
+    await gotoSidebarBlock(page);
+    const root = page.getByTestId("sidebar-demo-root");
+    await expect(root).toHaveAttribute("aria-label", "Demo sidebar");
+    await expect(root).toHaveAttribute("data-testid", "sidebar-demo-root");
+  });
+
+  test("mobile sidebar uses dialog semantics, side mapping, and Escape restoration", async ({ page }) => {
+    await page.setViewportSize({ width: 767, height: 800 });
+    await gotoSidebarBlock(page);
+    const trigger = page.locator('[data-slot="sidebar-trigger"]').first();
+    await expect(page.locator('[data-slot="sidebar"][data-mobile="true"]')).toHaveCount(0);
+    await trigger.focus();
+    await trigger.press("Enter");
+
+    const mobile = page.locator('[data-slot="sidebar"][data-mobile="true"]');
+    await expect(mobile).toBeVisible();
+    await expect(mobile).toHaveAttribute("role", "dialog");
+    await expect(mobile).toHaveAttribute("data-side", "left");
+    await expect(trigger).toHaveAttribute("aria-expanded", "true");
+    await page.keyboard.press("Escape");
+    await expect(mobile).toBeHidden();
+    await expect(trigger).toBeFocused();
+
+    await page.getByRole("button", { name: "Right", exact: true }).click();
+    await trigger.click();
+    await expect(page.locator('[data-slot="sidebar"][data-mobile="true"]')).toHaveAttribute("data-side", "right");
+  });
+});
