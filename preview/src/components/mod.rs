@@ -375,5 +375,5 @@ examples!(
     toolbar,
     tooltip[shorthand],
     typography,
-    virtual_list[random_heights],
+    virtual_list[random_heights, states],
 );

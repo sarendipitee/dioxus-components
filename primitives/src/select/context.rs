@@ -108,6 +108,8 @@ impl SelectContext {
 pub(super) struct SelectGroupContext {
     /// ID of the element that labels this group
     pub labeled_by: Signal<Option<String>>,
+    /// Whether this group's options are disabled.
+    pub disabled: bool,
 }
 
 /// Portal-local read model for select list descendants.

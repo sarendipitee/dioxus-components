@@ -55,6 +55,7 @@ fn area_percent(value: ClientPoint) -> PixelsSize {
 pub struct ColorPickerContext {
     color: ReadSignal<Hsv<encoding::Srgb, f64>>,
     on_color_change: Callback<Hsv<encoding::Srgb, f64>>,
+    disabled: ReadSignal<bool>,
 }
 
 impl ColorPickerContext {
@@ -62,14 +63,24 @@ impl ColorPickerContext {
     pub fn color(&self) -> Hsv<encoding::Srgb, f64> {
         (self.color)()
     }
+    /// Whether the picker is disabled.
+    pub fn disabled(&self) -> bool {
+        (self.disabled)()
+    }
 
     /// Replace the entire HSV color.
     pub fn set_color(&self, c: Hsv<encoding::Srgb, f64>) {
+        if self.disabled() {
+            return;
+        }
         self.on_color_change.call(c);
     }
 
     /// Set hue, keeping saturation and value.
     pub fn set_hue(&self, h: f64) {
+        if self.disabled() {
+            return;
+        }
         let current = (self.color)();
         self.on_color_change.call(Hsv::<encoding::Srgb, f64>::new(
             RgbHue::new(h),
@@ -80,6 +91,9 @@ impl ColorPickerContext {
 
     /// Set saturation and value as a pair, keeping hue.
     pub fn set_sv(&self, s: f64, v: f64) {
+        if self.disabled() {
+            return;
+        }
         let current = (self.color)();
         self.on_color_change
             .call(Hsv::<encoding::Srgb, f64>::new(current.hue, s, v));
@@ -153,6 +167,7 @@ pub fn ColorPicker(props: ColorPickerProps) -> Element {
     use_context_provider(|| ColorPickerContext {
         color: props.color,
         on_color_change: props.on_color_change,
+        disabled: props.disabled,
     });
 
     rsx! {
@@ -160,6 +175,7 @@ pub fn ColorPicker(props: ColorPickerProps) -> Element {
             role: "group",
             aria_label: "Color picker",
             "data-disabled": (props.disabled)(),
+            aria_disabled: (props.disabled)(),
             ..props.attributes,
             {props.children}
         }
@@ -236,7 +252,7 @@ pub fn ColorArea(props: ColorAreaProps) -> Element {
     let size = movement.rect().map(|r| r.size);
 
     use_effect(move || {
-        if !dragging() {
+        if picker_ctx.disabled() || !dragging() {
             return;
         }
 
@@ -268,6 +284,9 @@ pub fn ColorArea(props: ColorAreaProps) -> Element {
                 movement.refresh_rect().await;
             },
             onpointerdown: move |e| {
+                if picker_ctx.disabled() {
+                    return;
+                }
                 if !movement.start_pointer(&e) {
                     return;
                 }
@@ -408,7 +427,8 @@ pub fn AreaThumb(props: AreaThumbProps) -> Element {
             "data-dragging": area_ctx.dragging,
             style,
             background_color: thumb_color,
-            tabindex: 0,
+            aria_disabled: picker_ctx.disabled(),
+            tabindex: if picker_ctx.disabled() { -1 } else { 0 },
             onmounted: move |evt| {
                 // Store the mounted data for focus management
                 button_ref.set(Some(evt.data()));
@@ -424,6 +444,9 @@ pub fn AreaThumb(props: AreaThumbProps) -> Element {
             // First arrow press from the wrapper applies the step and hands
             // focus to the matching axis input so AT announces the channel.
             onkeydown: move |evt: Event<KeyboardData>| async move {
+                if picker_ctx.disabled() {
+                    return;
+                }
                 let Some(move_event) = MoveEvent::from_keyboard(&evt, (area_ctx.step)()) else {
                     return;
                 };
@@ -470,6 +493,7 @@ pub fn AreaThumbSaturationInput(props: AreaThumbSaturationInputProps) -> Element
             aria_valuetext: format!("Saturation {:.0}%, {color_label}", percent.width),
             aria_orientation: "horizontal",
             tabindex: "-1",
+            disabled: picker_ctx.disabled(),
             min: "{min}",
             max: "{max}",
             step: "{step}",
@@ -480,6 +504,9 @@ pub fn AreaThumbSaturationInput(props: AreaThumbSaturationInputProps) -> Element
             // Cross-axis arrows hand focus to the value input so AT
             // announces the new channel.
             onkeydown: move |evt: Event<KeyboardData>| async move {
+                if picker_ctx.disabled() {
+                    return;
+                }
                 let Some(move_event) = MoveEvent::from_keyboard(&evt, (area_ctx.step)()) else {
                     return;
                 };
@@ -498,6 +525,9 @@ pub fn AreaThumbSaturationInput(props: AreaThumbSaturationInputProps) -> Element
             // Voice-control / direct-manipulation: a programmatic value
             // change on the input feeds the new saturation through.
             oninput: move |evt: Event<FormData>| {
+                if picker_ctx.disabled() {
+                    return;
+                }
                 if let Ok(s) = evt.value().parse::<f64>() {
                     let v = picker_ctx.color().value;
                     let scaled = s.clamp(COLOR_AREA_MIN, COLOR_AREA_MAX) / COLOR_AREA_RANGE;
@@ -531,6 +561,7 @@ pub fn AreaThumbValueInput(props: AreaThumbValueInputProps) -> Element {
             aria_valuetext: format!("Value {:.0}%, {color_label}", percent.height),
             aria_orientation: "vertical",
             tabindex: "-1",
+            disabled: picker_ctx.disabled(),
             min: "{min}",
             max: "{max}",
             step: "{step}",
@@ -539,6 +570,9 @@ pub fn AreaThumbValueInput(props: AreaThumbValueInputProps) -> Element {
                 thumb_ctx.value_input_ref.set(Some(evt.data()));
             },
             onkeydown: move |evt: Event<KeyboardData>| async move {
+                if picker_ctx.disabled() {
+                    return;
+                }
                 let Some(move_event) = MoveEvent::from_keyboard(&evt, (area_ctx.step)()) else {
                     return;
                 };
@@ -555,6 +589,9 @@ pub fn AreaThumbValueInput(props: AreaThumbValueInputProps) -> Element {
                 }
             },
             oninput: move |evt: Event<FormData>| {
+                if picker_ctx.disabled() {
+                    return;
+                }
                 if let Ok(v) = evt.value().parse::<f64>() {
                     let s = picker_ctx.color().saturation;
                     let scaled = v.clamp(COLOR_AREA_MIN, COLOR_AREA_MAX) / COLOR_AREA_RANGE;

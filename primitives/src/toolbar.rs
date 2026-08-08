@@ -1,29 +1,16 @@
 //! Defines the [`Toolbar`] component and its sub-components, which provide a container to group related buttons and controls with keyboard navigation.
 
+use crate::focus::{use_focus_control_disabled, use_focus_entry_disabled, FocusState};
 use dioxus::prelude::*;
-use std::rc::Rc;
 
 #[derive(Clone, Copy)]
 struct ToolbarCtx {
-    // State
     disabled: ReadSignal<bool>,
-
-    // Focus management
-    focused_index: Signal<Option<usize>>,
-
-    // Orientation
+    focus: FocusState,
     horizontal: ReadSignal<bool>,
 }
 
 impl ToolbarCtx {
-    fn set_focus(&mut self, index: Option<usize>) {
-        self.focused_index.set(index);
-    }
-
-    fn is_focused(&self, index: usize) -> bool {
-        (self.focused_index)() == Some(index)
-    }
-
     fn orientation(&self) -> &'static str {
         if (self.horizontal)() {
             "horizontal"
@@ -94,7 +81,7 @@ pub struct ToolbarProps {
 pub fn Toolbar(props: ToolbarProps) -> Element {
     let mut ctx = use_context_provider(|| ToolbarCtx {
         disabled: props.disabled,
-        focused_index: Signal::new(None),
+        focus: FocusState::new(ReadSignal::new(Signal::new(false))),
         horizontal: props.horizontal,
     });
 
@@ -102,10 +89,11 @@ pub fn Toolbar(props: ToolbarProps) -> Element {
         div {
             role: "toolbar",
             "data-orientation": ctx.orientation(),
+            aria_orientation: ctx.orientation(),
             "data-disabled": (props.disabled)(),
             aria_label: props.aria_label,
 
-            onfocusout: move |_| ctx.set_focus(None),
+            onfocusout: move |_| ctx.focus.blur(),
             ..props.attributes,
 
             {props.children}
@@ -173,33 +161,24 @@ pub struct ToolbarButtonProps {
 #[component]
 pub fn ToolbarButton(props: ToolbarButtonProps) -> Element {
     let mut ctx: ToolbarCtx = use_context();
+    let disabled = move || (ctx.disabled)() || (props.disabled)();
+    use_focus_entry_disabled(ctx.focus, props.index, disabled);
+    let onmounted = use_focus_control_disabled(ctx.focus, props.index, disabled);
 
-    // Handle button ref for focus management
-    let mut button_ref: Signal<Option<Rc<MountedData>>> = use_signal(|| None);
-
-    // Check if this button is focused
-    let is_focused = use_memo(move || ctx.is_focused((props.index)()));
-
-    // Set focus when needed
-    use_effect(move || {
-        if is_focused() {
-            if let Some(md) = button_ref() {
-                spawn(async move {
-                    let _ = md.set_focus(true).await;
-                });
-            }
-        }
+    let is_tabbable = use_memo(move || {
+        let _ = ctx.focus.items_revision();
+        !disabled() && ctx.focus.recent_focus_or_default() == (props.index)()
     });
 
     rsx! {
         button {
             type: "button",
-            tabindex: "0",
-            disabled: (ctx.disabled)() || (props.disabled)(),
-            "data-disabled": (ctx.disabled)() || (props.disabled)(),
+            tabindex: if is_tabbable() { "0" } else { "-1" },
+            disabled: disabled(),
+            "data-disabled": disabled(),
 
-            onmounted: move |data: Event<MountedData>| button_ref.set(Some(data.data())),
-            onfocus: move |_| ctx.set_focus(Some((props.index)())),
+            onmounted,
+            onfocus: move |_| ctx.focus.set_focus(Some((props.index)())),
 
             onclick: move |_| {
                 if !(ctx.disabled)() && !(props.disabled)() {
@@ -212,32 +191,12 @@ pub fn ToolbarButton(props: ToolbarButtonProps) -> Element {
                 let horizontal = (ctx.horizontal)();
                 let mut prevent_default = true;
                 match key {
-                    Key::ArrowUp if !horizontal => {
-                        let index = (props.index)();
-                        if index > 0 {
-                            ctx.set_focus(Some(index - 1));
-                        }
-                    }
-                    Key::ArrowDown if !horizontal => {
-                        let index = (props.index)();
-                        ctx.set_focus(Some(index + 1));
-                    }
-                    Key::ArrowLeft if horizontal => {
-                        let index = (props.index)();
-                        if index > 0 {
-                            ctx.set_focus(Some(index - 1));
-                        }
-                    }
-                    Key::ArrowRight if horizontal => {
-                        let index = (props.index)();
-                        ctx.set_focus(Some(index + 1));
-                    }
-                    Key::Home => {
-                        ctx.set_focus(Some(0));
-                    }
-                    Key::End => {
-                        ctx.set_focus(Some(100));
-                    }
+                    Key::ArrowUp if !horizontal => ctx.focus.focus_prev(),
+                    Key::ArrowDown if !horizontal => ctx.focus.focus_next(),
+                    Key::ArrowLeft if horizontal => ctx.focus.focus_prev(),
+                    Key::ArrowRight if horizontal => ctx.focus.focus_next(),
+                    Key::Home => ctx.focus.focus_first(),
+                    Key::End => ctx.focus.focus_last(),
                     _ => prevent_default = false,
                 };
                 if prevent_default {

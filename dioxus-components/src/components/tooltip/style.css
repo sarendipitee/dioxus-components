@@ -155,3 +155,9 @@
 .dx_tooltip_content[data-state="open"] {
   display: block;
 }
+
+@media (prefers-reduced-motion: reduce) {
+  .dx_tooltip_content {
+    animation: none;
+  }
+}

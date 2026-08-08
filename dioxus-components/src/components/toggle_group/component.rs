@@ -16,6 +16,7 @@ pub fn ToggleGroup(props: ToggleGroupProps) -> Element {
             disabled: props.disabled,
             allow_multiple_pressed: props.allow_multiple_pressed,
             horizontal: props.horizontal,
+            rtl: props.rtl,
             roving_loop: props.roving_loop,
             attributes: props.attributes,
             {props.children}

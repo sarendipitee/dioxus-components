@@ -493,6 +493,10 @@ pub fn MenubarTrigger(props: MenubarTriggerProps) -> Element {
                         event.prevent_default();
                         event.stop_propagation();
                     }
+                    Key::Tab => {
+                        ctx.set_open_menu.call(None);
+                        ctx.focus.blur();
+                    }
                     _ => {}
                 }
             },
@@ -513,6 +517,8 @@ pub fn MenubarTrigger(props: MenubarTriggerProps) -> Element {
             role: "menuitem",
             type: "button",
             tabindex: if is_focused() { "0" } else { "-1" },
+            "aria-haspopup": "menu",
+            "aria-expanded": is_open(),
             ..props.attributes,
             {props.children}
         }

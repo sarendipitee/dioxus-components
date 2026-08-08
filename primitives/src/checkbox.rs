@@ -74,6 +74,9 @@ pub struct CheckboxProps {
     /// Whether the checkbox is disabled.
     #[props(default)]
     pub disabled: ReadSignal<bool>,
+    /// Whether the checkbox is read-only. Read-only checkboxes remain focusable and participate in forms, but cannot be toggled.
+    #[props(default)]
+    pub read_only: ReadSignal<bool>,
 
     /// The name of the checkbox, used in forms.
     #[props(default)]
@@ -149,14 +152,18 @@ pub fn Checkbox(props: CheckboxProps) -> Element {
             role: "checkbox",
             aria_checked: checked().to_aria_checked(),
             aria_required: props.required,
+            aria_readonly: props.read_only,
             disabled: props.disabled,
             "data-state": checked().to_data_state(),
             "data-disabled": props.disabled,
+            "data-readonly": props.read_only,
 
             onmounted: move |evt| button_ref.set(Some(evt.data())),
             onclick: move |_| {
-                let new_checked = !checked();
-                set_checked.call(new_checked);
+                if !(props.read_only)() {
+                    let new_checked = !checked();
+                    set_checked.call(new_checked);
+                }
                 if let Some(node) = button_ref() {
                     spawn(async move {
                         let _ = node.set_focus(true).await;

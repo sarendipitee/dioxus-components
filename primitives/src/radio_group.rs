@@ -18,6 +18,8 @@ struct RadioGroupCtx {
     disabled: ReadSignal<bool>,
     value: Memo<String>,
     set_value: Callback<String>,
+    required: ReadSignal<bool>,
+    name: ReadSignal<String>,
 
     // Keyboard nav data
     // A map of tabindex -> value in the enabled radio items
@@ -165,6 +167,8 @@ pub fn RadioGroup(props: RadioGroupProps) -> Element {
         value,
         set_value,
         disabled: props.disabled,
+        required: props.required,
+        name: props.name,
 
         values: Signal::new(Default::default()),
         focus,
@@ -352,6 +356,17 @@ pub fn RadioItem(props: RadioItemProps) -> Element {
             },
             ..props.attributes,
             {props.children}
+        }
+        input {
+            r#type: "radio",
+            aria_hidden: "true",
+            tabindex: "-1",
+            style: "position: absolute; pointer-events: none; opacity: 0; margin: 0; transform: translateX(-100%);",
+            name: (ctx.name)(),
+            value: (props.value)(),
+            checked: checked(),
+            required: (ctx.required)(),
+            disabled: disabled(),
         }
     }
 }

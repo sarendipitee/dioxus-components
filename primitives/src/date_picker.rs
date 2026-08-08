@@ -679,6 +679,9 @@ struct DateSegmentProps<T: Clone + Integer + 'static> {
     // The controlled value of the date picker
     pub value: ReadSignal<Option<T>>,
 
+    // Ordered indices of the date segments in this date value.
+    pub focus_indices: [usize; 3],
+
     // Default value
     pub default: T,
 
@@ -694,6 +697,10 @@ struct DateSegmentProps<T: Clone + Integer + 'static> {
 
     // Max field length
     pub max_length: usize,
+
+    // Accessible label for the segment
+    #[props(into)]
+    pub aria_label: ReadSignal<String>,
 
     // Callback when display placeholder
     pub on_format_placeholder: Callback<(), String>,
@@ -735,9 +742,11 @@ fn DateSegment<T: Clone + Copy + Integer + FromStr + Display + 'static>(
     let mut ctx = use_context::<BaseDatePickerContext>();
 
     let mut set_value = move |text: String| {
+        text_value.set(text.clone());
         if text.is_empty() {
             props.on_value_change.call(None);
-            ctx.focus.focus_prev();
+            ctx.focus.set_focus(Some(props.index.cloned()));
+            ctx.focus.focus_prev_from_current(&props.focus_indices);
             return;
         }
         let min = props.min.cloned();
@@ -750,7 +759,8 @@ fn DateSegment<T: Clone + Copy + Integer + FromStr + Display + 'static>(
             // If adding a new digit would exceed max, move to next segment
             let newValue = (text + "0").parse::<T>().unwrap_or(value);
             if inRange && newValue > max {
-                ctx.focus.focus_next();
+                ctx.focus.set_focus(Some(props.index.cloned()));
+                ctx.focus.focus_next_from_current(&props.focus_indices);
             }
         };
 
@@ -781,6 +791,11 @@ fn DateSegment<T: Clone + Copy + Integer + FromStr + Display + 'static>(
     };
 
     let handle_keydown = move |event: Event<KeyboardData>| {
+        if (ctx.disabled)() || (ctx.read_only)() {
+            event.prevent_default();
+            event.stop_propagation();
+            return;
+        }
         let key = event.key();
         match key {
             Key::Character(actual_char) => {
@@ -788,13 +803,14 @@ fn DateSegment<T: Clone + Copy + Integer + FromStr + Display + 'static>(
                 if event.modifiers().ctrl() || event.modifiers().meta() || event.modifiers().alt() {
                     return;
                 }
-                if actual_char.parse::<T>().is_ok() {
+                let digits: String = actual_char.chars().filter(char::is_ascii_digit).collect();
+                if !digits.is_empty() {
                     let mut text = text_value();
                     if text.len() == props.max_length || reset_value() {
                         text = String::default();
                         reset_value.set(false);
                     };
-                    text.push_str(&actual_char);
+                    text.push_str(&digits);
                     set_value(text);
                 }
                 event.prevent_default();
@@ -808,20 +824,33 @@ fn DateSegment<T: Clone + Copy + Integer + FromStr + Display + 'static>(
                     text.pop();
                 }
                 set_value(text);
+                event.prevent_default();
+                event.stop_propagation();
             }
             Key::Delete => {
                 let mut text = text_value();
-                text.remove(0);
+                if !text.is_empty() {
+                    text.remove(0);
+                }
                 set_value(text);
+                event.prevent_default();
+                event.stop_propagation();
             }
             Key::ArrowLeft => {
-                ctx.focus.focus_prev();
+                ctx.focus.set_focus(Some(props.index.cloned()));
+                ctx.focus.focus_prev_from_current(&props.focus_indices);
+                event.prevent_default();
+                event.stop_propagation();
             }
             Key::ArrowRight => {
-                ctx.focus.focus_next();
+                ctx.focus.set_focus(Some(props.index.cloned()));
+                ctx.focus.focus_next_from_current(&props.focus_indices);
+                event.prevent_default();
+                event.stop_propagation();
             }
             Key::Enter => {
-                ctx.focus.focus_next();
+                ctx.focus.set_focus(Some(props.index.cloned()));
+                ctx.focus.focus_next_from_current(&props.focus_indices);
                 event.prevent_default();
                 event.stop_propagation();
             }
@@ -851,21 +880,20 @@ fn DateSegment<T: Clone + Copy + Integer + FromStr + Display + 'static>(
 
     let disabled = move || (ctx.disabled)();
     let onmounted = use_focus_controlled_item_disabled(props.index, disabled);
-
-    let span_id = use_unique_id();
-    let id = use_memo(move || format!("span-{span_id}"));
-    let label_id = format!("{id}-label");
+    let id = use_unique_id();
 
     rsx! {
         span {
             id,
             role: "spinbutton",
+            aria_label: props.aria_label,
             aria_valuemin: props.min.to_string(),
             aria_valuemax: props.max.to_string(),
             aria_valuenow: now_value.to_string(),
-            aria_labelledby: "{label_id}",
             inputmode: "numeric",
-            contenteditable: !(ctx.read_only)(),
+            contenteditable: !((ctx.disabled)() || (ctx.read_only)()),
+            aria_disabled: (ctx.disabled)(),
+            aria_readonly: (ctx.read_only)(),
             spellcheck: false,
             tabindex: "0",
             enterkeyhint: "next",
@@ -947,6 +975,7 @@ pub fn DatePickerYearSegment(props: DatePickerYearSegmentProps) -> Element {
             aria_label: "year",
             index: ctx.start_index,
             value: ctx.year_value,
+            focus_indices: [ctx.start_index, ctx.start_index + 1, ctx.start_index + 2],
             default: today.year(),
             on_value_change: move |value: Option<i32>| ctx.year_value.set(value),
             min: min_year,
@@ -982,6 +1011,7 @@ pub fn DatePickerMonthSegment(props: DatePickerMonthSegmentProps) -> Element {
             aria_label: "month",
             index: ctx.start_index + 1usize,
             value: ctx.month_value,
+            focus_indices: [ctx.start_index, ctx.start_index + 1, ctx.start_index + 2],
             default: today.month() as u8,
             on_value_change: move |value: Option<u8>| ctx.month_value.set(value),
             min: min_month as u8,
@@ -1028,6 +1058,7 @@ pub fn DatePickerDaySegment(props: DatePickerDaySegmentProps) -> Element {
             aria_label: "day",
             index: ctx.start_index + 2usize,
             value: ctx.day_value,
+            focus_indices: [ctx.start_index, ctx.start_index + 1, ctx.start_index + 2],
             default: today.day(),
             on_value_change: move |value: Option<u8>| ctx.day_value.set(value),
             min: min_day,

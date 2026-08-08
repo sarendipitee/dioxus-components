@@ -115,7 +115,7 @@ pub fn DateInput(
             date_picker::DatePickerPopover {
                 popover_root: DateInputPopover,
                 open: None,
-                close_on_input_focus: true,
+                close_on_input_focus: false,
                 InputBase {
                     label,
                     description,
@@ -134,6 +134,7 @@ pub fn DateInput(
                     },
                     DateInputControl {
                         disabled: is_disabled,
+                        required,
                         on_format_day_placeholder,
                         on_format_month_placeholder,
                         on_format_year_placeholder,
@@ -275,16 +276,23 @@ fn DateInputPopover(props: PopoverProps) -> Element {
 }
 
 #[derive(Clone, Copy)]
-struct ApplyInputControlToDateSegment(bool);
+struct DateInputControlSemantics {
+    apply_field_control: bool,
+    required: bool,
+}
 
 #[component]
 fn DateInputControl(
     disabled: bool,
+    required: bool,
     on_format_day_placeholder: Callback<(), String>,
     on_format_month_placeholder: Callback<(), String>,
     on_format_year_placeholder: Callback<(), String>,
 ) -> Element {
-    use_context_provider(|| ApplyInputControlToDateSegment(true));
+    use_context_provider(|| DateInputControlSemantics {
+        apply_field_control: true,
+        required,
+    });
 
     rsx! {
         date_picker::DatePickerInput {
@@ -340,7 +348,10 @@ fn DateRangeInputControl(disabled: bool) -> Element {
 
 #[component]
 fn DateInputRangeStartValue(children: Element) -> Element {
-    use_context_provider(|| ApplyInputControlToDateSegment(true));
+    use_context_provider(|| DateInputControlSemantics {
+        apply_field_control: true,
+        required: false,
+    });
 
     rsx! {
         DateRangePickerStartValue { {children} }
@@ -349,9 +360,11 @@ fn DateInputRangeStartValue(children: Element) -> Element {
 
 #[component]
 fn DateInputYearSegment() -> Element {
-    let should_apply_control = try_use_context::<ApplyInputControlToDateSegment>()
-        .map(|ctx| ctx.0)
+    let semantics = try_use_context::<DateInputControlSemantics>();
+    let should_apply_control = semantics
+        .map(|ctx| ctx.apply_field_control)
         .unwrap_or(false);
+    let required = semantics.map(|ctx| ctx.required).unwrap_or(false);
     let control = should_apply_control
         .then(use_input_control_context)
         .flatten()
@@ -360,6 +373,7 @@ fn DateInputYearSegment() -> Element {
                 id: ctx.id,
                 "aria-describedby": ctx.described_by,
                 "aria-invalid": ctx.invalid,
+                "aria-required": required,
             })
         });
 

@@ -681,6 +681,12 @@ fn TimeGridView(mut props: TimeGridViewProps) -> Element {
                                             slot,
                                             view,
                                             slot_minutes: props.config.slot_minutes,
+                                            aria_label: format!(
+                                                "{}: {}, {}",
+                                                props.body.labels.empty_slot,
+                                                format_date_label(day),
+                                                format_time(slot),
+                                            ),
                                             all_events: props.body.events.clone(),
                                             class_name: props.body.class_names.time_slot.clone(),
                                             capabilities: props.body.capabilities,
@@ -836,6 +842,7 @@ struct TimeSlotProps {
     all_events: Vec<ScheduleEvent>,
     class_name: String,
     capabilities: ScheduleCapabilities,
+    aria_label: String,
     dragging_event: Signal<Option<ScheduleEvent>>,
     drop_target: Signal<Option<String>>,
     slot_selection: Signal<Option<ScheduleSlotSelectionState>>,
@@ -908,6 +915,35 @@ fn TimeSlot(props: TimeSlotProps) -> Element {
         div {
             role: "button",
             tabindex: "0",
+            onkeydown: move |event: KeyboardEvent| {
+                if event.is_auto_repeating() {
+                    return;
+                }
+                if matches!(event.key(), Key::Enter)
+                    || matches!(event.key(), Key::Character(value) if value == " ")
+                {
+                    event.prevent_default();
+                    props
+                        .on_time_slot_click
+                        .call(ScheduleTimeSlotClick {
+                            start,
+                            end,
+                            date: props.date,
+                            view: props.view,
+                        });
+                    props
+                        .on_event_create
+                        .call(ScheduleEventCreate {
+                            start,
+                            end,
+                            date: props.date,
+                            all_day: false,
+                            view: props.view,
+                            source: ScheduleEventCreateSource::TimeSlotClick,
+                        });
+                }
+            },
+            "aria-label": props.aria_label,
             "data-schedule-time-slot": start.to_string(),
             "data-slot-select-enabled": props.capabilities.drag_slot_select,
             "data-drop-enabled": accepts_schedule_drop,
@@ -1648,6 +1684,7 @@ fn ScheduleEventNode(props: ScheduleEventNodeProps) -> Element {
         .description
         .clone()
         .unwrap_or_else(|| props.event.title.clone());
+    let keyboard_event = props.event.clone();
     let event_time = if props.event.all_day {
         "All day".to_string()
     } else {
@@ -1683,7 +1720,10 @@ fn ScheduleEventNode(props: ScheduleEventNodeProps) -> Element {
     let event_draggable = draggable && !is_resize_source;
     rsx! {
         article {
+            role: "button",
+            tabindex: "0",
             "data-schedule-event": event_id.clone(),
+            "aria-label": format!("{} — {}", props.event.title, event_time),
             "data-color": event_color,
             "data-all-day": props.event.all_day,
             "data-draggable": event_draggable,
@@ -1707,6 +1747,23 @@ fn ScheduleEventNode(props: ScheduleEventNodeProps) -> Element {
                         event: click_event.clone(),
                         view: props.view,
                     });
+            },
+            onkeydown: move |event: KeyboardEvent| {
+                if event.is_auto_repeating() {
+                    return;
+                }
+                if matches!(event.key(), Key::Enter)
+                    || matches!(event.key(), Key::Character(value) if value == " ")
+                {
+                    event.prevent_default();
+                    event.stop_propagation();
+                    props
+                        .on_event_click
+                        .call(ScheduleEventClick {
+                            event: keyboard_event.clone(),
+                            view: props.view,
+                        });
+                }
             },
             onmousedown: move |event| {
                 event.stop_propagation();
@@ -1757,6 +1814,7 @@ fn ScheduleEventNode(props: ScheduleEventNodeProps) -> Element {
                     "type": "button",
                     "data-schedule-resize-handle": "start",
                     "aria-label": "Resize event start",
+                    onkeydown: move |event| event.stop_propagation(),
                     draggable: false,
                     onmousedown: move |event| {
                         event.stop_propagation();
@@ -1792,6 +1850,7 @@ fn ScheduleEventNode(props: ScheduleEventNodeProps) -> Element {
                     "type": "button",
                     "data-schedule-resize-handle": "end",
                     "aria-label": "Resize event end",
+                    onkeydown: move |event| event.stop_propagation(),
                     draggable: false,
                     onmousedown: move |event| {
                         event.stop_propagation();

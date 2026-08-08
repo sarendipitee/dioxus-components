@@ -26,6 +26,7 @@ struct PopoverCtx {
     is_modal: ReadSignal<bool>,
     labelledby: Signal<String>,
     root_id: Memo<String>,
+    content_id: Signal<String>,
 
     /// Reference (trigger) element shared with the content so the floating-ui hook can
     /// position the content relative to the trigger. Set by [`PopoverTrigger`] /
@@ -115,6 +116,7 @@ pub struct PopoverProps {
 pub fn Popover(props: PopoverProps) -> Element {
     let labelledby = use_unique_id();
     let gen_root_id = use_unique_id();
+    let content_id = use_unique_id();
     let root_id = use_id_or(gen_root_id, props.id);
 
     let (open, set_open) = use_controlled(props.open, props.default_open, props.on_open_change);
@@ -127,6 +129,7 @@ pub fn Popover(props: PopoverProps) -> Element {
         is_modal: props.is_modal,
         labelledby,
         root_id,
+        content_id,
         trigger_ref,
     });
 
@@ -224,8 +227,7 @@ pub fn PopoverContent(props: PopoverContentProps) -> Element {
     });
     let attributes = merge_attributes(vec![base, props.attributes]);
 
-    let gen_id = use_unique_id();
-    let id = use_id_or(gen_id, props.id);
+    let id = use_id_or(ctx.content_id, props.id);
 
     let render = use_animated_open(id, ctx.open);
 
@@ -249,8 +251,9 @@ pub fn PopoverContent(props: PopoverContentProps) -> Element {
             const getDialog = () => document.getElementById(id);
             const install = () => {
                 const dialog = getDialog();
-                if (!dialog) return false;
-                if (!is_open) {
+                if (!dialog) return true;
+                const currentlyOpen = is_open && dialog.dataset.state === "open";
+                if (!currentlyOpen) {
                     if (dialog.trap) {
                         dialog.trap.remove();
                         dialog.trap = null;
@@ -258,15 +261,16 @@ pub fn PopoverContent(props: PopoverContentProps) -> Element {
                     return true;
                 }
                 if (!window.createFocusTrap) return false;
-                dialog.trap = window.createFocusTrap(dialog);
+                if (!dialog.trap) {
+                    dialog.trap = window.createFocusTrap(dialog);
+                }
                 return true;
             };
             if (!install()) {
-                await new Promise(resolve => {
-                    const timer = setInterval(() => {
-                        if (install()) { clearInterval(timer); resolve(); }
-                    }, 16);
-                });
+                for (let attempts = 0; attempts < 60 && !install(); attempts++) {
+                    await new Promise(resolve => setTimeout(resolve, 16));
+                }
+            }
             }"#,
         );
         let _ = eval.send(id.to_string());
@@ -574,6 +578,8 @@ pub fn PopoverTrigger(props: PopoverTriggerProps) -> Element {
     rsx! {
         div {
             id,
+            aria_controls: ctx.content_id,
+            aria_expanded: ctx.open,
             onmounted: move |evt| trigger_ref.set(Some(evt.data())),
             onclick: move |e| {
                 e.stop_propagation();
@@ -598,8 +604,11 @@ pub fn PopoverOpenTrigger(props: PopoverTriggerProps) -> Element {
     let id = use_popover_trigger_labelledby(ctx.labelledby, &props.attributes);
 
     rsx! {
-        div {
+        button {
+            r#type: "button",
             id,
+            aria_controls: ctx.content_id,
+            aria_expanded: ctx.open,
             onmounted: move |evt| trigger_ref.set(Some(evt.data())),
             onclick: move |e| {
                 e.stop_propagation();

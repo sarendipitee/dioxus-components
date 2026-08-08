@@ -52,15 +52,33 @@ pub struct ProgressProps {
 /// - `--progress-value`: A value between 0 and 100 representing the current progress percentage.
 #[component]
 pub fn Progress(props: ProgressProps) -> Element {
-    // Calculate percentage for styling and "data-state"
-    let percentage = use_memo(move || {
-        props.value.cloned().map(|v| {
-            let max = (props.max)();
-            (v / max) * 100.0
-        })
+    let normalized = use_memo(move || {
+        let raw_max = (props.max)();
+        let max = if raw_max.is_finite() {
+            raw_max.max(0.0)
+        } else {
+            0.0
+        };
+
+        let value = props.value.cloned().map(|raw_value| {
+            let value = if raw_value.is_finite() {
+                raw_value.max(0.0).min(max)
+            } else {
+                0.0
+            };
+            let percentage = if max == 0.0 {
+                0.0
+            } else {
+                (value / max) * 100.0
+            };
+
+            (value, percentage)
+        });
+
+        (max, value)
     });
 
-    let state = use_memo(move || match percentage() {
+    let state = use_memo(move || match normalized().1 {
         Some(_) => "loading",
         None => "indeterminate",
     });
@@ -69,12 +87,12 @@ pub fn Progress(props: ProgressProps) -> Element {
         div {
             role: "progressbar",
             "aria-valuemin": 0,
-            "aria-valuemax": props.max,
-            "aria-valuenow": props.value.cloned(),
+            "aria-valuemax": normalized().0,
+            "aria-valuenow": normalized().1.map(|(value, _)| value),
             "data-state": state,
-            "data-value": props.value.cloned().map(|v| v.to_string()),
-            "data-max": props.max,
-            style: percentage().map(|p| format!("--progress-value: {p}%")),
+            "data-value": normalized().1.map(|(value, _)| value.to_string()),
+            "data-max": normalized().0,
+            style: normalized().1.map(|(_, percentage)| format!("--progress-value: {percentage}%")),
             ..props.attributes,
 
             {props.children}

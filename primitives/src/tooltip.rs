@@ -202,8 +202,9 @@ pub fn TooltipTrigger(props: TooltipTriggerProps) -> Element {
 
     let base = attributes!(div {
         id: props.id.clone(),
-        tabindex: "0",
-        "aria-describedby": ctx.tooltip_id.cloned(),
+        tabindex: if (ctx.disabled)() { "-1" } else { "0" },
+        "aria-disabled": (ctx.disabled)().then_some("true"),
+        "aria-describedby": (ctx.open)().then(|| ctx.tooltip_id.cloned()),
         onmounted: move |evt: Event<MountedData>| trigger_ref.set(Some(evt.data())),
         onmouseenter: handle_mouse_enter,
         onmouseleave: handle_mouse_leave,
@@ -216,8 +217,14 @@ pub fn TooltipTrigger(props: TooltipTriggerProps) -> Element {
     if let Some(dynamic) = props.r#as {
         dynamic.call(merged)
     } else {
+        let native = attributes!(button {
+            r#type: "button",
+            disabled: (ctx.disabled)(),
+        });
+        let merged = merge_attributes(vec![native, merged]);
+
         rsx! {
-            div {
+            button {
                 ..merged,
                 {props.children}
             }

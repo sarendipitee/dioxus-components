@@ -89,21 +89,27 @@ pub fn ScrollArea(props: ScrollAreaProps) -> Element {
     let scroll_type = props.scroll_type;
     let always_show = props.always_show_scrollbars;
 
-    let (overflow_x, overflow_y, scrollbar_width) = match scroll_type() {
+    let overflow_style = match scroll_type() {
         ScrollType::Auto => match direction() {
-            ScrollDirection::Vertical => (Some("hidden"), Some("auto"), None),
-            ScrollDirection::Horizontal => (Some("auto"), Some("hidden"), None),
-            ScrollDirection::Both => (Some("auto"), Some("auto"), None),
+            ScrollDirection::Vertical => "overflow-x: hidden; overflow-y: auto;",
+            ScrollDirection::Horizontal => "overflow-x: auto; overflow-y: hidden;",
+            ScrollDirection::Both => "overflow-x: auto; overflow-y: auto;",
         },
         ScrollType::Always => match direction() {
-            ScrollDirection::Vertical => (Some("hidden"), Some("scroll"), None),
-            ScrollDirection::Horizontal => (Some("scroll"), Some("hidden"), None),
-            ScrollDirection::Both => (Some("scroll"), Some("scroll"), None),
+            ScrollDirection::Vertical => "overflow-x: hidden; overflow-y: scroll;",
+            ScrollDirection::Horizontal => "overflow-x: scroll; overflow-y: hidden;",
+            ScrollDirection::Both => "overflow-x: scroll; overflow-y: scroll;",
         },
         ScrollType::Hidden => match direction() {
-            ScrollDirection::Vertical => (Some("hidden"), Some("scroll"), Some("none")),
-            ScrollDirection::Horizontal => (Some("scroll"), Some("hidden"), Some("none")),
-            ScrollDirection::Both => (Some("scroll"), Some("scroll"), Some("none")),
+            ScrollDirection::Vertical => {
+                "overflow-x: hidden; overflow-y: scroll; scrollbar-width: none;"
+            }
+            ScrollDirection::Horizontal => {
+                "overflow-x: scroll; overflow-y: hidden; scrollbar-width: none;"
+            }
+            ScrollDirection::Both => {
+                "overflow-x: scroll; overflow-y: scroll; scrollbar-width: none;"
+            }
         },
     };
 
@@ -118,9 +124,7 @@ pub fn ScrollArea(props: ScrollAreaProps) -> Element {
     rsx! {
         div {
             class: "{visibility_class}",
-            overflow_x,
-            overflow_y,
-            "scrollbar-width": scrollbar_width,
+            style: overflow_style,
             "data-scroll-direction": match direction() {
                 ScrollDirection::Vertical => "vertical",
                 ScrollDirection::Horizontal => "horizontal",

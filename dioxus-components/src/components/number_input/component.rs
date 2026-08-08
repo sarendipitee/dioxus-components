@@ -175,6 +175,9 @@ pub fn NumberInput(
     /// Marks the field disabled.
     #[props(default = false)]
     disabled: bool,
+    /// Prevents user edits while keeping the value focusable and submitted with forms.
+    #[props(default = false)]
+    read_only: bool,
     /// Shows a loading spinner in the trailing section and marks the field busy.
     #[props(default = false)]
     loading: bool,
@@ -259,8 +262,10 @@ pub fn NumberInput(
     // --- Step helpers ---
     let current_str = display_str.read().clone();
     let current_val = do_parse(&current_str, &decimal_separator, &thousands_separator);
-    let increment_disabled = disabled || max.is_some_and(|hi| current_val.is_some_and(|v| v >= hi));
-    let decrement_disabled = disabled || min.is_some_and(|lo| current_val.is_some_and(|v| v <= lo));
+    let increment_disabled =
+        disabled || read_only || max.is_some_and(|hi| current_val.is_some_and(|v| v >= hi));
+    let decrement_disabled =
+        disabled || read_only || min.is_some_and(|lo| current_val.is_some_and(|v| v <= lo));
 
     let step_fn = {
         let dec_sep = dec_sep_step;
@@ -357,6 +362,7 @@ pub fn NumberInput(
         "data-slot": "number-input-control",
         inputmode: if allow_decimal { "decimal" } else { "numeric" },
         disabled: disabled,
+        readonly: read_only,
         required: required,
         "aria-invalid": invalid,
         "aria-describedby": aria_describedby,
@@ -430,7 +436,7 @@ pub fn NumberInput(
                 },
                 onkeydown: move |e: KeyboardEvent| {
                     match e.key() {
-                        Key::ArrowUp => {
+                        Key::ArrowUp if !read_only => {
                             e.prevent_default();
                             let cur = display_str.read().clone();
                             let base = do_parse(&cur, &dec_sep_kd, &thou_sep_kd).unwrap_or(0.0);
@@ -440,7 +446,7 @@ pub fn NumberInput(
                                 cb.call(Some(next));
                             }
                         }
-                        Key::ArrowDown => {
+                        Key::ArrowDown if !read_only => {
                             e.prevent_default();
                             let cur = display_str.read().clone();
                             let base = do_parse(&cur, &dec_sep_kd, &thou_sep_kd).unwrap_or(0.0);

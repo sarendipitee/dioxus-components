@@ -267,6 +267,7 @@ pub fn Menu(props: MenuProps) -> Element {
             Key::Tab => {
                 ctx.focus.blur();
                 ctx.set_open.call(false);
+                return;
             }
             _ => return,
         }
@@ -553,6 +554,7 @@ fn MenuContentRendered(props: MenuContentRenderedProps) -> Element {
                     Key::Tab => {
                         focus.blur();
                         set_open.call(false);
+                        return;
                     }
                     _ => return,
                 }
@@ -894,7 +896,7 @@ pub fn MenuCheckboxItem<T: Clone + PartialEq + 'static>(
 
 #[derive(Clone, Copy)]
 struct MenuRadioGroupContext<T: Clone + PartialEq + 'static> {
-    value: Option<T>,
+    value: ReadSignal<Option<T>>,
     on_value_change: Callback<T>,
 }
 
@@ -917,8 +919,12 @@ pub struct MenuRadioGroupProps<T: Clone + PartialEq + 'static> {
 /// A group that coordinates related radio menu items.
 #[component]
 pub fn MenuRadioGroup<T: Clone + PartialEq + 'static>(props: MenuRadioGroupProps<T>) -> Element {
+    let mut value = use_signal(|| props.value.clone());
+    use_effect(use_reactive(&props.value, move |current_value| {
+        value.set(current_value);
+    }));
     use_context_provider(|| MenuRadioGroupContext {
-        value: props.value,
+        value: value.into(),
         on_value_change: props.on_value_change,
     });
     rsx! {
@@ -961,8 +967,7 @@ pub struct MenuRadioItemProps<T: Clone + PartialEq + 'static> {
 pub fn MenuRadioItem<T: Clone + PartialEq + 'static>(props: MenuRadioItemProps<T>) -> Element {
     let group: MenuRadioGroupContext<T> = use_context();
     let value = props.value.clone();
-    let checked = group
-        .value
+    let checked = (group.value)()
         .as_ref()
         .is_some_and(|current| current == &value);
     let on_select = props.on_select;

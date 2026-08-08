@@ -97,6 +97,10 @@ pub fn Toggle(props: ToggleProps) -> Element {
             "data-disabled": props.disabled,
 
             onclick: move |_| {
+                if (props.disabled)() {
+                    return;
+                }
+
                 let new_pressed = !pressed();
                 set_pressed.call(new_pressed);
                 if let Some(node) = button_ref() {

@@ -279,11 +279,13 @@ pub struct AccordionItemProps {
 #[component]
 pub fn AccordionItem(props: AccordionItemProps) -> Element {
     let mut ctx: AccordionContext = use_context();
-    let aria_id = use_unique_id();
+    let content_aria_id = use_unique_id();
+    let trigger_aria_id = use_unique_id();
 
     let item = use_context_provider(|| Item {
         id: ctx.register_item(),
-        aria_id,
+        content_aria_id,
+        trigger_aria_id,
         disabled: props.disabled,
         on_trigger_click: props.on_trigger_click,
     });
@@ -368,7 +370,8 @@ pub struct AccordionContentProps {
 #[component]
 pub fn AccordionContent(props: AccordionContentProps) -> Element {
     let item: Item = use_context();
-    let id = use_id_or(item.aria_id, props.id);
+    let id = use_id_or(item.content_aria_id, props.id);
+    let labelled_by = item.trigger_aria_id();
     let ctx: AccordionContext = use_context();
     let open = use_memo(move || ctx.is_open(item.id));
 
@@ -379,6 +382,8 @@ pub fn AccordionContent(props: AccordionContentProps) -> Element {
             div {
                 id: id,
                 "data-open": open,
+                role: "region",
+                aria_labelledby: labelled_by,
                 ..props.attributes,
 
                 {props.children}
@@ -390,8 +395,8 @@ pub fn AccordionContent(props: AccordionContentProps) -> Element {
 /// The props for the [`AccordionTrigger`] component.
 #[derive(Props, Clone, PartialEq)]
 pub struct AccordionTriggerProps {
-    /// THe id of the accordion trigger element.
-    pub id: Option<String>,
+    /// The id of the accordion trigger element.
+    pub id: ReadSignal<Option<String>>,
     /// Additional attributes to extend the trigger element.
     #[props(extends = GlobalAttributes)]
     pub attributes: Vec<Attribute>,
@@ -436,17 +441,18 @@ pub fn AccordionTrigger(props: AccordionTriggerProps) -> Element {
     let item: Item = use_context();
 
     let disabled = move || ctx.is_disabled() || item.is_disabled();
+    let id = use_id_or(item.trigger_aria_id, props.id);
     let id_signal = use_signal(|| item.id);
     let onmounted = use_focus_control_disabled(ctx.focus, id_signal, disabled);
 
     rsx! {
         button {
-            id: props.id,
+            id: id,
             disabled: disabled(),
             tabindex: "0",
             type: "button",
 
-            aria_controls: item.aria_id(),
+            aria_controls: item.content_aria_id(),
             aria_expanded: ctx.is_open(item.id),
 
             onmounted,
@@ -497,7 +503,8 @@ pub fn AccordionTrigger(props: AccordionTriggerProps) -> Element {
 #[derive(Clone, Copy, PartialEq)]
 struct Item {
     id: usize,
-    aria_id: Signal<String>,
+    content_aria_id: Signal<String>,
+    trigger_aria_id: Signal<String>,
     disabled: ReadSignal<bool>,
     on_trigger_click: Callback,
 }
@@ -507,7 +514,11 @@ impl Item {
         (self.disabled)()
     }
 
-    pub fn aria_id(&self) -> String {
-        (self.aria_id)()
+    pub fn content_aria_id(&self) -> String {
+        (self.content_aria_id)()
+    }
+
+    pub fn trigger_aria_id(&self) -> String {
+        (self.trigger_aria_id)()
     }
 }

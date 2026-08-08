@@ -625,7 +625,7 @@ fn DialogPortalBody(props: DialogPortalBodyProps) -> Element {
             div {
                 id: content_id,
                 role: props.dialog_role.clone(),
-                aria_modal: "true",
+                aria_modal: props.is_modal.then_some("true"),
                 aria_labelledby,
                 aria_describedby,
                 tabindex: "-1",

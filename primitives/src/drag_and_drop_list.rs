@@ -74,6 +74,7 @@ pub struct DragAndDropContext {
     list_items: Signal<Vec<Element>>,
     focused_index: Signal<Option<usize>>,
     announcement: Signal<String>,
+    is_removable: bool,
 }
 
 impl DragAndDropContext {
@@ -197,32 +198,40 @@ impl DragAndDropContext {
             .set(Some(index.checked_sub(1).unwrap_or(len - 1)));
     }
 
-    fn move_up(&mut self, index: usize) {
+    fn move_up(&mut self, index: usize) -> bool {
         let DragState::Dragging { from, to, .. } = (self.drag)() else {
-            return;
+            return false;
         };
         let current = to.unwrap_or(index);
-        let len = (self.list_items)().len();
-        let new_to = current.checked_sub(1).unwrap_or(len - 1);
+        let new_to = current.saturating_sub(1);
+        if new_to == current {
+            return false;
+        }
         self.drag.set(DragState::Dragging {
             from,
             to: Some(new_to),
             position: resolve_drop_position(from, new_to),
         });
+        true
     }
 
-    fn move_down(&mut self, index: usize) {
+    fn move_down(&mut self, index: usize) -> bool {
         let DragState::Dragging { from, to, .. } = (self.drag)() else {
-            return;
+            return false;
         };
         let current = to.unwrap_or(index);
-        let len = (self.list_items)().len();
-        let new_to = (current + 1) % len;
+        let Some(new_to) = current
+            .checked_add(1)
+            .filter(|next| *next < self.item_count())
+        else {
+            return false;
+        };
         self.drag.set(DragState::Dragging {
             from,
             to: Some(new_to),
             position: resolve_drop_position(from, new_to),
         });
+        true
     }
 
     fn announce_move(&mut self, index: usize) {
@@ -231,6 +240,11 @@ impl DragAndDropContext {
         self.announce(format!(
             "You have moved the item to position {pos} of {count}"
         ));
+    }
+    fn announce_boundary(&mut self, index: usize) {
+        let pos = self.drop_to().unwrap_or(index) + 1;
+        let count = self.item_count();
+        self.announce(format!("You are already at position {pos} of {count}"));
     }
 
     fn toggle_drag(&mut self, index: usize) {
@@ -259,6 +273,10 @@ impl DragAndDropContext {
 pub struct DragAndDropListProps {
     /// Items (labels) to be rendered.
     pub items: Vec<Element>,
+
+    /// Set if list items should be removable with Delete or Backspace.
+    #[props(default)]
+    pub is_removable: bool,
 
     /// Accessible label for the list
     #[props(default)]
@@ -339,6 +357,7 @@ pub fn DragAndDropList(props: DragAndDropListProps) -> Element {
         list_items,
         focused_index: Signal::new(None),
         announcement,
+        is_removable: props.is_removable,
     });
 
     let label = props
@@ -559,8 +578,11 @@ pub fn DragAndDropListItem(props: DragAndDropListItemProps) -> Element {
             Key::ArrowUp => {
                 event.prevent_default();
                 if ctx.is_dragging() {
-                    ctx.move_up(index);
-                    ctx.announce_move(index);
+                    if ctx.move_up(index) {
+                        ctx.announce_move(index);
+                    } else {
+                        ctx.announce_boundary(index);
+                    }
                 } else {
                     ctx.focus_prev();
                 }
@@ -568,8 +590,11 @@ pub fn DragAndDropListItem(props: DragAndDropListItemProps) -> Element {
             Key::ArrowDown => {
                 event.prevent_default();
                 if ctx.is_dragging() {
-                    ctx.move_down(index);
-                    ctx.announce_move(index);
+                    if ctx.move_down(index) {
+                        ctx.announce_move(index);
+                    } else {
+                        ctx.announce_boundary(index);
+                    }
                 } else {
                     ctx.focus_next();
                 }
@@ -594,7 +619,7 @@ pub fn DragAndDropListItem(props: DragAndDropListItemProps) -> Element {
             }
             Key::Delete | Key::Backspace => {
                 event.prevent_default();
-                if !ctx.is_dragging() {
+                if ctx.is_removable && !ctx.is_dragging() {
                     ctx.remove(index);
                 }
             }

@@ -209,12 +209,31 @@ fn SelectListPortaled(props: SelectListPortaledProps) -> Element {
     let floating_align = *pos.align.read();
     let floating_active = pos.floating_active;
     let mut select_value_ctx = ctx.selectable;
+    let select_trigger_ref = ctx.trigger_ref;
+    let restore_after_select = !ctx.multi();
     let select_value = use_callback(move |value: RcPartialEqValue| {
         select_value_ctx.select_value(value);
+        if restore_after_select {
+            if let Some(trigger) = select_trigger_ref() {
+                spawn(async move {
+                    _ = trigger.set_focus(true).await;
+                });
+            }
+        }
     });
     let mut set_open_ctx = ctx;
     let set_open = use_callback(move |open: bool| {
         set_open_ctx.set_open(open);
+    });
+    let mut dismiss_ctx = ctx;
+    let dismiss_trigger_ref = ctx.trigger_ref;
+    let dismiss_to_trigger = use_callback(move |_| {
+        dismiss_ctx.set_open(false);
+        if let Some(trigger) = dismiss_trigger_ref() {
+            spawn(async move {
+                _ = trigger.set_focus(true).await;
+            });
+        }
     });
     let mut blur_focus_state = ctx.selectable.focus_state;
     let blur_focus = use_callback(move |_| {
@@ -275,6 +294,7 @@ fn SelectListPortaled(props: SelectListPortaledProps) -> Element {
                 clear_typeahead,
                 select_current_item,
                 add_to_typeahead_buffer,
+                dismiss_to_trigger,
                 focus_prev,
                 focus_last,
                 focus_next,
@@ -310,6 +330,7 @@ struct SelectListRenderedProps {
     clear_typeahead: Callback<()>,
     select_current_item: Callback<()>,
     add_to_typeahead_buffer: Callback<String>,
+    dismiss_to_trigger: Callback<()>,
     focus_prev: Callback<()>,
     focus_last: Callback<()>,
     focus_next: Callback<()>,
@@ -342,6 +363,7 @@ fn SelectListRendered(props: SelectListRenderedProps) -> Element {
     let learn_key = props.learn_key;
     let clear_typeahead = props.clear_typeahead;
     let select_current_item = props.select_current_item;
+    let dismiss_to_trigger = props.dismiss_to_trigger;
     let add_to_typeahead_buffer = props.add_to_typeahead_buffer;
     let focus_prev = props.focus_prev;
     let focus_last = props.focus_last;
@@ -451,7 +473,7 @@ fn SelectListRendered(props: SelectListRenderedProps) -> Element {
                 event.stop_propagation();
             }
             Key::Escape => {
-                portal_set_open.call(false);
+                dismiss_to_trigger.call(());
                 event.prevent_default();
                 event.stop_propagation();
             }

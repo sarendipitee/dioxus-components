@@ -101,6 +101,7 @@ pub fn Textarea(
         "aria-describedby": field.described_by,
         "aria-invalid": invalid,
         disabled: if disabled { true },
+        required: if required { true },
     });
     let root_base = attributes!(div {
         class: "dx-textarea-root",

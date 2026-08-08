@@ -47,6 +47,64 @@ pub fn Demo() -> Element {
                 wrap: TextWrap::Balance,
                 "Centered balanced text keeps short headings and descriptions readable in compact layouts."
             }
+
+            div {
+                id: "typography-semantic-fixture",
+                "data-testid": "typography-semantic-fixture",
+                display: "grid",
+                gap: "0.5rem",
+
+                Heading {
+                    level: HeadingLevel::H1,
+                    id: "typography-heading-h1",
+                    class: "typography-semantic-heading",
+                    aria_label: "Typography level one heading",
+                    "data-typography-heading-level": "h1",
+                    "Heading level one"
+                }
+                Heading {
+                    level: HeadingLevel::H3,
+                    id: "typography-heading-h3",
+                    "data-typography-heading-level": "h3",
+                    "Heading level three"
+                }
+                Heading {
+                    level: HeadingLevel::H6,
+                    id: "typography-heading-h6",
+                    "data-typography-heading-level": "h6",
+                    "Heading level six"
+                }
+                Text {
+                    element: TextElement::Div,
+                    id: "typography-semantic-div",
+                    class: "typography-semantic-div",
+                    aria_label: "Typography semantic division",
+                    "data-typography-text-element": "div",
+                    "Text rendered as a semantic division with forwarded global attributes."
+                }
+                Text {
+                    element: TextElement::Label,
+                    class: "typography-semantic-label",
+                    "data-typography-text-element": "label",
+                    "Fixture input label"
+                    input {
+                        id: "typography-semantic-input",
+                        placeholder: "Fixture input",
+                        "data-typography-input": "associated"
+                    }
+                }
+                Text {
+                    truncate: true,
+                    "data-typography-text-element": "paragraph",
+                    "This paragraph demonstrates single-line truncation behavior."
+                }
+                Text {
+                    element: TextElement::Span,
+                    line_clamp: Some(2),
+                    "data-typography-text-element": "span",
+                    "This inline span demonstrates two-line clamping behavior."
+                }
+            }
         }
     }
 }

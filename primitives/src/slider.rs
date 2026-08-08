@@ -353,23 +353,24 @@ fn SliderImpl(props: SliderImplProps) -> Element {
             return;
         };
 
-        let delta_pos = if ctx.horizontal {
+        let axis_delta = if ctx.horizontal {
             move_event.delta_x
         } else {
-            move_event.delta_y
+            -move_event.delta_y
         };
-
-        let value_delta = delta_pos / size * ctx.range_size();
+        let direction = if ctx.inverted { -1.0 } else { 1.0 };
+        let value_delta = axis_delta / size * ctx.range_size().abs() * direction;
 
         let idx = ctx.active_thumb.cloned();
         let mut current = granular_thumbs.cloned();
         let cur_v = current.get(idx).copied().unwrap_or(0.0);
         let raw = cur_v + value_delta;
+        let committed = ctx.clamp_for(idx, raw);
         if let Some(slot) = current.get_mut(idx) {
-            *slot = raw;
+            *slot = committed;
         }
         granular_thumbs.set(current);
-        ctx.set_thumb.call((idx, ctx.clamp_for(idx, raw)));
+        ctx.set_thumb.call((idx, committed));
     });
 
     rsx! {
@@ -411,13 +412,17 @@ fn SliderImpl(props: SliderImplProps) -> Element {
                         let top_left = r.origin;
                         let relative_pos = evt.client_coordinates() - top_left.cast_unit();
 
-                        let offset = if ctx.horizontal {
-                            relative_pos.x
+                        let axis_percent = if ctx.horizontal {
+                            relative_pos.x / size
                         } else {
-                            relative_pos.y
+                            1.0 - relative_pos.y / size
                         };
-                        let raw = (offset / size) * ctx.range_size() + (ctx.min)();
-
+                        let value_percent = if ctx.inverted {
+                            1.0 - axis_percent
+                        } else {
+                            axis_percent
+                        };
+                        let raw = value_percent * ctx.range_size().abs() + (ctx.min)();
                         let idx = ctx.closest_thumb(raw);
                         let mut active = ctx.active_thumb;
                         active.set(idx);
@@ -574,11 +579,13 @@ pub fn SliderRange(props: SliderRangeProps) -> Element {
 
         let start_percent = ctx.as_percent(start);
         let end_percent = ctx.as_percent(end);
+        let low_percent = start_percent.min(end_percent);
+        let high_percent = start_percent.max(end_percent);
 
         if ctx.horizontal {
-            format!("left: {}%; right: {}%", start_percent, 100.0 - end_percent)
+            format!("left: {}%; right: {}%", low_percent, 100.0 - high_percent)
         } else {
-            format!("bottom: {}%; top: {}%", start_percent, 100.0 - end_percent)
+            format!("bottom: {}%; top: {}%", low_percent, 100.0 - high_percent)
         }
     });
 
@@ -710,12 +717,13 @@ pub fn SliderThumb(props: SliderThumbProps) -> Element {
             aria_valuenow: value,
             aria_orientation: orientation,
             aria_label,
+            aria_disabled: ctx.disabled,
             "data-disabled": ctx.disabled,
             "data-orientation": orientation,
             "data-dragging": ctx.dragging,
             "data-index": index as i64,
             style,
-            tabindex: 0,
+            tabindex: if (ctx.disabled)() { -1 } else { 0 },
             onmounted: move |evt| {
                 // Store the mounted data for focus management
                 button_ref.set(Some(evt.data()));
@@ -729,17 +737,24 @@ pub fn SliderThumb(props: SliderThumbProps) -> Element {
                 evt.prevent_default();
             },
             onkeydown: move |evt| async move {
-                if (ctx.disabled)() {
-                    return;
-                }
-
-                let Some(move_event) = MoveEvent::from_keyboard(&evt, (ctx.step)()) else {
-                    return;
+                let new_value = match evt.data().key() {
+                    Key::Home => (ctx.min)(),
+                    Key::End => (ctx.max)(),
+                    _ => {
+                        let Some(move_event) = MoveEvent::from_keyboard(&evt, (ctx.step)()) else {
+                            return;
+                        };
+                        let axis_delta = if ctx.horizontal {
+                            move_event.delta_x
+                        } else {
+                            move_event.delta_y
+                        };
+                        let direction = if ctx.inverted { -1.0 } else { 1.0 };
+                        value() + axis_delta * direction
+                    }
                 };
 
                 evt.prevent_default();
-                let new_value = value() + move_event.delta_x + move_event.delta_y;
-
                 // Clamp (against neighbor in range mode) and snap, then commit.
                 ctx.set_thumb.call((index, ctx.clamp_for(index, new_value)));
             },
@@ -807,7 +822,12 @@ impl SliderContext {
     fn as_percent(&self, value: f64) -> f64 {
         let min = (self.min)();
         let max = (self.max)();
-        ((value - min) / (max - min) * 100.0).clamp(0.0, 100.0)
+        let percent = ((value - min) / (max - min) * 100.0).clamp(0.0, 100.0);
+        if self.inverted {
+            100.0 - percent
+        } else {
+            percent
+        }
     }
 }
 

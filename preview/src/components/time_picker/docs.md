@@ -1,4 +1,4 @@
-The TimePicker page demonstrates the core picker primitive contract: `TimePicker` owns the selection state and behavioral props, while `TimePickerInput {}` renders the styled field shell inside the same surface.
+`TimePicker` owns the selection state and behavioral props. For the documented child-based composition, pass `TimePickerInput {}` to preserve the primitive segmented input contract. Omitting children in clock-time mode renders the styled scrolling-column picker surface.
 
 Pair this component with `TimeInput` from the `time_input` registry whenever you want consistent label, description, error, and sizing treatment with the rest of your form fields.
 

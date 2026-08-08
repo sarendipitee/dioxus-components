@@ -22,6 +22,7 @@ struct ColorInputPopoverContext {
     open: Memo<bool>,
     set_open: Callback<bool>,
     disabled: ReadSignal<bool>,
+    read_only: ReadSignal<bool>,
 }
 
 fn normalize_hex(value: &str) -> Option<String> {
@@ -77,6 +78,9 @@ pub struct ColorInputProps {
     /// Whether the color input is disabled.
     #[props(default)]
     disabled: ReadSignal<bool>,
+    /// Whether the color input is read-only. Read-only inputs remain focusable and participate in forms.
+    #[props(default)]
+    read_only: ReadSignal<bool>,
     /// Optional fallback color used when clearing.
     #[props(default)]
     clear_color: Option<Hsv<encoding::Srgb, f64>>,
@@ -113,6 +117,15 @@ pub struct ColorInputProps {
     /// Optional content rendered after the field value.
     #[props(default)]
     right_section: Option<Element>,
+    /// Native form field name applied to the text control.
+    #[props(default, into)]
+    name: Option<String>,
+    /// Id of the form associated with the text control.
+    #[props(default, into)]
+    form: Option<String>,
+    /// Additional attributes applied directly to the native text control.
+    #[props(default)]
+    input_attributes: Vec<Attribute>,
     /// The controlled open state of the popover.
     open: ReadSignal<Option<bool>>,
     /// The default open state when uncontrolled.
@@ -135,6 +148,7 @@ pub fn ColorInput(props: ColorInputProps) -> Element {
         color,
         on_color_change,
         disabled,
+        read_only,
         clear_color,
         clearable,
         label,
@@ -147,6 +161,9 @@ pub fn ColorInput(props: ColorInputProps) -> Element {
         size,
         radius,
         right_section,
+        name,
+        form,
+        input_attributes,
         open,
         default_open,
         on_open_change,
@@ -155,6 +172,7 @@ pub fn ColorInput(props: ColorInputProps) -> Element {
     } = props;
     let (popover_open, set_popover_open) = use_controlled(open, default_open, on_open_change);
     let is_disabled = disabled();
+    let is_read_only = read_only();
     let value = format_color_hex(color());
     let input_id = use_color_input_id();
     let popover_id = format!("{input_id}-popover");
@@ -168,7 +186,7 @@ pub fn ColorInput(props: ColorInputProps) -> Element {
         rsx! {
             InputClearButton {
                 aria_label: "Clear color",
-                disabled: is_disabled,
+                disabled: is_disabled || is_read_only,
                 onclick: move |_| {
                     if let Some(color) = clear_color {
                         on_color_change.call(color);
@@ -206,6 +224,7 @@ pub fn ColorInput(props: ColorInputProps) -> Element {
                     open: popover_open,
                     set_open: set_popover_open,
                     disabled,
+                    read_only,
                     Input {
                         variant,
                         size,
@@ -222,13 +241,17 @@ pub fn ColorInput(props: ColorInputProps) -> Element {
                             canonical_value: value,
                             popover_id: popover_id.clone(),
                             on_color_change,
+                            read_only: is_read_only,
+                            name,
+                            form,
+                            attributes: input_attributes,
                         }
                     }
                     PopoverContent { id: popover_id,
                         ColorPickerRoot {
                             color,
                             on_color_change,
-                            disabled,
+                            disabled: use_memo(move || disabled() || read_only()),
                             attributes,
                             ColorPickerSurface { {children} }
                         }
@@ -244,12 +267,14 @@ fn ColorInputPopoverContextProvider(
     open: Memo<bool>,
     set_open: Callback<bool>,
     disabled: ReadSignal<bool>,
+    read_only: ReadSignal<bool>,
     children: Element,
 ) -> Element {
     use_context_provider(|| ColorInputPopoverContext {
         open,
         set_open,
         disabled,
+        read_only,
     });
 
     rsx! {
@@ -263,6 +288,10 @@ fn ColorInputField(
     canonical_value: String,
     popover_id: String,
     on_color_change: Callback<Hsv<encoding::Srgb, f64>>,
+    read_only: bool,
+    name: Option<String>,
+    form: Option<String>,
+    attributes: Vec<Attribute>,
 ) -> Element {
     let popover_context = use_context::<ColorInputPopoverContext>();
     let control_attrs = use_input_control_context().map(|ctx| {
@@ -277,7 +306,6 @@ fn ColorInputField(
         class: Styles::dx_color_input,
         r#type: "text",
         value: current_value.clone(),
-        "aria-label": "Color value",
         "aria-controls": popover_id,
         "aria-haspopup": "dialog",
         "aria-expanded": (popover_context.open)(),
@@ -285,41 +313,51 @@ fn ColorInputField(
         autocomplete: "off",
         spellcheck: "false",
         disabled: if (popover_context.disabled)() { true },
+        readonly: if read_only { true },
+        name,
+        form,
     });
     let attributes = match control_attrs {
-        Some(control_attrs) => merge_attributes(vec![base, control_attrs]),
-        None => base,
+        Some(control_attrs) => merge_attributes(vec![attributes, base, control_attrs]),
+        None => merge_attributes(vec![attributes, base]),
     };
-
-    rsx! {
-        input {
-            onfocus: move |_| {
-                if !(popover_context.disabled)() {
-                    popover_context.set_open.call(true);
-                }
-            },
-            oninput: move |event| {
+    let handlers = attributes!(input {
+        onfocus: move |_| {
+            if !(popover_context.disabled)() && !(popover_context.read_only)() {
+                popover_context.set_open.call(true);
+            }
+        },
+        oninput: move |event| {
+            if !(popover_context.disabled)() && !read_only {
                 let next = event.value();
                 value.set(next.clone());
                 if let Some(color) = parse_color_hex(&next) {
                     on_color_change.call(color);
                 }
-            },
-            onchange: move |event| {
+            }
+        },
+        onchange: move |event| {
+            if !(popover_context.disabled)() && !read_only {
                 let next = event.value();
                 if let Some(color) = parse_color_hex(&next) {
                     on_color_change.call(color);
                     value.set(format_color_hex(color));
                 }
-            },
-            onblur: move |_| {
+            }
+        },
+        onblur: move |_| {
+            if !(popover_context.disabled)() && !read_only {
                 if let Some(color) = parse_color_hex(&value()) {
                     value.set(format_color_hex(color));
                 } else {
                     value.set(canonical_value.clone());
                 }
-            },
-            ..attributes,
-        }
+            }
+        },
+    });
+    let attributes = merge_attributes(vec![attributes, handlers]);
+
+    rsx! {
+        input { ..attributes }
     }
 }

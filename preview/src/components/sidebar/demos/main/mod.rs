@@ -164,10 +164,15 @@ const PROJECTS: &[Project] = &[
 pub fn Demo() -> Element {
     let side = use_signal(|| SidebarSide::Left);
     let collapsible = use_signal(|| SidebarCollapsible::Offcanvas);
+    let mut open = use_signal(|| Some(true));
 
     rsx! {
         SidebarProvider {
+            open,
+            on_open_change: move |next| open.set(Some(next)),
             Sidebar {
+                "data-testid": "sidebar-demo-root",
+                aria_label: "Demo sidebar",
                 variant: SidebarVariant::Sidebar,
                 collapsible: collapsible(),
                 side: side(),
@@ -192,6 +197,31 @@ pub fn Demo() -> Element {
                     }
                 }
                 div { style: "display:flex; flex:1; flex-direction:column; gap:1.5rem; padding:1.5rem; min-height:0; overflow-y:auto; overflow-x:hidden;",
+                    div { style: "display: flex; align-items: center; gap: 0.75rem; flex-wrap: wrap;",
+                        label { style: "display: inline-flex; align-items: center; gap: 0.5rem;",
+                            input {
+                                r#type: "checkbox",
+                                checked: open().unwrap_or(false),
+                                onchange: move |event| open.set(Some(event.checked())),
+                            }
+                            "Sidebar expanded"
+                        }
+                        if open().unwrap_or(false) {
+                            Button {
+                                onclick: move |_| open.set(Some(false)),
+                                "Set sidebar collapsed"
+                            }
+                        } else {
+                            Button {
+                                onclick: move |_| open.set(Some(true)),
+                                "Set sidebar expanded"
+                            }
+                        }
+                        output {
+                            "data-testid": "sidebar-open-state",
+                            if open().unwrap_or(false) { "expanded" } else { "collapsed" }
+                        }
+                    }
                     DemoSettingControls { side, collapsible }
                 }
             }

@@ -13,19 +13,25 @@ pub fn Demo() -> Element {
             width: "100%",
             max_width: "28rem",
 
-            Item { variant: ItemVariant::Outline,
+            Item {
+                variant: ItemVariant::Outline,
+                id: "basic-item",
+                "data-testid": "basic-item",
+                "aria-label": "Basic item summary",
                 ItemContent {
                     ItemTitle { "Basic Item" }
                     ItemDescription { "A simple item with title and description." }
                 }
                 ItemActions {
-                    Button { variant: ButtonVariant::Outline, "Action" }
+                    Button { variant: ButtonVariant::Outline, disabled: true, "Action" }
                 }
             }
 
             Item {
                 variant: ItemVariant::Outline,
                 size: ItemSize::Sm,
+                "data-testid": "verified-item-link",
+                "aria-label": "Open verified profile",
                 as: move |attrs: Vec<Attribute>| rsx! {
                     a { href: "#", ..attrs,
                         ItemMedia { variant: ItemMediaVariant::Icon,

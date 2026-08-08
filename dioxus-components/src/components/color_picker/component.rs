@@ -232,6 +232,7 @@ fn ColorSlider(props: ColorSliderProps) -> Element {
                 class: Styles::dx_color_slider,
                 label: "Color Slider",
                 horizontal: true,
+                disabled: ctx.disabled(),
                 max: 360.0,
                 value: Some(current_hue()),
                 on_value_change: move |h: f64| {
@@ -250,6 +251,8 @@ fn ColorSlider(props: ColorSliderProps) -> Element {
                 SliderTrack { class: Styles::dx_color_slider_track,
                     SliderThumb {
                         class: Styles::dx_color_slider_thumb,
+                        aria_disabled: ctx.disabled(),
+                        tabindex: if ctx.disabled() { -1 } else { 0 },
                         aria_label: "Hue",
                         aria_valuetext: format!("{:.0}°", current_hue()),
                         background_color: format_color_hex(thumb_color()),
@@ -317,10 +320,12 @@ pub struct ColorPickerSelectProps {
 
 #[component]
 pub fn ColorPickerSelect(props: ColorPickerSelectProps) -> Element {
+    let ctx = use_context::<ColorPickerContext>();
     rsx! {
         div {
             class: Styles::dx_color_picker_dialog,
             ..props.attributes,
+            ColorSwatch { color: ctx.color() }
             ColorArea {}
             ColorSlider { title: "Hue" }
         }

@@ -41,7 +41,7 @@ pub fn Demo() -> Element {
                     on_state_change: move |state| {
                         avatar_state.set(format!("Avatar 2: {state:?}"));
                     },
-                    aria_label: "Basic avatar",
+                    aria_label: "Rounded avatar",
                     "EA"
                 }
             }
@@ -67,6 +67,16 @@ pub fn Demo() -> Element {
                     },
                     aria_label: "Error avatar",
                     "JK"
+                }
+            }
+            div { class: Styles::dx_avatar_item,
+                p { class: Styles::dx_avatar_label, "Empty State" }
+                ImageAvatar {
+                    size: AvatarImageSize::Small,
+                    src: "",
+                    alt: "",
+                    aria_label: "Empty avatar",
+                    "NA"
                 }
             }
             div { class: Styles::dx_avatar_item,

@@ -26,6 +26,7 @@ pub fn Demo() -> Element {
                 }
                 Textarea {
                     id: "autosize",
+                    "data-testid": "textarea-autosize",
                     variant: TextareaVariant::Default,
                     placeholder: "Enter your description",
                     autosize: true,

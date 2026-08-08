@@ -141,6 +141,8 @@ pub fn Demo() -> Element {
                 top: "1.5rem",
                 TableOfContents {
                     scroll_spy_options,
+                    aria_label: "On this page",
+                    "data-testid": "table-of-contents",
                 }
             }
         }

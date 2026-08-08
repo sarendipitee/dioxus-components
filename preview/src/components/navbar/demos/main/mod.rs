@@ -6,10 +6,17 @@ use dioxus::prelude::*;
 pub fn Demo() -> Element {
     rsx! {
         div {
-            Navbar { aria_label: "Components",
-                NavbarNav { index: 0usize,
-                    NavbarTrigger { "Inputs" }
+            Navbar {
+                aria_label: "Components",
+                "data-testid": "navbar",
+                "data-navbar": "components",
+                NavbarNav { index: 0usize, content_id: "navbar-inputs-content",
+                    NavbarTrigger {
+                        "data-testid": "navbar-inputs-trigger",
+                        "Inputs"
+                    }
                     NavbarContent {
+                        "data-testid": "navbar-inputs-content",
                         NavbarItem {
                             index: 0usize,
                             value: "calendar".to_string(),

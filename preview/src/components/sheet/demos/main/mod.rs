@@ -8,6 +8,10 @@ use dioxus_components::sheet::{Sheet, SheetSide};
 pub fn Demo() -> Element {
     let mut open = use_signal(|| false);
     let mut side = use_signal(|| SheetSide::Right);
+    let mut audit_open = use_signal(|| false);
+    let mut audit_change_count = use_signal(|| 0_u32);
+    let mut audit_last_change = use_signal(|| "none");
+    let mut nonmodal_open = use_signal(|| false);
 
     let open_sheet = move |s: SheetSide| {
         move |_| {
@@ -57,6 +61,60 @@ pub fn Demo() -> Element {
                     }
                 }
             }
+        }
+        div { display: "flex", gap: "0.5rem", margin_top: "1rem",
+            Button {
+                "data-testid": "sheet-audit-open",
+                onclick: move |_| audit_open.set(true),
+                "Open audit sheet"
+            }
+            output {
+                "data-testid": "sheet-audit-status",
+                "{audit_open()}:{audit_change_count()}:{audit_last_change()}"
+            }
+        }
+        Sheet {
+            open: audit_open(),
+            on_open_change: move |next| {
+                audit_open.set(next);
+                audit_change_count += 1;
+                audit_last_change.set(if next { "open" } else { "closed" });
+            },
+            close_on_escape: false,
+            close_on_backdrop_click: false,
+            with_close_button: false,
+            title: "Audit sheet",
+            description: "Dismissal is disabled for this audit sheet.",
+            id: "sheet-audit-content",
+            "data-testid": "sheet-audit-content",
+            "data-audit-scope": "controlled",
+            aria_label: "Audit sheet",
+            Button {
+                onclick: move |_| {
+                    audit_open.set(false);
+                    audit_change_count += 1;
+                    audit_last_change.set("closed");
+                },
+                "Close audit sheet programmatically"
+            }
+        }
+
+        div { display: "flex", gap: "0.5rem", margin_top: "1rem",
+            Button {
+                "data-testid": "sheet-nonmodal-open",
+                onclick: move |_| nonmodal_open.set(true),
+                "Open nonmodal sheet"
+            }
+            Button { "data-testid": "sheet-nonmodal-outside", "Outside action" }
+        }
+        Sheet {
+            open: nonmodal_open(),
+            on_open_change: move |next| nonmodal_open.set(next),
+            is_modal: false,
+            title: "Nonmodal sheet title",
+            id: "sheet-nonmodal-content",
+            "data-testid": "sheet-nonmodal-content",
+            dioxus_primitives::dialog::DialogClose { "Close nonmodal sheet" }
         }
     }
 }

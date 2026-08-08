@@ -7,9 +7,12 @@ pub fn Demo() -> Element {
         Tabs {
             default_value: "account",
             variant: TabsVariant::Pills,
+            roving_loop: false,
+            "data-testid": "tabs-nonloop-root",
             width: "100%",
             TabList {
                 aria_label: "Settings tabs demo",
+                "data-testid": "tabs-nonloop-list",
                 TabTrigger { value: "account", index: 0usize, "Account" }
                 TabTrigger { value: "profile", index: 1usize, "Profile" }
                 TabTrigger { value: "notifications", index: 2usize, "Notifications" }

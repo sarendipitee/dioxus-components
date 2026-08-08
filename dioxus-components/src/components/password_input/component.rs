@@ -149,7 +149,6 @@ pub fn PasswordInput(
                     class: Styles::dx_password_input_toggle,
                     "data-slot": "password-input-toggle",
                     r#type: "button",
-                    tabindex: "-1",
                     "aria-label": toggle_label,
                     "aria-pressed": is_visible,
                     "aria-controls": input_id.clone(),

@@ -10,7 +10,12 @@ pub fn Demo() -> Element {
             Badge { variant: BadgeVariant::Secondary, "Secondary" }
             Badge { variant: BadgeVariant::Destructive, "Destructive" }
             Badge { variant: BadgeVariant::Outline, "Outline" }
-            Badge { background: "var(--success);", color: "var(--success-fg)",
+            Badge {
+                background: "var(--success);",
+                color: "var(--success-fg)",
+                "data-testid": "verified-badge",
+                id: "verified-status",
+                "aria-label": "Verified status",
                 VerifiedIcon {}
                 "Verified"
             }

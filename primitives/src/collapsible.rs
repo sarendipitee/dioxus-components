@@ -37,6 +37,7 @@ pub struct CollapsibleProps {
     /// The controlled `open` state of the collapsible.
     ///
     /// If this is provided, you must use `on_open_change`.
+    #[props(default)]
     pub open: ReadSignal<Option<bool>>,
 
     /// A callback for when the open state changes.
@@ -124,6 +125,7 @@ pub fn Collapsible(props: CollapsibleProps) -> Element {
 #[derive(Props, Clone, PartialEq)]
 pub struct CollapsibleContentProps {
     /// The ID of the collapsible content element.
+    #[props(default)]
     pub id: ReadSignal<Option<String>>,
 
     /// Additional attributes for the collapsible content element.
@@ -252,6 +254,9 @@ pub fn CollapsibleTrigger(props: CollapsibleTriggerProps) -> Element {
         "aria-controls": ctx.aria_controls_id,
         "aria-expanded": open,
         onclick: move |_| {
+            if (ctx.disabled)() {
+                return;
+            }
             let new_open = !open();
             ctx.set_open.call(new_open);
         },

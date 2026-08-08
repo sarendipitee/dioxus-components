@@ -82,7 +82,10 @@ pub fn SelectGroup(props: SelectGroupProps) -> Element {
 
     let labeled_by = use_signal(|| None);
 
-    use_context_provider(|| SelectGroupContext { labeled_by });
+    use_context_provider(|| SelectGroupContext {
+        labeled_by,
+        disabled,
+    });
     let render = use_context::<ListboxContext>().render;
 
     rsx! {

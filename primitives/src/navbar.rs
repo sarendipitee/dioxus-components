@@ -169,6 +169,7 @@ struct NavbarNavContext {
     focus: FocusState,
     is_open: Memo<bool>,
     disabled: ReadSignal<bool>,
+    content_id: Memo<String>,
     initial_focus: Signal<Option<FocusPlacement>>,
 }
 
@@ -191,6 +192,9 @@ pub struct NavbarNavProps {
     /// Whether this nav item is disabled.
     #[props(default)]
     pub disabled: ReadSignal<bool>,
+    /// The id shared by this nav's trigger and popup content.
+    #[props(default, into)]
+    pub content_id: ReadSignal<Option<String>>,
 
     /// Additional attributes to apply to the nav element.
     #[props(extends = GlobalAttributes)]
@@ -276,11 +280,13 @@ pub fn NavbarNav(props: NavbarNavProps) -> Element {
     let is_open = use_memo(move || (ctx.open_nav)() == Some(props.index.cloned()));
     let focus = use_focus_provider(ctx.focus.roving_loop);
     let initial_focus = use_signal(|| None);
+    let content_id = use_id_or(use_unique_id(), props.content_id);
     let mut nav_ctx = use_context_provider(|| NavbarNavContext {
         index: props.index,
         focus,
         is_open,
         disabled: props.disabled,
+        content_id,
         initial_focus,
     });
 
@@ -455,6 +461,8 @@ pub fn NavbarTrigger(props: NavbarTriggerProps) -> Element {
             },
             role: "menuitem",
             type: "button",
+            aria_controls: nav_ctx.content_id,
+            aria_expanded: is_open(),
             tabindex: if is_focused() { "0" } else { "-1" },
             ..props.attributes,
             {props.children}
@@ -465,8 +473,6 @@ pub fn NavbarTrigger(props: NavbarTriggerProps) -> Element {
 /// The props for the [`NavbarContent`] component.
 #[derive(Props, Clone, PartialEq)]
 pub struct NavbarContentProps {
-    /// The id of the content element.
-    pub id: ReadSignal<Option<String>>,
     /// Additional attributes to apply to the content element.
     #[props(extends = GlobalAttributes)]
     pub attributes: Vec<Attribute>,
@@ -558,8 +564,7 @@ pub fn NavbarContent(props: NavbarContentProps) -> Element {
         None => "closed",
     };
 
-    let unique_id = use_unique_id();
-    let id = use_id_or(unique_id, props.id);
+    let id = nav_ctx.content_id;
 
     let render = use_animated_open(id, nav_ctx.is_open);
     use_deferred_focus(nav_ctx.focus, nav_ctx.initial_focus, render);

@@ -282,10 +282,7 @@ pub fn TimeInput(
                         crate::components::time_picker::TimePicker {
                             selected_time,
                             selected_value,
-                            on_value_change: move |t: Option<Time>| {
-                                on_value_change.call(t);
-                                on_picker_value_change.call(t.map(TimePickerValue::Time));
-                            },
+                            on_value_change,
                             on_picker_value_change,
                             on_preset_select: move |t: Time| {
                                 on_value_change.call(Some(t));
@@ -300,6 +297,8 @@ pub fn TimeInput(
                             min_time,
                             max_time,
                             am_pm_labels: am_pm_labels.clone(),
+                            steps,
+                            min_hours_digits,
                             presets: presets.clone(),
                         }
                     }

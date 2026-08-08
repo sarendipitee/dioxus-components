@@ -10,7 +10,7 @@ Use this component when you want a reusable scroll surface inside dialogs, side 
 // The ScrollArea component wraps all scrollable content.
 ScrollArea {
     // The direction in which the scroll area can scroll. Can be one of Horizontal, Vertical, or Both.
-    scroll_direction: ScrollDirection::Vertical,
+    direction: ScrollDirection::Vertical,
     // The content of the scrollable area
     {children}
 }

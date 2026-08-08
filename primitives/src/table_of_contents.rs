@@ -69,12 +69,14 @@ fn TableOfContentsControl(
 ) -> Element {
     let depth = item.depth.saturating_sub(min_depth);
     let style = format!("--depth: {depth}; --depth-offset: {depth_offset};");
+    let aria_current = if active { Some("location") } else { None };
 
     rsx! {
         a {
             href: "#{item.id}",
             style,
             "data-active": if active { "true".to_string() } else { "false".to_string() },
+            aria_current,
             "data-depth": item.depth.to_string(),
             "{item.value}"
         }

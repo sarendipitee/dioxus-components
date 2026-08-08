@@ -63,6 +63,7 @@ pub fn DragAndDropList(props: DragAndDropListProps) -> Element {
         drag_and_drop_list::DragAndDropList {
             class: Styles::dx_dnd_list,
             items,
+            is_removable,
             aria_label: props.aria_label,
             attributes: props.attributes,
             drag_and_drop_list::DragAndDropInstructions {}

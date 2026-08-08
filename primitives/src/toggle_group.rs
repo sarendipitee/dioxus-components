@@ -21,9 +21,8 @@ struct ToggleGroupCtx {
 
     // Focus state
     focus: FocusState,
-
     horizontal: ReadSignal<bool>,
-    roving_loop: ReadSignal<bool>,
+    rtl: ReadSignal<bool>,
 }
 
 impl ToggleGroupCtx {
@@ -58,23 +57,11 @@ impl ToggleGroupCtx {
     }
 
     fn focus_next(&mut self) {
-        if !(self.roving_loop)() {
-            return;
-        }
-
         self.focus.focus_next();
     }
 
     fn focus_prev(&mut self) {
-        if !(self.roving_loop)() {
-            return;
-        }
-
         self.focus.focus_prev();
-    }
-
-    fn is_roving_loop(&self) -> bool {
-        (self.roving_loop)()
     }
 }
 
@@ -103,6 +90,9 @@ pub struct ToggleGroupProps {
     /// Whether the toggle group is horizontal or vertical.
     #[props(default)]
     pub horizontal: ReadSignal<bool>,
+    /// Whether horizontal arrow navigation follows right-to-left direction.
+    #[props(default)]
+    pub rtl: ReadSignal<bool>,
 
     /// Whether focus should loop around when reaching the end.
     #[props(default = ReadSignal::new(Signal::new(true)))]
@@ -159,11 +149,14 @@ pub fn ToggleGroup(props: ToggleGroupProps) -> Element {
 
         focus,
         horizontal: props.horizontal,
-        roving_loop: props.roving_loop,
+        rtl: props.rtl,
     });
 
     rsx! {
         div {
+            role: "group",
+            aria_disabled: (ctx.disabled)(),
+            "data-disabled": (ctx.disabled)(),
             onfocusout: move |_| ctx.focus.set_focus(None),
 
             "data-orientation": ctx.orientation(),
@@ -234,16 +227,13 @@ pub fn ToggleItem(props: ToggleItemProps) -> Element {
     });
 
     // Tab index for roving index
-    let tab_index = use_memo(move || {
-        if !ctx.is_roving_loop() {
-            return "0";
-        }
-
-        match ctx.focus.recent_focus_or_default() == props.index.cloned() {
-            true => "0",
-            false => "-1",
-        }
-    });
+    let tab_index =
+        use_memo(
+            move || match ctx.focus.recent_focus_or_default() == props.index.cloned() {
+                true => "0",
+                false => "-1",
+            },
+        );
 
     let disabled = move || (ctx.disabled)() || (props.disabled)();
     let onmounted = use_focus_controlled_item_disabled(props.index, disabled);
@@ -260,6 +250,8 @@ pub fn ToggleItem(props: ToggleItemProps) -> Element {
                 match key {
                     Key::ArrowUp if !horizontal => ctx.focus_prev(),
                     Key::ArrowDown if !horizontal => ctx.focus_next(),
+                    Key::ArrowLeft if horizontal && (ctx.rtl)() => ctx.focus_next(),
+                    Key::ArrowRight if horizontal && (ctx.rtl)() => ctx.focus_prev(),
                     Key::ArrowLeft if horizontal => ctx.focus_prev(),
                     Key::ArrowRight if horizontal => ctx.focus_next(),
                     Key::Home => ctx.focus.focus_first(),

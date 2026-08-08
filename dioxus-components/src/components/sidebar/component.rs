@@ -24,6 +24,7 @@ const SIDEBAR_DEFAULT_WIDTH: f64 = 256.0;
 const SIDEBAR_DEFAULT_MIN_WIDTH: f64 = 192.0;
 const SIDEBAR_DEFAULT_MAX_WIDTH: f64 = 480.0;
 static SIDEBAR_RAIL_ID: AtomicUsize = AtomicUsize::new(0);
+static SIDEBAR_ID: AtomicUsize = AtomicUsize::new(0);
 
 #[derive(Clone, Copy)]
 struct SidebarResizeCtx {
@@ -112,6 +113,7 @@ pub struct SidebarCtx {
     set_open: Callback<bool>,
     // Mobile state:
     open_mobile: Signal<bool>,
+    sidebar_id: Signal<String>,
 }
 
 impl SidebarCtx {
@@ -191,6 +193,8 @@ pub fn SidebarProvider(
     let is_mobile = use_is_mobile();
     let side = use_signal(|| SidebarSide::Left);
     let open_mobile = use_signal(|| false);
+    let sidebar_id =
+        use_signal(|| format!("dx-sidebar-{}", SIDEBAR_ID.fetch_add(1, Ordering::Relaxed)));
 
     let (open, set_open) = use_controlled(open, default_open, on_open_change);
 
@@ -209,6 +213,7 @@ pub fn SidebarProvider(
         open,
         set_open,
         open_mobile,
+        sidebar_id,
     };
 
     use_context_provider(|| ctx);
@@ -293,6 +298,7 @@ pub fn Sidebar(
 
     if collapsible == SidebarCollapsible::None {
         let base = attributes!(div {
+            id: (ctx.sidebar_id)(),
             class: Styles::dx_sidebar_static,
             "data-slot": "sidebar",
         });
@@ -314,6 +320,7 @@ pub fn Sidebar(
                 open: open_mobile(),
                 on_open_change: move |v| ctx.set_open_mobile(v),
                 side: sheet_side,
+                id: (ctx.sidebar_id)(),
                 class: Styles::dx_sidebar_sheet,
                 "data-sidebar": "sidebar",
                 "data-slot": "sidebar",
@@ -348,6 +355,7 @@ pub fn Sidebar(
 
     rsx! {
         div {
+            id: (ctx.sidebar_id)(),
             class: Styles::dx_sidebar_desktop,
             "data-state": state().as_str(),
             "data-collapsible": collapsible_str,
@@ -387,6 +395,12 @@ pub fn SidebarTrigger(
         class: Styles::dx_sidebar_trigger,
         "data-sidebar": "trigger",
         "data-slot": "sidebar-trigger",
+        aria_controls: (ctx.sidebar_id)(),
+        aria_expanded: if (ctx.is_mobile)() {
+            (ctx.open_mobile)()
+        } else {
+            (ctx.open)()
+        },
     });
     let merged = merge_attributes(vec![base, attributes]);
 

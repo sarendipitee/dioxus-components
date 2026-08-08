@@ -21,10 +21,18 @@ pub fn Demo() -> Element {
                         "Edit"
                         MenuItemSection { "⌘E" }
                     }
+                    MenuItem::<String> {
+                        value: "undo".to_string(),
+                        index: 1usize,
+                        disabled: true,
+                        on_select: move |_| selected_item.set("Undo".to_string()),
+                        "Undo"
+                        MenuItemSection { "⌘Z" }
+                    }
                     MenuSub {
                         MenuSubTrigger::<String> {
                             value: "arrange".to_string(),
-                            index: 1usize,
+                            index: 2usize,
                             "Arrange"
                         }
                         MenuSubContent {
@@ -46,7 +54,7 @@ pub fn Demo() -> Element {
                 MenuSeparator {}
                 MenuCheckboxItem::<String> {
                     value: "line_numbers".to_string(),
-                    index: 2usize,
+                    index: 3usize,
                     checked: show_line_numbers(),
                     on_checked_change: move |checked| show_line_numbers.set(checked),
                     "Show line numbers"
@@ -59,13 +67,13 @@ pub fn Demo() -> Element {
                     on_value_change: move |value| panel.set(Some(value)),
                     MenuRadioItem::<String> {
                         value: "preview".to_string(),
-                        index: 3usize,
+                        index: 4usize,
                         "Preview"
                         MenuItemIndicator { visible: panel() == Some("preview".to_string()), "•" }
                     }
                     MenuRadioItem::<String> {
                         value: "code".to_string(),
-                        index: 4usize,
+                        index: 5usize,
                         "Code"
                         MenuItemIndicator { visible: panel() == Some("code".to_string()), "•" }
                     }

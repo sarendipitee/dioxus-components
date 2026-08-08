@@ -35,6 +35,9 @@ pub struct StyledCheckboxProps {
     /// Whether the checkbox is disabled.
     #[props(default)]
     pub disabled: ReadSignal<bool>,
+    /// Whether the checkbox is read-only. Read-only checkboxes remain focusable and retain their form value.
+    #[props(default)]
+    pub read_only: ReadSignal<bool>,
     /// The name of the checkbox, used in forms.
     #[props(default)]
     pub name: ReadSignal<String>,
@@ -66,6 +69,7 @@ pub fn Checkbox(props: StyledCheckboxProps) -> Element {
     );
     let required = (props.required)();
     let disabled = (props.disabled)();
+    let read_only = (props.read_only)();
     let checkbox_attributes = merge_attributes(vec![
         attributes!(button {
             id: field.id.clone(),
@@ -81,12 +85,14 @@ pub fn Checkbox(props: StyledCheckboxProps) -> Element {
             class: Styles::dx_checkbox_field,
             "data-disabled": disabled,
             "data-error": field.invalid,
+            "data-readonly": read_only,
             "data-required": required,
             checkbox::Checkbox {
                 checked: props.checked,
                 default_checked: props.default_checked,
                 required: props.required,
                 disabled: props.disabled,
+                read_only: props.read_only,
                 name: props.name,
                 value: props.value,
                 on_checked_change: props.on_checked_change,

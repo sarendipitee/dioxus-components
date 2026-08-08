@@ -155,12 +155,17 @@ pub fn VirtualList(props: VirtualListProps) -> Element {
             // Initial publish
             publish(false);
 
+            function onResize() {
+                publish(false);
+            }
+
             container.addEventListener("scroll", onScroll, { passive: true });
-            window.addEventListener("resize", () => publish(false), { passive: true });
+            window.addEventListener("resize", onResize, { passive: true });
 
             await dioxus.recv();
             if (scrollEndTimer !== null) clearTimeout(scrollEndTimer);
             container.removeEventListener("scroll", onScroll);
+            window.removeEventListener("resize", onResize);
         "#;
         let mut eval = document::eval(script);
         let _ = eval.send(container_id.peek().clone());

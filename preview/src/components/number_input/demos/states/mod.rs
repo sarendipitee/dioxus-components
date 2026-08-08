@@ -36,6 +36,18 @@ pub fn Demo() -> Element {
                 disabled: true,
                 default_value: 42.0,
             }
+
+            form {
+                id: "number-form",
+                NumberInput {
+                    label: "Read-only amount",
+                    read_only: true,
+                    default_value: 12.0,
+                    name: "readonly-amount",
+                    "data-testid": "number-input-read-only",
+                    form: "number-form",
+                }
+            }
         }
     }
 }

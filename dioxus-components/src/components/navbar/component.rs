@@ -28,6 +28,7 @@ pub fn NavbarNav(props: NavbarNavProps) -> Element {
             class: Styles::dx_navbar_nav,
             index: props.index,
             disabled: props.disabled,
+            content_id: props.content_id,
             attributes: props.attributes,
             {props.children}
         }
@@ -58,7 +59,6 @@ pub fn NavbarContent(props: NavbarContentProps) -> Element {
     rsx! {
         navbar::NavbarContent {
             class: format!("{} dx_dropdown", Styles::dx_navbar_content),
-            id: props.id,
             attributes: props.attributes,
             {props.children}
         }

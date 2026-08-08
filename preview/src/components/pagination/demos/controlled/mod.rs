@@ -8,6 +8,8 @@ use dioxus::prelude::*;
 #[component]
 pub fn Demo() -> Element {
     let mut page = use_signal(|| Some(3usize));
+    let mut changes = use_signal(|| 0usize);
+    let mut disabled = use_signal(|| false);
     let total = 10usize;
 
     rsx! {
@@ -18,10 +20,26 @@ pub fn Demo() -> Element {
                 "data-testid": "pagination-controlled-value",
                 "Page {page().unwrap_or(1)} of {total}"
             }
+            div {
+                "data-testid": "pagination-controlled-changes",
+                "Changes: {changes()}"
+            }
+            button {
+                "data-testid": "pagination-controlled-disabled",
+                r#type: "button",
+                onclick: move |_| disabled.toggle(),
+                "Toggle disabled"
+            }
             Pagination {
                 total: Some(total),
                 value: page,
-                on_change: move |next| page.set(Some(next)),
+                disabled,
+                aria_label: "Account pages",
+                "data-testid": "pagination-controlled-nav",
+                on_change: move |next| {
+                    page.set(Some(next));
+                    changes += 1;
+                },
                 siblings: 1,
                 boundaries: 1,
                 with_edges: true,

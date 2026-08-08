@@ -112,7 +112,9 @@ pub fn SelectOption<T: PartialEq + Clone + 'static>(props: SelectOptionProps<T>)
     let text_value = props.text_value.clone();
     let text_value_signal = ReadSignal::new(use_memo(move || text_value.clone()));
     let disabled_value = props.disabled;
-    let disabled_signal = ReadSignal::new(use_memo(move || disabled_value));
+    let group_disabled = try_use_context::<super::super::context::SelectGroupContext>()
+        .map(|group| group.disabled)
+        .unwrap_or(false);
     let portal_ctx = try_use_context::<Signal<SelectPortalContext>>();
 
     if let Some(portal_ctx) = portal_ctx {
@@ -213,7 +215,7 @@ pub fn SelectOption<T: PartialEq + Clone + 'static>(props: SelectOptionProps<T>)
             index,
             value: props.value.clone(),
             text_value: text_value_signal,
-            option_disabled: disabled_signal,
+            option_disabled: ReadSignal::new(use_memo(move || disabled_value || group_disabled)),
             component_name: "SelectOption",
         },
     );

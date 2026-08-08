@@ -119,6 +119,13 @@ pub fn Pagination(
                             PaginationFirst {
                                 disabled: at_first,
                                 onclick: move |_| set_page.call(1),
+                                role: "button",
+                                onkeydown: move |event: KeyboardEvent| {
+                                    if event.key() == Key::Enter || event.key() == Key::Character(" ".to_string()) {
+                                        event.prevent_default();
+                                        set_page.call(1);
+                                    }
+                                },
                             }
                         }
                     }
@@ -127,6 +134,13 @@ pub fn Pagination(
                             PaginationPrevious {
                                 disabled: at_first,
                                 onclick: move |_| set_page.call(current.saturating_sub(1)),
+                                role: "button",
+                                onkeydown: move |event: KeyboardEvent| {
+                                    if event.key() == Key::Enter || event.key() == Key::Character(" ".to_string()) {
+                                        event.prevent_default();
+                                        set_page.call(current.saturating_sub(1));
+                                    }
+                                },
                             }
                         }
                     }
@@ -141,6 +155,13 @@ pub fn Pagination(
                                             disabled: is_disabled,
                                             aria_label: "Go to page {page}",
                                             onclick: move |_| set_page.call(page),
+                                            role: "button",
+                                            onkeydown: move |event: KeyboardEvent| {
+                                                if event.key() == Key::Enter || event.key() == Key::Character(" ".to_string()) {
+                                                    event.prevent_default();
+                                                    set_page.call(page);
+                                                }
+                                            },
                                             "{page}"
                                         }
                                     },
@@ -156,6 +177,13 @@ pub fn Pagination(
                             PaginationNext {
                                 disabled: at_last,
                                 onclick: move |_| set_page.call(current + 1),
+                                role: "button",
+                                onkeydown: move |event: KeyboardEvent| {
+                                    if event.key() == Key::Enter || event.key() == Key::Character(" ".to_string()) {
+                                        event.prevent_default();
+                                        set_page.call(current.saturating_add(1));
+                                    }
+                                },
                             }
                         }
                     }
@@ -163,6 +191,13 @@ pub fn Pagination(
                         PaginationItem {
                             PaginationLast {
                                 disabled: at_last,
+                                role: "button",
+                                onkeydown: move |event: KeyboardEvent| {
+                                    if event.key() == Key::Enter || event.key() == Key::Character(" ".to_string()) {
+                                        event.prevent_default();
+                                        set_page.call(total_pages);
+                                    }
+                                },
                                 onclick: move |_| set_page.call(total_pages),
                             }
                         }
@@ -217,6 +252,7 @@ pub struct PaginationLinkProps {
     onclick: Option<EventHandler<MouseEvent>>,
     onmousedown: Option<EventHandler<MouseEvent>>,
     onmouseup: Option<EventHandler<MouseEvent>>,
+    onkeydown: Option<EventHandler<KeyboardEvent>>,
     #[props(extends = GlobalAttributes)]
     #[props(extends = a)]
     pub attributes: Vec<Attribute>,
@@ -247,13 +283,24 @@ pub fn PaginationLink(props: PaginationLinkProps) -> Element {
                 }
             },
             onmousedown: move |event| {
-                if let Some(f) = &props.onmousedown {
-                    f.call(event);
+                if !props.disabled {
+                    if let Some(f) = &props.onmousedown {
+                        f.call(event);
+                    }
                 }
             },
             onmouseup: move |event| {
-                if let Some(f) = &props.onmouseup {
-                    f.call(event);
+                if !props.disabled {
+                    if let Some(f) = &props.onmouseup {
+                        f.call(event);
+                    }
+                }
+            },
+            onkeydown: move |event| {
+                if !props.disabled {
+                    if let Some(f) = &props.onkeydown {
+                        f.call(event);
+                    }
                 }
             },
             ..props.attributes,
@@ -268,6 +315,7 @@ pub fn PaginationFirst(
     onclick: Option<EventHandler<MouseEvent>>,
     onmousedown: Option<EventHandler<MouseEvent>>,
     onmouseup: Option<EventHandler<MouseEvent>>,
+    onkeydown: Option<EventHandler<KeyboardEvent>>,
     #[props(default)] disabled: bool,
     #[props(extends = GlobalAttributes)]
     #[props(extends = a)]
@@ -282,6 +330,7 @@ pub fn PaginationFirst(
             onclick,
             onmousedown,
             onmouseup,
+            onkeydown,
             attributes,
             ChevronsLeft { size: "1rem" }
             span { class: Styles::dx_pagination_label, "First" }
@@ -296,6 +345,7 @@ pub fn PaginationPrevious(
     onmousedown: Option<EventHandler<MouseEvent>>,
     onmouseup: Option<EventHandler<MouseEvent>>,
     #[props(default)] disabled: bool,
+    onkeydown: Option<EventHandler<KeyboardEvent>>,
     #[props(extends = GlobalAttributes)]
     #[props(extends = a)]
     attributes: Vec<Attribute>,
@@ -310,6 +360,7 @@ pub fn PaginationPrevious(
             onmousedown,
             onmouseup,
             attributes,
+            onkeydown,
             ChevronLeft { size: "1rem" }
             span { class: Styles::dx_pagination_label, "Previous" }
         }
@@ -323,6 +374,7 @@ pub fn PaginationNext(
     onmousedown: Option<EventHandler<MouseEvent>>,
     onmouseup: Option<EventHandler<MouseEvent>>,
     #[props(default)] disabled: bool,
+    onkeydown: Option<EventHandler<KeyboardEvent>>,
     #[props(extends = GlobalAttributes)]
     #[props(extends = a)]
     attributes: Vec<Attribute>,
@@ -336,6 +388,7 @@ pub fn PaginationNext(
             onclick,
             onmousedown,
             onmouseup,
+            onkeydown,
             attributes,
             span { class: Styles::dx_pagination_label, "Next" }
             ChevronRight { size: "1rem" }
@@ -350,6 +403,7 @@ pub fn PaginationLast(
     onmousedown: Option<EventHandler<MouseEvent>>,
     onmouseup: Option<EventHandler<MouseEvent>>,
     #[props(default)] disabled: bool,
+    onkeydown: Option<EventHandler<KeyboardEvent>>,
     #[props(extends = GlobalAttributes)]
     #[props(extends = a)]
     attributes: Vec<Attribute>,
@@ -363,6 +417,7 @@ pub fn PaginationLast(
             onclick,
             onmousedown,
             onmouseup,
+            onkeydown,
             attributes,
             span { class: Styles::dx_pagination_label, "Last" }
             ChevronsRight { size: "1rem" }
