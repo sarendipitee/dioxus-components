@@ -550,6 +550,8 @@ pub fn SidebarRail(#[props(extends = GlobalAttributes)] attributes: Vec<Attribut
                             width.set(final_width.clamp(minimum, maximum));
                             ctx.set_open.call(!collapse);
                         }
+                        pointer_active.set(false);
+                        pointer_dragged.set(false);
                         break;
                     }
                 });
@@ -561,14 +563,26 @@ pub fn SidebarRail(#[props(extends = GlobalAttributes)] attributes: Vec<Attribut
                     pointer_dragged.set(true);
                 }
             },
-            onpointerup: move |_| {
-                pointer_active.set(false);
+            onpointerup: move |event| {
+                if pointer_active()
+                    && (event.client_coordinates().x - pointer_start_x()).abs() >= 30.0
+                {
+                    pointer_dragged.set(true);
+                }
             },
             onpointercancel: move |_| {
                 pointer_active.set(false);
+                pointer_dragged.set(false);
             },
-            onclick: move |_| {
-                ctx.toggle();
+            onclick: move |event| {
+                let was_dragged = pointer_dragged()
+                    || (pointer_active()
+                        && (event.client_coordinates().x - pointer_start_x()).abs() >= 30.0);
+                pointer_active.set(false);
+                pointer_dragged.set(false);
+                if !was_dragged {
+                    ctx.toggle();
+                }
             },
             ..merged,
         }
