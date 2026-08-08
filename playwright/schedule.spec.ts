@@ -371,6 +371,14 @@ test("static mode keeps navigation but disables drag and resize affordances", as
   await expect(root).toHaveAttribute("data-mode", "static");
   await expect(root.getByRole("button", { name: "Previous" })).toBeVisible();
   await expect(root.getByRole("button", { name: "Next" })).toBeVisible();
+  const events = root.locator("[data-schedule-event]");
+  await expect(events.first()).toBeVisible();
+  const eventCount = await events.count();
+  expect(eventCount).toBeGreaterThan(0);
+  for (let index = 0; index < eventCount; index += 1) {
+    await expect(events.nth(index)).toHaveAttribute("data-draggable", "false");
+    await expect(events.nth(index)).toHaveAttribute("data-resizable", "false");
+  }
   await expect(root.locator("[data-schedule-resize-handle]")).toHaveCount(0);
 });
 

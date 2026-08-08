@@ -11,6 +11,7 @@ pub fn Demo() -> Element {
             Schedule {
                 default_date: sample_date(),
                 default_view: ScheduleView::Week,
+                events: sample_events(),
                 mode: ScheduleMode::Static,
                 with_events_drag_and_drop: true,
                 with_event_resize: true,
