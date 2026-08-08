@@ -260,9 +260,11 @@ pub fn RangeSlider(props: RangeSliderProps) -> Element {
     });
     let set_thumb = use_callback(move |(idx, v): (usize, f64)| {
         let cur = value();
+        // Preserve each thumb's identity at collision instead of reordering the pair and
+        // silently turning the active start thumb into the end thumb (or vice versa).
         let next = match idx {
-            0 => ordered_range(v, cur.end),
-            _ => ordered_range(cur.start, v),
+            0 => v.min(cur.end)..cur.end,
+            _ => cur.start..v.max(cur.start),
         };
         set_value.call(next);
     });
