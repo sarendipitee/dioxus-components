@@ -507,7 +507,8 @@ test("selects Code radio with pointer and keyboard activation", async ({
   const code = page.getByRole("menuitemradio", { name: "Code" }).first();
 
   await trigger.click({ button: "right" });
-  await code.click({ force: true });
+  await code.dispatchEvent("pointerdown", { clientX: 1, clientY: 1 });
+  await code.dispatchEvent("pointerup", { clientX: 1, clientY: 1 });
   await expect(code).toHaveAttribute("aria-checked", "true");
   await expect(page.getByText("Panel: code")).toBeVisible();
 
