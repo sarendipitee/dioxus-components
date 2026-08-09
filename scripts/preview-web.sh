@@ -5,26 +5,53 @@ expected_dx_version='0.7.10'
 script_dir=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
 repo_root=$(CDPATH= cd -- "$script_dir/.." && pwd)
 target_dir=${CARGO_TARGET_DIR:-"$repo_root/target"}
+command=""
 wasm_split=true
 
-case "${1:-}" in
-  build | serve)
-    command=$1
-    shift
-    ;;
-  *)
-    command=serve
-    ;;
-esac
-
-if [ "${1:-}" = --no-wasm-split ]; then
-  wasm_split=false
+original_count=$#
+i=0
+while [ $i -lt $original_count ]; do
+  arg=$1
   shift
+  i=$((i + 1))
+  case "$arg" in
+    build | serve)
+      if [ -z "$command" ]; then
+        command=$arg
+      else
+        set -- "$@" "$arg"
+      fi
+      ;;
+    --no-wasm-split)
+      wasm_split=false
+      ;;
+    --wasm-split)
+      wasm_split=true
+      ;;
+    *)
+      set -- "$@" "$arg"
+      ;;
+  esac
+done
+
+if [ -z "$command" ]; then
+  command=serve
 fi
 
 if [ "$wasm_split" = true ]; then
-  public_dir="$target_dir/dx/preview/release/web/public"
   set -- --wasm-split --features wasm-split --release --debug-symbols=false "$@"
+fi
+
+is_release=false
+for arg in "$@"; do
+  if [ "$arg" = --release ] || [ "$arg" = -r ]; then
+    is_release=true
+    break
+  fi
+done
+
+if [ "$is_release" = true ]; then
+  public_dir="$target_dir/dx/preview/release/web/public"
 else
   public_dir="$target_dir/dx/preview/debug/web/public"
 fi
@@ -96,8 +123,8 @@ if [ "$command" = build ]; then
     exit 1
   fi
 
-  if ! find "$public_dir/wasm" -type f -name '*.wasm' -size +0c -print -quit 2>/dev/null | grep -q .; then
-    printf 'Dioxus build completed without a nonempty WASM payload under %s/wasm\n' "$public_dir" >&2
+  if ! find "$public_dir" -type f -name '*.wasm' -size +0c -print -quit 2>/dev/null | grep -q .; then
+    printf 'Dioxus build completed without a nonempty WASM payload under %s\n' "$public_dir" >&2
     exit 1
   fi
 
