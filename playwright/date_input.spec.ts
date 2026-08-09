@@ -44,25 +44,38 @@ const dueDateWrapper = async (root: Locator) => {
     .locator("[data-slot='input-wrapper']");
 };
 
-test("date input exposes associated description and formatted date segments", async ({ page }) => {
+test("date input exposes associated description and formatted date segments", async ({
+  page,
+}) => {
   const root = await dateInputPage(page);
   const label = root.locator("label").filter({ hasText: "Due date" });
   const id = await label.getAttribute("for");
   expect(id).toBeTruthy();
   const control = root.locator(`#${id}`);
-  await expect(control).toHaveAttribute("aria-describedby", `${id}-description`);
-  await expect(root.locator(`#${id}-description`)).toHaveText("Single-date input composition.");
+  await expect(control).toHaveAttribute(
+    "aria-describedby",
+    `${id}-description`,
+  );
+  await expect(root.locator(`#${id}-description`)).toHaveText(
+    "Single-date input composition.",
+  );
   const wrapper = root
     .getByTestId("due-date-field")
     .locator("[data-slot='input-wrapper']");
-  for (const [name, text, now] of [["year", "2024", "2024"], ["month", "05", "5"], ["day", "15", "15"]]) {
+  for (const [name, text, now] of [
+    ["year", "2024", "2024"],
+    ["month", "05", "5"],
+    ["day", "15", "15"],
+  ]) {
     const segment = wrapper.getByRole("spinbutton", { name });
     await expect(segment).toHaveText(text);
     await expect(segment).toHaveAttribute("aria-valuenow", now);
   }
 });
 
-test("calendar selection updates the controlled date status", async ({ page }) => {
+test("calendar selection updates the controlled date status", async ({
+  page,
+}) => {
   const root = await dateInputPage(page);
   const wrapper = await dueDateWrapper(root);
   await wrapper.locator('[aria-label="Show Calendar"]').click();
@@ -75,14 +88,19 @@ test("calendar selection updates the controlled date status", async ({ page }) =
   await expect(root.getByTestId("due-date-value")).toHaveText("2024-05-15");
 });
 
-test("required error, disabled, and read-only date inputs expose state semantics", async ({ page }) => {
+test("required error, disabled, and read-only date inputs expose state semantics", async ({
+  page,
+}) => {
   const root = await dateInputPage(page);
   const required = root.locator("label").filter({ hasText: "Required date" });
   const requiredId = await required.getAttribute("for");
   expect(requiredId).toBeTruthy();
   const requiredControl = root.locator(`#${requiredId}`);
   await expect(requiredControl).toHaveAttribute("aria-invalid", "true");
-  await expect(requiredControl).toHaveAttribute("aria-describedby", new RegExp(`${requiredId}-error`));
+  await expect(requiredControl).toHaveAttribute(
+    "aria-describedby",
+    new RegExp(`${requiredId}-error`),
+  );
   const disabled = root
     .getByTestId("disabled-date-field")
     .locator("[data-slot='input-wrapper']");

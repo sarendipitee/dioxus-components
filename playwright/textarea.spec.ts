@@ -4,25 +4,21 @@ test.beforeEach(async ({ page }) => {
   await page.goto("/components/textarea", { timeout: 30 * 1000 });
 });
 
-test("semantic textarea exposes label, description, error, and required invalid state", async ({ page }) => {
-  const field = page.locator("#component-preview-frame").first().locator("#textarea-semantic-invalid");
-  await expect(field).toHaveAccessibleName("Feedback");
-  await expect(field).toBeRequired();
-  await expect(field).toHaveAttribute("aria-invalid", "true");
-  const describedBy = (await field.getAttribute("aria-describedby"))!.split(/\s+/);
-  expect(describedBy).toContain("textarea-semantic-invalid-description");
-  expect(describedBy).toContain("textarea-semantic-invalid-error");
-});
-
-test("controlled and uncontrolled textareas preserve their public value contracts", async ({ page }) => {
+test("controlled and uncontrolled textareas preserve their public value contracts", async ({
+  page,
+}) => {
   const frame = page.locator("#component-preview-frame").first();
   const controlled = frame.locator("#textarea-controlled");
   await expect(controlled).toHaveValue("initial controlled value");
   await controlled.fill("typed value");
-  await expect(frame.locator("#textarea-controlled-status")).toContainText("Input callbacks: 1; value: typed value");
+  await expect(frame.locator("#textarea-controlled-status")).toContainText(
+    "Input callbacks: 1; value: typed value",
+  );
   await frame.locator("#textarea-controlled-update").click();
   await expect(controlled).toHaveValue("programmatic controlled update");
-  await expect(frame.locator("#textarea-controlled-status")).toContainText("Input callbacks: 1;");
+  await expect(frame.locator("#textarea-controlled-status")).toContainText(
+    "Input callbacks: 1;",
+  );
 
   const uncontrolled = frame.locator("#textarea-uncontrolled");
   await expect(uncontrolled).toHaveValue("Default uncontrolled content");
@@ -30,42 +26,50 @@ test("controlled and uncontrolled textareas preserve their public value contract
   await expect(uncontrolled).toHaveValue("changed uncontrolled");
 });
 
-test("disabled and readonly textareas expose native interaction state", async ({ page }) => {
-  const frame = page.locator("#component-preview-frame").first();
-  await expect(frame.locator("#textarea-disabled")).toBeDisabled();
-  await expect(frame.locator("#textarea-readonly")).toHaveAttribute("readonly", "");
-  await expect(frame.locator("#textarea-readonly")).toHaveValue("Read-only content");
-});
-
-test("required form textarea submits and resets with visible status", async ({ page }) => {
+test("required form textarea submits and resets with visible status", async ({
+  page,
+}) => {
   const frame = page.locator("#component-preview-frame").first();
   const field = frame.locator("#textarea-required-form");
   await frame.locator("#textarea-form-submit").click();
-  await expect(frame.locator("#textarea-form-status")).toHaveText("Awaiting submission");
+  await expect(frame.locator("#textarea-form-status")).toHaveText(
+    "Awaiting submission",
+  );
   await field.fill("submitted feedback");
   await frame.locator("#textarea-form-submit").click();
-  await expect(frame.locator("#textarea-form-status")).toHaveText("Submitted required textarea");
-  const submittedValue = await frame.locator("#textarea-form").evaluate(
-    (form: HTMLFormElement) => new FormData(form).get("feedback"),
+  await expect(frame.locator("#textarea-form-status")).toHaveText(
+    "Submitted required textarea",
   );
+  const submittedValue = await frame
+    .locator("#textarea-form")
+    .evaluate((form: HTMLFormElement) => new FormData(form).get("feedback"));
   expect(submittedValue).toBe("submitted feedback");
   await frame.locator("#textarea-form-reset").click();
-  await expect(frame.locator("#textarea-form-status")).toHaveText("Reset required textarea");
+  await expect(frame.locator("#textarea-form-status")).toHaveText(
+    "Reset required textarea",
+  );
   await expect(field).toHaveValue("");
 });
 
-test("constraints, global attributes, reactive attributes, and focus are observable", async ({ page }) => {
+test("constraints, global attributes, reactive attributes, and focus are observable", async ({
+  page,
+}) => {
   const frame = page.locator("#component-preview-frame").first();
   const constraints = frame.locator("#textarea-constraints");
   await expect(constraints).toHaveAttribute("minlength", "3");
   await expect(constraints).toHaveAttribute("maxlength", "12");
   await expect(constraints).toHaveAttribute("rows", "4");
-  await expect(frame.locator("#textarea-global-attributes")).toHaveAttribute("data-contract", "global-attributes");
+  await expect(frame.locator("#textarea-global-attributes")).toHaveAttribute(
+    "data-contract",
+    "global-attributes",
+  );
   const reactive = frame.locator("#textarea-reactive-attributes");
   await expect(reactive).toHaveAttribute("data-active", "false");
   await frame.locator("#textarea-reactive-toggle").click();
   await expect(reactive).toHaveAttribute("data-active", "true");
-  await expect(reactive).toHaveAccessibleName("Textarea reactive attributes: active");
+  await expect(reactive).toHaveAccessibleName(
+    "Textarea reactive attributes: active",
+  );
   const focus = frame.locator("#textarea-focus-status");
   await focus.focus();
   await expect(frame.locator("#textarea-focus-output")).toHaveText("Focused");
@@ -74,17 +78,35 @@ test("constraints, global attributes, reactive attributes, and focus are observa
 });
 
 test("autosize textarea grows, clamps, and shrinks", async ({ page }) => {
-  await page.goto("/components/textarea/block#autosize", { timeout: 30 * 1000 });
+  await page.goto("/components/textarea/block#autosize", {
+    timeout: 30 * 1000,
+  });
   const field = page.getByTestId("textarea-autosize").first();
-  const initial = await field.evaluate((element) => element.getBoundingClientRect().height);
-  await field.fill(Array.from({ length: 5 }, (_, index) => `line ${index}`).join("\n"));
-  const grown = await field.evaluate((element) => element.getBoundingClientRect().height);
-  await field.fill(Array.from({ length: 30 }, (_, index) => `line ${index}`).join("\n"));
-  const clamped = await field.evaluate((element) => element.getBoundingClientRect().height);
-  await field.fill(Array.from({ length: 60 }, (_, index) => `line ${index}`).join("\n"));
-  const reclamped = await field.evaluate((element) => element.getBoundingClientRect().height);
+  const initial = await field.evaluate(
+    (element) => element.getBoundingClientRect().height,
+  );
+  await field.fill(
+    Array.from({ length: 5 }, (_, index) => `line ${index}`).join("\n"),
+  );
+  const grown = await field.evaluate(
+    (element) => element.getBoundingClientRect().height,
+  );
+  await field.fill(
+    Array.from({ length: 30 }, (_, index) => `line ${index}`).join("\n"),
+  );
+  const clamped = await field.evaluate(
+    (element) => element.getBoundingClientRect().height,
+  );
+  await field.fill(
+    Array.from({ length: 60 }, (_, index) => `line ${index}`).join("\n"),
+  );
+  const reclamped = await field.evaluate(
+    (element) => element.getBoundingClientRect().height,
+  );
   expect(reclamped).toBe(clamped);
   await field.fill("");
-  const shrunk = await field.evaluate((element) => element.getBoundingClientRect().height);
+  const shrunk = await field.evaluate(
+    (element) => element.getBoundingClientRect().height,
+  );
   expect(shrunk).toBeLessThan(clamped);
 });

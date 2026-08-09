@@ -3,7 +3,9 @@ import { expect, test, type Locator, type Page } from "@playwright/test";
 const BADGE_DEMO_URL = "/components/badge/block#main";
 const PREVIEW_ROOT = "#dx-preview-block-root";
 
-async function loadBadgeDemo(page: Page): Promise<{ root: Locator; badges: Locator }> {
+async function loadBadgeDemo(
+  page: Page,
+): Promise<{ root: Locator; badges: Locator }> {
   await page.goto(BADGE_DEMO_URL, { timeout: 30 * 1000, waitUntil: "load" });
 
   const root = page.locator(PREVIEW_ROOT);
@@ -16,7 +18,13 @@ async function loadBadgeDemo(page: Page): Promise<{ root: Locator; badges: Locat
 
 test("renders badges in order as noninteractive spans", async ({ page }) => {
   const { badges } = await loadBadgeDemo(page);
-  const labels = ["Primary", "Secondary", "Destructive", "Outline", "Verified"] as const;
+  const labels = [
+    "Primary",
+    "Secondary",
+    "Destructive",
+    "Outline",
+    "Verified",
+  ] as const;
 
   for (const [index, label] of labels.entries()) {
     const badge = badges.nth(index);
@@ -29,7 +37,9 @@ test("renders badges in order as noninteractive spans", async ({ page }) => {
   }
 });
 
-test("exposes the expected variants for the first four badges", async ({ page }) => {
+test("exposes the expected variants for the first four badges", async ({
+  page,
+}) => {
   const { badges } = await loadBadgeDemo(page);
   const variants = ["primary", "secondary", "destructive", "outline"] as const;
 

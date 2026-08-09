@@ -1,37 +1,42 @@
-import { test, expect } from '@playwright/test';
+import { test, expect } from "@playwright/test";
 
-test('opens and closes on cancel', async ({ page }) => {
-  await page.goto('/components/alert_dialog', { timeout: 30 * 1000 });
-  await page.getByRole('button', { name: 'Leave page' }).click();
+test("opens and closes on cancel", async ({ page }) => {
+  await page.goto("/components/alert_dialog", { timeout: 30 * 1000 });
+  await page.getByRole("button", { name: "Leave page" }).click();
 
-  const dialog = page.getByRole('alertdialog');
+  const dialog = page.getByRole("alertdialog");
   await expect(dialog).toBeVisible();
-  await expect(dialog.getByRole('button', { name: 'Stay' })).toHaveAttribute('type', 'button');
+  await expect(dialog.getByRole("button", { name: "Stay" })).toHaveAttribute(
+    "type",
+    "button",
+  );
 
-  await page.getByRole('button', { name: 'Stay' }).click();
+  await page.getByRole("button", { name: "Stay" }).click();
   await expect(dialog).toHaveCount(0);
 });
 
-test('is modal, traps focus, and restores focus to the trigger', async ({ page }) => {
-  await page.goto('/components/alert_dialog', { timeout: 30 * 1000 });
-  const trigger = page.getByRole('button', { name: 'Leave page' });
+test("is modal, traps focus, and restores focus to the trigger", async ({
+  page,
+}) => {
+  await page.goto("/components/alert_dialog", { timeout: 30 * 1000 });
+  const trigger = page.getByRole("button", { name: "Leave page" });
   await trigger.click();
 
-  const dialog = page.getByRole('alertdialog', { name: 'Unsaved changes' });
-  const cancel = dialog.getByRole('button', { name: 'Stay' });
-  const confirm = dialog.getByRole('button', { name: 'Leave', exact: true });
+  const dialog = page.getByRole("alertdialog", { name: "Unsaved changes" });
+  const cancel = dialog.getByRole("button", { name: "Stay" });
+  const confirm = dialog.getByRole("button", { name: "Leave", exact: true });
 
-  await expect(dialog).toHaveAttribute('aria-modal', 'true');
+  await expect(dialog).toHaveAttribute("aria-modal", "true");
   await expect(dialog).toHaveAccessibleDescription(
-    'You have unsaved changes that will be lost. Are you sure you want to leave this page?',
+    "You have unsaved changes that will be lost. Are you sure you want to leave this page?",
   );
   await expect(cancel).toBeFocused();
 
-  await page.keyboard.press('Tab');
+  await page.keyboard.press("Tab");
   await expect(confirm).toBeFocused();
-  await page.keyboard.press('Tab');
+  await page.keyboard.press("Tab");
   await expect(cancel).toBeFocused();
-  await page.keyboard.press('Shift+Tab');
+  await page.keyboard.press("Shift+Tab");
   await expect(confirm).toBeFocused();
 
   await cancel.click();
@@ -39,28 +44,33 @@ test('is modal, traps focus, and restores focus to the trigger', async ({ page }
   await expect(trigger).toBeFocused();
 });
 
-test('fires on_click and closes on action', async ({ page }) => {
-  await page.goto('/components/alert_dialog', { timeout: 30 * 1000 });
-  await page.getByRole('button', { name: 'Leave page' }).click();
+test("fires on_click and closes on action", async ({ page }) => {
+  await page.goto("/components/alert_dialog", { timeout: 30 * 1000 });
+  await page.getByRole("button", { name: "Leave page" }).click();
 
-  const dialog = page.getByRole('alertdialog');
+  const dialog = page.getByRole("alertdialog");
   await expect(dialog).toBeVisible();
-  await expect(dialog.getByRole('button', { name: 'Leave', exact: true })).toHaveAttribute(
-    'type',
-    'button',
-  );
+  await expect(
+    dialog.getByRole("button", { name: "Leave", exact: true }),
+  ).toHaveAttribute("type", "button");
 
-  await page.getByRole('button', { name: 'Leave', exact: true }).click();
+  await page.getByRole("button", { name: "Leave", exact: true }).click();
   await expect(dialog).toHaveCount(0);
-  await expect(page.getByText('You left the page.', { exact: true }).first()).toBeVisible();
+  await expect(
+    page.getByText("You left the page.", { exact: true }).first(),
+  ).toBeVisible();
 });
 
-test('keeps primitive ARIA wrappers with shared typography', async ({ page }) => {
-  await page.goto('/components/alert_dialog', { timeout: 30 * 1000 });
-  await page.getByRole('button', { name: 'Leave page' }).click();
+test("keeps primitive ARIA wrappers with shared typography", async ({
+  page,
+}) => {
+  await page.goto("/components/alert_dialog", { timeout: 30 * 1000 });
+  await page.getByRole("button", { name: "Leave page" }).click();
 
-  const dialog = page.getByRole('alertdialog');
-  const alertDialogContent = page.locator('[data-slot="alert-dialog-content"]').first();
+  const dialog = page.getByRole("alertdialog");
+  const alertDialogContent = page
+    .locator('[data-slot="alert-dialog-content"]')
+    .first();
   const title = dialog.locator('[data-slot="alert-dialog-title"]');
   const description = dialog.locator('[data-slot="alert-dialog-description"]');
 
@@ -69,28 +79,28 @@ test('keeps primitive ARIA wrappers with shared typography', async ({ page }) =>
   await expect(description).toHaveCount(1);
   await expect(title).toHaveClass(/dx_heading/);
   await expect(description).toHaveClass(/dx_text/);
-  await expect(title).toHaveAttribute('data-size', 'lg');
-  await expect(title).toHaveAttribute('data-weight', 'bold');
-  await expect(title).toHaveAttribute('data-tone', 'default');
-  await expect(title).toHaveAttribute('data-wrap', 'wrap');
-  await expect(title).toHaveAttribute('data-truncate', 'false');
-  await expect(description).toHaveAttribute('data-size', 'md');
-  await expect(description).toHaveAttribute('data-tone', 'default');
-  await expect(description).toHaveAttribute('data-weight', 'inherit');
-  await expect(description).toHaveAttribute('data-wrap', 'wrap');
-  await expect(description).toHaveAttribute('data-truncate', 'false');
+  await expect(title).toHaveAttribute("data-size", "lg");
+  await expect(title).toHaveAttribute("data-weight", "bold");
+  await expect(title).toHaveAttribute("data-tone", "default");
+  await expect(title).toHaveAttribute("data-wrap", "wrap");
+  await expect(title).toHaveAttribute("data-truncate", "false");
+  await expect(description).toHaveAttribute("data-size", "md");
+  await expect(description).toHaveAttribute("data-tone", "default");
+  await expect(description).toHaveAttribute("data-weight", "inherit");
+  await expect(description).toHaveAttribute("data-wrap", "wrap");
+  await expect(description).toHaveAttribute("data-truncate", "false");
 
-  const titleId = await title.getAttribute('id');
-  const descriptionId = await description.getAttribute('id');
+  const titleId = await title.getAttribute("id");
+  const descriptionId = await description.getAttribute("id");
   expect(titleId).toBeTruthy();
   expect(descriptionId).toBeTruthy();
-  await expect(dialog).toHaveAttribute('aria-labelledby', titleId!);
-  await expect(dialog).toHaveAttribute('aria-describedby', descriptionId!);
+  await expect(dialog).toHaveAttribute("aria-labelledby", titleId!);
+  await expect(dialog).toHaveAttribute("aria-describedby", descriptionId!);
 
-  await expect(title).toHaveJSProperty('tagName', 'H2');
-  await expect(description).toHaveJSProperty('tagName', 'P');
-  await expect(title.locator('h1,h2,h3,h4,h5,h6,p')).toHaveCount(0);
-  await expect(description.locator('h1,h2,h3,h4,h5,h6,p')).toHaveCount(0);
+  await expect(title).toHaveJSProperty("tagName", "H2");
+  await expect(description).toHaveJSProperty("tagName", "P");
+  await expect(title.locator("h1,h2,h3,h4,h5,h6,p")).toHaveCount(0);
+  await expect(description.locator("h1,h2,h3,h4,h5,h6,p")).toHaveCount(0);
 
   const [contentColor, descriptionColor] = await Promise.all([
     alertDialogContent.evaluate((element) => getComputedStyle(element).color),
@@ -99,22 +109,22 @@ test('keeps primitive ARIA wrappers with shared typography', async ({ page }) =>
   expect(descriptionColor).toBe(contentColor);
 });
 
-test('does not close on escape', async ({ page }) => {
-  await page.goto('/components/alert_dialog', { timeout: 30 * 1000 });
-  await page.getByRole('button', { name: 'Leave page' }).click();
+test("does not close on escape", async ({ page }) => {
+  await page.goto("/components/alert_dialog", { timeout: 30 * 1000 });
+  await page.getByRole("button", { name: "Leave page" }).click();
 
-  const dialog = page.getByRole('alertdialog');
+  const dialog = page.getByRole("alertdialog");
   await expect(dialog).toBeVisible();
 
-  await page.keyboard.press('Escape');
+  await page.keyboard.press("Escape");
   await expect(dialog).toBeVisible();
 });
 
-test('does not close on backdrop click', async ({ page }) => {
-  await page.goto('/components/alert_dialog', { timeout: 30 * 1000 });
-  await page.getByRole('button', { name: 'Leave page' }).click();
+test("does not close on backdrop click", async ({ page }) => {
+  await page.goto("/components/alert_dialog", { timeout: 30 * 1000 });
+  await page.getByRole("button", { name: "Leave page" }).click();
 
-  const dialog = page.getByRole('alertdialog');
+  const dialog = page.getByRole("alertdialog");
   await expect(dialog).toBeVisible();
 
   // AlertDialog must not dismiss on backdrop click; user must use a button.

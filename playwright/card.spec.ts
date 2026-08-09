@@ -8,7 +8,9 @@ async function gotoCardDemo(page: Page) {
     waitUntil: "load",
   });
 }
-test("card roots expose section slots and accessible content", async ({ page }) => {
+test("card roots expose section slots and accessible content", async ({
+  page,
+}) => {
   await gotoCardDemo(page);
 
   const preview = page.locator("#dx-preview-block-root");
@@ -22,21 +24,33 @@ test("card roots expose section slots and accessible content", async ({ page }) 
   const action = firstCard.locator('[data-slot="card-action"]');
   await expect(action).toHaveCount(1);
   await expect(action.getByRole("button", { name: "Sign Up" })).toBeVisible();
-  await expect(cards.nth(1).locator('[data-slot="card-header"]')).toHaveCount(1);
-  await expect(cards.nth(1).locator('[data-slot="card-content"]')).toHaveCount(0);
-  await expect(cards.nth(1).locator('[data-slot="card-footer"]')).toHaveCount(0);
+  await expect(cards.nth(1).locator('[data-slot="card-header"]')).toHaveCount(
+    1,
+  );
+  await expect(cards.nth(1).locator('[data-slot="card-content"]')).toHaveCount(
+    0,
+  );
+  await expect(cards.nth(1).locator('[data-slot="card-footer"]')).toHaveCount(
+    0,
+  );
 
-  await expect(firstCard.getByRole("heading", { level: 3 })).toHaveText("Login to your account");
+  await expect(firstCard.getByRole("heading", { level: 3 })).toHaveText(
+    "Login to your account",
+  );
   await expect(firstCard.locator('[data-slot="card-description"]')).toHaveText(
     "Enter your email below to login to your account",
   );
-  await expect(cards.nth(1).getByRole("heading", { level: 3 })).toHaveText("Team workspace");
-  await expect(cards.nth(1).locator('[data-slot="card-description"]')).toHaveText(
-    "Invite collaborators and manage access.",
+  await expect(cards.nth(1).getByRole("heading", { level: 3 })).toHaveText(
+    "Team workspace",
   );
+  await expect(
+    cards.nth(1).locator('[data-slot="card-description"]'),
+  ).toHaveText("Invite collaborators and manage access.");
 });
 
-test("card login form controls and actions preserve browser semantics", async ({ page }) => {
+test("card login form controls and actions preserve browser semantics", async ({
+  page,
+}) => {
   await gotoCardDemo(page);
 
   const preview = page.locator("#dx-preview-block-root");
@@ -76,7 +90,6 @@ test("card login form controls and actions preserve browser semantics", async ({
   await expect(form).toHaveAttribute("data-submitted", "true");
 });
 
-
 async function computedColorForCssColor(locator: Locator, color: string) {
   return locator.evaluate((element: Element, cssColor: string) => {
     const probe = document.createElement("span");
@@ -90,7 +103,9 @@ async function computedColorForCssColor(locator: Locator, color: string) {
   }, color);
 }
 
-test("card title and description use shared typography roles", async ({ page }) => {
+test("card title and description use shared typography roles", async ({
+  page,
+}) => {
   await gotoCardDemo(page);
 
   const cards = page.locator('#dx-preview-block-root [data-slot="card"]');
@@ -101,7 +116,10 @@ test("card title and description use shared typography roles", async ({ page }) 
   await assertCardTypography(wrapperCard, "DIV");
 });
 
-async function assertCardTypography(card: Locator, descriptionTagName: "P" | "DIV") {
+async function assertCardTypography(
+  card: Locator,
+  descriptionTagName: "P" | "DIV",
+) {
   const title = card.locator('[data-slot="card-title"]');
   const description = card.locator('[data-slot="card-description"]');
 
@@ -125,7 +143,13 @@ async function assertCardTypography(card: Locator, descriptionTagName: "P" | "DI
   await expect(title.locator("h1,h2,h3,h4,h5,h6,p")).toHaveCount(0);
   await expect(description.locator("h1,h2,h3,h4,h5,h6,p")).toHaveCount(0);
 
-  const [cardColor, titleColor, descriptionColor, surfaceMutedColor, titleMetrics] = await Promise.all([
+  const [
+    cardColor,
+    titleColor,
+    descriptionColor,
+    surfaceMutedColor,
+    titleMetrics,
+  ] = await Promise.all([
     card.evaluate((element) => getComputedStyle(element).color),
     title.evaluate((element) => getComputedStyle(element).color),
     description.evaluate((element) => getComputedStyle(element).color),

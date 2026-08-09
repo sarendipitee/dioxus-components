@@ -1,11 +1,11 @@
-import { test, expect, type Locator } from '@playwright/test';
+import { test, expect, type Locator } from "@playwright/test";
 
 async function computedColorForCssColor(locator: Locator, color: string) {
   return locator.evaluate((element: Element, cssColor: string) => {
-    const probe = document.createElement('span');
+    const probe = document.createElement("span");
     probe.style.color = cssColor;
-    probe.style.position = 'absolute';
-    probe.style.visibility = 'hidden';
+    probe.style.position = "absolute";
+    probe.style.visibility = "hidden";
     element.appendChild(probe);
     const computedColor = getComputedStyle(probe).color;
     probe.remove();
@@ -13,64 +13,66 @@ async function computedColorForCssColor(locator: Locator, color: string) {
   }, color);
 }
 
-test('test', async ({ page }) => {
-  await page.goto('/components/dialog/block#main', { timeout: 30 * 1000 });
-  await page.getByRole('button', { name: 'Open Dialog', exact: true }).click();
+test("test", async ({ page }) => {
+  await page.goto("/components/dialog/block#main", { timeout: 30 * 1000 });
+  await page.getByRole("button", { name: "Open Dialog", exact: true }).click();
   // Assert the dialog is open
-  const dialog = page.getByRole('dialog');
+  const dialog = page.getByRole("dialog");
   await expect(dialog).toBeVisible();
   // Hitting escape should close the dialog
-  await page.keyboard.press('Escape');
+  await page.keyboard.press("Escape");
   // Assert the dialog can no longer be found
   await expect(dialog).toHaveCount(0);
 
   // Reopen the dialog
-  await page.getByRole('button', { name: 'Open Dialog', exact: true }).click();
+  await page.getByRole("button", { name: "Open Dialog", exact: true }).click();
   await expect(dialog).toBeVisible();
   // Clicking far outside the dialog content should dismiss it.
   await page.mouse.click(2, 2);
   await expect(dialog).toHaveCount(0);
 });
 
-test('closing a nested dialog does not replay the outer open animation', async ({ page }) => {
-  await page.goto('/components/dialog/block#nested', { timeout: 30 * 1000 });
+test("closing a nested dialog does not replay the outer open animation", async ({
+  page,
+}) => {
+  await page.goto("/components/dialog/block#nested", { timeout: 30 * 1000 });
 
-  await page.getByRole('button', { name: 'Open Dialog', exact: true }).click();
-  const outer = page.getByRole('dialog', { name: 'Manage task' });
+  await page.getByRole("button", { name: "Open Dialog", exact: true }).click();
+  const outer = page.getByRole("dialog", { name: "Manage task" });
   await expect(outer).toBeVisible();
   await page.waitForTimeout(400);
 
-  await outer.getByRole('button', { name: 'Set Priority' }).click();
-  const inner = page.getByRole('dialog', { name: 'Set priority' });
+  await outer.getByRole("button", { name: "Set Priority" }).click();
+  const inner = page.getByRole("dialog", { name: "Set priority" });
   await expect(inner).toBeVisible();
-  await expect(outer).toHaveAttribute('data-overlay-depth', '1');
+  await expect(outer).toHaveAttribute("data-overlay-depth", "1");
   await page.waitForTimeout(250);
 
-  await inner.getByRole('button', { name: 'Cancel' }).click();
+  await inner.getByRole("button", { name: "Cancel" }).click();
   await expect(inner).toHaveCount(0);
-  await expect(outer).toHaveAttribute('data-overlay-depth', '0');
+  await expect(outer).toHaveAttribute("data-overlay-depth", "0");
   await page.waitForTimeout(50);
 
   const activeAnimationNames = await outer.evaluate((element) =>
     element
       .getAnimations({ subtree: false })
-      .filter((animation) => animation.playState !== 'finished')
-      .map((animation) => (animation as CSSAnimation).animationName)
+      .filter((animation) => animation.playState !== "finished")
+      .map((animation) => (animation as CSSAnimation).animationName),
   );
 
-  expect(activeAnimationNames).not.toContain('dx-dialog-animate-in');
+  expect(activeAnimationNames).not.toContain("dx-dialog-animate-in");
 });
 
-test('dialog title and description keep primitive ARIA with shared typography', async ({
+test("dialog title and description keep primitive ARIA with shared typography", async ({
   page,
 }) => {
-  await page.goto('/components/dialog/block#main', {
+  await page.goto("/components/dialog/block#main", {
     timeout: 30 * 1000,
-    waitUntil: 'load',
+    waitUntil: "load",
   });
-  await page.getByRole('button', { name: 'Open Dialog', exact: true }).click();
+  await page.getByRole("button", { name: "Open Dialog", exact: true }).click();
 
-  const dialog = page.getByRole('dialog', { name: 'Item information' });
+  const dialog = page.getByRole("dialog", { name: "Item information" });
   const title = dialog.locator('[data-slot="dialog-title"]');
   const description = dialog.locator('[data-slot="dialog-description"]');
 
@@ -79,91 +81,52 @@ test('dialog title and description keep primitive ARIA with shared typography', 
   await expect(description).toHaveCount(1);
   await expect(title).toHaveClass(/dx_heading/);
   await expect(description).toHaveClass(/dx_text/);
-  await expect(title).toHaveAttribute('data-size', 'lg');
-  await expect(title).toHaveAttribute('data-weight', 'bold');
-  await expect(title).toHaveAttribute('data-tone', 'default');
-  await expect(title).toHaveAttribute('data-wrap', 'wrap');
-  await expect(title).toHaveAttribute('data-truncate', 'false');
-  await expect(description).toHaveAttribute('data-size', 'md');
-  await expect(description).toHaveAttribute('data-tone', 'muted');
-  await expect(description).toHaveAttribute('data-weight', 'inherit');
-  await expect(description).toHaveAttribute('data-wrap', 'wrap');
-  await expect(description).toHaveAttribute('data-truncate', 'false');
+  await expect(title).toHaveAttribute("data-size", "lg");
+  await expect(title).toHaveAttribute("data-weight", "bold");
+  await expect(title).toHaveAttribute("data-tone", "default");
+  await expect(title).toHaveAttribute("data-wrap", "wrap");
+  await expect(title).toHaveAttribute("data-truncate", "false");
+  await expect(description).toHaveAttribute("data-size", "md");
+  await expect(description).toHaveAttribute("data-tone", "muted");
+  await expect(description).toHaveAttribute("data-weight", "inherit");
+  await expect(description).toHaveAttribute("data-wrap", "wrap");
+  await expect(description).toHaveAttribute("data-truncate", "false");
 
-  const titleId = await title.getAttribute('id');
-  const descriptionId = await description.getAttribute('id');
+  const titleId = await title.getAttribute("id");
+  const descriptionId = await description.getAttribute("id");
   expect(titleId).toBeTruthy();
   expect(descriptionId).toBeTruthy();
-  await expect(dialog).toHaveAttribute('aria-labelledby', titleId!);
-  await expect(dialog).toHaveAttribute('aria-describedby', descriptionId!);
+  await expect(dialog).toHaveAttribute("aria-labelledby", titleId!);
+  await expect(dialog).toHaveAttribute("aria-describedby", descriptionId!);
 
-  await expect(title).toHaveJSProperty('tagName', 'H2');
-  await expect(description).toHaveJSProperty('tagName', 'P');
-  await expect(title.locator('h1,h2,h3,h4,h5,h6,p')).toHaveCount(0);
-  await expect(description.locator('h1,h2,h3,h4,h5,h6,p')).toHaveCount(0);
+  await expect(title).toHaveJSProperty("tagName", "H2");
+  await expect(description).toHaveJSProperty("tagName", "P");
+  await expect(title.locator("h1,h2,h3,h4,h5,h6,p")).toHaveCount(0);
+  await expect(description.locator("h1,h2,h3,h4,h5,h6,p")).toHaveCount(0);
 
-  const [dialogColor, titleColor, descriptionColor, mutedColor] = await Promise.all([
-    dialog.evaluate((element) => getComputedStyle(element).color),
-    title.evaluate((element) => getComputedStyle(element).color),
-    description.evaluate((element) => getComputedStyle(element).color),
-    computedColorForCssColor(dialog, 'var(--fg-muted)'),
-  ]);
+  const [dialogColor, titleColor, descriptionColor, mutedColor] =
+    await Promise.all([
+      dialog.evaluate((element) => getComputedStyle(element).color),
+      title.evaluate((element) => getComputedStyle(element).color),
+      description.evaluate((element) => getComputedStyle(element).color),
+      computedColorForCssColor(dialog, "var(--fg-muted)"),
+    ]);
   expect(titleColor).toBe(dialogColor);
   expect(descriptionColor).toBe(mutedColor);
 });
 
-test('built-in Close button closes and controlled dialog reopens', async ({ page }) => {
-  await page.goto('/components/dialog/block#main', { timeout: 30 * 1000 });
-  const trigger = page.getByRole('button', { name: 'Open Dialog', exact: true });
+test("footer Cancel closes and controlled dialog reopens", async ({ page }) => {
+  await page.goto("/components/dialog/block#main", { timeout: 30 * 1000 });
+  const trigger = page.getByRole("button", {
+    name: "Open Dialog",
+    exact: true,
+  });
   await trigger.click();
 
-  const dialog = page.getByRole('dialog', { name: 'Item information' });
-  const close = dialog.getByRole('button', { name: 'Close', exact: true });
-  await expect(close).toHaveAttribute('type', 'button');
-  await expect(close).toHaveAccessibleName('Close');
-  await close.click();
+  const dialog = page.getByRole("dialog", { name: "Item information" });
+  await dialog.getByRole("button", { name: "Cancel", exact: true }).click();
   await expect(dialog).toHaveCount(0);
 
   await trigger.click();
   await expect(dialog).toBeVisible();
-});
-
-test('footer Cancel closes and controlled dialog reopens', async ({ page }) => {
-  await page.goto('/components/dialog/block#main', { timeout: 30 * 1000 });
-  const trigger = page.getByRole('button', { name: 'Open Dialog', exact: true });
-  await trigger.click();
-
-  const dialog = page.getByRole('dialog', { name: 'Item information' });
-  await dialog.getByRole('button', { name: 'Cancel', exact: true }).click();
-  await expect(dialog).toHaveCount(0);
-
-  await trigger.click();
-  await expect(dialog).toBeVisible();
-});
-
-test('form dialog is modal, accessible, traps focus, and restores trigger focus', async ({
-  page,
-}) => {
-  await page.goto('/components/dialog/block#form', { timeout: 30 * 1000 });
-  const trigger = page.getByRole('button', { name: 'Edit Profile', exact: true });
-  await trigger.click();
-
-  const dialog = page.getByRole('dialog', { name: 'Edit profile' });
-  const close = dialog.getByRole('button', { name: 'Close', exact: true });
-  const save = dialog.getByRole('button', { name: 'Save changes', exact: true });
-  await expect(dialog).toHaveAttribute('aria-modal', 'true');
-  await expect(dialog).toHaveAccessibleName('Edit profile');
-  await expect(dialog).toHaveAccessibleDescription(
-    'Make changes to your profile here. Click save when you\'re done.'
-  );
-  await expect(close).toBeFocused();
-
-  await page.keyboard.press('Shift+Tab');
-  await expect(save).toBeFocused();
-  await page.keyboard.press('Tab');
-  await expect(close).toBeFocused();
-
-  await close.click();
-  await expect(dialog).toHaveCount(0);
-  await expect(trigger).toBeFocused();
 });

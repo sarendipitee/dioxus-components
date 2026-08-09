@@ -4,7 +4,9 @@ const URL = "/components/file_drop_zone";
 const LOAD_TIMEOUT = 30 * 1000;
 
 async function loadZone(page: Page, demo?: string) {
-  await page.goto(demo ? `${URL}/block#${demo}` : URL, { timeout: LOAD_TIMEOUT });
+  await page.goto(demo ? `${URL}/block#${demo}` : URL, {
+    timeout: LOAD_TIMEOUT,
+  });
   const zone = page.locator('[role="button"]:has(input[type="file"])').first();
   await expect(zone).toBeVisible();
   return zone;
@@ -23,7 +25,9 @@ const file = (name: string, mimeType: string, size = 4) => ({
 test("exposes button and hidden input semantics", async ({ page }) => {
   const zone = await loadZone(page, "rejected");
   const input = fileInput(zone);
-  await expect(zone).toHaveAccessibleName(/drop pdf files here or click to select/i);
+  await expect(zone).toHaveAccessibleName(
+    /drop pdf files here or click to select/i,
+  );
 
   await expect(zone).toHaveAttribute("tabindex", "0");
   await expect(zone).not.toHaveAttribute("aria-disabled", "true");
@@ -44,7 +48,9 @@ for (const key of ["Enter", "Space"] as const) {
   });
 }
 
-test("accepts picker files and reports validated rejection paths", async ({ page }) => {
+test("accepts picker files and reports validated rejection paths", async ({
+  page,
+}) => {
   const zone = await loadZone(page, "rejected");
   const input = fileInput(zone);
 
@@ -56,7 +62,9 @@ test("accepts picker files and reports validated rejection paths", async ({ page
   ]);
 
   await expect(page.getByText("mime-match.bin", { exact: true })).toBeVisible();
-  await expect(page.getByText("extension-match.pdf", { exact: true })).toBeVisible();
+  await expect(
+    page.getByText("extension-match.pdf", { exact: true }),
+  ).toBeVisible();
   await expect(page.getByText("wrong.txt", { exact: true })).toBeVisible();
   await expect(page.getByText("oversize.pdf", { exact: true })).toBeVisible();
   await expect(page.getByText(/\[file-invalid-type\]/)).toBeVisible();
@@ -67,17 +75,23 @@ test("accepts files delivered through a drop event", async ({ page }) => {
   const zone = await loadZone(page);
   await zone.evaluate((element) => {
     const transfer = new DataTransfer();
-    transfer.items.add(new File(["drop contents"], "dropped.txt", { type: "text/plain" }));
-    element.dispatchEvent(new DragEvent("drop", {
-      bubbles: true,
-      cancelable: true,
-      dataTransfer: transfer,
-    }));
+    transfer.items.add(
+      new File(["drop contents"], "dropped.txt", { type: "text/plain" }),
+    );
+    element.dispatchEvent(
+      new DragEvent("drop", {
+        bubbles: true,
+        cancelable: true,
+        dataTransfer: transfer,
+      }),
+    );
   });
   await expect(page.getByText("dropped.txt", { exact: true })).toBeVisible();
 });
 
-test("enforces maximum count and single-file input semantics", async ({ page }) => {
+test("enforces maximum count and single-file input semantics", async ({
+  page,
+}) => {
   let zone = await loadZone(page, "max_count");
   await expect(fileInput(zone)).toHaveAttribute("multiple", "true");
   await fileInput(zone).setInputFiles([
@@ -86,13 +100,19 @@ test("enforces maximum count and single-file input semantics", async ({ page }) 
     file("three.txt", "text/plain"),
     file("four.txt", "text/plain"),
   ]);
-  await expect(page.getByText("3 of 3 accepted", { exact: true })).toBeVisible();
-  await expect(page.getByText(/four\.txt.*maximum of 3 file\(s\)/i)).toBeVisible();
+  await expect(
+    page.getByText("3 of 3 accepted", { exact: true }),
+  ).toBeVisible();
+  await expect(
+    page.getByText(/four\.txt.*maximum of 3 file\(s\)/i),
+  ).toBeVisible();
 
   zone = await loadZone(page, "single_file");
   await expect(fileInput(zone)).not.toHaveAttribute("multiple", "true");
   await fileInput(zone).setInputFiles(file("single.txt", "text/plain"));
-  await expect(page.getByText("Selected: single.txt", { exact: true })).toBeVisible();
+  await expect(
+    page.getByText("Selected: single.txt", { exact: true }),
+  ).toBeVisible();
 });
 
 for (const demo of ["disabled", "loading"] as const) {
@@ -104,7 +124,9 @@ for (const demo of ["disabled", "loading"] as const) {
     await expect(input).toBeDisabled();
 
     let chooserOpened = false;
-    page.once("filechooser", () => { chooserOpened = true; });
+    page.once("filechooser", () => {
+      chooserOpened = true;
+    });
     await zone.click({ force: true });
     await zone.press("Enter");
     await page.waitForTimeout(100);

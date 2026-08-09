@@ -36,7 +36,9 @@ test("focus opens the controlled accessible dialog", async ({ page }) => {
   await expect(dialog.getByRole("slider", { name: "Hue" })).toBeVisible();
 });
 
-test("valid shorthand invokes the callback and canonicalizes on blur", async ({ page }) => {
+test("valid shorthand invokes the callback and canonicalizes on blur", async ({
+  page,
+}) => {
   const { root, input } = await loadColorInput(page);
   await expect(root.getByTestId("accent-callback-count")).toHaveText("0");
 
@@ -47,7 +49,9 @@ test("valid shorthand invokes the callback and canonicalizes on blur", async ({ 
   await expect(input).toHaveValue("#AABBCC");
 });
 
-test("invalid drafts do not invoke the callback and revert on blur", async ({ page }) => {
+test("invalid drafts do not invoke the callback and revert on blur", async ({
+  page,
+}) => {
   const { root, input } = await loadColorInput(page);
   const callbacks = root.getByTestId("accent-callback-count");
   const initialCount = await callbacks.textContent();
@@ -59,19 +63,25 @@ test("invalid drafts do not invoke the callback and revert on blur", async ({ pa
   await expect(root.getByTestId("accent-value")).toHaveText("#9B80FF");
 });
 
-test("disabled fields reject interaction and are excluded from form data", async ({ page }) => {
+test("disabled fields reject interaction and are excluded from form data", async ({
+  page,
+}) => {
   const { root } = await loadColorInput(page);
   const input = root.getByLabel("Disabled color", { exact: true });
   await expect(input).toBeDisabled();
   await expect(input).toHaveAttribute("aria-expanded", "false");
 
-  const entries = await root.getByTestId("color-input-form").evaluate((form) =>
-    Array.from(new FormData(form as HTMLFormElement).entries()),
-  );
+  const entries = await root
+    .getByTestId("color-input-form")
+    .evaluate((form) =>
+      Array.from(new FormData(form as HTMLFormElement).entries()),
+    );
   expect(entries).not.toContainEqual(["disabled-color", "#FF0000"]);
 });
 
-test("read-only fields remain focusable and form-associated without opening", async ({ page }) => {
+test("read-only fields remain focusable and form-associated without opening", async ({
+  page,
+}) => {
   const { root } = await loadColorInput(page);
   const input = root.getByLabel("Read-only color", { exact: true });
   await expect(input).toHaveAttribute("readonly", "true");
@@ -83,20 +93,26 @@ test("read-only fields remain focusable and form-associated without opening", as
   await page.keyboard.type("#000000");
   await expect(input).toHaveValue(initialValue);
 
-  const entries = await root.getByTestId("color-input-form").evaluate((form) =>
-    Array.from(new FormData(form as HTMLFormElement).entries()),
-  );
+  const entries = await root
+    .getByTestId("color-input-form")
+    .evaluate((form) =>
+      Array.from(new FormData(form as HTMLFormElement).entries()),
+    );
   expect(entries).toContainEqual(["readonly-color", await input.inputValue()]);
 });
 
-test("forwards native name, form association, and custom attributes", async ({ page }) => {
+test("forwards native name, form association, and custom attributes", async ({
+  page,
+}) => {
   const { root, input } = await loadColorInput(page);
   await expect(input).toHaveAttribute("name", "accent");
   await expect(input).toHaveAttribute("form", "color-input-form");
   await expect(input).toHaveAttribute("data-color-field", "accent");
 
-  const entries = await root.getByTestId("color-input-form").evaluate((form) =>
-    Array.from(new FormData(form as HTMLFormElement).entries()),
-  );
+  const entries = await root
+    .getByTestId("color-input-form")
+    .evaluate((form) =>
+      Array.from(new FormData(form as HTMLFormElement).entries()),
+    );
   expect(entries).toContainEqual(["accent", "#9B80FF"]);
 });

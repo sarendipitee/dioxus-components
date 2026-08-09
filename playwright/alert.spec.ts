@@ -4,25 +4,43 @@ import AxeBuilder from "@axe-core/playwright";
 const ALERT_DEMO_URL = "/components/alert/block#main";
 const PREVIEW_ROOT = "#dx-preview-block-root";
 
-async function loadAlertDemo(page: Page): Promise<{ root: Locator; alerts: Locator }> {
+async function loadAlertDemo(
+  page: Page,
+): Promise<{ root: Locator; alerts: Locator }> {
   await page.goto(ALERT_DEMO_URL, { timeout: 30 * 1000, waitUntil: "load" });
 
   const root = page.locator(PREVIEW_ROOT);
   const alerts = root.getByRole("alert");
   await expect(alerts).toHaveCount(4);
   await expect(alerts.first()).toBeVisible();
-  await expect(root.getByText("System maintenance window", { exact: true })).toBeVisible();
+  await expect(
+    root.getByText("System maintenance window", { exact: true }),
+  ).toBeVisible();
 
   return { root, alerts };
 }
 
-test("renders four alert landmarks with their preview titles and descriptions", async ({ page }) => {
+test("renders four alert landmarks with their preview titles and descriptions", async ({
+  page,
+}) => {
   const { alerts } = await loadAlertDemo(page);
   const content = [
-    ["System maintenance window", "Routine infrastructure work is scheduled for tonight from 11:00 PM to 11:30 PM."],
-    ["Payment failed", "We could not process the last invoice. Update the billing method to avoid service interruption."],
-    ["Profile change pending review", "Your updated organization details are saved and waiting for approval from an administrator."],
-    ["Backup completed", "A new encrypted restore point is available and has been replicated to the secondary region."],
+    [
+      "System maintenance window",
+      "Routine infrastructure work is scheduled for tonight from 11:00 PM to 11:30 PM.",
+    ],
+    [
+      "Payment failed",
+      "We could not process the last invoice. Update the billing method to avoid service interruption.",
+    ],
+    [
+      "Profile change pending review",
+      "Your updated organization details are saved and waiting for approval from an administrator.",
+    ],
+    [
+      "Backup completed",
+      "A new encrypted restore point is available and has been replicated to the secondary region.",
+    ],
   ] as const;
 
   for (const [index, [title, description]] of content.entries()) {
@@ -44,7 +62,9 @@ test("exposes enabled names for actionable alert buttons", async ({ page }) => {
   await expect(buttons.nth(1)).toBeEnabled();
 });
 
-test("hides decorative alert icons from the accessibility tree", async ({ page }) => {
+test("hides decorative alert icons from the accessibility tree", async ({
+  page,
+}) => {
   const { root } = await loadAlertDemo(page);
   const icons = root.locator('[data-slot="alert-icon"]');
 
@@ -54,7 +74,9 @@ test("hides decorative alert icons from the accessibility tree", async ({ page }
   }
 });
 
-test("alert demo has no automatically detectable accessibility violations", async ({ page }) => {
+test("alert demo has no automatically detectable accessibility violations", async ({
+  page,
+}) => {
   const { root } = await loadAlertDemo(page);
   const accessibilityScanResults = await new AxeBuilder({ page })
     .include(PREVIEW_ROOT)

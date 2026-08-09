@@ -5,9 +5,7 @@ import { defineConfig, devices } from "@playwright/test";
 const runHeaded = process.env.PLAYWRIGHT_HEADED === "1";
 const externalBaseUrl = process.env.PLAYWRIGHT_BASE_URL;
 const chromiumExecutablePath = process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE;
-const localBasePort = externalBaseUrl
-  ? null
-  : getLocalBasePort();
+const localBasePort = externalBaseUrl ? null : getLocalBasePort();
 const baseURL = externalBaseUrl ?? `http://127.0.0.1:${localBasePort}`;
 
 /**
@@ -66,8 +64,8 @@ export default defineConfig({
   forbidOnly: !!process.env.CI,
   /* Retry on CI only */
   retries: process.env.CI ? 2 : 0,
-  /* WASM pages become flaky when browser workers saturate local CPUs. */
-  workers: process.env.CI ? 1 : 4,
+  /* WASM pages are memory-intensive; parallel browsers destabilize long suites. */
+  workers: 1,
   /* Reporter to use. See https://playwright.dev/docs/test-reporters */
   reporter: process.env.CI ? [["list"], ["html", { open: "never" }]] : "list",
   /* Shared settings for all the projects below. See https://playwright.dev/docs/api/class-testoptions. */
@@ -133,7 +131,7 @@ export default defineConfig({
     ? undefined
     : {
         cwd: path.join(process.cwd(), "../preview"),
-        command: `exec node ../playwright/start-preview.mjs ../target/dx/preview/debug/web/public ${localBasePort}`, 
+        command: `exec node ../playwright/start-preview.mjs ../target/dx/preview/debug/web/public ${localBasePort}`,
         port: localBasePort,
         timeout: 50 * 60 * 1000,
         reuseExistingServer: false,

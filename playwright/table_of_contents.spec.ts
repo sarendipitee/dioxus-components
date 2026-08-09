@@ -24,7 +24,9 @@ test("renders styled TOC nav with CSS module class", async ({ page }) => {
   expect(allClasses).toContain("dx_table_of_contents");
 });
 
-test("exposes accessible navigation identity and active current state", async ({ page }) => {
+test("exposes accessible navigation identity and active current state", async ({
+  page,
+}) => {
   const { nav } = await loadPage(page);
 
   await expect(nav).toHaveAttribute("aria-label", "On this page");
@@ -54,7 +56,9 @@ test("indents nested headings by their hierarchy depth", async ({ page }) => {
   }
 });
 
-test("clicking a TOC link updates the hash and scrolls the internal region", async ({ page }) => {
+test("clicking a TOC link updates the hash and scrolls the internal region", async ({
+  page,
+}) => {
   const { nav } = await loadPage(page);
   const scrollRegion = page.locator("[data-toc-demo-scroll-region]");
 
@@ -69,10 +73,11 @@ test("clicking a TOC link updates the hash and scrolls the internal region", asy
   await expect
     .poll(async () => scrollRegion.evaluate((element) => element.scrollTop))
     .toBeGreaterThan(0);
-
 });
 
-test("supports keyboard focus-visible navigation and Enter activation", async ({ page }) => {
+test("supports keyboard focus-visible navigation and Enter activation", async ({
+  page,
+}) => {
   const { nav } = await loadPage(page);
   const links = nav.locator("a");
 

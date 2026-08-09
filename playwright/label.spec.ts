@@ -2,7 +2,9 @@ import { expect, test, type Locator, type Page } from "@playwright/test";
 
 const URL = "/components/label";
 
-async function loadLabel(page: Page): Promise<{ label: Locator; textbox: Locator }> {
+async function loadLabel(
+  page: Page,
+): Promise<{ label: Locator; textbox: Locator }> {
   await page.goto(URL, { timeout: 30 * 1000, waitUntil: "networkidle" });
 
   const label = page.getByText("Name", { exact: true });
@@ -21,7 +23,9 @@ test("associates the native label with the textbox", async ({ page }) => {
   await expect(textbox).toHaveAttribute("id", "name");
 });
 
-test("uses visible label text as the textbox accessible name", async ({ page }) => {
+test("uses visible label text as the textbox accessible name", async ({
+  page,
+}) => {
   const { textbox } = await loadLabel(page);
 
   await expect(textbox).toHaveAccessibleName("Name");

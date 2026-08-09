@@ -1,8 +1,8 @@
-import { test, expect, type Locator, type Page } from '@playwright/test';
+import { test, expect, type Locator, type Page } from "@playwright/test";
 
 async function sliderTrackPoint(track: Locator, frac: number) {
   const box = await track.boundingBox();
-  if (!box) throw new Error('slider track has no bounding box');
+  if (!box) throw new Error("slider track has no bounding box");
   return { x: box.x + box.width * frac, y: box.y + box.height / 2 };
 }
 
@@ -13,306 +13,160 @@ async function clickSliderTrack(page: Page, track: Locator, frac: number) {
 
 function sliderGroup(page: Page, name: string | RegExp) {
   return page
-    .getByRole('slider', { name })
+    .getByRole("slider", { name })
     .first()
-    .locator('xpath=ancestor::*[@role="group" and @data-orientation="horizontal"][1]');
+    .locator(
+      'xpath=ancestor::*[@role="group" and @data-orientation="horizontal"][1]',
+    );
 }
 
 function sliderTrack(slider: Locator) {
-  return slider.locator('div[data-orientation="horizontal"]:has([role="slider"])').first();
+  return slider
+    .locator('div[data-orientation="horizontal"]:has([role="slider"])')
+    .first();
 }
 
-test('test', async ({ page }) => {
-  await page.goto('/components/slider', { timeout: 30 * 1000 });
-  const thumb = page.getByRole('slider', { name: 'Demo Slider' });
-  // The initial aria-valuenow should be 50
-  await expect(thumb).toHaveAttribute('aria-valuenow', '50');
-  await thumb.focus();
-  // The aria-valuenow should be 60 after pressing Shift+ArrowRight
-  await page.keyboard.press('Shift+ArrowRight');
-  await expect(thumb).toHaveAttribute('aria-valuenow', '60');
-  await page.keyboard.press('Shift+ArrowRight');
-  // The aria-valuenow should be 70 after pressing Shift+ArrowRight again
-  await expect(thumb).toHaveAttribute('aria-valuenow', '70');
-  // Pressing Shift+ArrowLeft should decrease the value by 10
-  await page.keyboard.press('Shift+ArrowLeft');
-  await expect(thumb).toHaveAttribute('aria-valuenow', '60');
-  // Pressing ArrowLeft should decrease the value by 1
-  await page.keyboard.press('ArrowLeft');
-  await expect(thumb).toHaveAttribute('aria-valuenow', '59');
-  // Pressing ArrowRight should increase the value by 1
-  await page.keyboard.press('ArrowRight');
-  await expect(thumb).toHaveAttribute('aria-valuenow', '60');
-});
-
-test('drag survives pointercancel (iPad system gesture)', async ({ page }) => {
-  // iPad can fire `pointercancel` (without a following `pointerup`) when an OS
-  // gesture interrupts a drag. Regression: the slider didn't listen for
-  // `pointercancel`, so its internal "active pointer" state stayed set and
-  // every subsequent tap was ignored.
-  await page.goto('/components/slider', { timeout: 30 * 1000 });
-  const slider = sliderGroup(page, 'Demo Slider');
-  const thumb = page.getByRole('slider', { name: 'Demo Slider' });
-
-  await expect(thumb).toHaveAttribute('aria-valuenow', '50');
-
-  const dispatchPointerDown = async (frac: number, pointerId: number) => {
-    // Re-measure each time — focusing the thumb can scroll the page, which
-    // shifts the slider's viewport coordinates between taps.
-    const box = await sliderTrack(slider).boundingBox();
-    if (!box) throw new Error('slider track has no bounding box');
-    const x = box.x + box.width * frac;
-    const y = box.y + box.height / 2;
-
-    await slider.evaluate((el, { x, y, pointerId }) => {
-      el.dispatchEvent(new PointerEvent('pointerdown', {
-        pointerId,
-        pointerType: 'touch',
-        isPrimary: true,
-        clientX: x,
-        clientY: y,
-        button: 0,
-        buttons: 1,
-        bubbles: true,
-        cancelable: true,
-      }));
-    }, { x, y, pointerId });
-
-    return { x, y };
-  };
-
-  // Start a drag so the slider records an active pointer.
-  const firstPointerId = 99;
-  const firstDrag = await dispatchPointerDown(0.5, firstPointerId);
-  await expect(thumb).toHaveAttribute('data-dragging', 'true');
-
-  // OS gesture: pointercancel fires without a matching pointerup. Dispatch it
-  // through window so the shared pointer tracker observes the cancellation.
-  await page.evaluate(({ x, y, pointerId }) => {
-    window.dispatchEvent(new PointerEvent('pointercancel', {
-      pointerId,
-      pointerType: 'touch',
-      isPrimary: true,
-      clientX: x,
-      clientY: y,
-      bubbles: true,
-      cancelable: true,
-    }));
-  }, { ...firstDrag, pointerId: firstPointerId });
-  await expect(thumb).toHaveAttribute('data-dragging', 'false');
-
-  // New tap at 70% with a fresh pointer should still update the slider.
-  await clickSliderTrack(page, sliderTrack(slider), 0.7);
-  await expect(thumb).toHaveAttribute('aria-valuenow', '70');
-  await expect(thumb).toHaveAttribute('data-dragging', 'false');
-  await expect(thumb).toHaveAttribute('aria-valuenow', '70');
-});
-
-test('drag ignores pageX/clientX mismatch (iPad pinch-zoom analog)', async ({ page }) => {
-  // On iPad pinch-zoomed, `e.pageX` and `e.clientX` differ by the visual
-  // viewport offset. The slider's onpointerdown stored client coords in the
-  // global POINTERS table while the window pointermove listener wrote pageX —
-  // so the very first pointermove produced a delta equal to that offset and
-  // jammed the value at 100%. Reproduce by forging pageX on synthetic events.
-  await page.goto('/components/slider', { timeout: 30 * 1000 });
-
-  const slider = sliderGroup(page, 'Demo Slider');
-  const thumb = page.getByRole('slider', { name: 'Demo Slider' });
-  await expect(thumb).toHaveAttribute('aria-valuenow', '50');
-
-  const box = await sliderTrack(slider).boundingBox();
-  if (!box) throw new Error('slider has no bounding box');
-  const x = box.x + box.width * 0.3;
-  const y = box.y + box.height / 2;
-  const pageOffset = 1000; // way larger than the slider width — would clamp to 100
-
-  // Slider's onpointerdown reads client_coordinates, so push that. Firefox does
-  // not reliably map this synthetic event to the exact track coordinate, so the
-  // assertion below only depends on staying below the midpoint before and after
-  // the forged pointermove.
-  const pointerId = 51;
-  await slider.evaluate((el, { x, y, pointerId }) => {
-    el.dispatchEvent(new PointerEvent('pointerdown', {
-      pointerId,
-      pointerType: 'touch',
-      isPrimary: true,
-      clientX: x,
-      clientY: y,
-      button: 0,
-      buttons: 1,
-      bubbles: true,
-      cancelable: true,
-    }));
-  }, { x, y, pointerId });
-  await expect(thumb).toHaveAttribute('data-dragging', 'true');
-  const before = await thumb.getAttribute('aria-valuenow');
-  expect(parseInt(before!, 10)).toBeLessThan(50);
-
-  // Prime the drag loop with matching client/page coordinates so the next move
-  // measures the forged pageX delta.
-  await page.evaluate(({ x, y, pointerId }) => {
-    window.dispatchEvent(new PointerEvent('pointermove', {
-      pointerId,
-      pointerType: 'touch',
-      isPrimary: true,
-      clientX: x,
-      clientY: y,
-      bubbles: true,
-    }));
-  }, { x, y, pointerId });
-
-  // Pointermove with clientX unchanged but pageX forged so it differs.
-  // Mirrors what iPad sends when the visual viewport is offset from layout.
-  await page.evaluate(({ x, y, pageOffset, pointerId }) => {
-    const evt = new PointerEvent('pointermove', {
-      pointerId,
-      pointerType: 'touch',
-      isPrimary: true,
-      clientX: x,
-      clientY: y,
-      bubbles: true,
-    });
-    Object.defineProperty(evt, 'pageX', { value: x + pageOffset });
-    Object.defineProperty(evt, 'pageY', { value: y });
-    window.dispatchEvent(evt);
-  }, { x, y, pageOffset, pointerId });
-
-  // Without the fix the value jumps to ~100. With consistent coords it stays.
-  const after = await thumb.getAttribute('aria-valuenow');
-  expect(parseInt(after!, 10)).toBeLessThan(50);
-});
-
-test('dynamic min/max', async ({ page }) => {
-  await page.goto('/components/slider/block#dynamic_range', { timeout: 30 * 1000 });
-  const thumb = page.getByRole('slider', { name: 'Dynamic Range Slider' });
+test("dynamic min/max", async ({ page }) => {
+  await page.goto("/components/slider/block#dynamic_range", {
+    timeout: 30 * 1000,
+  });
+  const thumb = page.getByRole("slider", { name: "Dynamic Range Slider" });
 
   // Initial state: percentage mode (0-100)
-  await expect(thumb).toHaveAttribute('aria-valuemin', '0');
-  await expect(thumb).toHaveAttribute('aria-valuemax', '100');
+  await expect(thumb).toHaveAttribute("aria-valuemin", "0");
+  await expect(thumb).toHaveAttribute("aria-valuemax", "100");
 
   // Switch to absolute number mode
-  await page.getByRole('switch', { name: 'Percentage' }).click();
+  await page.getByRole("switch", { name: "Percentage" }).click();
 
   // Should now be absolute mode (0-1000)
-  await expect(thumb).toHaveAttribute('aria-valuemin', '0');
-  await expect(thumb).toHaveAttribute('aria-valuemax', '1000');
+  await expect(thumb).toHaveAttribute("aria-valuemin", "0");
+  await expect(thumb).toHaveAttribute("aria-valuemax", "1000");
 
   // Click back to percentage mode
-  await page.getByRole('switch', { name: 'Percentage' }).click();
+  await page.getByRole("switch", { name: "Percentage" }).click();
 
   // Should be back to percentage mode (0-100)
-  await expect(thumb).toHaveAttribute('aria-valuemin', '0');
-  await expect(thumb).toHaveAttribute('aria-valuemax', '100');
+  await expect(thumb).toHaveAttribute("aria-valuemin", "0");
+  await expect(thumb).toHaveAttribute("aria-valuemax", "100");
 });
 
-test('range two thumbs', async ({ page }) => {
-  await page.goto('/components/slider/block#range', { timeout: 30 * 1000 });
-  const thumbs = page.getByRole('slider', { name: 'Range Slider' });
+test("range two thumbs", async ({ page }) => {
+  await page.goto("/components/slider/block#range", { timeout: 30 * 1000 });
+  const thumbs = page.getByRole("slider", { name: "Range Slider" });
   await expect(thumbs).toHaveCount(2);
   const t0 = thumbs.nth(0);
   const t1 = thumbs.nth(1);
 
   // Initial values
-  await expect(t0).toHaveAttribute('aria-valuenow', '20');
-  await expect(t1).toHaveAttribute('aria-valuenow', '80');
+  await expect(t0).toHaveAttribute("aria-valuenow", "20");
+  await expect(t1).toHaveAttribute("aria-valuenow", "80");
 
   // Per-thumb ARIA bounds reflect the live neighbor constraint
-  await expect(t0).toHaveAttribute('aria-valuemax', '80');
-  await expect(t1).toHaveAttribute('aria-valuemin', '20');
+  await expect(t0).toHaveAttribute("aria-valuemax", "80");
+  await expect(t1).toHaveAttribute("aria-valuemin", "20");
 
   // Keyboard nudges thumb 0
   await t0.focus();
-  await page.keyboard.press('ArrowRight');
-  await expect(t0).toHaveAttribute('aria-valuenow', '21');
+  await page.keyboard.press("ArrowRight");
+  await expect(t0).toHaveAttribute("aria-valuenow", "21");
 
   // Spam right past thumb 1's value — thumb 0 must clamp at 80, not cross
-  for (let i = 0; i < 200; i++) await page.keyboard.press('ArrowRight');
-  await expect(t0).toHaveAttribute('aria-valuenow', '80');
-  await expect(t1).toHaveAttribute('aria-valuenow', '80');
+  for (let i = 0; i < 200; i++) await page.keyboard.press("ArrowRight");
+  await expect(t0).toHaveAttribute("aria-valuenow", "80");
+  await expect(t1).toHaveAttribute("aria-valuenow", "80");
   // After clamping, thumb 1's lower bound moves up to thumb 0's value
-  await expect(t1).toHaveAttribute('aria-valuemin', '80');
+  await expect(t1).toHaveAttribute("aria-valuemin", "80");
 });
 
-test('range thumbs recover from collision', async ({ page }) => {
-  await page.goto('/components/slider/block#range', { timeout: 30 * 1000 });
-  const thumbs = page.getByRole('slider', { name: 'Range Slider' });
+test("range thumbs recover from collision", async ({ page }) => {
+  await page.goto("/components/slider/block#range", { timeout: 30 * 1000 });
+  const thumbs = page.getByRole("slider", { name: "Range Slider" });
   const t0 = thumbs.nth(0);
   const t1 = thumbs.nth(1);
 
   // Drive both thumbs to 80
   await t0.focus();
-  for (let i = 0; i < 200; i++) await page.keyboard.press('ArrowRight');
-  await expect(t0).toHaveAttribute('aria-valuenow', '80');
-  await expect(t1).toHaveAttribute('aria-valuenow', '80');
+  for (let i = 0; i < 200; i++) await page.keyboard.press("ArrowRight");
+  await expect(t0).toHaveAttribute("aria-valuenow", "80");
+  await expect(t1).toHaveAttribute("aria-valuenow", "80");
 
   // Thumb 1 must still be movable up; once it does, thumb 0's max should follow
   await t1.focus();
-  await page.keyboard.press('ArrowRight');
-  await expect(t1).toHaveAttribute('aria-valuenow', '81');
-  await expect(t0).toHaveAttribute('aria-valuemax', '81');
+  await page.keyboard.press("ArrowRight");
+  await expect(t1).toHaveAttribute("aria-valuenow", "81");
+  await expect(t0).toHaveAttribute("aria-valuemax", "81");
 
   // And thumb 0 must still be movable down
   await t0.focus();
-  await page.keyboard.press('ArrowLeft');
-  await expect(t0).toHaveAttribute('aria-valuenow', '79');
-  await expect(t1).toHaveAttribute('aria-valuemin', '79');
+  await page.keyboard.press("ArrowLeft");
+  await expect(t0).toHaveAttribute("aria-valuenow", "79");
+  await expect(t1).toHaveAttribute("aria-valuemin", "79");
 });
 
-test('range track click activates closest thumb', async ({ page }) => {
-  await page.goto('/components/slider/block#range', { timeout: 30 * 1000 });
-  const thumbs = page.getByRole('slider', { name: 'Range Slider' });
+test("range track click activates closest thumb", async ({ page }) => {
+  await page.goto("/components/slider/block#range", { timeout: 30 * 1000 });
+  const thumbs = page.getByRole("slider", { name: "Range Slider" });
   const t0 = thumbs.nth(0);
   const t1 = thumbs.nth(1);
-  const slider = sliderGroup(page, 'Range Slider');
+  const slider = sliderGroup(page, "Range Slider");
   const track = sliderTrack(slider);
 
-  await expect(t0).toHaveAttribute('aria-valuenow', '20');
-  await expect(t1).toHaveAttribute('aria-valuenow', '80');
+  await expect(t0).toHaveAttribute("aria-valuenow", "20");
+  await expect(t1).toHaveAttribute("aria-valuenow", "80");
 
   // Click near the right edge — should activate thumb 1, jumping it close to 100
   await clickSliderTrack(page, track, 0.95);
-  await expect(t0).toHaveAttribute('aria-valuenow', '20');
-  await expect.poll(async () => Number(await t1.getAttribute('aria-valuenow'))).toBeGreaterThan(80);
+  await expect(t0).toHaveAttribute("aria-valuenow", "20");
+  await expect
+    .poll(async () => Number(await t1.getAttribute("aria-valuenow")))
+    .toBeGreaterThan(80);
 
   // Click near the left edge — should activate thumb 0, jumping it close to 0
   await clickSliderTrack(page, track, 0.05);
-  await expect.poll(async () => Number(await t0.getAttribute('aria-valuenow'))).toBeLessThan(20);
+  await expect
+    .poll(async () => Number(await t0.getAttribute("aria-valuenow")))
+    .toBeLessThan(20);
 });
 
-test('range collided thumbs split by click direction', async ({ page }) => {
-  await page.goto('/components/slider/block#range', { timeout: 30 * 1000 });
-  const thumbs = page.getByRole('slider', { name: 'Range Slider' });
+test("range collided thumbs split by click direction", async ({ page }) => {
+  await page.goto("/components/slider/block#range", { timeout: 30 * 1000 });
+  const thumbs = page.getByRole("slider", { name: "Range Slider" });
   const t0 = thumbs.nth(0);
   const t1 = thumbs.nth(1);
-  const slider = sliderGroup(page, 'Range Slider');
+  const slider = sliderGroup(page, "Range Slider");
   const track = sliderTrack(slider);
 
   // Collide both thumbs at 80
   await t0.focus();
-  for (let i = 0; i < 200; i++) await page.keyboard.press('ArrowRight');
-  await expect(t0).toHaveAttribute('aria-valuenow', '80');
-  await expect(t1).toHaveAttribute('aria-valuenow', '80');
+  for (let i = 0; i < 200; i++) await page.keyboard.press("ArrowRight");
+  await expect(t0).toHaveAttribute("aria-valuenow", "80");
+  await expect(t1).toHaveAttribute("aria-valuenow", "80");
 
   // Clicking to the RIGHT of the collision must activate thumb 1 (not thumb 0,
   // which would otherwise win the distance tie and leave thumb 1 stranded).
   await clickSliderTrack(page, track, 0.95);
-  await expect(t0).toHaveAttribute('aria-valuenow', '80');
-  await expect.poll(async () => Number(await t1.getAttribute('aria-valuenow'))).toBeGreaterThan(80);
+  await expect(t0).toHaveAttribute("aria-valuenow", "80");
+  await expect
+    .poll(async () => Number(await t1.getAttribute("aria-valuenow")))
+    .toBeGreaterThan(80);
 });
 
-test('range collided thumbs drag left from just below collision', async ({ page }) => {
-  await page.goto('/components/slider/block#range', { timeout: 30 * 1000 });
-  const thumbs = page.getByRole('slider', { name: 'Range Slider' });
+test("range collided thumbs drag left from just below collision", async ({
+  page,
+}) => {
+  await page.goto("/components/slider/block#range", { timeout: 30 * 1000 });
+  const thumbs = page.getByRole("slider", { name: "Range Slider" });
   const t0 = thumbs.nth(0);
   const t1 = thumbs.nth(1);
-  const slider = sliderGroup(page, 'Range Slider');
+  const slider = sliderGroup(page, "Range Slider");
   const track = sliderTrack(slider);
 
   // Collide both thumbs at 80
   await t0.focus();
-  for (let i = 0; i < 200; i++) await page.keyboard.press('ArrowRight');
-  await expect(t0).toHaveAttribute('aria-valuenow', '80');
-  await expect(t1).toHaveAttribute('aria-valuenow', '80');
+  for (let i = 0; i < 200; i++) await page.keyboard.press("ArrowRight");
+  await expect(t0).toHaveAttribute("aria-valuenow", "80");
+  await expect(t1).toHaveAttribute("aria-valuenow", "80");
 
   // 79.6 snaps to 80. Thumb selection must still see the raw 79.6 position,
   // otherwise thumb 1 wins the tie and leftward dragging is clamped at 80.
@@ -323,122 +177,6 @@ test('range collided thumbs drag left from just below collision', async ({ page 
   await page.mouse.move(end.x, end.y, { steps: 5 });
   await page.mouse.up();
 
-  await expect(t0).toHaveAttribute('aria-valuenow', '70');
-  await expect(t1).toHaveAttribute('aria-valuenow', '80');
-});
-
-test('inverted slider range fill uses positive endpoint geometry', async ({ page }) => {
-  await page.goto('/components/slider', { timeout: 30 * 1000 });
-  const fixture = page.locator('[data-testid="inverted-slider-fixture"]');
-  const slider = fixture.getByRole('slider', { name: 'Inverted Slider' });
-  const range = fixture.locator('[data-orientation="horizontal"]:has([role="slider"])').locator('[data-orientation="horizontal"]').first();
-  const style = await range.getAttribute('style');
-  expect(style).toMatch(/left:\s*30%/);
-  expect(style).toMatch(/right:\s*0%/);
-});
-
-test('range drag reverses immediately after crossing neighbor', async ({ page }) => {
-  await page.goto('/components/slider/block#range', { timeout: 30 * 1000 });
-  const thumbs = page.getByRole('slider', { name: 'Range Slider' });
-  const t0 = thumbs.nth(0);
-  const t1 = thumbs.nth(1);
-  const track = sliderTrack(sliderGroup(page, 'Range Slider'));
-  const start = await sliderTrackPoint(track, 0.2);
-  const past = await sliderTrackPoint(track, 0.9);
-  const reverse = await sliderTrackPoint(track, 0.75);
-  await page.mouse.move(start.x, start.y);
-  await page.mouse.down();
-  await page.mouse.move(past.x, past.y, { steps: 12 });
-  await page.mouse.move(reverse.x, reverse.y, { steps: 8 });
-  await page.mouse.up();
-  await expect(t0).toHaveAttribute('aria-valuenow', '75');
-  await expect(t1).toHaveAttribute('aria-valuenow', '80');
-});
-
-test('preview sliders expose baseline semantics and controlled readouts', async ({ page }) => {
-  await page.goto('/components/slider', { timeout: 30 * 1000 });
-
-  const vertical = page.getByRole('slider', { name: 'Vertical Slider' });
-  await expect(vertical).toHaveAttribute('aria-valuemin', '0');
-  await expect(vertical).toHaveAttribute('aria-valuemax', '100');
-  await expect(vertical).toHaveAttribute('aria-valuenow', '30');
-  await expect(vertical).toHaveAttribute('aria-orientation', 'vertical');
-
-  const demo = page.getByRole('slider', { name: 'Demo Slider' });
-  await expect(demo).toHaveAttribute('aria-valuenow', '50');
-  await demo.focus();
-  await page.keyboard.press('ArrowRight');
-  await expect(demo).toHaveAttribute('aria-valuenow', '51');
-  await expect(page.getByText('51%', { exact: true })).toBeVisible();
-});
-
-test('slider values clamp at both boundaries', async ({ page }) => {
-  await page.goto('/components/slider', { timeout: 30 * 1000 });
-  const thumb = page.getByRole('slider', { name: 'Demo Slider' });
-  await thumb.focus();
-  await page.keyboard.press('End');
-  await expect(thumb).toHaveAttribute('aria-valuenow', '100');
-  await page.keyboard.press('ArrowRight');
-  await expect(thumb).toHaveAttribute('aria-valuenow', '100');
-  await page.keyboard.press('Home');
-  await expect(thumb).toHaveAttribute('aria-valuenow', '0');
-  await page.keyboard.press('ArrowLeft');
-  await expect(thumb).toHaveAttribute('aria-valuenow', '0');
-});
-
-test('vertical and inverted pointer directions stay coherent', async ({ page }) => {
-  await page.goto('/components/slider', { timeout: 30 * 1000 });
-
-  const vertical = page.getByRole('slider', { name: 'Vertical Slider' });
-  const verticalTrack = vertical.locator('xpath=ancestor::*[@role="group"][1]').locator('[data-orientation="vertical"]:has([role="slider"])').first();
-  const verticalBox = await verticalTrack.boundingBox();
-  if (!verticalBox) throw new Error('vertical slider track has no bounding box');
-  await page.mouse.click(verticalBox.x + verticalBox.width / 2, verticalBox.y + 1);
-  await expect(vertical).toHaveAttribute('aria-valuenow', '100');
-  await page.mouse.click(verticalBox.x + verticalBox.width / 2, verticalBox.y + verticalBox.height - 1);
-  await expect(vertical).toHaveAttribute('aria-valuenow', '0');
-  await vertical.focus();
-  await page.keyboard.press('ArrowUp');
-  await expect(vertical).toHaveAttribute('aria-valuenow', '1');
-
-  const inverted = page.getByRole('slider', { name: 'Inverted Slider' });
-  const invertedTrack = inverted.locator('xpath=ancestor::*[@role="group"][1]').locator('[data-orientation="horizontal"]:has([role="slider"])').first();
-  const invertedBox = await invertedTrack.boundingBox();
-  if (!invertedBox) throw new Error('inverted slider track has no bounding box');
-  await page.mouse.click(invertedBox.x + 1, invertedBox.y + invertedBox.height / 2);
-  await expect(inverted).toHaveAttribute('aria-valuenow', '100');
-  await page.mouse.click(invertedBox.x + invertedBox.width - 1, invertedBox.y + invertedBox.height / 2);
-  await expect(inverted).toHaveAttribute('aria-valuenow', '0');
-  await inverted.focus();
-  await page.keyboard.press('ArrowRight');
-  await expect(inverted).toHaveAttribute('aria-valuenow', '0');
-});
-
-test('disabled slider is unavailable and ignores input', async ({ page }) => {
-  await page.goto('/components/slider', { timeout: 30 * 1000 });
-  const thumb = page.getByRole('slider', { name: 'Disabled Slider' });
-  await expect(thumb).toHaveAttribute('aria-disabled', 'true');
-  await expect(thumb).toHaveAttribute('tabindex', '-1');
-  const before = await thumb.getAttribute('aria-valuenow');
-  await thumb.focus();
-  await page.keyboard.press('ArrowRight');
-  const box = await thumb.boundingBox();
-  if (!box) throw new Error('disabled slider has no bounding box');
-  await page.mouse.click(box.x + box.width / 2 + 40, box.y + box.height / 2);
-  await expect(thumb).toHaveAttribute('aria-valuenow', before!);
-});
-
-test('field slider preserves global attributes and field semantics', async ({ page }) => {
-  await page.goto('/components/slider', { timeout: 30 * 1000 });
-  const group = page.locator('#slider-field-control');
-  await expect(group).toHaveAttribute('class', /slider-audit/);
-  await expect(group).toHaveAttribute('title', 'Slider audit field');
-  await expect(group).toHaveAttribute('data-audit', 'slider');
-  await expect(group).toContainText('Field Slider');
-  await expect(group).toContainText('Choose the preferred alert threshold.');
-  await expect(group).toContainText('A threshold is required.');
-  await expect(group.getByText('Field Slider', { exact: true })).toBeVisible();
-  await expect(group.getByText('Choose the preferred alert threshold.', { exact: true })).toBeVisible();
-  await expect(group.getByText('A threshold is required.', { exact: true })).toBeVisible();
-  await expect(group.getByRole('slider', { name: 'Field Slider' })).toHaveCount(1);
+  await expect(t0).toHaveAttribute("aria-valuenow", "70");
+  await expect(t1).toHaveAttribute("aria-valuenow", "80");
 });

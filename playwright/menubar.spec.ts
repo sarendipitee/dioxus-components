@@ -5,12 +5,21 @@ test("pointer navigation", async ({ page }) => {
   const fileMenuButton = page.getByRole("menuitem", { name: "File" }).first();
   await fileMenuButton.click();
   // Assert the menu is open
-  const fileMenuContent = page.getByRole("menu").filter({ has: page.getByRole("menuitem", { name: "New" }).first() }).first();
+  const fileMenuContent = page
+    .getByRole("menu")
+    .filter({ has: page.getByRole("menuitem", { name: "New" }).first() })
+    .first();
   await expect(fileMenuContent).toHaveAttribute("data-state", "open");
-  await expect(fileMenuContent.locator('.dx_menu_label', { hasText: "File" }).first()).toBeVisible();
-  await expect(fileMenuContent.getByRole("menuitem", { name: "New" })).toContainText("⌘N");
+  await expect(
+    fileMenuContent.locator(".dx_menu_label", { hasText: "File" }).first(),
+  ).toBeVisible();
+  await expect(
+    fileMenuContent.getByRole("menuitem", { name: "New" }),
+  ).toContainText("⌘N");
   await expect(fileMenuContent.getByRole("separator")).toHaveCount(1);
-  await expect(fileMenuContent.getByRole("menuitemcheckbox", { name: "Status bar" })).toHaveAttribute("data-state", "checked");
+  await expect(
+    fileMenuContent.getByRole("menuitemcheckbox", { name: "Status bar" }),
+  ).toHaveAttribute("data-state", "checked");
   const shareItem = fileMenuContent.getByRole("menuitem", { name: "Share" });
   await expect(shareItem).toHaveAttribute("aria-haspopup", "menu");
   await expect(shareItem).toHaveAttribute("aria-expanded", "false");
@@ -18,7 +27,9 @@ test("pointer navigation", async ({ page }) => {
   const submenu = page.locator(".dx_menu_sub_content").first();
   await expect(submenu).toHaveAttribute("data-state", "open");
   await expect(shareItem).toHaveAttribute("aria-expanded", "true");
-  await expect(submenu.getByRole("menuitem", { name: "Copy link" })).toBeVisible();
+  await expect(
+    submenu.getByRole("menuitem", { name: "Copy link" }),
+  ).toBeVisible();
   await fileMenuContent.getByRole("menuitem", { name: "New" }).hover();
   await expect(submenu).toHaveAttribute("data-state", "closed");
   await shareItem.hover();
@@ -43,13 +54,18 @@ test("pointer navigation", async ({ page }) => {
   const editMenuButton = page.getByRole("menuitem", { name: "View" }).first();
   await editMenuButton.hover();
   // Assert the Edit menu content is open
-  const editMenuContent = page.getByRole("menu").filter({ has: page.getByRole("menuitemradio", { name: "Name" }).first() }).first();
+  const editMenuContent = page
+    .getByRole("menu")
+    .filter({ has: page.getByRole("menuitemradio", { name: "Name" }).first() })
+    .first();
   await expect(editMenuContent).toHaveAttribute("data-state", "open");
   // Assert the File menu content is closed
   await expect(fileMenuContent).toHaveCount(0);
 
   // Click the Date modified menu item
-  const cutItem = editMenuContent.getByRole("menuitemradio", { name: "Date modified" });
+  const cutItem = editMenuContent.getByRole("menuitemradio", {
+    name: "Date modified",
+  });
   await cutItem.click();
   // Assert the menu is closed after clicking a menu item
   await expect(fileMenuContent).toHaveCount(0);
@@ -72,14 +88,21 @@ test("keyboard navigation", async ({ page }) => {
   // Open the File menu
   await page.keyboard.press("ArrowDown");
   // Assert the File menu content is open
-  const fileMenuContent = page.getByRole("menu").filter({ has: page.getByRole("menuitem", { name: "New" }).first() }).first();
+  const fileMenuContent = page
+    .getByRole("menu")
+    .filter({ has: page.getByRole("menuitem", { name: "New" }).first() })
+    .first();
   await expect(fileMenuContent).toHaveAttribute("data-state", "open");
   const shareItem = fileMenuContent.getByRole("menuitem", { name: "Share" });
-  await expect(fileMenuContent.getByRole("menuitem", { name: "Open" })).toHaveAttribute("data-disabled", "true");
+  await expect(
+    fileMenuContent.getByRole("menuitem", { name: "Open" }),
+  ).toHaveAttribute("data-disabled", "true");
   await shareItem.hover();
   // Click the focused Save menu item
   await page.keyboard.press("ArrowRight");
-  await expect(page.getByRole("menuitem", { name: "Copy link" }).first()).toBeFocused();
+  await expect(
+    page.getByRole("menuitem", { name: "Copy link" }).first(),
+  ).toBeFocused();
   await page.keyboard.press("Enter");
   // Assert the menu is closed after clicking a menu item
   await expect(fileMenuContent).toHaveCount(0);
@@ -106,25 +129,36 @@ test("switching triggers closes the previous menu", async ({ page }) => {
   await viewTrigger.hover();
   await expect(fileTrigger).toHaveAttribute("aria-expanded", "false");
   await expect(viewTrigger).toHaveAttribute("aria-expanded", "true");
-  await expect(page.getByRole("menuitemradio", { name: "Date modified" })).toBeVisible();
+  await expect(
+    page.getByRole("menuitemradio", { name: "Date modified" }),
+  ).toBeVisible();
 });
 
-test("checkbox toggles and radio selection update their outputs", async ({ page }) => {
+test("checkbox toggles and radio selection update their outputs", async ({
+  page,
+}) => {
   await page.goto("/components/menubar", { timeout: 30 * 1000 });
   const fileTrigger = page.getByRole("menuitem", { name: "File" }).first();
   await fileTrigger.click();
   let statusBar = page.getByRole("menuitemcheckbox", { name: "Status bar" });
   await expect(statusBar).toHaveAttribute("data-state", "checked");
   await statusBar.click();
-  await expect(page.getByText("Status bar: false", { exact: true })).toBeVisible();
+  await expect(
+    page.getByText("Status bar: false", { exact: true }),
+  ).toBeVisible();
 
   statusBar = page.getByRole("menuitemcheckbox", { name: "Status bar" });
   await expect(statusBar).toHaveAttribute("data-state", "unchecked");
 
   const viewTrigger = page.getByRole("menuitem", { name: "View" }).first();
   await viewTrigger.hover();
-  let viewMenu = page.getByRole("menu").filter({ has: page.getByRole("menuitemradio", { name: "Name" }).first() }).first();
-  let dateModified = viewMenu.getByRole("menuitemradio", { name: "Date modified" });
+  let viewMenu = page
+    .getByRole("menu")
+    .filter({ has: page.getByRole("menuitemradio", { name: "Name" }).first() })
+    .first();
+  let dateModified = viewMenu.getByRole("menuitemradio", {
+    name: "Date modified",
+  });
   await expect(dateModified).toHaveAttribute("data-state", "unchecked");
   await dateModified.click();
   await expect(page.getByText("Sort: date", { exact: true })).toBeVisible();

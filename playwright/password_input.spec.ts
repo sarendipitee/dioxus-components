@@ -109,7 +109,9 @@ test("main field exposes its label, description, and toggle relationship", async
   await page.goto("/components/password_input", { timeout: 30 * 1000 });
 
   const frame = page.locator("#component-preview-frame").first();
-  const control = frame.locator('input[data-slot="password-input-control"]').first();
+  const control = frame
+    .locator('input[data-slot="password-input-control"]')
+    .first();
   const toggle = frame.locator('[data-slot="password-input-toggle"]').first();
   const inputId = await control.getAttribute("id");
 
@@ -125,7 +127,9 @@ test("toggle is keyboard reachable and keeps focus through reveal transitions", 
   await page.goto("/components/password_input", { timeout: 30 * 1000 });
 
   const frame = page.locator("#component-preview-frame").first();
-  const control = frame.locator('input[data-slot="password-input-control"]').first();
+  const control = frame
+    .locator('input[data-slot="password-input-control"]')
+    .first();
   const toggle = frame.locator('[data-slot="password-input-toggle"]').first();
 
   await control.focus();
@@ -142,11 +146,15 @@ test("toggle is keyboard reachable and keeps focus through reveal transitions", 
 test("callback-controlled field reports native input values and custom attributes", async ({
   page,
 }) => {
-  await page.goto("/components/password_input/block#states", { timeout: 30 * 1000 });
+  await page.goto("/components/password_input/block#states", {
+    timeout: 30 * 1000,
+  });
 
   const frame = page.locator("#dx-preview-block-root");
   const control = frame.locator("#callback-password");
-  const toggle = frame.locator('button[data-slot="password-input-toggle"][aria-controls="callback-password"]');
+  const toggle = frame.locator(
+    'button[data-slot="password-input-toggle"][aria-controls="callback-password"]',
+  );
 
   await expect(control).toHaveAccessibleName("Callback password");
   await expect(control).toHaveAttribute("placeholder", "Type a password");
@@ -155,21 +163,30 @@ test("callback-controlled field reports native input values and custom attribute
   await expect(control).toHaveAttribute("data-password-field", "callback");
   await expect(toggle).toHaveAttribute("aria-label", "Reveal account password");
   await control.fill("updated-secret");
-  await expect(frame.getByTestId("password-value")).toHaveText("updated-secret");
+  await expect(frame.getByTestId("password-value")).toHaveText(
+    "updated-secret",
+  );
   await toggle.click();
-  await expect(toggle).toHaveAttribute("aria-label", "Conceal account password");
+  await expect(toggle).toHaveAttribute(
+    "aria-label",
+    "Conceal account password",
+  );
 });
 
 test("required and error fields expose native validation and descriptions", async ({
   page,
 }) => {
-  await page.goto("/components/password_input/block#states", { timeout: 30 * 1000 });
+  await page.goto("/components/password_input/block#states", {
+    timeout: 30 * 1000,
+  });
 
   const frame = page.locator("#dx-preview-block-root");
   const required = frame.locator("#required-password");
   const error = frame.locator("#error-password");
   await expect(required).toHaveAttribute("required", "true");
-  await expect(frame.locator('label[for="required-password"]')).toContainText("*");
+  await expect(frame.locator('label[for="required-password"]')).toContainText(
+    "*",
+  );
   await expect(error).toHaveAttribute("aria-invalid", "true");
   await expect(error).toHaveAttribute("aria-describedby", /.+/);
   await expect(error).toHaveAttribute("aria-describedby", /error/);
@@ -178,7 +195,9 @@ test("required and error fields expose native validation and descriptions", asyn
 test("readonly remains focusable and immutable while disabled and loading are unavailable", async ({
   page,
 }) => {
-  await page.goto("/components/password_input/block#states", { timeout: 30 * 1000 });
+  await page.goto("/components/password_input/block#states", {
+    timeout: 30 * 1000,
+  });
 
   const frame = page.locator("#dx-preview-block-root");
   const readonly = frame.getByLabel("Read-only password");
@@ -189,22 +208,45 @@ test("readonly remains focusable and immutable while disabled and loading are un
   await readonly.press("a");
   await expect(readonly).toHaveValue("immutable");
 
-  const disabledWrapper = frame.locator('[data-slot="input-wrapper"]').filter({ hasText: "Disabled" });
-  await expect(disabledWrapper.locator('input[data-slot="password-input-control"]')).toBeDisabled();
-  await expect(disabledWrapper.locator('[data-slot="password-input-toggle"]')).toBeDisabled();
-  const loadingWrapper = frame.locator('[data-slot="input-wrapper"]').filter({ hasText: "Loading" });
-  await expect(loadingWrapper.locator('[data-slot="input"]')).toHaveAttribute("aria-busy", "true");
-  await expect(loadingWrapper.locator('[data-slot="password-input-toggle"]')).toHaveCount(0);
-  await expect(loadingWrapper.locator('[data-slot="input-spinner"]')).toBeVisible();
+  const disabledWrapper = frame
+    .locator('[data-slot="input-wrapper"]')
+    .filter({ hasText: "Disabled" });
+  await expect(
+    disabledWrapper.locator('input[data-slot="password-input-control"]'),
+  ).toBeDisabled();
+  await expect(
+    disabledWrapper.locator('[data-slot="password-input-toggle"]'),
+  ).toBeDisabled();
+  const loadingWrapper = frame
+    .locator('[data-slot="input-wrapper"]')
+    .filter({ hasText: "Loading" });
+  await expect(loadingWrapper.locator('[data-slot="input"]')).toHaveAttribute(
+    "aria-busy",
+    "true",
+  );
+  await expect(
+    loadingWrapper.locator('[data-slot="password-input-toggle"]'),
+  ).toHaveCount(0);
+  await expect(
+    loadingWrapper.locator('[data-slot="input-spinner"]'),
+  ).toBeVisible();
 });
 
-test("password form data includes readonly and callback fields but excludes disabled", async ({ page }) => {
-  await page.goto("/components/password_input/block#states", { timeout: 30 * 1000 });
+test("password form data includes readonly and callback fields but excludes disabled", async ({
+  page,
+}) => {
+  await page.goto("/components/password_input/block#states", {
+    timeout: 30 * 1000,
+  });
 
   const frame = page.locator("#dx-preview-block-root");
-  const entries = await frame.locator("#password-input-form").evaluate((form) =>
-    Array.from(new FormData(form as HTMLFormElement).entries()).map(([name, value]) => [name, String(value)]),
-  );
+  const entries = await frame
+    .locator("#password-input-form")
+    .evaluate((form) =>
+      Array.from(new FormData(form as HTMLFormElement).entries()).map(
+        ([name, value]) => [name, String(value)],
+      ),
+    );
   expect(entries).toContainEqual(["readonly_password", "immutable"]);
   expect(entries.some(([name]) => name === "account_password")).toBe(true);
   expect(entries.some(([name]) => name === "disabled_password")).toBe(false);

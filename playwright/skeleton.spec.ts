@@ -6,12 +6,16 @@ async function gotoSkeletonDemo(page: Page) {
   await page.goto(SKELETON_URL, { timeout: 30_000, waitUntil: "load" });
 }
 
-test("exposes a busy loading region with decorative placeholders", async ({ page }) => {
+test("exposes a busy loading region with decorative placeholders", async ({
+  page,
+}) => {
   await gotoSkeletonDemo(page);
 
   const region = page.getByRole("region", { name: "Profile loading preview" });
   await expect(region).toHaveAttribute("aria-busy", "true");
-  await expect(page.locator("#skeleton-status")).toHaveText("Profile is loading");
+  await expect(page.locator("#skeleton-status")).toHaveText(
+    "Profile is loading",
+  );
 
   for (const id of [
     "skeleton-avatar",
@@ -22,7 +26,9 @@ test("exposes a busy loading region with decorative placeholders", async ({ page
   }
 });
 
-test("forwards attributes and preserves requested placeholder geometry", async ({ page }) => {
+test("forwards attributes and preserves requested placeholder geometry", async ({
+  page,
+}) => {
   await gotoSkeletonDemo(page);
 
   const avatar = page.locator("#skeleton-avatar");
@@ -31,11 +37,19 @@ test("forwards attributes and preserves requested placeholder geometry", async (
   await expect(avatar).toHaveCSS("width", "48px");
   await expect(avatar).toHaveCSS("height", "48px");
   await expect(avatar).toHaveCSS("border-radius", "50%");
-  await expect(page.locator("#skeleton-primary-line")).toHaveCSS("width", "186px");
-  await expect(page.locator("#skeleton-secondary-line")).toHaveCSS("width", "136px");
+  await expect(page.locator("#skeleton-primary-line")).toHaveCSS(
+    "width",
+    "186px",
+  );
+  await expect(page.locator("#skeleton-secondary-line")).toHaveCSS(
+    "width",
+    "136px",
+  );
 });
 
-test("reactively replaces loading placeholders with loaded content", async ({ page }) => {
+test("reactively replaces loading placeholders with loaded content", async ({
+  page,
+}) => {
   await gotoSkeletonDemo(page);
 
   await page.getByRole("button", { name: "Show loaded profile" }).click();
@@ -45,7 +59,9 @@ test("reactively replaces loading placeholders with loaded content", async ({ pa
   ).toHaveAttribute("aria-busy", "false");
   await expect(page.locator("#skeleton-status")).toHaveText("Profile loaded");
   await expect(page.getByText("Ada Lovelace", { exact: true })).toBeVisible();
-  await expect(page.getByText("Computing pioneer", { exact: true })).toBeVisible();
+  await expect(
+    page.getByText("Computing pioneer", { exact: true }),
+  ).toBeVisible();
   await expect(page.locator("#skeleton-avatar")).toHaveCount(0);
 });
 
@@ -53,5 +69,8 @@ test("disables pulsing when reduced motion is requested", async ({ page }) => {
   await page.emulateMedia({ reducedMotion: "reduce" });
   await gotoSkeletonDemo(page);
 
-  await expect(page.locator("#skeleton-avatar")).toHaveCSS("animation-name", "none");
+  await expect(page.locator("#skeleton-avatar")).toHaveCSS(
+    "animation-name",
+    "none",
+  );
 });

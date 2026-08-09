@@ -10,7 +10,9 @@ function checkbox(page: Page, name: string): Locator {
   return page.getByRole("checkbox", { name, exact: true }).first();
 }
 
-test("checkbox exposes its accessible name, role, and initial state", async ({ page }) => {
+test("checkbox exposes its accessible name, role, and initial state", async ({
+  page,
+}) => {
   await loadCheckboxes(page);
   const accept = checkbox(page, "Accept terms and conditions");
 
@@ -42,7 +44,9 @@ test("Space toggles and Enter does not toggle a checkbox", async ({ page }) => {
   await expect(accept).toHaveAttribute("data-state", "checked");
 });
 
-test("controlled indeterminate checkbox transitions through click and Space", async ({ page }) => {
+test("controlled indeterminate checkbox transitions through click and Space", async ({
+  page,
+}) => {
   await loadCheckboxes(page);
   const selectAll = checkbox(page, "Select all visible rows");
 
@@ -56,7 +60,9 @@ test("controlled indeterminate checkbox transitions through click and Space", as
   await expect(selectAll).toHaveAttribute("data-state", "checked");
 });
 
-test("disabled unchecked and checked checkboxes reject interaction and focus", async ({ page }) => {
+test("disabled unchecked and checked checkboxes reject interaction and focus", async ({
+  page,
+}) => {
   await loadCheckboxes(page);
   const unchecked = checkbox(page, "Include archived projects");
   const checked = checkbox(page, "Enforce organization policy");
@@ -75,7 +81,9 @@ test("disabled unchecked and checked checkboxes reject interaction and focus", a
   await expect(checked).not.toBeFocused();
 });
 
-test("read-only checked checkbox remains checked while focusable", async ({ page }) => {
+test("read-only checked checkbox remains checked while focusable", async ({
+  page,
+}) => {
   await loadCheckboxes(page);
   const managed = checkbox(page, "Managed setting");
 
@@ -91,20 +99,28 @@ test("read-only checked checkbox remains checked while focusable", async ({ page
   await expect(managed).toHaveAttribute("data-state", "checked");
 });
 
-test("checkbox form data omits unchecked and includes checked values", async ({ page }) => {
+test("checkbox form data omits unchecked and includes checked values", async ({
+  page,
+}) => {
   await loadCheckboxes(page);
   const form = page.locator('form[data-testid="checkbox-form"]');
   const accept = checkbox(page, "Accept terms and conditions");
 
   const initialEntries = await form.evaluate((element) =>
-    Array.from(new FormData(element).entries()).map(([name, value]) => [name, String(value)]),
+    Array.from(new FormData(element).entries()).map(([name, value]) => [
+      name,
+      String(value),
+    ]),
   );
   expect(initialEntries).not.toContainEqual(["tos-check", "accepted"]);
   expect(initialEntries).toContainEqual(["managed-setting", "locked"]);
 
   await accept.click();
   const checkedEntries = await form.evaluate((element) =>
-    Array.from(new FormData(element).entries()).map(([name, value]) => [name, String(value)]),
+    Array.from(new FormData(element).entries()).map(([name, value]) => [
+      name,
+      String(value),
+    ]),
   );
   expect(checkedEntries).toContainEqual(["tos-check", "accepted"]);
   expect(checkedEntries).toContainEqual(["managed-setting", "locked"]);

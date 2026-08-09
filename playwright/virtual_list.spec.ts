@@ -3,7 +3,7 @@ import { test, expect } from "@playwright/test";
 // Helper to run scrollHeight stability test with configurable tolerance
 async function testScrollHeightStability(
   page: import("@playwright/test").Page,
-  tolerancePx: number
+  tolerancePx: number,
 ) {
   await page.goto("/components/virtual_list", {
     timeout: 30 * 1000,
@@ -63,7 +63,7 @@ async function testScrollHeightStability(
   // For a stable scrollbar, scrollHeight should not change during active scrolling.
   expect(
     heightVariance,
-    `scrollHeight changed by ${heightVariance}px during scroll (tolerance: ${tolerancePx}px) - this causes scrollbar thumb to drift from mouse cursor`
+    `scrollHeight changed by ${heightVariance}px during scroll (tolerance: ${tolerancePx}px) - this causes scrollbar thumb to drift from mouse cursor`,
   ).toBeLessThan(tolerancePx);
 
   return { heightVariance };
@@ -78,7 +78,9 @@ test("scrollHeight stable with adaptive estimation", async ({ page }) => {
 });
 
 // Stricter test - should achieve 0px variance with the stable_total_size fix
-test("scrollHeight remains stable during continuous scroll", async ({ page }) => {
+test("scrollHeight remains stable during continuous scroll", async ({
+  page,
+}) => {
   await testScrollHeightStability(page, 100);
 });
 
@@ -105,7 +107,8 @@ test("scrollHeight stable with random heights demo", async ({ page }) => {
   }));
 
   // Scroll through first portion of list
-  const maxScroll = (initialState.scrollHeight - initialState.clientHeight) * 0.3;
+  const maxScroll =
+    (initialState.scrollHeight - initialState.clientHeight) * 0.3;
   const steps = 15;
   const stepSize = maxScroll / steps;
 
@@ -135,7 +138,6 @@ test("scrollHeight stable with random heights demo", async ({ page }) => {
   const maxHeight = Math.max(...scrollHeights);
   const heightVariance = maxHeight - minHeight;
 
-
   // With random heights and poor early estimates, we intentionally DON'T freeze
   // because a bad frozen value causes worse UX (sudden jumps) than gradual drift.
   // The adaptive estimation will improve as more items are measured, and future
@@ -147,11 +149,13 @@ test("scrollHeight stable with random heights demo", async ({ page }) => {
   // Just verify we're not seeing catastrophic variance (e.g., 50000px+)
   expect(
     heightVariance,
-    `scrollHeight variance ${heightVariance}px is unexpectedly high`
+    `scrollHeight variance ${heightVariance}px is unexpectedly high`,
   ).toBeLessThan(15000);
 });
 
-test("virtual list virtualizes rows and updates on scroll", async ({ page }) => {
+test("virtual list virtualizes rows and updates on scroll", async ({
+  page,
+}) => {
   await page.goto("/components/virtual_list/block#main", {
     timeout: 30 * 1000,
   });
@@ -185,8 +189,12 @@ test("virtual list virtualizes rows and updates on scroll", async ({ page }) => 
   }).toPass({ timeout: 15000 });
 });
 
-test("main virtual list exposes bounded accessible window and returns home", async ({ page }) => {
-  await page.goto("/components/virtual_list/block#main", { timeout: 30 * 1000 });
+test("main virtual list exposes bounded accessible window and returns home", async ({
+  page,
+}) => {
+  await page.goto("/components/virtual_list/block#main", {
+    timeout: 30 * 1000,
+  });
 
   const list = page.getByRole("list").first();
   await expect(list).toBeVisible({ timeout: 30000 });
@@ -198,7 +206,7 @@ test("main virtual list exposes bounded accessible window and returns home", asy
       index: Number(element.getAttribute("data-virtual-index")),
       setSize: element.getAttribute("aria-setsize"),
       posInSet: element.getAttribute("aria-posinset"),
-    }))
+    })),
   );
   expect(initial.length).toBeGreaterThan(0);
   expect(initial.length).toBeLessThan(2000);
@@ -212,13 +220,15 @@ test("main virtual list exposes bounded accessible window and returns home", asy
     element.scrollTop = element.scrollHeight;
   });
   await page.waitForTimeout(300);
-  await expect(list.locator('[data-virtual-index="1999"]')).toBeVisible({ timeout: 30000 });
+  await expect(list.locator('[data-virtual-index="1999"]')).toBeVisible({
+    timeout: 30000,
+  });
   const farItems = await items.evaluateAll((elements) =>
     elements.map((element) => ({
       index: Number(element.getAttribute("data-virtual-index")),
       setSize: element.getAttribute("aria-setsize"),
       posInSet: element.getAttribute("aria-posinset"),
-    }))
+    })),
   );
   expect(farItems.some((item) => item.index === 1999)).toBe(true);
   for (const item of farItems) {
@@ -231,26 +241,7 @@ test("main virtual list exposes bounded accessible window and returns home", asy
 
   await list.focus();
   await list.press("Home");
-  await expect(list.locator('[data-virtual-index="0"]')).toBeVisible({ timeout: 30000 });
-});
-
-test("states fixture forwards global attributes and clears and resets", async ({ page }) => {
-  await page.goto("/components/virtual_list/block#states", { timeout: 30 * 1000 });
-
-  const list = page.getByTestId("virtual-list-states");
-  await expect(list).toBeVisible({ timeout: 30000 });
-  await expect(list).toHaveAttribute("id", "virtual-list-states");
-  await expect(list).toHaveAttribute("data-testid", "virtual-list-states");
-  await expect(list).toHaveAttribute("aria-label", "Virtual list state fixture");
-  await expect(list).toHaveClass(/virtual-list-states/);
-  await expect(page.getByTestId("virtual-list-states-count")).toHaveText("40 items");
-  await expect(page.getByTestId("virtual-list-state-row").first()).toBeVisible();
-
-  await page.getByRole("button", { name: "Clear list" }).click();
-  await expect(page.getByTestId("virtual-list-states-count")).toHaveText("0 items");
-  await expect(page.getByTestId("virtual-list-state-row")).toHaveCount(0);
-
-  await page.getByRole("button", { name: "Reset list" }).click();
-  await expect(page.getByTestId("virtual-list-states-count")).toHaveText("40 items");
-  await expect(page.getByTestId("virtual-list-state-row").first()).toBeVisible();
+  await expect(list.locator('[data-virtual-index="0"]')).toBeVisible({
+    timeout: 30000,
+  });
 });

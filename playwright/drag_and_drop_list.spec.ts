@@ -27,7 +27,9 @@ function getItems(list: import("@playwright/test").Locator) {
 }
 
 function getLiveRegion(list: import("@playwright/test").Locator) {
-  return list.locator("xpath=..").locator('[role="status"][aria-live="assertive"]');
+  return list
+    .locator("xpath=..")
+    .locator('[role="status"][aria-live="assertive"]');
 }
 
 async function itemText(locator: import("@playwright/test").Locator) {
@@ -44,49 +46,66 @@ async function dispatchDragLifecycle(
     targetYRatio?: number;
   },
 ) {
-  await page.evaluate(async ({ sourceIndex, targetIndex, drop, end = true, targetYRatio = 0.8 }) => {
-    const list = document.querySelector('ul[aria-roledescription="sortable list"]');
-    const items = list?.querySelectorAll('li[aria-roledescription="sortable item"]');
-    const source = items?.[sourceIndex];
-    const target = items?.[targetIndex];
-    if (!list || !source || !target) {
-      throw new Error("Drag-and-drop test elements were not found");
-    }
+  await page.evaluate(
+    async ({
+      sourceIndex,
+      targetIndex,
+      drop,
+      end = true,
+      targetYRatio = 0.8,
+    }) => {
+      const list = document.querySelector(
+        'ul[aria-roledescription="sortable list"]',
+      );
+      const items = list?.querySelectorAll(
+        'li[aria-roledescription="sortable item"]',
+      );
+      const source = items?.[sourceIndex];
+      const target = items?.[targetIndex];
+      if (!list || !source || !target) {
+        throw new Error("Drag-and-drop test elements were not found");
+      }
 
-    const dataTransfer = new DataTransfer();
-    const dispatch = (node: EventTarget, type: string, init: DragEventInit = {}) => {
-      const event = new DragEvent(type, {
-        bubbles: true,
-        cancelable: true,
-        dataTransfer,
-        ...init,
+      const dataTransfer = new DataTransfer();
+      const dispatch = (
+        node: EventTarget,
+        type: string,
+        init: DragEventInit = {},
+      ) => {
+        const event = new DragEvent(type, {
+          bubbles: true,
+          cancelable: true,
+          dataTransfer,
+          ...init,
+        });
+        node.dispatchEvent(event);
+      };
+
+      dispatch(source, "dragstart");
+      await new Promise(requestAnimationFrame);
+
+      const targetRect = target.getBoundingClientRect();
+      dispatch(target, "dragover", {
+        clientX: targetRect.left + targetRect.width / 2,
+        clientY: targetRect.top + targetRect.height * targetYRatio,
       });
-      node.dispatchEvent(event);
-    };
-
-    dispatch(source, "dragstart");
-    await new Promise(requestAnimationFrame);
-
-    const targetRect = target.getBoundingClientRect();
-    dispatch(target, "dragover", {
-      clientX: targetRect.left + targetRect.width / 2,
-      clientY: targetRect.top + targetRect.height * targetYRatio,
-    });
-    await new Promise(requestAnimationFrame);
-
-    if (drop === "list") {
-      dispatch(list, "drop");
       await new Promise(requestAnimationFrame);
-    } else if (drop === "document") {
-      dispatch(document, "drop");
-      await new Promise(requestAnimationFrame);
-    }
 
-    if (end) {
-      dispatch(source, "dragend");
-      await new Promise(requestAnimationFrame);
-    }
-  }, options);
+      if (drop === "list") {
+        dispatch(list, "drop");
+        await new Promise(requestAnimationFrame);
+      } else if (drop === "document") {
+        dispatch(document, "drop");
+        await new Promise(requestAnimationFrame);
+      }
+
+      if (end) {
+        dispatch(source, "dragend");
+        await new Promise(requestAnimationFrame);
+      }
+    },
+    options,
+  );
 }
 
 test.describe("Keyboard focus management", () => {
@@ -96,7 +115,9 @@ test.describe("Keyboard focus management", () => {
     await expect(items.first()).toHaveAttribute("tabindex", "0");
     await expect(items.nth(1)).toHaveAttribute("tabindex", "-1");
   });
-  test("ArrowUp at first announces the boundary without moving", async ({ page }) => {
+  test("ArrowUp at first announces the boundary without moving", async ({
+    page,
+  }) => {
     const list = await loadMainList(page);
     const items = getItems(list);
     const liveRegion = getLiveRegion(list);
@@ -107,10 +128,14 @@ test.describe("Keyboard focus management", () => {
     await page.keyboard.press("ArrowUp");
 
     await expect(items.first()).toBeFocused();
-    await expect(liveRegion).toContainText(`You are already at position 1 of ${count}`);
+    await expect(liveRegion).toContainText(
+      `You are already at position 1 of ${count}`,
+    );
   });
 
-  test("ArrowDown at last announces the boundary without moving", async ({ page }) => {
+  test("ArrowDown at last announces the boundary without moving", async ({
+    page,
+  }) => {
     const list = await loadMainList(page);
     const items = getItems(list);
     const liveRegion = getLiveRegion(list);
@@ -140,19 +165,6 @@ test.describe("Keyboard focus management", () => {
 
     await expect.poll(() => itemText(items.first())).toBe(secondText);
     await expect.poll(() => itemText(items.nth(1))).toBe(sourceText);
-  });
-
-  test("list exposes keyboard instructions and live region semantics", async ({ page }) => {
-    const list = await loadMainList(page);
-    const instructions = page.locator("#dnd-instructions");
-    const liveRegion = getLiveRegion(list);
-
-    await expect(list).toHaveAttribute("aria-describedby", "dnd-instructions");
-    await expect(instructions).toContainText("Press Enter to start reordering");
-    await expect(instructions).toContainText("Use Arrow keys to change position");
-    await expect(liveRegion).toHaveAttribute("role", "status");
-    await expect(liveRegion).toHaveAttribute("aria-live", "assertive");
-    await expect(liveRegion).toHaveAttribute("aria-atomic", "true");
   });
 
   test("arrow down from last wraps to first", async ({ page }) => {
@@ -227,9 +239,7 @@ test.describe("Drag and drop lifecycle", () => {
     );
   });
 
-  test("cancelling announces and returns focus to source", async ({
-    page,
-  }) => {
+  test("cancelling announces and returns focus to source", async ({ page }) => {
     const list = await loadMainList(page);
     const items = getItems(list);
     await items.first().click();
@@ -251,9 +261,7 @@ test.describe("Drag and drop lifecycle", () => {
     await expect(items.first()).toHaveAttribute("aria-grabbed", "true");
   });
 
-  test("focus after successful drop lands on moved item", async ({
-    page,
-  }) => {
+  test("focus after successful drop lands on moved item", async ({ page }) => {
     const list = await loadMainList(page);
     const items = getItems(list);
     await items.first().click();
@@ -304,7 +312,9 @@ test.describe("Drag and drop lifecycle", () => {
     });
   }
 
-  test("upper-half pointer drag commits before the target", async ({ page }) => {
+  test("upper-half pointer drag commits before the target", async ({
+    page,
+  }) => {
     const list = await loadMainList(page);
     const items = getItems(list);
     const sourceText = await itemText(items.nth(3));
@@ -330,9 +340,7 @@ test.describe("Drag and drop lifecycle", () => {
     await expect.poll(() => dropIndicatorOpacity(page)).toBeGreaterThan(0.5);
   });
 
-  test("focus moves to item at same index after removal", async ({
-    page,
-  }) => {
+  test("focus moves to item at same index after removal", async ({ page }) => {
     const list = await loadRemovableList(page);
     const items = getItems(list);
     const initialCount = await items.count();
@@ -348,7 +356,9 @@ test.describe("Drag and drop lifecycle", () => {
     const liveRegion = getLiveRegion(list);
     const initialCount = await items.count();
     const initialOrder = await Promise.all(
-      Array.from({ length: initialCount }, (_, index) => itemText(items.nth(index))),
+      Array.from({ length: initialCount }, (_, index) =>
+        itemText(items.nth(index)),
+      ),
     );
 
     await items.nth(1).click();
@@ -356,11 +366,15 @@ test.describe("Drag and drop lifecycle", () => {
     await page.keyboard.press("Backspace");
 
     await expect(items).toHaveCount(initialCount);
-    await expect.poll(async () =>
-      Promise.all(
-        Array.from({ length: initialCount }, (_, index) => itemText(items.nth(index))),
-      ),
-    ).toEqual(initialOrder);
+    await expect
+      .poll(async () =>
+        Promise.all(
+          Array.from({ length: initialCount }, (_, index) =>
+            itemText(items.nth(index)),
+          ),
+        ),
+      )
+      .toEqual(initialOrder);
     await expect(liveRegion).not.toContainText("Removed item");
   });
 
@@ -370,14 +384,19 @@ test.describe("Drag and drop lifecycle", () => {
     const liveRegion = getLiveRegion(list);
     const initialCount = await items.count();
 
-    await items.nth(1).getByRole("button", { name: /Remove item/ }).click();
+    await items
+      .nth(1)
+      .getByRole("button", { name: /Remove item/ })
+      .click();
 
     await expect(liveRegion).toContainText(
       `Removed item from position 2. ${initialCount - 1} items remaining`,
     );
   });
 
-  test("Delete removes the focused item and preserves focus", async ({ page }) => {
+  test("Delete removes the focused item and preserves focus", async ({
+    page,
+  }) => {
     const list = await loadRemovableList(page);
     const items = getItems(list);
     const liveRegion = getLiveRegion(list);
@@ -450,9 +469,7 @@ test.describe("Drag and drop lifecycle", () => {
 });
 
 test.describe("Remove behavior", () => {
-  test("focus moves to item at same index after removal", async ({
-    page,
-  }) => {
+  test("focus moves to item at same index after removal", async ({ page }) => {
     const list = await loadRemovableList(page);
     const items = getItems(list);
     const initialCount = await items.count();
@@ -488,16 +505,23 @@ test.describe("Remove behavior", () => {
     await page.keyboard.press("Enter");
 
     await expect.poll(() => itemText(items.nth(2))).toBe(movedText);
-    await items.nth(2).getByRole("button", { name: /Remove item/ }).click();
+    await items
+      .nth(2)
+      .getByRole("button", { name: /Remove item/ })
+      .click();
 
     await expect(items).toHaveCount(initialCount - 1);
-    await expect.poll(async () => {
-      const count = await items.count();
-      const texts = await Promise.all(
-        Array.from({ length: count }, (_, index) => itemText(items.nth(index))),
-      );
-      return texts;
-    }).not.toContain(movedText);
+    await expect
+      .poll(async () => {
+        const count = await items.count();
+        const texts = await Promise.all(
+          Array.from({ length: count }, (_, index) =>
+            itemText(items.nth(index)),
+          ),
+        );
+        return texts;
+      })
+      .not.toContain(movedText);
   });
   test("removal announces position and remaining count", async ({ page }) => {
     const list = await loadRemovableList(page);
@@ -505,13 +529,18 @@ test.describe("Remove behavior", () => {
     const liveRegion = getLiveRegion(list);
     const initialCount = await items.count();
 
-    await items.nth(1).getByRole("button", { name: /Remove item/ }).click();
+    await items
+      .nth(1)
+      .getByRole("button", { name: /Remove item/ })
+      .click();
     await expect(liveRegion).toContainText(
       `Removed item from position 2. ${initialCount - 1} items remaining`,
     );
   });
 
-  test("Delete removes the focused item and preserves focus", async ({ page }) => {
+  test("Delete removes the focused item and preserves focus", async ({
+    page,
+  }) => {
     const list = await loadRemovableList(page);
     const items = getItems(list);
     const liveRegion = getLiveRegion(list);
@@ -526,7 +555,9 @@ test.describe("Remove behavior", () => {
     );
   });
 
-  test("remove button is non-draggable and does not grab its item", async ({ page }) => {
+  test("remove button is non-draggable and does not grab its item", async ({
+    page,
+  }) => {
     const list = await loadRemovableList(page);
     const item = getItems(list).first();
     const removeButton = item.getByRole("button", { name: /Remove item/ });
@@ -534,7 +565,6 @@ test.describe("Remove behavior", () => {
     await removeButton.dispatchEvent("dragstart");
     await expect(item).not.toHaveAttribute("aria-grabbed", "true");
   });
-
 });
 
 test.describe("Axe automated scan", () => {

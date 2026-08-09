@@ -11,16 +11,24 @@ async function loadDemo(page: Page, url: string): Promise<Locator> {
   return root;
 }
 
-test("main demo buttons expose native semantics and forwarded attributes", async ({ page }) => {
+test("main demo buttons expose native semantics and forwarded attributes", async ({
+  page,
+}) => {
   const root = await loadDemo(page, BUTTON_DEMO_URL);
   const activate = root.getByRole("button", { name: "Activate", exact: true });
-  const submit = root.getByRole("button", { name: "Submit action", exact: true });
+  const submit = root.getByRole("button", {
+    name: "Submit action",
+    exact: true,
+  });
 
   await expect(activate).toHaveCount(1);
   await expect(activate).toHaveJSProperty("tagName", "BUTTON");
   await expect(activate).toHaveAttribute("id", "button-activation");
   await expect(activate).toHaveAttribute("data-testid", "button-activation");
-  await expect(activate).toHaveAttribute("title", "Activates an observable counter");
+  await expect(activate).toHaveAttribute(
+    "title",
+    "Activates an observable counter",
+  );
   await expect(activate).toHaveAttribute("type", "button");
   await expect(submit).toHaveAttribute("type", "submit");
 });
@@ -43,7 +51,10 @@ test("disabled button cannot focus or activate", async ({ page }) => {
   const root = await loadDemo(page, BUTTON_DEMO_URL);
   const activate = root.getByRole("button", { name: "Activate", exact: true });
   const disabled = root.getByRole("button", { name: "Disabled", exact: true });
-  const submit = root.getByRole("button", { name: "Submit action", exact: true });
+  const submit = root.getByRole("button", {
+    name: "Submit action",
+    exact: true,
+  });
   const count = root.getByTestId("button-activation-count");
 
   await expect(disabled).toBeDisabled();
@@ -54,7 +65,9 @@ test("disabled button cannot focus or activate", async ({ page }) => {
   await expect(count).toHaveText("Activations: 0");
 });
 
-test("named variant buttons expose the six canonical styles", async ({ page }) => {
+test("named variant buttons expose the six canonical styles", async ({
+  page,
+}) => {
   const root = await loadDemo(page, BUTTON_DEMO_URL);
   const variants = [
     ["Default", "default"],
@@ -66,11 +79,15 @@ test("named variant buttons expose the six canonical styles", async ({ page }) =
   ] as const;
 
   for (const [name, style] of variants) {
-    await expect(root.getByRole("button", { name, exact: true })).toHaveAttribute("data-style", style);
+    await expect(
+      root.getByRole("button", { name, exact: true }),
+    ).toHaveAttribute("data-style", style);
   }
 });
 
-test("size demo exposes six exact size contracts and named icon controls", async ({ page }) => {
+test("size demo exposes six exact size contracts and named icon controls", async ({
+  page,
+}) => {
   const root = await loadDemo(page, SIZE_DEMO_URL);
   const buttons = root.getByRole("button");
   await expect(buttons).toHaveCount(6);

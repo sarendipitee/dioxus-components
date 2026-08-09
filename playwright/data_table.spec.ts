@@ -1,7 +1,6 @@
 import { test, expect, type Page } from "@playwright/test";
 
-const VIRTUALIZED_URL =
-  "/components/data_table/block#virtualized";
+const VIRTUALIZED_URL = "/components/data_table/block#virtualized";
 
 // The virtualized demo renders 5,000 rows but should only mount a small
 // window of them at a time.
@@ -41,10 +40,8 @@ test("virtualized table mounts off-screen rows on scroll", async ({ page }) => {
   // Initially only low indices are mounted.
   const maxIndexBefore = await page.evaluate(() => {
     const indices = Array.from(
-      document.querySelectorAll("tr[data-virtual-index]")
-    ).map((el) =>
-      parseInt(el.getAttribute("data-virtual-index") ?? "0", 10)
-    );
+      document.querySelectorAll("tr[data-virtual-index]"),
+    ).map((el) => parseInt(el.getAttribute("data-virtual-index") ?? "0", 10));
     return Math.max(...indices);
   });
   expect(maxIndexBefore).toBeLessThan(100);
@@ -64,8 +61,8 @@ test("virtualized table mounts off-screen rows on scroll", async ({ page }) => {
 
     const indices = await page.evaluate(() =>
       Array.from(document.querySelectorAll("tr[data-virtual-index]")).map(
-        (el) => parseInt(el.getAttribute("data-virtual-index") ?? "0", 10)
-      )
+        (el) => parseInt(el.getAttribute("data-virtual-index") ?? "0", 10),
+      ),
     );
     const maxIndex = Math.max(...indices);
     // After scrolling far down, rows with high indices must have mounted, and
@@ -92,13 +89,13 @@ test("virtualized table keeps column widths stable during scroll", async ({
   const layoutSnapshot = async () =>
     page.evaluate(() => {
       const surf = document.querySelector(
-        '[data-slot="data-table-surface"]'
+        '[data-slot="data-table-surface"]',
       ) as HTMLElement;
       const table = document.querySelector(
-        '[data-slot="data-table-table"]'
+        '[data-slot="data-table-table"]',
       ) as HTMLElement;
       const widths = Array.from(
-        document.querySelectorAll("th[data-column-key]")
+        document.querySelectorAll("th[data-column-key]"),
       ).map((el) => (el as HTMLElement).getBoundingClientRect().width);
       return {
         widths,
@@ -121,12 +118,15 @@ test("virtualized table keeps column widths stable during scroll", async ({
   // During steady-state scrolling the mounted row set changes constantly; with
   // fixed layout the column widths must not move.
   const maxScroll = await surface.evaluate(
-    (el) => el.scrollHeight - el.clientHeight
+    (el) => el.scrollHeight - el.clientHeight,
   );
   for (let i = 1; i <= 8; i++) {
-    await surface.evaluate((el, top) => {
-      el.scrollTop = top;
-    }, Math.round((maxScroll / 8) * i));
+    await surface.evaluate(
+      (el, top) => {
+        el.scrollTop = top;
+      },
+      Math.round((maxScroll / 8) * i),
+    );
     await page.waitForTimeout(150);
     const { widths } = await layoutSnapshot();
     expect(widths.length).toBe(baseline.length);
@@ -155,7 +155,6 @@ async function openFilterMenu(page: Page) {
   return menu;
 }
 
-
 test("filter menu filters column choices", async ({ page }) => {
   await page.goto(FILTER_URL);
   const menu = await openFilterMenu(page);
@@ -175,8 +174,12 @@ test("multiselect filter menu filters its options", async ({ page }) => {
   await expect(submenu).toHaveClass(/dx_data_table_filter_options/);
   await expect(input).toBeFocused();
   await input.fill("paid");
-  await expect(submenu.getByRole("menuitemcheckbox", { name: "Paid" })).toBeVisible();
-  await expect(submenu.getByRole("menuitemcheckbox", { name: "Packing" })).toBeHidden();
+  await expect(
+    submenu.getByRole("menuitemcheckbox", { name: "Paid" }),
+  ).toBeVisible();
+  await expect(
+    submenu.getByRole("menuitemcheckbox", { name: "Packing" }),
+  ).toBeHidden();
 });
 
 test("filter menu dismisses when clicking outside", async ({ page }) => {
@@ -194,9 +197,13 @@ test("main table exposes semantic headers, rows, sorting, and search", async ({
   const block = page.locator("#dx-preview-block-root");
   const table = block.locator('[data-slot="data-table-table"]');
   await expect(table).toBeVisible();
-  await expect(table.getByRole("columnheader", { name: /Order/ })).toBeVisible();
-  await expect(table.getByRole("columnheader", { name: /Customer/ })).toBeVisible();
-  await expect(table.locator('tbody tr[data-row-id]').first()).toBeVisible();
+  await expect(
+    table.getByRole("columnheader", { name: /Order/ }),
+  ).toBeVisible();
+  await expect(
+    table.getByRole("columnheader", { name: /Customer/ }),
+  ).toBeVisible();
+  await expect(table.locator("tbody tr[data-row-id]").first()).toBeVisible();
 
   const customerHeader = table.getByRole("columnheader", { name: /Customer/ });
   const sortButton = customerHeader.getByRole("button");
@@ -220,41 +227,60 @@ test("main table exposes semantic headers, rows, sorting, and search", async ({
 
   const search = block.getByRole("searchbox", { name: "Search table" });
   await search.fill("Northwind Supply");
-  const filteredRows = table.locator('tbody tr[data-row-id]');
+  const filteredRows = table.locator("tbody tr[data-row-id]");
   await expect(filteredRows).toHaveCount(10);
   for (const row of await filteredRows.all()) {
-    await expect(row.locator('td[data-column-key="customer"]')).toHaveText("Northwind Supply");
+    await expect(row.locator('td[data-column-key="customer"]')).toHaveText(
+      "Northwind Supply",
+    );
   }
   await search.fill("no such customer exists");
-  await expect(table.getByText("No orders match this view", { exact: true })).toBeVisible();
-  await expect(table.getByText("Try clearing search, filters, or sorting.", { exact: true })).toBeVisible();
+  await expect(
+    table.getByText("No orders match this view", { exact: true }),
+  ).toBeVisible();
+  await expect(
+    table.getByText("Try clearing search, filters, or sorting.", {
+      exact: true,
+    }),
+  ).toBeVisible();
   await search.fill("");
-  await expect(table.locator('tbody tr[data-row-id]').first()).toBeVisible();
-
+  await expect(table.locator("tbody tr[data-row-id]").first()).toBeVisible();
 });
 
-test("selectable table toggles a row and exposes selection state", async ({ page }) => {
+test("selectable table toggles a row and exposes selection state", async ({
+  page,
+}) => {
   await page.goto("/components/data_table/block#selectable");
   const table = page.locator('[data-slot="data-table-table"]');
   const checkbox = table.getByRole("checkbox", { name: "Select row" }).first();
   const row = checkbox.locator("xpath=ancestor::tr");
 
-  await expect(page.getByText("No rows selected", { exact: true })).toBeVisible();
+  await expect(
+    page.getByText("No rows selected", { exact: true }),
+  ).toBeVisible();
   await checkbox.check();
   await expect(row).toHaveAttribute("aria-selected", "true");
-  await expect(page.getByText("1 rows selected", { exact: true })).toBeVisible();
+  await expect(
+    page.getByText("1 rows selected", { exact: true }),
+  ).toBeVisible();
   await checkbox.press(" ");
   await expect(row).toHaveAttribute("aria-selected", "false");
-  await expect(page.getByText("No rows selected", { exact: true })).toBeVisible();
+  await expect(
+    page.getByText("No rows selected", { exact: true }),
+  ).toBeVisible();
 });
 
-test("server-backed table exposes loading, error, and resolved states", async ({ page }) => {
+test("server-backed table exposes loading, error, and resolved states", async ({
+  page,
+}) => {
   await page.goto("/components/data_table/block#server_backed");
   const table = page.locator('[data-slot="data-table-table"]');
-  await expect(table.locator('tbody tr[data-row-id]').first()).toBeVisible();
+  await expect(table.locator("tbody tr[data-row-id]").first()).toBeVisible();
 
   await page.getByRole("button", { name: "Loading", exact: true }).click();
-  await expect(table.locator('[aria-busy="true"]')).toContainText("Loading table data...");
+  await expect(table.locator('[aria-busy="true"]')).toContainText(
+    "Loading table data...",
+  );
 
   await page.getByRole("button", { name: "Error", exact: true }).click();
   await expect(table.getByRole("alert")).toHaveText(
@@ -262,5 +288,5 @@ test("server-backed table exposes loading, error, and resolved states", async ({
   );
 
   await page.getByRole("button", { name: "Resolve", exact: true }).click();
-  await expect(table.locator('tbody tr[data-row-id]').first()).toBeVisible();
+  await expect(table.locator("tbody tr[data-row-id]").first()).toBeVisible();
 });

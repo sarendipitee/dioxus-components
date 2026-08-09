@@ -28,7 +28,9 @@ test("focus opens the hover card and blur closes it", async ({ page }) => {
   await expect(tooltip).toHaveCount(0);
 });
 
-test("aria-describedby references the tooltip only while open", async ({ page }) => {
+test("aria-describedby references the tooltip only while open", async ({
+  page,
+}) => {
   const { trigger, tooltip } = hoverCard(page);
 
   await expect(trigger).not.toHaveAttribute("aria-describedby", /.+/);
@@ -52,6 +54,8 @@ test("pointer entry opens the hover card and pointer exit closes it", async ({
   await trigger.hover();
   await expect(tooltip).toBeVisible();
 
-  await page.locator("#component-preview-frame").hover({ position: { x: 2, y: 2 } });
+  await page
+    .locator("#component-preview-frame")
+    .hover({ position: { x: 2, y: 2 } });
   await expect(tooltip).toHaveCount(0);
 });

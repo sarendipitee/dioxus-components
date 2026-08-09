@@ -3,7 +3,9 @@ import { test, expect, type Page } from "@playwright/test";
 const calendarFrame = (page: Page) =>
   page.locator("#component-preview-frame").first();
 
-test("shows the fixed May 2026 calendar and selects a named day", async ({ page }) => {
+test("shows the fixed May 2026 calendar and selects a named day", async ({
+  page,
+}) => {
   await page.goto("/components/calendar", { timeout: 30 * 1000 });
 
   const calendar = calendarFrame(page);
@@ -77,9 +79,7 @@ test("shift + arrow keys navigation", async ({ page }) => {
   const initialMonthNumber = parseInt(initialMonth, 10);
 
   // Move focus to the calendar
-  const firstDay = calendar
-    .locator('[data-month="current"]')
-    .first();
+  const firstDay = calendar.locator('[data-month="current"]').first();
   await firstDay.focus();
 
   // Test Shift + ArrowDown - should move forward by one month
@@ -107,7 +107,7 @@ async function testArrowKeyNavigation(
   page: any,
   arrowKey: "ArrowRight" | "ArrowLeft",
   startPosition: "first" | "last",
-  expectedOrder: "ascending" | "descending"
+  expectedOrder: "ascending" | "descending",
 ) {
   await page.goto("/components/calendar", {
     timeout: 30 * 1000,
@@ -130,15 +130,11 @@ async function testArrowKeyNavigation(
   const daysInMonth = new Date(yearNumber, monthNumber, 0).getDate();
 
   // Move focus to the starting day of the current month
-  const startDay = calendar
-    .locator('[data-month="current"]')
-    [startPosition]();
+  const startDay = calendar.locator('[data-month="current"]')[startPosition]();
   await startDay.focus();
 
   // Get the focused day selector
-  const focusedDay = calendar.locator(
-    '[data-month="current"]:focus'
-  );
+  const focusedDay = calendar.locator('[data-month="current"]:focus');
 
   // Array to track all days visited
   const daysVisited = [];
@@ -176,7 +172,7 @@ async function testArrowKeyNavigation(
   } else {
     const expectedReverseDays = Array.from(
       { length: daysInMonth },
-      (_, i) => daysInMonth - i
+      (_, i) => daysInMonth - i,
     );
     expect(daysVisited).toEqual(expectedReverseDays);
   }

@@ -14,7 +14,9 @@ function uncontrolled(page: Page): Locator {
   return page.getByRole("switch", { name: "Automatic updates", exact: true });
 }
 
-test("controlled switch exposes role, name, state, label, description, and attributes", async ({ page }) => {
+test("controlled switch exposes role, name, state, label, description, and attributes", async ({
+  page,
+}) => {
   await loadSwitch(page);
   const toggle = controlled(page);
 
@@ -25,17 +27,31 @@ test("controlled switch exposes role, name, state, label, description, and attri
   await expect(toggle).toHaveAttribute("data-fixture", "controlled-switch");
   await expect(toggle).toHaveAttribute("aria-checked", "false");
   await expect(toggle).toHaveAttribute("data-state", "unchecked");
-  await expect(toggle).toHaveAttribute("aria-describedby", "controlled-switch-description");
+  await expect(toggle).toHaveAttribute(
+    "aria-describedby",
+    "controlled-switch-description",
+  );
   await expect(toggle).toHaveAttribute("value", "enabled");
   await expect(toggle).toHaveAttribute("aria-required", "true");
-  const formControl = page.locator('input[type="checkbox"][name="email-notifications"]');
+  const formControl = page.locator(
+    'input[type="checkbox"][name="email-notifications"]',
+  );
   await expect(formControl).toHaveValue("enabled");
   await expect(formControl).not.toBeChecked();
-  await expect(page.getByText("Email notifications", { exact: true })).toBeVisible();
-  await expect(page.getByText("Receive an email when account activity needs your attention.", { exact: true })).toBeVisible();
+  await expect(
+    page.getByText("Email notifications", { exact: true }),
+  ).toBeVisible();
+  await expect(
+    page.getByText(
+      "Receive an email when account activity needs your attention.",
+      { exact: true },
+    ),
+  ).toBeVisible();
 });
 
-test("pointer click focuses and toggles controlled switch", async ({ page }) => {
+test("pointer click focuses and toggles controlled switch", async ({
+  page,
+}) => {
   await loadSwitch(page);
   const toggle = controlled(page);
 
@@ -57,7 +73,9 @@ test("Space toggles switch and Enter does not toggle it", async ({ page }) => {
   await expect(toggle).toHaveAttribute("data-state", "checked");
 });
 
-test("controlled switch reports one callback per toggle and renders callback state", async ({ page }) => {
+test("controlled switch reports one callback per toggle and renders callback state", async ({
+  page,
+}) => {
   await loadSwitch(page);
   const toggle = controlled(page);
   const state = page.getByTestId("controlled-switch-state");
@@ -73,7 +91,9 @@ test("controlled switch reports one callback per toggle and renders callback sta
   await expect(count).toHaveText("2");
 });
 
-test("uncontrolled switch honors its default checked state", async ({ page }) => {
+test("uncontrolled switch honors its default checked state", async ({
+  page,
+}) => {
   await loadSwitch(page);
   const toggle = uncontrolled(page);
 
@@ -83,22 +103,41 @@ test("uncontrolled switch honors its default checked state", async ({ page }) =>
   await expect(toggle).toHaveAttribute("aria-checked", "false");
 });
 
-test("switch form includes checked custom value and omits unchecked switch", async ({ page }) => {
+test("switch form includes checked custom value and omits unchecked switch", async ({
+  page,
+}) => {
   await loadSwitch(page);
   const form = page.getByTestId("switch-form");
   const toggle = controlled(page);
 
-  const initial = await form.evaluate((element) => Array.from(new FormData(element).entries()).map(([name, value]) => [name, String(value)]));
+  const initial = await form.evaluate((element) =>
+    Array.from(new FormData(element).entries()).map(([name, value]) => [
+      name,
+      String(value),
+    ]),
+  );
   expect(initial).not.toContainEqual(["email-notifications", "enabled"]);
   await toggle.click();
-  const checked = await form.evaluate((element) => Array.from(new FormData(element).entries()).map(([name, value]) => [name, String(value)]));
+  const checked = await form.evaluate((element) =>
+    Array.from(new FormData(element).entries()).map(([name, value]) => [
+      name,
+      String(value),
+    ]),
+  );
   expect(checked).toContainEqual(["email-notifications", "enabled"]);
   await toggle.click();
-  const unchecked = await form.evaluate((element) => Array.from(new FormData(element).entries()).map(([name, value]) => [name, String(value)]));
+  const unchecked = await form.evaluate((element) =>
+    Array.from(new FormData(element).entries()).map(([name, value]) => [
+      name,
+      String(value),
+    ]),
+  );
   expect(unchecked).not.toContainEqual(["email-notifications", "enabled"]);
 });
 
-test("disabled switches reject interaction and cannot receive focus", async ({ page }) => {
+test("disabled switches reject interaction and cannot receive focus", async ({
+  page,
+}) => {
   await loadSwitch(page);
   const unchecked = page.getByTestId("disabled-unchecked-switch");
   const checked = page.getByTestId("disabled-checked-switch");
@@ -115,11 +154,19 @@ test("disabled switches reject interaction and cannot receive focus", async ({ p
   await expect(checked).not.toBeFocused();
 });
 
-test("controlled switch reacts to disabled and required controls", async ({ page }) => {
+test("controlled switch reacts to disabled and required controls", async ({
+  page,
+}) => {
   await loadSwitch(page);
   const toggle = controlled(page);
-  const disable = page.getByRole("button", { name: "Disable controlled switch", exact: true });
-  const optional = page.getByRole("button", { name: "Make controlled switch optional", exact: true });
+  const disable = page.getByRole("button", {
+    name: "Disable controlled switch",
+    exact: true,
+  });
+  const optional = page.getByRole("button", {
+    name: "Make controlled switch optional",
+    exact: true,
+  });
 
   await expect(toggle).not.toBeDisabled();
   await expect(toggle).toHaveAttribute("aria-required", "true");

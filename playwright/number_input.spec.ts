@@ -3,7 +3,9 @@ import { test, expect } from "@playwright/test";
 // The main demo renders once as the page's primary preview (first in the DOM)
 // and again in the Demos list, so anchor on the first "Quantity" field and walk
 // to its own input wrapper to stay scoped to a single instance.
-test("steppers and arrow keys adjust the controlled value", async ({ page }) => {
+test("steppers and arrow keys adjust the controlled value", async ({
+  page,
+}) => {
   await page.goto("/components/number_input", {
     timeout: 30 * 1000,
   });
@@ -52,7 +54,9 @@ test("min/max bounds disable the steppers", async ({ page }) => {
     wrapper.locator("[data-slot='number-input-decrement']"),
   ).toBeDisabled();
 });
-test("quantity sanitizes raw typing and reports the parsed callback value", async ({ page }) => {
+test("quantity sanitizes raw typing and reports the parsed callback value", async ({
+  page,
+}) => {
   await page.goto("/components/number_input", { timeout: 30 * 1000 });
 
   const quantity = page.getByRole("textbox", { name: "Quantity" }).first();
@@ -63,7 +67,9 @@ test("quantity sanitizes raw typing and reports the parsed callback value", asyn
   await expect(value).toContainText("Value: 12.3");
 });
 
-test("strict bounds reject out-of-range typing and blur bounds clamp", async ({ page }) => {
+test("strict bounds reject out-of-range typing and blur bounds clamp", async ({
+  page,
+}) => {
   await page.goto("/components/number_input", { timeout: 30 * 1000 });
 
   const strict = page.getByRole("textbox", { name: "Strict (1–10)" }).first();
@@ -83,7 +89,9 @@ test("strict bounds reject out-of-range typing and blur bounds clamp", async ({ 
   await expect(blurClamp).toHaveValue("100");
 });
 
-test("custom step preserves quarter precision for mouse and ArrowDown", async ({ page }) => {
+test("custom step preserves quarter precision for mouse and ArrowDown", async ({
+  page,
+}) => {
   await page.goto("/components/number_input", { timeout: 30 * 1000 });
 
   const input = page.getByRole("textbox", { name: "Custom step" }).first();
@@ -98,7 +106,9 @@ test("custom step preserves quarter precision for mouse and ArrowDown", async ({
   await expect(input).toHaveValue("1.00");
 });
 
-test("disabled Locked field disables native input and both steppers", async ({ page }) => {
+test("disabled Locked field disables native input and both steppers", async ({
+  page,
+}) => {
   await page.goto("/components/number_input", { timeout: 30 * 1000 });
 
   const input = page.getByLabel("Locked").first();
@@ -115,7 +125,9 @@ test("disabled Locked field disables native input and both steppers", async ({ p
   ).toBeDisabled();
 });
 
-test("Read-only amount preserves value, native readonly, and disabled steppers", async ({ page }) => {
+test("Read-only amount preserves value, native readonly, and disabled steppers", async ({
+  page,
+}) => {
   await page.goto("/components/number_input", { timeout: 30 * 1000 });
 
   const input = page.getByRole("textbox", { name: "Read-only amount" }).first();
@@ -135,13 +147,17 @@ test("Read-only amount preserves value, native readonly, and disabled steppers",
   await expect(input).toHaveValue("12");
 });
 
-test("number input wires labels, descriptions, errors, and form attributes", async ({ page }) => {
+test("number input wires labels, descriptions, errors, and form attributes", async ({
+  page,
+}) => {
   await page.goto("/components/number_input", { timeout: 30 * 1000 });
 
   const seats = page.getByRole("textbox", { name: "Seats" }).first();
   const seatsId = await seats.getAttribute("id");
   expect(seatsId).toBeTruthy();
-  await expect(page.locator(`label[for="${seatsId}"]`).first()).toContainText("Seats");
+  await expect(page.locator(`label[for="${seatsId}"]`).first()).toContainText(
+    "Seats",
+  );
   await expect(seats).toHaveAttribute("required", /^(?:|true)$/);
   const seatsDescribedBy = (await seats.getAttribute("aria-describedby")) ?? "";
   expect(seatsDescribedBy.split(/\s+/)).toContain(`${seatsId}-description`);
@@ -153,7 +169,9 @@ test("number input wires labels, descriptions, errors, and form attributes", asy
   expect(errorDescribedBy.split(/\s+/)).toContain(`${errorId}-error`);
   await expect(error).toHaveAttribute("aria-invalid", "true");
 
-  const readOnly = page.getByRole("textbox", { name: "Read-only amount" }).first();
+  const readOnly = page
+    .getByRole("textbox", { name: "Read-only amount" })
+    .first();
   await expect(readOnly).toHaveAttribute("name", "readonly-amount");
   await expect(readOnly).toHaveAttribute("form", "number-form");
 });

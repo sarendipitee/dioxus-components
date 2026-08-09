@@ -4,10 +4,16 @@ test.describe("toggle group", () => {
   test.beforeEach(async ({ page }) => {
     await page.goto("/components/toggle_group/block#main");
   });
-  const preview = (page: import("@playwright/test").Page) => page.locator("#dx-preview-block-root");
+  const preview = (page: import("@playwright/test").Page) =>
+    page.locator("#dx-preview-block-root");
 
-  test("exposes group and item semantics, state, orientation, and global attributes", async ({ page }) => {
-    const group = page.locator("#dx-preview-block-root").getByRole("group", { name: "Text formatting" }).first();
+  test("exposes group and item semantics, state, orientation, and global attributes", async ({
+    page,
+  }) => {
+    const group = page
+      .locator("#dx-preview-block-root")
+      .getByRole("group", { name: "Text formatting" })
+      .first();
     await expect(group).toHaveAttribute("id", "multiple-group");
     await expect(group).toHaveAttribute("data-orientation", "horizontal");
     await expect(group).toHaveAttribute("data-allow-multiple-pressed", "true");
@@ -20,7 +26,9 @@ test.describe("toggle group", () => {
     }
   });
 
-  test("supports multiple selection and toggling an item off", async ({ page }) => {
+  test("supports multiple selection and toggling an item off", async ({
+    page,
+  }) => {
     const group = preview(page).getByTestId("multiple-group").first();
     const bold = group.getByRole("button", { name: "Bold" });
     const italic = group.getByRole("button", { name: "Italic" });
@@ -36,7 +44,9 @@ test.describe("toggle group", () => {
     await expect(italic).toHaveAttribute("aria-pressed", "true");
   });
 
-  test("keeps controlled single selection exclusive and reports each real click once", async ({ page }) => {
+  test("keeps controlled single selection exclusive and reports each real click once", async ({
+    page,
+  }) => {
     const group = preview(page).getByTestId("controlled-single").first();
     const left = group.getByRole("button", { name: "Left" });
     const center = group.getByRole("button", { name: "Center" });
@@ -115,7 +125,10 @@ test.describe("toggle group", () => {
     await expect(group).toHaveAttribute("data-orientation", "horizontal");
     for (const name of ["Disabled one", "Disabled two"]) {
       await expect(group.getByRole("button", { name })).toBeDisabled();
-      await expect(group.getByRole("button", { name })).toHaveAttribute("data-disabled", "true");
+      await expect(group.getByRole("button", { name })).toHaveAttribute(
+        "data-disabled",
+        "true",
+      );
     }
   });
 });

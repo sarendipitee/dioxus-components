@@ -18,7 +18,6 @@ test.describe("homepage", () => {
   });
 });
 
-
 test.describe("details", () => {
   test("should not have any automatically detectable accessibility issues", async ({
     page,

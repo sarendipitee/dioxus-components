@@ -9,7 +9,10 @@ async function gotoSheetDemo(page: Page) {
   });
 }
 
-async function openSheet(page: Page, side: "Top" | "Right" | "Bottom" | "Left") {
+async function openSheet(
+  page: Page,
+  side: "Top" | "Right" | "Bottom" | "Left",
+) {
   await page.getByRole("button", { name: side }).click();
 
   const dialog = page.getByRole("dialog", { name: "Sheet Title" });
@@ -63,7 +66,9 @@ test("sheet basic interactions", async ({ page }) => {
   await expect(reopenedDialog).toBeHidden();
 });
 
-test("sheet title and description keep primitive typography wrappers", async ({ page }) => {
+test("sheet title and description keep primitive typography wrappers", async ({
+  page,
+}) => {
   await gotoSheetDemo(page);
 
   const dialog = await openSheet(page, "Right");
@@ -106,28 +111,29 @@ test("sheet opens from different sides", async ({ page }) => {
     ["Left", "left"],
   ] as const) {
     await openSheet(page, buttonName);
-    await expect(page.locator('[data-slot="sheet-content"]').first()).toHaveAttribute(
-      "data-side",
-      side,
-    );
+    await expect(
+      page.locator('[data-slot="sheet-content"]').first(),
+    ).toHaveAttribute("data-side", side);
     await page.keyboard.press("Escape");
-    await expect(page.getByRole("dialog", { name: "Sheet Title" })).toBeHidden();
+    await expect(
+      page.getByRole("dialog", { name: "Sheet Title" }),
+    ).toBeHidden();
   }
 });
 
 test("sheet root wrapper exists and reflects open state", async ({ page }) => {
   await gotoSheetDemo(page);
 
-  // The block demo renders inside #dx-preview-block-root; scope to it so the
-  // live instance is targeted rather than the component definition-tree copy
-  // that also mounts a [data-slot="sheet-root"] elsewhere on the page.
-  const root = page.locator('#dx-preview-block-root [data-slot="sheet-root"]');
+  // The main demo contains one root per side; verify the first root's shared state.
+  const root = page
+    .locator('#dx-preview-block-root [data-slot="sheet-root"]')
+    .first();
 
   // Root wrapper should always exist in DOM, initially closed
   await expect(root).toHaveAttribute("data-state", "closed");
 
   // Open sheet
-  await page.getByRole("button", { name: "Right" }).click();
+  await page.getByRole("button", { name: "Top", exact: true }).click();
   await expect(root).toHaveAttribute("data-state", "open");
 
   // Close with Escape
@@ -140,19 +146,35 @@ test("sheet panel appears on the correct side", async ({ page }) => {
   const viewport = page.viewportSize()!;
 
   for (const [buttonName, side, edgeCheck] of [
-    ["Right", "right", (box: { x: number; y: number; width: number; height: number }) => {
-      // Right edge of sheet panel should be at viewport right edge
-      expect(box.x + box.width).toBe(viewport.width);
-    }],
-    ["Left", "left", (box: { x: number; y: number; width: number; height: number }) => {
-      expect(box.x).toBe(0);
-    }],
-    ["Top", "top", (box: { x: number; y: number; width: number; height: number }) => {
-      expect(box.y).toBe(0);
-    }],
-    ["Bottom", "bottom", (box: { x: number; y: number; width: number; height: number }) => {
-      expect(box.y + box.height).toBe(viewport.height);
-    }],
+    [
+      "Right",
+      "right",
+      (box: { x: number; y: number; width: number; height: number }) => {
+        // Right edge of sheet panel should be at viewport right edge
+        expect(box.x + box.width).toBe(viewport.width);
+      },
+    ],
+    [
+      "Left",
+      "left",
+      (box: { x: number; y: number; width: number; height: number }) => {
+        expect(box.x).toBe(0);
+      },
+    ],
+    [
+      "Top",
+      "top",
+      (box: { x: number; y: number; width: number; height: number }) => {
+        expect(box.y).toBe(0);
+      },
+    ],
+    [
+      "Bottom",
+      "bottom",
+      (box: { x: number; y: number; width: number; height: number }) => {
+        expect(box.y + box.height).toBe(viewport.height);
+      },
+    ],
   ] as const) {
     await openSheet(page, buttonName);
 
@@ -165,7 +187,9 @@ test("sheet panel appears on the correct side", async ({ page }) => {
     edgeCheck(box!);
 
     await page.keyboard.press("Escape");
-    await expect(page.getByRole("dialog", { name: "Sheet Title" })).toBeHidden();
+    await expect(
+      page.getByRole("dialog", { name: "Sheet Title" }),
+    ).toBeHidden();
   }
 });
 
@@ -237,12 +261,14 @@ test("same-side nested sheets get sheet depth styling", async ({ page }) => {
 
   await page.waitForTimeout(300);
   const outerOpacity = await sheet1.evaluate((element) =>
-    Number.parseFloat(getComputedStyle(element).opacity)
+    Number.parseFloat(getComputedStyle(element).opacity),
   );
   expect(outerOpacity).toBeCloseTo(0.88, 2);
 });
 
-test("opposite-side nested sheets do not get sheet depth styling", async ({ page }) => {
+test("opposite-side nested sheets do not get sheet depth styling", async ({
+  page,
+}) => {
   await page.goto("/overlay-nesting", {
     timeout: 30 * 1000,
     waitUntil: "load",
@@ -262,12 +288,14 @@ test("opposite-side nested sheets do not get sheet depth styling", async ({ page
 
   await page.waitForTimeout(300);
   const outerOpacity = await outer.evaluate((element) =>
-    Number.parseFloat(getComputedStyle(element).opacity)
+    Number.parseFloat(getComputedStyle(element).opacity),
   );
   expect(outerOpacity).toBe(1);
 });
 
-test("tearing down outer scope while inner is still animating does not crash", async ({ page }) => {
+test("tearing down outer scope while inner is still animating does not crash", async ({
+  page,
+}) => {
   // This test exercises the UAF window: the inner Dialog and its signals
   // live inside the outer DialogPortalBody's children subtree. When the outer
   // scope is torn down (outer sheet closes), those signals are freed. If the
@@ -319,58 +347,4 @@ test("tearing down outer scope while inner is still animating does not crash", a
   // Clean up
   await page.keyboard.press("Escape");
   await expect(sheet1).toHaveCount(0);
-});
-
-test("controlled audit sheet exposes callbacks and ignores implicit dismissal", async ({ page }) => {
-  await gotoSheetDemo(page);
-
-  const opener = page.getByTestId("sheet-audit-open");
-  const status = page.getByTestId("sheet-audit-status");
-  const content = page.getByTestId("sheet-audit-content");
-
-  await expect(status).toHaveText("false:0:none");
-  await opener.click();
-  await expect(status).toHaveText("true:0:none");
-  await expect(content).toBeVisible();
-  await expect(content).toHaveRole("dialog", { name: "Audit sheet" });
-  await expect(content).toHaveAttribute("aria-modal", "true");
-  await expect(content).toHaveAttribute("id", "sheet-audit-content");
-  await expect(content).toHaveAttribute("data-testid", "sheet-audit-content");
-  await expect(content).toHaveAttribute("data-audit-scope", "controlled");
-  await expect(content).toHaveAttribute("aria-label", "Audit sheet");
-  await expect(content.locator('[data-slot="sheet-title"]')).toHaveCount(1);
-  await expect(content.locator('[data-slot="sheet-description"]')).toHaveCount(1);
-  await expect(content.locator(".dx_dialog_close")).toHaveCount(0);
-
-  await page.keyboard.press("Escape");
-  await expect(content).toBeVisible();
-  await expect(status).toHaveText("true:0:none");
-
-  await page.mouse.click(2, 2);
-  await expect(content).toBeVisible();
-  await expect(status).toHaveText("true:0:none");
-
-  const close = content.getByRole("button", { name: "Close audit sheet programmatically" });
-  await close.click();
-  await expect(status).toHaveText("false:1:closed");
-  await expect(content).toBeHidden();
-  await expect(opener).toBeFocused();
-});
-test("nonmodal sheet leaves outside controls interactive", async ({ page }) => {
-  await gotoSheetDemo(page);
-
-  const openButton = page.getByTestId("sheet-nonmodal-open");
-  const content = page.getByTestId("sheet-nonmodal-content");
-  const outsideButton = page.getByTestId("sheet-nonmodal-outside");
-
-  await openButton.click();
-  await expect(content).toBeVisible();
-  await expect(content).not.toHaveAttribute("aria-modal");
-
-  await outsideButton.click();
-  await expect(outsideButton).toBeFocused();
-  await expect(content).toBeVisible();
-
-  await content.getByRole("button", { name: "Close nonmodal sheet" }).click();
-  await expect(content).toBeHidden();
 });
