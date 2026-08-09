@@ -51,7 +51,7 @@ jobs:
           cache-on-failure: "false"
       - uses: DioxusLabs/dioxus-ci/actions/install-dioxus-cli@v0.1.0
         with:
-          version: 0.7.9
+          version: 0.7.10
       - name: Add components and check
         run: |
           cd test-harness
@@ -86,36 +86,35 @@ jobs:
           cache-on-failure: "false"
       - uses: DioxusLabs/dioxus-ci/actions/install-dioxus-cli@v0.1.0
         with:
-          version: 0.7.9
+          version: 0.7.10
       - name: Add each component and check
         run: |
-          cd preview/src/components/
-          for file in *; do
-            if [ -d "$file" ]; then
-              echo "Testing component: $file"
-            else
-              continue
+          cd test-harness
+          # Discover installable components from the CLI registry instead of assuming every preview page is published.
+          dx components add --all --path .. --force
+          registry_components=""
+          for component in src/components/*; do
+            if [ -d "$component" ]; then
+              registry_components="$registry_components ${component##*/}"
             fi
-            # Go to test harness
-            cd ../../../test-harness
+          done
+          dx components remove --all --path ..
+          for component in $registry_components; do
+            echo "Testing component: $component"
             # Add dependencies manually; TODO: remove this once dx components supports local dependencies
-            if [ "$file" = "date_picker" ]; then
+            if [ "$component" = "date_picker" ]; then
               dx components add calendar,popover --path ..
-            elif [ "$file" = "sidebar" ]; then
+            elif [ "$component" = "sidebar" ]; then
               dx components add button,separator,sheet,skeleton,tooltip --path ..
-            elif [ "$file" = "item" ]; then
+            elif [ "$component" = "item" ]; then
               dx components add separator --path ..
-            elif [ "$file" = "color_picker" ]; then
+            elif [ "$component" = "color_picker" ]; then
               dx components add popover,input --path ..
             fi
-            # Add the component
-            dx components add "$file" --path ..
-            # Switch to the local versions of dioxus-primitives and dioxus-components
+            dx components add "$component" --path ..
             cargo add dioxus-primitives --path ../primitives
             cargo add dioxus-components --path ../dioxus-components
-            # Make sure it still builds
             cargo check --all-features
-            # Undo changes
             dx components remove --all --path ..
-            cd ../preview/src/components/
           done
+[.github/workflows/playwright.yml#2C6A]

@@ -124,7 +124,7 @@ pub struct SelectGroupLabelProps {
 
 /// # SelectGroupLabel
 ///
-/// The `SelectGroupLabel` component is used to render a label for a group of options within a [`SelectList`].
+/// The `SelectGroupLabel` component is used to render a label for a group of options within a [`super::list::SelectList`].
 ///
 /// This must be used inside a [`SelectGroup`](SelectGroup) component.
 ///

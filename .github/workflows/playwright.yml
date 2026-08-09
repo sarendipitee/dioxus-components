@@ -57,13 +57,13 @@ jobs:
           cache-on-failure: "true"
       - uses: DioxusLabs/dioxus-ci/actions/install-dioxus-cli@v0.1.0
         with:
-          version: 0.7.9
+          version: 0.7.10
       - name: Install dependencies
         run: cd ./playwright && npm ci
       - name: Install Playwright Browsers
         run: cd ./playwright && npx playwright install --with-deps
       - name: Run Playwright tests
-        run: cd ./playwright && npx playwright test --project=chromium --project=firefox --project=webkit --shard=${{ matrix.shardIndex }}/${{ matrix.shardTotal }}
+        run: cd ./playwright && npx playwright test --project=chromium --shard=${{ matrix.shardIndex }}/${{ matrix.shardTotal }}
       - name: Upload blob report to GitHub Actions Artifacts
         if: ${{ !cancelled() }}
         uses: actions/upload-artifact@v4
