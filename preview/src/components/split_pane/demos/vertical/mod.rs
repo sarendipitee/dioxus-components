@@ -1,5 +1,5 @@
-use dioxus_components::split_pane::*;
 use dioxus::prelude::*;
+use dioxus_components::split_pane::*;
 
 #[component]
 pub fn Demo() -> Element {

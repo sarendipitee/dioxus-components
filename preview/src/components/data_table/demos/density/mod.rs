@@ -2,7 +2,9 @@
 mod demo_support;
 
 use dioxus::prelude::*;
-use dioxus_components::data_table::{DataTable, DataTableDensity, DataTablePageInfo, DataTableStateMode};
+use dioxus_components::data_table::{
+    DataTable, DataTableDensity, DataTablePageInfo, DataTableStateMode,
+};
 
 use demo_support::{order_columns, order_row_id, order_rows, table_state, CLIENT_PAGE_SIZE};
 

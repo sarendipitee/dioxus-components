@@ -1,5 +1,5 @@
-use dioxus_components::accordion::{Accordion, AccordionContent, AccordionItem, AccordionTrigger};
 use dioxus::prelude::*;
+use dioxus_components::accordion::{Accordion, AccordionContent, AccordionItem, AccordionTrigger};
 #[component]
 pub fn Demo() -> Element {
     rsx! {

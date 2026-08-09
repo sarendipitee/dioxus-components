@@ -1,18 +1,18 @@
-use dioxus_components::avatar::{ImageAvatar, AvatarImageSize};
+use dioxus::prelude::*;
+use dioxus_components::avatar::{AvatarImageSize, ImageAvatar};
 use dioxus_components::button::{Button, ButtonSize, ButtonVariant};
 use dioxus_components::collapsible::{Collapsible, CollapsibleContent, CollapsibleTrigger};
 use dioxus_components::dropdown_menu::{DropdownMenu, DropdownMenuTrigger};
 use dioxus_components::menu::{Menu, MenuItem, MenuSeparator};
 use dioxus_components::separator::Separator;
 use dioxus_components::sidebar::{
-    Sidebar, SidebarCollapsible, SidebarContent, SidebarFooter, SidebarGroup, SidebarGroupLabel,
-    SidebarHeader, SidebarInset, SidebarMenu, SidebarMenuAction, SidebarMenuBadge,
-    SidebarMenuButton, SidebarMenuButtonSize, SidebarMenuItem, SidebarMenuSub,
+    use_sidebar, Sidebar, SidebarCollapsible, SidebarContent, SidebarFooter, SidebarGroup,
+    SidebarGroupLabel, SidebarHeader, SidebarInset, SidebarMenu, SidebarMenuAction,
+    SidebarMenuBadge, SidebarMenuButton, SidebarMenuButtonSize, SidebarMenuItem, SidebarMenuSub,
     SidebarMenuSubButton, SidebarMenuSubItem, SidebarProvider, SidebarRail, SidebarSide,
-    SidebarTrigger, SidebarVariant, use_sidebar,
+    SidebarTrigger, SidebarVariant,
 };
 use dioxus_icons::lucide::{ChevronRight, Circle, PanelLeftOpen, PanelRightOpen};
-use dioxus::prelude::*;
 
 #[css_module("/src/components/sidebar/demos/demo.css")]
 struct DemoStyles;

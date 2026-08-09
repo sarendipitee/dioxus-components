@@ -1,5 +1,5 @@
-use dioxus_components::calendar::*;
 use dioxus::prelude::*;
+use dioxus_components::calendar::*;
 use time::{macros::date, Date};
 
 #[component]

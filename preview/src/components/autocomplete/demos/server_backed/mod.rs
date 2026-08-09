@@ -7,7 +7,11 @@ const PEOPLE: &[SearchResult] = &[
     SearchResult::new("ada-lovelace", "Ada Lovelace", "Mathematician"),
     SearchResult::new("alan-turing", "Alan Turing", "Computer scientist"),
     SearchResult::new("grace-hopper", "Grace Hopper", "Computer scientist"),
-    SearchResult::new("margaret-hamilton", "Margaret Hamilton", "Software engineer"),
+    SearchResult::new(
+        "margaret-hamilton",
+        "Margaret Hamilton",
+        "Software engineer",
+    ),
     SearchResult::new("radia-perlman", "Radia Perlman", "Network engineer"),
     SearchResult::new("barbara-liskov", "Barbara Liskov", "Computer scientist"),
 ];
@@ -87,7 +91,7 @@ pub fn Demo() -> Element {
                     });
                 },
                 open: open,
-                on_open_change: move |next| open.set(Some(next && !query().trim().is_empty())), 
+                on_open_change: move |next| open.set(Some(next && !query().trim().is_empty())),
                 placeholder: "Search people...",
                 aria_label: "Server-backed people search",
                 list_aria_label: "People search results",

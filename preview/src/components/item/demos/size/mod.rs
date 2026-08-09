@@ -1,6 +1,6 @@
-use dioxus_components::item::*;
-use dioxus_components::button::{Button, ButtonVariant};
 use dioxus::prelude::*;
+use dioxus_components::button::{Button, ButtonVariant};
+use dioxus_components::item::*;
 use dioxus_icons::lucide::{BadgeCheck, ChevronRight};
 
 #[component]

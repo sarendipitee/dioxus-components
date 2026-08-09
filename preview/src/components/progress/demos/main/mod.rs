@@ -1,5 +1,5 @@
-use dioxus_components::progress::*;
 use dioxus::prelude::*;
+use dioxus_components::progress::*;
 
 #[component]
 pub fn Demo() -> Element {

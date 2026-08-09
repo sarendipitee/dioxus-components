@@ -1,5 +1,5 @@
-use dioxus_components::avatar::*;
 use dioxus::prelude::*;
+use dioxus_components::avatar::*;
 
 #[css_module("/src/components/avatar/demos/demo.css")]
 struct Styles;

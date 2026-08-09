@@ -1,5 +1,5 @@
-use dioxus_components::radio_group::*;
 use dioxus::prelude::*;
+use dioxus_components::radio_group::*;
 
 #[component]
 pub fn Demo() -> Element {

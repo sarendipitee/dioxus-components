@@ -1,9 +1,10 @@
-use dioxus_components::split_pane::*;
 use dioxus::prelude::*;
+use dioxus_components::split_pane::*;
 
 #[component]
 pub fn Demo() -> Element {
-    let mut last_size = use_signal(|| "Drag the divider or focus it and use arrow keys".to_string());
+    let mut last_size =
+        use_signal(|| "Drag the divider or focus it and use arrow keys".to_string());
     let mut resize_start = use_signal(|| "Resize has not started".to_string());
     let mut resize_end = use_signal(|| "Resize has not ended".to_string());
     let mut resize_start_count = use_signal(|| 0_u32);

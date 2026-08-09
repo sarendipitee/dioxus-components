@@ -155,14 +155,46 @@ async function openFilterMenu(page: Page) {
   return menu;
 }
 
-test("filter menu filters column choices", async ({ page }) => {
+test("filter menu restores column choices when query is deleted", async ({
+  page,
+}) => {
   await page.goto(FILTER_URL);
   const menu = await openFilterMenu(page);
   const input = menu.getByRole("textbox", { name: "Filter menu items" });
-  await input.pressSequentially("status");
-  await expect(menu.getByRole("menuitem", { name: "Status" })).toBeVisible();
+
+  await input.pressSequentially("p");
+  await expect(menu.getByRole("menuitem", { name: "Priority" })).toBeVisible();
   await expect(menu.getByRole("menuitem", { name: "Customer" })).toBeHidden();
-  await expect(menu.getByRole("menuitem", { name: "Priority" })).toBeHidden();
+  await expect(menu.getByRole("menuitem", { name: "Status" })).toBeHidden();
+
+  await input.press("Backspace");
+  await expect(input).toHaveValue("");
+  await expect(menu.getByRole("menuitem", { name: "Customer" })).toBeVisible();
+  await expect(menu.getByRole("menuitem", { name: "Status" })).toBeVisible();
+  await expect(menu.getByRole("menuitem", { name: "Priority" })).toBeVisible();
+});
+
+test("filter focus follows hovered menu surface", async ({ page }) => {
+  await page.goto(FILTER_URL);
+  const rootMenu = await openFilterMenu(page);
+  const rootInput = rootMenu.getByRole("textbox", {
+    name: "Filter menu items",
+  });
+  const status = rootMenu.getByRole("menuitem", { name: "Status" });
+
+  await status.hover();
+  const submenu = page.locator('[role="menu"][data-state="open"]').last();
+  const submenuInput = submenu.getByRole("textbox", {
+    name: "Filter menu items",
+  });
+  await expect(submenu).toBeVisible();
+  await expect(rootInput).toBeFocused();
+
+  await submenu.hover();
+  await expect(submenuInput).toBeFocused();
+
+  await rootMenu.hover();
+  await expect(rootInput).toBeFocused();
 });
 
 test("multiselect filter menu filters its options", async ({ page }) => {
@@ -172,6 +204,7 @@ test("multiselect filter menu filters its options", async ({ page }) => {
   const submenu = page.locator('[role="menu"][data-state="open"]').last();
   const input = submenu.getByRole("textbox", { name: "Filter menu items" });
   await expect(submenu).toHaveClass(/dx_data_table_filter_options/);
+  await submenu.hover();
   await expect(input).toBeFocused();
   await input.fill("paid");
   await expect(

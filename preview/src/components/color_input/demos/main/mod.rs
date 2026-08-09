@@ -1,7 +1,7 @@
 use dioxus::prelude::*;
-use dioxus_primitives::dioxus_attributes::attributes;
 use dioxus_components::color_input::*;
 use dioxus_primitives::color_picker::Color;
+use dioxus_primitives::dioxus_attributes::attributes;
 use palette::{encoding, FromColor, Hsv, IntoColor, Srgb};
 
 fn format_color(color: Hsv<encoding::Srgb, f64>) -> String {

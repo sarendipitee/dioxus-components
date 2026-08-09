@@ -1,6 +1,6 @@
+use dioxus::prelude::*;
 use dioxus_components::button::{Button, ButtonVariant};
 use dioxus_components::toast::*;
-use dioxus::prelude::*;
 use dioxus_primitives::toast::{use_toast, ToastOptions, ToastPosition};
 
 #[component]

@@ -1,5 +1,5 @@
-use dioxus_components::virtual_list::*;
 use dioxus::prelude::*;
+use dioxus_components::virtual_list::*;
 
 const INLINE_STYLE: &str = r#".dx_virtual_list_container {
   position: relative;

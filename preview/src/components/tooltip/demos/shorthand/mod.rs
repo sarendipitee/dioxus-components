@@ -1,5 +1,5 @@
-use dioxus_components::tooltip::*;
 use dioxus::prelude::*;
+use dioxus_components::tooltip::*;
 
 #[component]
 pub fn Demo() -> Element {

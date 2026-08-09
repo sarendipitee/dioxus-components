@@ -4,7 +4,14 @@ use time::{macros::time, Duration, Time};
 
 fn state_value(value: Option<Time>) -> String {
     value
-        .map(|value| format!("{:02}:{:02}:{:02}", value.hour(), value.minute(), value.second()))
+        .map(|value| {
+            format!(
+                "{:02}:{:02}:{:02}",
+                value.hour(),
+                value.minute(),
+                value.second()
+            )
+        })
         .unwrap_or_else(|| "none".to_string())
 }
 

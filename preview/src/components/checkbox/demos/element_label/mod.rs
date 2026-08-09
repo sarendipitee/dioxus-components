@@ -1,5 +1,5 @@
 use dioxus::prelude::*;
-use dioxus_components::{Badge, checkbox::*};
+use dioxus_components::{checkbox::*, Badge};
 
 #[component]
 pub fn Demo() -> Element {

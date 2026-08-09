@@ -1,5 +1,5 @@
-use dioxus_components::toolbar::*;
 use dioxus::prelude::*;
+use dioxus_components::toolbar::*;
 
 #[component]
 fn ToggleToolbarButton(

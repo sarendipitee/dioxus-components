@@ -1,5 +1,5 @@
-use dioxus_components::item::*;
 use dioxus::prelude::*;
+use dioxus_components::item::*;
 
 const TRACKS: &[(&str, &str, &str, &str)] = &[
     (

@@ -1,5 +1,5 @@
-use dioxus_components::select::*;
 use dioxus::prelude::*;
+use dioxus_components::select::*;
 use strum::{EnumCount, IntoEnumIterator};
 
 #[derive(Debug, Clone, Copy, PartialEq, strum::EnumCount, strum::EnumIter, strum::Display)]
@@ -31,18 +31,19 @@ impl Fruit {
 pub fn Demo() -> Element {
     let mut value = use_signal(|| Some(Fruit::Apple));
     let mut callback_count = use_signal(|| 0usize);
-    let selected_text = use_memo(move || {
-        value()
-            .map_or_else(|| "None".to_string(), |fruit| fruit.to_string())
-    });
-    let fruits = Fruit::iter().filter(|fruit| *fruit != Fruit::Other).enumerate().map(|(i, f)| {
-        rsx! {
-            SelectOption::<Fruit> { index: i, value: f, text_value: "{f}",
-                disabled: matches!(f, Fruit::Orange),
-                "{f.emoji()} {f}"
+    let selected_text =
+        use_memo(move || value().map_or_else(|| "None".to_string(), |fruit| fruit.to_string()));
+    let fruits = Fruit::iter()
+        .filter(|fruit| *fruit != Fruit::Other)
+        .enumerate()
+        .map(|(i, f)| {
+            rsx! {
+                SelectOption::<Fruit> { index: i, value: f, text_value: "{f}",
+                    disabled: matches!(f, Fruit::Orange),
+                    "{f.emoji()} {f}"
+                }
             }
-        }
-    });
+        });
 
     rsx! {
         div {

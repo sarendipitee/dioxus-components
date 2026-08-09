@@ -1,6 +1,6 @@
-use dioxus_components::drag_and_drop_list::*;
-use dioxus_components::avatar::{ImageAvatar, AvatarImageSize};
 use dioxus::prelude::*;
+use dioxus_components::avatar::{AvatarImageSize, ImageAvatar};
+use dioxus_components::drag_and_drop_list::*;
 
 const INLINE_STYLE: &str = r#".dx-tasks-demo {
   width: 100%;

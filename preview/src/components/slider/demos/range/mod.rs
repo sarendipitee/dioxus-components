@@ -1,5 +1,5 @@
-use dioxus_components::slider::*;
 use dioxus::prelude::*;
+use dioxus_components::slider::*;
 use std::ops::Range;
 
 #[component]

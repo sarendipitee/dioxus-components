@@ -1,8 +1,8 @@
 use dioxus::prelude::*;
-use dioxus_components::ButtonVariant;
 use dioxus_components::button::Button;
 use dioxus_components::dropdown_menu::*;
 use dioxus_components::menu::*;
+use dioxus_components::ButtonVariant;
 
 #[derive(Clone, Copy, PartialEq)]
 enum SortMode {

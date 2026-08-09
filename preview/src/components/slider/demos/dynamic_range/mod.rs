@@ -1,7 +1,7 @@
-use dioxus_components::slider::*;
-use dioxus_components::label::Label;
-use dioxus_components::switch::Switch;
 use dioxus::prelude::*;
+use dioxus_components::label::Label;
+use dioxus_components::slider::*;
+use dioxus_components::switch::Switch;
 
 #[component]
 pub fn Demo() -> Element {

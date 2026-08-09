@@ -1,8 +1,6 @@
 use dioxus::prelude::*;
 use dioxus_components::FileDropZone;
-use dioxus_primitives::file_drop_zone::{
-    AcceptedFile, AcceptedFileType, FileDropZoneAccept,
-};
+use dioxus_primitives::file_drop_zone::{AcceptedFile, AcceptedFileType, FileDropZoneAccept};
 
 #[component]
 pub fn Demo() -> Element {

@@ -286,6 +286,7 @@ pub fn MenubarMenu(props: MenubarMenuProps) -> Element {
     let active_submenu = use_signal(|| None);
     let overlay_id = use_signal(|| None);
     let filter_query = use_signal(String::new);
+    let filter_input_id = use_signal(|| None);
     let mut menu_ctx = use_context_provider(|| MenubarMenuContext {
         index: props.index,
         focus,
@@ -308,6 +309,7 @@ pub fn MenubarMenu(props: MenubarMenuProps) -> Element {
         trigger_ref,
         overlay_id,
         filter_query,
+        filter_input_id,
         active_submenu,
     });
 

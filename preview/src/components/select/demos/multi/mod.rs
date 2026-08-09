@@ -1,5 +1,5 @@
-use dioxus_components::select::*;
 use dioxus::prelude::*;
+use dioxus_components::select::*;
 use strum::IntoEnumIterator;
 
 #[derive(Debug, Clone, Copy, PartialEq, strum::EnumIter, strum::Display)]

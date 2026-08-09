@@ -168,14 +168,16 @@ fn replace_demo_event(
     events.push(updated);
 }
 
-pub(super) fn sample_date_time(year: i32, month: u8, day: u8, hour: u8, minute: u8) -> PrimitiveDateTime {
+pub(super) fn sample_date_time(
+    year: i32,
+    month: u8,
+    day: u8,
+    hour: u8,
+    minute: u8,
+) -> PrimitiveDateTime {
     PrimitiveDateTime::new(
-        Date::from_calendar_date(
-            year,
-            month.try_into().expect("valid preview month"),
-            day,
-        )
-        .expect("valid preview date"),
+        Date::from_calendar_date(year, month.try_into().expect("valid preview month"), day)
+            .expect("valid preview date"),
         time!(00:00)
             .replace_hour(hour)
             .expect("valid preview hour")

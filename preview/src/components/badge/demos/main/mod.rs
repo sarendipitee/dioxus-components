@@ -19,7 +19,7 @@ pub fn Demo() -> Element {
                 VerifiedIcon {}
                 "Verified"
             }
-        
+
         }
     }
 }

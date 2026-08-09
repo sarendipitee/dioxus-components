@@ -1,5 +1,5 @@
-use dioxus_components::skeleton::*;
 use dioxus::prelude::*;
+use dioxus_components::skeleton::*;
 
 #[component]
 pub fn Demo() -> Element {

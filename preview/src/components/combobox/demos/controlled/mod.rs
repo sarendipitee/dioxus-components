@@ -1,5 +1,5 @@
-use dioxus_components::combobox::*;
 use dioxus::prelude::*;
+use dioxus_components::combobox::*;
 
 #[component]
 pub fn Demo() -> Element {

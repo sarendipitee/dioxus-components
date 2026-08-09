@@ -33,6 +33,7 @@ pub struct MenuContext {
     pub(crate) trigger_ref: Signal<Option<Rc<MountedData>>>,
     pub(crate) overlay_id: Signal<Option<OverlayId>>,
     pub(crate) filter_query: Signal<String>,
+    pub(crate) filter_input_id: Signal<Option<String>>,
     /// The currently active direct-child submenu. Sibling submenus use this
     /// coordination signal to close as soon as another trigger is entered.
     pub(crate) active_submenu: Signal<Option<String>>,
@@ -52,6 +53,7 @@ pub(crate) fn use_menu_provider(
     let trigger_ref = use_signal(|| None);
     let overlay_id = use_signal(|| None);
     let filter_query = use_signal(String::new);
+    let filter_input_id = use_signal(|| None);
     let active_submenu = use_signal(|| None);
     let disabled = use_memo(move || disabled());
     let ctx = use_context_provider(|| MenuContext {
@@ -65,6 +67,7 @@ pub(crate) fn use_menu_provider(
         trigger_ref,
         overlay_id,
         filter_query,
+        filter_input_id,
         active_submenu,
     });
 
@@ -165,29 +168,46 @@ pub fn FilterableMenu(props: FilterableMenuProps) -> Element {
 
 #[component]
 fn FilterableMenuInputControl(input_id: String, props: FilterableMenuInputProps) -> Element {
-    let mut query = use_context::<MenuContext>().filter_query;
+    let ctx = use_context::<MenuContext>();
+    let mut query = ctx.filter_query;
+    let mut filter_input_id = ctx.filter_input_id;
+    let focus_on_mount = ctx.parent_set_open.is_none();
     let oninput = props.oninput;
     let onmounted = props.onmounted;
     let onkeydown = props.onkeydown;
     let dynamic = props.r#as;
     let mounted_input_id = input_id.clone();
+    let registered_input_id = input_id.clone();
+    let filter_surface_input_id = input_id.clone();
+    let keyup_input_id = input_id.clone();
     let input_attributes = merge_attributes(vec![
         attributes!(input {
             id: input_id,
             r#type: "text",
-            autofocus: true,
+            autofocus: focus_on_mount,
+            value: (ctx.filter_query)(),
             onmounted: move |event| {
-                let input_id = mounted_input_id.clone();
-                spawn(async move {
-                    let mut eval = document::eval("await new Promise(requestAnimationFrame); const input = document.getElementById(await dioxus.recv()); if (input) input.focus();");
-                    let _ = eval.send(input_id);
-                    let _ = eval.recv::<bool>().await;
-                });
+                filter_input_id.set(Some(registered_input_id.clone()));
+                if focus_on_mount {
+                    let input_id = mounted_input_id.clone();
+                    spawn(async move {
+                        let mut eval = document::eval("await new Promise(requestAnimationFrame); const input = document.getElementById(await dioxus.recv()); if (input) input.focus();");
+                        let _ = eval.send(input_id);
+                        let _ = eval.recv::<bool>().await;
+                    });
+                }
                 if let Some(callback) = onmounted {
                     callback.call(event);
                 }
             },
             oninput: move |event: Event<FormData>| {
+                let input_id = filter_surface_input_id.clone();
+                let value = event.value().trim().to_lowercase();
+                spawn(async move {
+                    let mut eval = document::eval("const [inputId, query] = await dioxus.recv(); const input = document.getElementById(inputId); const menu = input?.closest('[role=menu]'); if (!menu) return; for (const item of menu.querySelectorAll('[role^=menuitem]')) { if (item.closest('[role=menu]') !== menu) continue; const searchText = item.dataset.filterSearchText ?? ''; item.style.display = !query || searchText.includes(query) ? '' : 'none'; }");
+                    let _ = eval.send((input_id, value));
+                    let _ = eval.recv::<bool>().await;
+                });
                 query.set(event.value().trim().to_lowercase());
                 if let Some(callback) = oninput {
                     callback.call(event);
@@ -195,9 +215,28 @@ fn FilterableMenuInputControl(input_id: String, props: FilterableMenuInputProps)
             },
             onkeydown: move |event: Event<KeyboardData>| {
                 event.stop_propagation();
+                if event.key() == Key::Backspace {
+                    let current = (ctx.filter_query)();
+                    let next = current
+                        .char_indices()
+                        .next_back()
+                        .map(|(index, _)| current[..index].to_string())
+                        .unwrap_or_default();
+                    query.set(next);
+                }
                 if let Some(callback) = onkeydown {
                     callback.call(event);
                 }
+            },
+            onkeyup: move |_| {
+                let input_id = keyup_input_id.clone();
+                spawn(async move {
+                    let mut eval = document::eval("const input = document.getElementById(await dioxus.recv()); if (!input) return ''; const query = input.value.trim().toLowerCase(); const menu = input.closest('[role=menu]'); if (menu) { for (const item of menu.querySelectorAll('[role^=menuitem]')) { if (item.closest('[role=menu]') !== menu) continue; const searchText = item.dataset.filterSearchText ?? ''; item.style.display = !query || searchText.includes(query) ? '' : 'none'; } } return input.value;");
+                    let _ = eval.send(input_id);
+                    if let Ok(value) = eval.recv::<String>().await {
+                        query.set(value.trim().to_lowercase());
+                    }
+                });
             },
         }),
         props.attributes,
@@ -478,10 +517,7 @@ fn MenuContentRendered(props: MenuContentRenderedProps) -> Element {
 
     let open = use_memo(use_reactive(&props.is_open, |is_open| is_open));
     let disabled = use_memo(use_reactive(&props.is_disabled, |is_disabled| is_disabled));
-    let mut filter_query = use_signal(|| props.filter_query.clone());
-    use_effect(use_reactive(&props.filter_query, move |query| {
-        filter_query.set(query);
-    }));
+    let filter_query = use_signal(|| props.filter_query.clone());
     let mut trigger_id = use_signal(|| props.aria_labelledby.clone());
     use_effect(use_reactive(
         &props.aria_labelledby,
@@ -498,6 +534,7 @@ fn MenuContentRendered(props: MenuContentRenderedProps) -> Element {
 
     let trigger_ref = use_signal(|| None);
     let mut overlay_id = use_signal(|| props.content_overlay_id);
+    let filter_input_id = use_signal(|| None);
     use_effect(use_reactive(
         &props.content_overlay_id,
         move |content_overlay_id| {
@@ -505,7 +542,6 @@ fn MenuContentRendered(props: MenuContentRenderedProps) -> Element {
         },
     ));
 
-    // Re-provide portal-owned menu state INSIDE the portal. Descendants may call
     let portal_ctx = MenuContext {
         open,
         set_open,
@@ -517,6 +553,7 @@ fn MenuContentRendered(props: MenuContentRenderedProps) -> Element {
         trigger_ref,
         overlay_id,
         filter_query,
+        filter_input_id,
         active_submenu: props.active_submenu,
     };
     use_context_provider(|| portal_ctx);
@@ -537,6 +574,15 @@ fn MenuContentRendered(props: MenuContentRenderedProps) -> Element {
             aria_orientation: "vertical",
             aria_labelledby: props.aria_labelledby.clone(),
             "data-state": if is_open { "open" } else { "closed" },
+            onmouseenter: move |_| {
+                let input_id = filter_input_id.peek().clone();
+                spawn(async move {
+                    let Some(input_id) = input_id else { return };
+                    let mut eval = document::eval("await new Promise(requestAnimationFrame); const input = document.getElementById(await dioxus.recv()); if (input) input.focus();");
+                    let _ = eval.send(input_id);
+                    let _ = eval.recv::<bool>().await;
+                });
+            },
             onkeydown: move |event: Event<KeyboardData>| {
                 match event.key() {
                     Key::Escape => {
@@ -683,6 +729,7 @@ pub fn MenuItem<T: Clone + PartialEq + 'static>(props: MenuItemProps<T>) -> Elem
         div {
             style: if !visible() { "display: none;" } else { "" },
             role: props.role,
+            "data-filter-search-text": search_text().unwrap_or_default().to_lowercase(),
             onmouseenter: move |_| {
                 if !props.is_submenu_trigger {
                     ctx.active_submenu.set(None);
@@ -1359,6 +1406,7 @@ pub fn MenuSubContent(props: MenuSubContentProps) -> Element {
     let parent_ctx: MenuContext = use_context();
     let overlay_id = use_signal(|| *parent_ctx.overlay_id.peek());
     let filter_query = use_signal(String::new);
+    let filter_input_id = use_signal(|| None);
     // Coordinate only submenus that are direct children of this content. A
     // nested trigger must not replace its ancestor's active sibling id.
     let active_submenu = use_signal(|| None);
@@ -1373,10 +1421,10 @@ pub fn MenuSubContent(props: MenuSubContentProps) -> Element {
         trigger_ref: sub_ctx.trigger_ref,
         overlay_id,
         filter_query,
+        filter_input_id,
         active_submenu,
     });
     // Floating-element positioning for the submenu. A submenu naturally opens to the
-    // right of its parent item, aligned to the item's top edge; flip() handles the
     // left side when there is no room (mirroring the old JS `hasRoomRight ? right :
     // left` logic). The reference is the parent submenu trigger item; the floating
     // element is this sub-content. On native the hook is inert and the
@@ -1510,6 +1558,7 @@ mod tests {
         let initial_focus = use_signal(|| None);
         let radio_value = use_signal(|| Some("one".to_string()));
         let filter_query = use_signal(String::new);
+        let filter_input_id = use_signal(|| None);
         let active_submenu = use_signal(|| None);
 
         use_context_provider(|| MenuContext {
@@ -1523,6 +1572,7 @@ mod tests {
             trigger_ref,
             overlay_id,
             filter_query,
+            filter_input_id,
             active_submenu,
         });
 

@@ -94,7 +94,8 @@ Use the repository scripts instead of invoking raw build/check or Playwright com
 - Full repository validation, including Rust tests, formatting, docs, CSS, theme checks, preview build, browser detection, and Chromium Playwright tests: `scripts/pre-push.sh`
 - Preview web build or serve only: `scripts/preview-web.sh build` or `scripts/preview-web.sh serve`
 - Do not run `cargo check`, `scripts/preview-web.sh` alternatives, or `npx playwright test` directly for validation. `scripts/pre-push.sh` selects a compatible system Chromium and configures the required Playwright environment.
-- If a targeted Playwright test is needed, run it through the repository setup after the preview build, preserving the script's `PLAYWRIGHT_CHROMIUM_EXECUTABLE` selection; do not bypass the script with an unconfigured raw Playwright invocation.
+- If a targeted Playwright test is needed during component iteration, run it through the repository setup preserving `PLAYWRIGHT_CHROMIUM_EXECUTABLE` (e.g. `PLAYWRIGHT_CHROMIUM_EXECUTABLE=$(command -v chromium || command -v google-chrome) npx playwright test <component>.spec.ts --project=chromium`). Playwright automatically detects targeted spec files and compiles the corresponding lightweight `test-harness` micro-binary (`test-harness/src/bin/<component>.rs`) in seconds, avoiding full `preview` rebuild thrashing.
+- To synchronize or generate micro-binaries for component demos, run `python3 scripts/sync-test-harness.py`.
 
 If you cannot run a relevant check, report exactly which repository script was skipped and why.
 

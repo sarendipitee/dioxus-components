@@ -1,7 +1,7 @@
-use dioxus_components::item::*;
-use dioxus_components::avatar::{ImageAvatar, AvatarImageSize};
-use dioxus_components::button::{Button, ButtonVariant};
 use dioxus::prelude::*;
+use dioxus_components::avatar::{AvatarImageSize, ImageAvatar};
+use dioxus_components::button::{Button, ButtonVariant};
+use dioxus_components::item::*;
 use dioxus_icons::lucide::Plus;
 
 const PEOPLE: &[(&str, &str, &str)] = &[

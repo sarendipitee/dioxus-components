@@ -8152,7 +8152,16 @@ name = "test-harness"
 version = "0.1.0"
 dependencies = [
  "dioxus",
+ "dioxus-components",
+ "dioxus-icons",
  "dioxus-primitives",
+ "dioxus-router",
+ "gloo-timers",
+ "manganis",
+ "palette",
+ "strum",
+ "time",
+ "tracing",
 ]
 
 [[package]]

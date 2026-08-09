@@ -4,8 +4,8 @@ mod demo_support;
 use dioxus::prelude::*;
 use dioxus_components::button::{Button, ButtonSize, ButtonVariant};
 use dioxus_components::data_table::{
-    DataTable, DataTablePageInfo, DataTableRowSelectionState,
-    DataTableState, DataTableStateChange, DataTableStateMode,
+    DataTable, DataTablePageInfo, DataTableRowSelectionState, DataTableState, DataTableStateChange,
+    DataTableStateMode,
 };
 
 use demo_support::{order_columns, order_row_id, order_rows, table_state, CLIENT_PAGE_SIZE};
@@ -21,13 +21,20 @@ pub fn Demo() -> Element {
     let rows = order_rows();
 
     let selection_summary = move || match &state().row_selection {
-        DataTableRowSelectionState::Explicit { rows } if rows.is_empty() => "No rows selected".to_string(),
-        DataTableRowSelectionState::Explicit { rows } => format!("{count} rows selected", count = rows.len()),
+        DataTableRowSelectionState::Explicit { rows } if rows.is_empty() => {
+            "No rows selected".to_string()
+        }
+        DataTableRowSelectionState::Explicit { rows } => {
+            format!("{count} rows selected", count = rows.len())
+        }
         DataTableRowSelectionState::AllMatching { except, .. } if except.is_empty() => {
             "All matching rows selected".to_string()
         }
         DataTableRowSelectionState::AllMatching { except, .. } => {
-            format!("All matching rows selected, except {count} rows", count = except.len())
+            format!(
+                "All matching rows selected, except {count} rows",
+                count = except.len()
+            )
         }
     };
 
@@ -35,7 +42,9 @@ pub fn Demo() -> Element {
         let row_ids: Vec<String> = rows.iter().take(5).map(|row| row.order.clone()).collect();
         move |_| {
             state.set(DataTableState {
-                row_selection: DataTableRowSelectionState::Explicit { rows: row_ids.clone() },
+                row_selection: DataTableRowSelectionState::Explicit {
+                    rows: row_ids.clone(),
+                },
                 ..state()
             });
         }

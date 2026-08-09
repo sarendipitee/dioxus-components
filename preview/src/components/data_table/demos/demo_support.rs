@@ -3,8 +3,8 @@
 use std::{cmp::Ordering, rc::Rc};
 
 use dioxus::prelude::*;
-use dioxus_components::button::{Button, ButtonVariant};
 use dioxus_components::badge::Badge;
+use dioxus_components::button::{Button, ButtonVariant};
 use dioxus_components::data_table::{
     DataTableCellContext, DataTableColumn, DataTableColumnAlign, DataTableColumnHelper,
     DataTableFilterOption, DataTableFilterState, DataTableFilterValue, DataTablePaginationState,
@@ -264,8 +264,8 @@ fn server_matches(row: &OrderRow, state: &DataTableState) -> bool {
                 row.status.as_str(),
                 row.updated.as_str(),
             ]
-                .into_iter()
-                .any(|value| value.to_lowercase().contains(&query))
+            .into_iter()
+            .any(|value| value.to_lowercase().contains(&query))
         {
             return false;
         }

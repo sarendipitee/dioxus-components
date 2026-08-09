@@ -1,5 +1,5 @@
-use dioxus_components::date_picker::*;
 use dioxus::prelude::*;
+use dioxus_components::date_picker::*;
 
 use dioxus_primitives::calendar::DateRange;
 use time::{ext::NumericalDuration, macros::date};
@@ -12,8 +12,14 @@ pub fn Demo() -> Element {
     let disabled_ranges = use_signal(|| {
         vec![
             DateRange::new(start, start.saturating_add(3.days())),
-            DateRange::new(start.saturating_add(15.days()), start.saturating_add(18.days())),
-            DateRange::new(start.saturating_add(22.days()), start.saturating_add(23.days())),
+            DateRange::new(
+                start.saturating_add(15.days()),
+                start.saturating_add(18.days()),
+            ),
+            DateRange::new(
+                start.saturating_add(22.days()),
+                start.saturating_add(23.days()),
+            ),
         ]
     });
 

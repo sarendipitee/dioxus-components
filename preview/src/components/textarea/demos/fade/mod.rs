@@ -1,6 +1,6 @@
-use dioxus_components::textarea::*;
-use dioxus_components::label::Label;
 use dioxus::prelude::*;
+use dioxus_components::label::Label;
+use dioxus_components::textarea::*;
 
 #[component]
 pub fn Demo() -> Element {

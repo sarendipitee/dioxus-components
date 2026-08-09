@@ -1,5 +1,5 @@
-use dioxus_components::pagination::Pagination;
 use dioxus::prelude::*;
+use dioxus_components::pagination::Pagination;
 
 /// A data-backed pagination whose active page is owned by the parent.
 ///

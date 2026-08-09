@@ -1,11 +1,15 @@
-use dioxus_components::separator::*;
 use dioxus::prelude::*;
+use dioxus_components::separator::*;
 
 #[component]
 pub fn Demo() -> Element {
     let mut horizontal = use_signal(|| true);
     let mut decorative = use_signal(|| false);
-    let orientation = if horizontal() { "horizontal" } else { "vertical" };
+    let orientation = if horizontal() {
+        "horizontal"
+    } else {
+        "vertical"
+    };
 
     rsx! {
         div {

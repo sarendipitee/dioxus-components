@@ -1,5 +1,5 @@
-use dioxus_components::pagination::*;
 use dioxus::prelude::*;
+use dioxus_components::pagination::*;
 
 #[component]
 pub fn Demo() -> Element {

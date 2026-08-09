@@ -1,5 +1,5 @@
-use dioxus_components::switch::*;
 use dioxus::prelude::*;
+use dioxus_components::switch::*;
 
 #[component]
 pub fn Demo() -> Element {

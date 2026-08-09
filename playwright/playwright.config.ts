@@ -56,6 +56,17 @@ function getLocalBasePort() {
   return port;
 }
 
+function getTargetComponent(): string | null {
+  const specArg = process.argv.find(
+    (arg) => arg.endsWith(".spec.ts") || arg.includes(".spec.ts"),
+  );
+  if (!specArg) return null;
+  const basename = path.basename(specArg, ".spec.ts");
+  return basename.replace(/-/g, "_");
+}
+
+const targetComponent = getTargetComponent();
+
 export default defineConfig({
   testDir: ".",
   /* Run tests in files in parallel */
@@ -130,11 +141,19 @@ export default defineConfig({
   webServer: externalBaseUrl
     ? undefined
     : {
-        cwd: path.join(process.cwd(), "../preview"),
-        command: `exec node ../playwright/start-preview.mjs ../target/dx/preview/debug/web/public ${localBasePort}`,
+        cwd: targetComponent
+          ? path.join(process.cwd(), "../test-harness")
+          : path.join(process.cwd(), "../preview"),
+        command: `exec node ../playwright/start-preview.mjs ../target/dx/preview/debug/web/public ${localBasePort} ${targetComponent ?? ""}`,
         port: localBasePort,
         timeout: 50 * 60 * 1000,
         reuseExistingServer: false,
         stdout: "pipe",
+        env: {
+          ...process.env,
+          PLAYWRIGHT_TARGET_COMPONENT: targetComponent ?? "",
+        },
       },
 });
+
+

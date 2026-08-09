@@ -1,5 +1,5 @@
-use dioxus_components::combobox::{ComboboxStyles as Styles, *};
 use dioxus::prelude::*;
+use dioxus_components::combobox::{ComboboxStyles as Styles, *};
 use dioxus_primitives::combobox::{default_combobox_filter, VirtualizedComboboxOptions};
 
 #[component]

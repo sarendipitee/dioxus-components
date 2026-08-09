@@ -32,3 +32,37 @@ test("dropdown checkbox and radio keyboard state updates keep menu open", async 
   await expect(demo.getByText("Toolbar visible: false")).toBeVisible();
   await expect(menu).toHaveAttribute("data-state", "open");
 });
+
+test("filterable menu restores items when query is deleted", async ({
+  page,
+}) => {
+  await page.goto("/components/dropdown_menu");
+  await page
+    .getByRole("button", { name: "Actions", exact: true })
+    .last()
+    .click();
+
+  const menu = page.locator('[role="menu"][data-state="open"]').first();
+  const input = menu.getByRole("textbox", { name: "Filter actions" });
+  await expect(input).toBeFocused();
+
+  await input.pressSequentially("v");
+  await expect(
+    menu.getByRole("menuitem", { name: "Assign reviewer" }),
+  ).toBeVisible();
+  await expect(
+    menu.getByRole("menuitem", { name: "Create issue" }),
+  ).toBeHidden();
+
+  await input.press("Backspace");
+  await expect(input).toHaveValue("");
+  await expect(
+    menu.getByRole("menuitem", { name: "Create issue" }),
+  ).toBeVisible();
+  await expect(
+    menu.getByRole("menuitem", { name: "Assign reviewer" }),
+  ).toBeVisible();
+  await expect(
+    menu.getByRole("menuitem", { name: "Copy review link" }),
+  ).toBeVisible();
+});

@@ -1,5 +1,5 @@
-use dioxus_components::aspect_ratio::AspectRatio;
 use dioxus::prelude::*;
+use dioxus_components::aspect_ratio::AspectRatio;
 
 #[component]
 pub fn Demo() -> Element {

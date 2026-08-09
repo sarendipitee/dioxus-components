@@ -1,6 +1,6 @@
-use dioxus_components::split_pane::*;
-use dioxus_components::slider::Slider;
 use dioxus::prelude::*;
+use dioxus_components::slider::Slider;
+use dioxus_components::split_pane::*;
 
 #[component]
 pub fn Demo() -> Element {

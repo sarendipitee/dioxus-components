@@ -20,9 +20,10 @@ const MIME_TYPES = new Map([
 
 const rootArg = process.argv[2];
 const portArg = process.argv[3];
+const componentArg = process.argv[4] || process.env.PLAYWRIGHT_TARGET_COMPONENT;
 
 if (!rootArg || !portArg) {
-  console.error("Usage: node start-preview.mjs <public-dir> <port>");
+  console.error("Usage: node start-preview.mjs <public-dir> <port> [component]");
   process.exit(1);
 }
 
@@ -116,8 +117,17 @@ if (process.stdin.isTTY) {
 }
 
 async function runBuild() {
+  const buildArgs = ["build", "--web"];
+  if (componentArg) {
+    const harnessBin = join(process.cwd(), `src/bin/${componentArg}.rs`);
+    if (existsSync(harnessBin)) {
+      buildArgs.push("--bin", componentArg);
+      console.log(`[Playwright] Fast-path building micro-binary harness: ${componentArg}`);
+    }
+  }
+
   await new Promise((resolve, reject) => {
-    buildProcess = spawn("dx", ["build", "--web"], {
+    buildProcess = spawn("dx", buildArgs, {
       stdio: "inherit",
     });
 

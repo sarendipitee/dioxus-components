@@ -1,6 +1,8 @@
 use dioxus::prelude::*;
 use dioxus_components::combobox::{ComboboxEmpty, ComboboxOption, PillsInput};
-use dioxus_primitives::combobox::{Combobox, ComboboxDropdownTarget, ComboboxOptions, ComboboxSearch, Pill};
+use dioxus_primitives::combobox::{
+    Combobox, ComboboxDropdownTarget, ComboboxOptions, ComboboxSearch, Pill,
+};
 
 const TECHNOLOGIES: &[&str] = &["Dioxus", "Rust", "WebAssembly", "Leptos", "Tauri", "Cargo"];
 

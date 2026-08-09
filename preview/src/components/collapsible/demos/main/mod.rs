@@ -1,5 +1,5 @@
-use dioxus_components::collapsible::*;
 use dioxus::prelude::*;
+use dioxus_components::collapsible::*;
 
 #[component]
 pub fn Demo() -> Element {

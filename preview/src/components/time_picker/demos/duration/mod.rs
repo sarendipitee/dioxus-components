@@ -3,11 +3,20 @@ use dioxus_components::time_picker::*;
 
 fn state_value(value: Option<TimePickerValue>) -> String {
     match value {
-        Some(TimePickerValue::Duration { hours, minutes, seconds }) => {
+        Some(TimePickerValue::Duration {
+            hours,
+            minutes,
+            seconds,
+        }) => {
             format!("{hours}:{minutes:02}:{seconds:02}")
         }
         Some(TimePickerValue::Time(value)) => {
-            format!("{:02}:{:02}:{:02}", value.hour(), value.minute(), value.second())
+            format!(
+                "{:02}:{:02}:{:02}",
+                value.hour(),
+                value.minute(),
+                value.second()
+            )
         }
         None => "none".to_string(),
     }

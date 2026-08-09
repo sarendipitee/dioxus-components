@@ -1,5 +1,5 @@
-use dioxus_components::slider::*;
 use dioxus::prelude::*;
+use dioxus_components::slider::*;
 
 #[component]
 pub fn Demo() -> Element {

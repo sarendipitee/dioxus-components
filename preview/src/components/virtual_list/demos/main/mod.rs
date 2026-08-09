@@ -1,5 +1,5 @@
-use dioxus_components::virtual_list::*;
 use dioxus::prelude::*;
+use dioxus_components::virtual_list::*;
 
 #[component]
 pub fn Demo() -> Element {
