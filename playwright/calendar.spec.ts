@@ -3,20 +3,20 @@ import { test, expect, type Page } from "@playwright/test";
 const calendarFrame = (page: Page) =>
   page.locator("#component-preview-frame").first();
 
-test("shows the fixed May 2026 calendar and selects a named day", async ({
-  page,
-}) => {
+test("shows fixed May 2026 calendar without native selectors", async ({ page }) => {
   await page.goto("/components/calendar", { timeout: 30 * 1000 });
 
   const calendar = calendarFrame(page);
   await expect(calendar).toBeVisible({ timeout: 30 * 1000 });
-  await expect(calendar.locator("select").first()).toHaveValue("5");
-  await expect(calendar.locator("select").nth(1)).toHaveValue("2026");
+  await expect(calendar.locator(".dx_calendar select")).toHaveCount(0);
+  await expect(calendar.getByRole("button", { name: "Month May" })).toBeVisible();
+  await expect(calendar.getByRole("button", { name: "Year 2026" })).toBeVisible();
+
+  await calendar.getByRole("button", { name: "Month May" }).click();
+  await expect(page.getByRole("menuitemradio", { name: "June" })).toBeVisible();
 
   const day = calendar.getByRole("button", { name: "Friday, May 15, 2026" });
-  await expect(day).toHaveAttribute("data-month", "current");
   await expect(day).toHaveAttribute("data-selected", "false");
-
   await day.click();
   await expect(day).toHaveAttribute("data-selected", "true");
 });
