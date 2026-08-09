@@ -117,4 +117,3 @@ jobs:
             cargo check --all-features
             dx components remove --all --path ..
           done
-[.github/workflows/playwright.yml#2C6A]
