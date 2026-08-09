@@ -151,7 +151,7 @@ test("links are styled with theme tokens", async ({ page }) => {
   const { nav } = await loadPage(page);
 
   const link = nav.locator("a").first();
-  await expect(link).toHaveCSS("text-decoration", "none");
+  await expect(link).toHaveCSS("text-decoration-line", "none");
   await expect(link).toHaveCSS("border-radius", "8px");
   await expect(link).toHaveCSS("color", "rgb(113, 113, 113)");
   await expect(link).toHaveCSS("font-size", "14px");
