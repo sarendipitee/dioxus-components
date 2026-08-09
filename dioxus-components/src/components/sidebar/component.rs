@@ -869,12 +869,18 @@ pub fn SidebarMenuButton(
     };
 
     let hidden = state() != SidebarState::Collapsed || is_mobile();
-    let sidebar_side = ctx.side;
+    if hidden {
+        return if let Some(dynamic) = r#as {
+            dynamic.call(merged)
+        } else {
+            rsx! { button { ..merged, {children} } }
+        };
+    }
 
+    let sidebar_side = ctx.side;
     rsx! {
         Tooltip {
             class: Styles::dx_sidebar_tooltip,
-            disabled: hidden,
             TooltipTrigger {
                 as: move |tooltip_attrs: Vec<Attribute>| {
                     let final_attrs = merge_attributes(vec![tooltip_attrs, merged.clone()]);

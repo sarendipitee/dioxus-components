@@ -119,12 +119,17 @@ fn main() {
             .route(
                 "/api/static_routes",
                 post(|| async {
-                    Json(
-                        Route::static_routes()
-                            .iter()
-                            .map(ToString::to_string)
-                            .collect::<Vec<String>>(),
-                    )
+                    let mut routes: Vec<String> = Route::static_routes()
+                        .iter()
+                        .map(ToString::to_string)
+                        .collect();
+                    for demo in components::DEMOS {
+                        routes.push(format!("/components/{}", demo.name));
+                        if demo.r#type == ComponentType::Block {
+                            routes.push(format!("/components/{}/block", demo.name));
+                        }
+                    }
+                    Json(routes)
                 }),
             )
             .serve_dioxus_application(cfg, App);

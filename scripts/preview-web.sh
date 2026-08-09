@@ -100,6 +100,8 @@ if [ "$command" = build ]; then
     printf 'Dioxus build completed without a nonempty WASM payload under %s/wasm\n' "$public_dir" >&2
     exit 1
   fi
+
+  cp "$index" "$public_dir/404.html"
 else
   exec "$dx" serve -p preview --web "$@"
 fi

@@ -6,14 +6,13 @@ use crate::components::button::{Button, ButtonVariant};
 use crate::components::item::{
     Item, ItemActions, ItemContent, ItemDescription, ItemMedia, ItemMediaVariant, ItemTitle,
 };
-use crate::components::select::{SelectGroup, SelectGroupLabel, SelectOption};
+use crate::components::select::{SelectGroup, SelectGroupLabel, SelectMulti, SelectOption};
+use crate::components::tabs::{TabList, TabTrigger, Tabs, TabsVariant};
 use crate::components::virtual_list::VirtualList;
 use crate::dashboard::common::{
     lookup_message, IconKind, LucideIcon, MessageState, MessageStateStoreExt, MessageTag, TabId,
     LOREM_IPSUM, TABS,
 };
-use dioxus_components::tabs::{TabList, TabTrigger, Tabs};
-use dioxus_primitives::select::{SelectList, SelectMulti, SelectTrigger};
 
 use super::avatars::avatar_profile_for_key;
 use super::state::{EmailClientState, EmailClientStateStoreExt, EmailClientStateStoreImplExt};
@@ -59,6 +58,7 @@ pub(super) fn ListPane(
             div { class: "ec-list-toolbar",
                 Tabs {
                     class: "ec-mail-tabs",
+                    variant: TabsVariant::Outline,
                     default_value: TabId::All.as_str().to_string(),
                     horizontal: true,
                     on_value_change: move |v: Option<String>| {
@@ -85,35 +85,33 @@ pub(super) fn ListPane(
                     }
                 }
                 SelectMulti::<MessageTag> {
+                    class: "ec-filter-select",
                     values: Some(tags.clone()),
                     default_values: vec![],
                     on_values_change: move |values| {
                         state.set_selected_tags(values);
                     },
-                    SelectTrigger {
-                        class: "ec-filter-trigger",
-                        aria_label: "Filter by tag",
-                        LucideIcon { kind: IconKind::Filter }
+                    aria_label: "Filter by tag",
+                    left_section: rsx! { LucideIcon { kind: IconKind::Filter } },
+                    right_section: rsx! {
                         if !tags.is_empty() {
                             span { class: "ec-filter-count", "{tags.len()}" }
                         }
                         ChevronDown {
-                            class: "dx-select-expand-icon",
+                            class: "dx_select_expand_icon",
                             size: "14px",
-                            stroke: "var(--surface-selected-border)",
+                            stroke: "currentColor",
                         }
-                    }
-                    SelectList { class: "ec-filter-list", aria_label: "Filter by tag",
-                        SelectGroup {
-                            SelectGroupLabel { "Tags" }
-                            for (index , tag) in MessageTag::ALL.iter().enumerate() {
-                                SelectOption::<MessageTag> {
-                                    key: "{tag.label()}",
-                                    index,
-                                    value: *tag,
-                                    text_value: "{tag.label()}",
-                                    {tag.label()}
-                                }
+                    },
+                    SelectGroup {
+                        SelectGroupLabel { "Tags" }
+                        for (index , tag) in MessageTag::ALL.iter().enumerate() {
+                            SelectOption::<MessageTag> {
+                                key: "{tag.label()}",
+                                index,
+                                value: *tag,
+                                text_value: "{tag.label()}",
+                                {tag.label()}
                             }
                         }
                     }

@@ -4,11 +4,8 @@ use dioxus_primitives::toast::{use_toast, ToastOptions};
 use crate::components::button::{Button, ButtonVariant};
 use crate::components::dialog::Dialog;
 use crate::components::input::TextInput;
-use crate::components::label::Label;
-use crate::components::separator::Separator;
 use crate::components::textarea::{Textarea, TextareaVariant};
 use crate::dashboard::common::{IconKind, LucideIcon};
-use dioxus_primitives::dialog::{DialogDescription, DialogTitle};
 
 use super::state::{EmailClientState, EmailClientStateStoreExt, EmailClientStateStoreImplExt};
 
@@ -40,75 +37,48 @@ pub(super) fn ComposeModal(mut state: Store<EmailClientState>) -> Element {
             open: Some(open),
             on_open_change: move |v: bool| state.set_compose_open(v),
             class: "ec-compose-dialog",
-            form { class: "ec-compose-form", onsubmit: send,
-                div { class: "ec-compose-head",
-                    div { class: "ec-compose-head-text",
-                        DialogTitle { class: "ec-compose-title", "New message" }
-                        DialogDescription { class: "ec-compose-desc", "Send a message to your team or contacts." }
-                    }
-                    Button {
-                        variant: ButtonVariant::Ghost,
-                        r#type: "button",
-                        class: "ec-compose-close",
-                        aria_label: "Close",
-                        onclick: move |_| state.discard_compose(),
-                        LucideIcon { kind: IconKind::X, size: 16 }
-                    }
+            title: "New message",
+            description: "Send a message to your team or contacts.",
+            with_close_button: false,
+            footer: rsx! {
+                Button {
+                    variant: ButtonVariant::Ghost,
+                    r#type: "button",
+                    onclick: move |_| state.discard_compose(),
+                    "Discard"
+                }
+                Button { r#type: "submit", form: "ec-compose-form",
+                    LucideIcon { kind: IconKind::Send, size: 16 }
+                    "Send"
+                }
+            },
+            form { id: "ec-compose-form", class: "ec-compose-form", onsubmit: send,
+                TextInput {
+                    id: "ec-compose-to",
+                    r#type: "email",
+                    required: true,
+                    label: "To",
+                    error: "Enter a valid email address.",
+                    value: to.clone(),
+                    placeholder: "name@company.com",
+                    oninput: move |e: FormEvent| state.set_compose_to(e.value()),
                 }
 
-                Separator {
-                    horizontal: true,
-                    decorative: true,
-                    class: "ec-compose-sep",
+                TextInput {
+                    id: "ec-compose-subject",
+                    label: "Subject",
+                    value: subject.clone(),
+                    placeholder: "What is this about?",
+                    oninput: move |e: FormEvent| state.set_compose_subject(e.value()),
                 }
 
-                div { class: "ec-compose-field",
-                    Label { html_for: "ec-compose-to", "To" }
-                    TextInput {
-                        id: "ec-compose-to",
-                        r#type: "email",
-                        required: true,
-                        value: to.clone(),
-                        placeholder: "name@company.com",
-                        oninput: move |e: FormEvent| state.set_compose_to(e.value()),
-                    }
-                    span { class: "ec-compose-error", "Enter a valid email address." }
-                }
-
-                div { class: "ec-compose-field",
-                    Label { html_for: "ec-compose-subject", "Subject" }
-                    TextInput {
-                        id: "ec-compose-subject",
-                        value: subject.clone(),
-                        placeholder: "What's this about?",
-                        oninput: move |e: FormEvent| state.set_compose_subject(e.value()),
-                    }
-                }
-
-                div { class: "ec-compose-field",
-                    Label { html_for: "ec-compose-body", "Message" }
-                    Textarea {
-                        id: "ec-compose-body",
-                        variant: TextareaVariant::Default,
-                        required: true,
-                        rows: "10",
-                        value: body.clone(),
-                        placeholder: "Write your message…",
-                        oninput: move |e: FormEvent| state.set_compose_body(e.value()),
-                    }
-                }
-
-                div { class: "ec-compose-foot",
-                    Button {
-                        variant: ButtonVariant::Ghost,
-                        r#type: "button",
-                        onclick: move |_| state.discard_compose(),
-                        "Discard"
-                    }
-                    Button { variant: ButtonVariant::Default, r#type: "submit",
-                        LucideIcon { kind: IconKind::Send, size: 14 }
-                        "Send"
-                    }
+                Textarea {
+                    id: "ec-compose-body",
+                    label: "Message",
+                    value: body.clone(),
+                    placeholder: "Write your message…",
+                    variant: TextareaVariant::Outline,
+                    oninput: move |e: FormEvent| state.set_compose_body(e.value()),
                 }
             }
         }
