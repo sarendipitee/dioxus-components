@@ -1,4 +1,4 @@
-`ColorPicker` is an inline, always-visible color-selection control for cases where color should be adjusted directly in the interface instead of opening a dropdown. It keeps the saturation/value area, hue strip, and current swatch together so users can see every part of the choice in one place.
+`ColorPicker` is an inline, always-visible color-selection control for cases where color should be adjusted directly in the interface instead of opening a dropdown. It keeps the saturation/value area and hue strip together so users can pick colors cleanly in one place.
 
 Prefer this component in places like palette editors, theme overrides, and live design controls where the user is repeatedly tweaking tones. If you need a labeled text field, validation, a clear button, form-friendly chrome, or a trigger-based picker workflow, use `ColorInput` from the `color_input` registry entry instead.
 

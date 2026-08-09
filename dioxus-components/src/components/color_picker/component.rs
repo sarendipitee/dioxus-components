@@ -320,14 +320,13 @@ pub struct ColorPickerSelectProps {
 
 #[component]
 pub fn ColorPickerSelect(props: ColorPickerSelectProps) -> Element {
-    let ctx = use_context::<ColorPickerContext>();
     rsx! {
         div {
             class: Styles::dx_color_picker_dialog,
             ..props.attributes,
-            ColorSwatch { color: ctx.color() }
             ColorArea {}
             ColorSlider { title: "Hue" }
+            {props.children}
         }
     }
 }

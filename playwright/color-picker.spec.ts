@@ -38,7 +38,7 @@ test("renders the inline picker with the expected initial channels", async ({
   await expect(saturationInput).toHaveValue("50");
   await expect(valueInput).toHaveValue("100");
 });
-test("exposes picker group, selected swatch, and channel state", async ({
+test("exposes picker group and channel state", async ({
   page,
 }) => {
   const { picker, hueThumb, saturationInput, valueInput } =
@@ -48,9 +48,6 @@ test("exposes picker group, selected swatch, and channel state", async ({
   await expect(picker).toHaveAccessibleName("Color picker");
   await expect(picker).toHaveAttribute("aria-disabled", "false");
   await expect(picker).toHaveAttribute("data-disabled", "false");
-  await expect(
-    page.getByRole("img", { name: "Selected color #9B80FF" }),
-  ).toBeVisible();
 
   await expect(hueThumb).toHaveAttribute("aria-valuemin", "0");
   await expect(hueThumb).toHaveAttribute("aria-valuemax", "360");
@@ -72,9 +69,6 @@ test("exposes picker group, selected swatch, and channel state", async ({
 test("controlled preset updates the selected color", async ({ page }) => {
   await loadPicker(page);
   await page.getByRole("button", { name: "Set color to red" }).click();
-  await expect(
-    page.getByRole("img", { name: "Selected color #FF0000" }),
-  ).toBeVisible();
   await expect(page.getByRole("slider", { name: "Saturation" })).toHaveValue(
     "100",
   );
