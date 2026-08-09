@@ -3,8 +3,8 @@ use dioxus::prelude::*;
 use dioxus_primitives::{dioxus_attributes::attributes, merge_attributes};
 
 use crate::components::input::{
-    attribute_text, merge_described_by, use_input_id, InputBase, InputContent, InputLabel,
-    InputRadius, InputSize, InputVariant,
+    attribute_text, merge_described_by, use_input_id, InputBase, InputClearButton, InputContent,
+    InputLabel, InputRadius, InputSize, InputVariant,
 };
 
 #[component_styles("./style.css")]
@@ -181,6 +181,9 @@ pub fn NumberInput(
     /// Shows a loading spinner in the trailing section and marks the field busy.
     #[props(default = false)]
     loading: bool,
+    /// Renders a clear button that resets both controlled and uncontrolled values.
+    #[props(default = false)]
+    clearable: bool,
     /// Existing ids to prepend to generated described-by ids.
     #[props(default)]
     described_by: Option<String>,
@@ -304,11 +307,22 @@ pub fn NumberInput(
         })
     };
 
-    // --- Right section (suffix + steppers) ---
-    let right_section = if suffix.is_empty() && hide_controls {
+    // --- Right section (clear + suffix + steppers) ---
+    let right_section = if !clearable && suffix.is_empty() && hide_controls {
         None
     } else {
         Some(rsx! {
+            if clearable {
+                InputClearButton {
+                    disabled: disabled || read_only,
+                    onclick: move |_| {
+                        display_str.set(String::new());
+                        if let Some(cb) = on_change {
+                            cb.call(None);
+                        }
+                    },
+                }
+            }
             if !suffix.is_empty() {
                 span {
                     class: Styles::dx_number_input_affix,

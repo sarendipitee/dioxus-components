@@ -16,8 +16,8 @@ use crate::components::date_picker::{
     DateRangePickerSurface,
 };
 use crate::components::input::{
-    use_input_control_context, InputBase, InputContent, InputLabel, InputRadius, InputSize,
-    InputVariant,
+    use_input_control_context, InputBase, InputClearButton, InputContent, InputLabel, InputRadius,
+    InputSize, InputVariant,
 };
 use crate::components::popover::{Popover, PopoverContent, PopoverOpenTrigger};
 
@@ -85,6 +85,9 @@ pub fn DateInput(
     /// Shows a loading spinner in the trailing section and marks the field busy.
     #[props(default = false)]
     loading: bool,
+    /// Renders a clear button that resets the selected date.
+    #[props(default = false)]
+    clearable: bool,
     /// Visual variant for the shell.
     #[props(default)]
     variant: InputVariant,
@@ -128,9 +131,13 @@ pub fn DateInput(
                     size,
                     radius,
                     right_section: rsx! {
-                        DateInputPopoverTrigger {
-                            disabled: is_disabled,
+                        if clearable {
+                            InputClearButton {
+                                disabled: is_disabled || read_only(),
+                                onclick: move |_| on_value_change.call(None),
+                            }
                         }
+                        DateInputPopoverTrigger { disabled: is_disabled }
                     },
                     DateInputControl {
                         disabled: is_disabled,
@@ -196,6 +203,9 @@ pub fn DateRangePickerInput(
     /// Shows a loading spinner in the trailing section and marks the field busy.
     #[props(default = false)]
     loading: bool,
+    /// Renders a clear button that resets the selected range.
+    #[props(default = false)]
+    clearable: bool,
     /// Visual variant for the shell.
     #[props(default)]
     variant: InputVariant,
@@ -239,9 +249,13 @@ pub fn DateRangePickerInput(
                     radius,
                     loading,
                     right_section: rsx! {
-                        DateInputPopoverTrigger {
-                            disabled: is_disabled,
+                        if clearable {
+                            InputClearButton {
+                                disabled: is_disabled || read_only(),
+                                onclick: move |_| on_range_change.call(None),
+                            }
                         }
+                        DateInputPopoverTrigger { disabled: is_disabled }
                     },
                     DateRangeInputControl {
                         disabled: is_disabled,

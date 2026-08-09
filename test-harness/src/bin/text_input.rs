@@ -35,26 +35,5 @@ fn App() -> Element {
 
 #[component]
 fn BlockView() -> Element {
-    let hash = use_signal(|| {
-        #[cfg(target_arch = "wasm32")]
-        {
-            let window = web_sys::window().unwrap();
-            let location = window.location();
-            let h = location.hash().unwrap_or_default();
-            h.trim_start_matches('#').to_string()
-        }
-        #[cfg(not(target_arch = "wasm32"))]
-        {
-            "".to_string()
-        }
-    });
-
-    match hash().as_str() {
-        "description" => rsx! { demo_description::Demo {} },
-        "error" => rsx! { demo_error::Demo {} },
-        "main" => rsx! { demo_main::Demo {} },
-        "sections" => rsx! { demo_sections::Demo {} },
-        "size" => rsx! { demo_size::Demo {} },
-        _ => rsx! { demo_description::Demo {} },
-    }
+    rsx! { demo_main::Demo {} }
 }

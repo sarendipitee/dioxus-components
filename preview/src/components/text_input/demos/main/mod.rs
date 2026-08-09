@@ -16,6 +16,7 @@ pub fn Demo() -> Element {
                 name: "email",
                 r#type: "email",
                 form: "text-input-form",
+                clearable: true,
                 "data-testid": "text-input-native",
                 "data-input-purpose": "account-email",
                 value: email,

@@ -11,6 +11,7 @@ pub fn Demo() -> Element {
                 label: "Password",
                 description: "Click the eye to reveal the value.",
                 placeholder: "Enter your password",
+                clearable: true,
             }
         }
     }

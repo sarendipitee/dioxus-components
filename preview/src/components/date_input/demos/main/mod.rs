@@ -21,6 +21,7 @@ pub fn Demo() -> Element {
                 DateInput {
                 label: rsx! { "Due date" },
                 description: rsx! { "Single-date input composition." },
+                clearable: true,
                 selected_date,
                 on_value_change: move |value| {
                     selected_date.set(value);

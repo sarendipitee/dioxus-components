@@ -12,6 +12,27 @@ test("test", async ({ page }) => {
   );
 });
 
+test("clearable Input and InputBase clear controlled and uncontrolled values", async ({ page }) => {
+  await page.goto("/components/input/block#main", { timeout: 30 * 1000 });
+
+  const controlled = page.getByPlaceholder("clearable-shell");
+  const controlledShell = controlled.locator(
+    "xpath=ancestor::*[@data-slot='input'][1]",
+  );
+  await expect(controlled).toHaveValue("release-notes");
+  await controlledShell.getByRole("button", { name: "Clear value" }).click();
+  await expect(controlled).toHaveValue("");
+  await expect(page.locator("#input-shell-value")).toContainText("Shell value:");
+
+  const uncontrolled = page.getByPlaceholder("clearable-base");
+  const uncontrolledShell = uncontrolled.locator(
+    "xpath=ancestor::*[@data-slot='input'][1]",
+  );
+  await expect(uncontrolled).toHaveValue("uncontrolled");
+  await uncontrolledShell.getByRole("button", { name: "Clear value" }).click();
+  await expect(uncontrolled).toHaveValue("");
+});
+
 test("shared input shell wires descriptions and sections", async ({ page }) => {
   await page.goto("/components/input", {
     timeout: 30 * 1000,
@@ -176,6 +197,7 @@ test("text input controls expose labels, controlled output, and native attribute
     "customer@example.com",
   );
 });
+
 
 test("text input distinguishes required and asterisk-only fields", async ({
   page,

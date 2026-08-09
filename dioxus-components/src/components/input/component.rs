@@ -6,6 +6,44 @@ use dioxus::prelude::*;
 use dioxus_icons::lucide::X;
 use dioxus_primitives::{dioxus_attributes::attributes, merge_attributes, TextOrElement};
 
+fn clear_input_control(clear_id: String) {
+    spawn(async move {
+        let eval = document::eval(
+            r#"
+            const clearId = await dioxus.recv();
+            const shell = document.querySelector(`[data-dx-clear-id="${CSS.escape(clearId)}"]`);
+            const control = shell?.querySelector('input, textarea');
+            const button = shell?.querySelector('[data-dx-clear-button]');
+            if (!control || !button) return;
+            const sync = () => { button.hidden = control.value.length === 0; };
+            control.addEventListener('input', sync);
+            sync();
+            control.value = '';
+            control.dispatchEvent(new InputEvent('input', { bubbles: true, inputType: 'deleteContent' }));
+            sync();
+            "#,
+        );
+        _ = eval.send(clear_id);
+    });
+}
+
+fn sync_clear_button(clear_id: String) {
+    spawn(async move {
+        let eval = document::eval(
+            r#"
+            const clearId = await dioxus.recv();
+            const shell = document.querySelector(`[data-dx-clear-id="${CSS.escape(clearId)}"]`);
+            const control = shell?.querySelector('input, textarea');
+            const button = shell?.querySelector('[data-dx-clear-button]');
+            if (!control || !button) return;
+            const sync = () => { button.hidden = control.value.length === 0; };
+            control.addEventListener('input', sync);
+            sync();
+            "#,
+        );
+        _ = eval.send(clear_id);
+    });
+}
 use crate::components::typography::{
     Text, TextElement, TypographySize, TypographyTone, TypographyWeight,
 };
@@ -522,12 +560,50 @@ pub fn Input(
     /// Optional content rendered before the control slot.
     #[props(default)]
     left_section: Option<Element>,
+    /// Renders a clear button in the trailing section.
+    #[props(default = false)]
+    clearable: bool,
+    /// Disables the generated clear button without disabling the shell.
+    #[props(default = false)]
+    clear_disabled: bool,
+    /// Callback fired after the generated clear action.
+    #[props(default)]
+    on_clear: Option<EventHandler<MouseEvent>>,
     /// Optional content rendered after the control slot.
     #[props(default)]
     right_section: Option<Element>,
     #[props(extends = GlobalAttributes)] attributes: Vec<Attribute>,
     children: Element,
 ) -> Element {
+    let clear_id = use_input_id("dx-input-clear");
+    use_effect({
+        let clear_id = clear_id.clone();
+        move || {
+            if clearable {
+                sync_clear_button(clear_id.clone());
+            }
+        }
+    });
+    let button_clear_id = clear_id.clone();
+    let clear = clearable.then(|| {
+        rsx! {
+            InputClearButton {
+                disabled: disabled || clear_disabled,
+                onclick: move |event| {
+                    clear_input_control(button_clear_id.clone());
+                    _ = on_clear.map(|callback| callback(event));
+                },
+            }
+        }
+    });
+    let right_section = match (clear, right_section) {
+        (Some(clear), Some(right_section)) => Some(rsx! {
+            {clear}
+            {right_section}
+        }),
+        (Some(clear), None) => Some(clear),
+        (None, right_section) => right_section,
+    };
     let base = attributes!(div {
         class: Styles::dx_input,
         "data-slot": "input",
@@ -537,6 +613,7 @@ pub fn Input(
         "data-disabled": disabled,
         "data-error": error,
         "data-loading": loading,
+        "data-dx-clear-id": clear_id,
         "aria-busy": loading,
     });
     let attributes = merge_attributes(vec![base, attributes]);
@@ -600,6 +677,7 @@ pub fn InputClearButton(
     let base = attributes!(button {
         class: Styles::dx_input_clear_button,
         "data-slot": "input-clear-button",
+        "data-dx-clear-button": true,
         r#type: "button",
         "aria-label": aria_label,
         disabled: disabled,
@@ -634,6 +712,15 @@ pub fn InputBase(
     /// Error rendered by the wrapper and reflected on the input shell.
     #[props(default, into)]
     error: InputContent,
+    /// Renders a clear button in the trailing section.
+    #[props(default = false)]
+    clearable: bool,
+    /// Disables the generated clear button without disabling the shell.
+    #[props(default = false)]
+    clear_disabled: bool,
+    /// Callback fired after the generated clear action.
+    #[props(default)]
+    on_clear: Option<EventHandler<MouseEvent>>,
     /// Marks the field as required.
     #[props(default = false)]
     required: bool,
@@ -691,6 +778,9 @@ pub fn InputBase(
                 error: error.is_some(),
                 loading,
                 left_section,
+                clearable,
+                clear_disabled,
+                on_clear,
                 right_section,
                 attributes: input_attributes,
                 {children}
@@ -720,6 +810,9 @@ pub fn TextInput(
     /// Shows a loading spinner in the trailing section and marks the field busy.
     #[props(default = false)]
     loading: bool,
+    /// Renders a clear button that resets the native value and dispatches `input`.
+    #[props(default = false)]
+    clearable: bool,
     /// Visual variant for the shell.
     #[props(default)]
     variant: InputVariant,
@@ -810,6 +903,8 @@ pub fn TextInput(
             variant,
             size,
             radius,
+            clearable,
+            clear_disabled: disabled,
             left_section,
             right_section,
             wrapper_attributes,
@@ -865,6 +960,31 @@ mod tests {
 
         assert!(html.contains(">Name<"));
         assert!(html.contains("for=\"name\""));
+    }
+
+    #[component]
+    fn ClearableInputHarness() -> Element {
+        rsx! {
+            Input {
+                clearable: true,
+                input { value: "controlled" }
+            }
+            InputBase {
+                clearable: true,
+                input { value: "uncontrolled" }
+            }
+            TextInput { clearable: true, value: "text" }
+        }
+    }
+
+    #[test]
+    fn clearable_inputs_render_generated_trailing_buttons() {
+        let mut dom = VirtualDom::new(ClearableInputHarness);
+        dom.rebuild_in_place();
+        let html = dioxus_ssr::render(&dom);
+
+        assert_eq!(html.matches("data-slot=\"input-clear-button\"").count(), 3);
+        assert_eq!(html.matches("aria-label=\"Clear value\"").count(), 3);
     }
 
     #[component]

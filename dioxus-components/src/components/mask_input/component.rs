@@ -78,6 +78,9 @@ pub fn MaskInput(
     /// Shows a loading spinner in the trailing section and marks the field busy.
     #[props(default = false)]
     loading: bool,
+    /// Renders a clear button that resets the mask state.
+    #[props(default = false)]
+    clearable: bool,
     /// Visual variant for the shell.
     #[props(default)]
     variant: InputVariant,
@@ -173,6 +176,9 @@ pub fn MaskInput(
             size,
             radius,
             left_section,
+            clearable,
+            clear_disabled: disabled,
+            on_clear: move |_| mask.reset.call(()),
             right_section,
             wrapper_attributes,
             input_attributes,

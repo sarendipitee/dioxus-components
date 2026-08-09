@@ -37,6 +37,9 @@ pub fn PasswordInput(
     /// While loading the spinner replaces the visibility toggle.
     #[props(default = false)]
     loading: bool,
+    /// Renders a clear button that resets the native value and dispatches `input`.
+    #[props(default = false)]
+    clearable: bool,
     /// Controlled visibility state. When `Some`, the bundled toggle no longer owns
     /// the state — pair it with `on_visibility_change` to close the loop.
     #[props(default)]
@@ -190,6 +193,8 @@ pub fn PasswordInput(
             size,
             radius,
             left_section,
+            clearable,
+            clear_disabled: disabled,
             right_section,
             wrapper_attributes,
             input_attributes,

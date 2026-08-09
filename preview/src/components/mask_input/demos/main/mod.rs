@@ -15,6 +15,7 @@ pub fn Demo() -> Element {
                 label: "Phone number",
                 description: "Type digits — formatting is applied automatically.",
                 mask: "(999) 999-9999",
+                clearable: true,
                 placeholder: "(___) ___-____",
                 on_change_raw: move |(r, m): (String, String)| {
                     raw.set(r);

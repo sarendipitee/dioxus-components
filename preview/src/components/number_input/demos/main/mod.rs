@@ -16,6 +16,7 @@ pub fn Demo() -> Element {
                 on_change: move |v| value.set(v),
                 min: 0.0,
                 max: 100.0,
+                clearable: true,
             }
 
             p { id: "number-value", "Value: {value().map(|v| v.to_string()).unwrap_or_default()}" }
