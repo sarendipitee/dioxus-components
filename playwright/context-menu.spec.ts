@@ -35,6 +35,16 @@ test("pointer navigation", async ({ page }) => {
     arrangeBox.x + arrangeBox.width - 8,
   );
   expect(Math.abs(submenuBox.y - arrangeBox.y)).toBeLessThanOrEqual(12);
+  await page.mouse.move(
+    arrangeBox.x + arrangeBox.width / 2,
+    arrangeBox.y + arrangeBox.height / 2,
+  );
+  await page.mouse.move(
+    submenuBox.x + 8,
+    submenuBox.y + submenuBox.height / 2 + 12,
+    { steps: 10 },
+  );
+  await expect(submenu).toHaveAttribute("data-state", "open");
   await submenu.getByRole("menuitem", { name: "Send to back" }).hover();
   await expect(contextMenu).toHaveAttribute("data-state", "open");
   await page.mouse.move(
