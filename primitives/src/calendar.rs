@@ -1006,25 +1006,24 @@ pub fn set_calendar_view_date(date: Date) {
     view_ctx.set_offset_view_date(date);
 }
 
-/// Return enabled months for current calendar view.
+/// Return enabled months in current calendar year.
 pub fn calendar_view_months() -> Vec<Month> {
     let base_ctx: BaseCalendarContext = use_context();
     let date = calendar_view_date();
-    let min = base_ctx.enabled_date_range.start().month();
-    let max = base_ctx.enabled_date_range.end().month();
-    let mut month = min;
-    let mut months = Vec::new();
-    loop {
-        months.push(month);
-        if month == max {
-            break;
-        }
-        month = month.next();
-    }
-    if replace_month(date, min) < base_ctx.enabled_date_range.start() {
-        months.retain(|m| *m >= date.month());
-    }
-    months
+    let year = date.year();
+    let first = if base_ctx.enabled_date_range.start().year() == year {
+        base_ctx.enabled_date_range.start().month() as u8
+    } else {
+        Month::January as u8
+    };
+    let last = if base_ctx.enabled_date_range.end().year() == year {
+        base_ctx.enabled_date_range.end().month() as u8
+    } else {
+        Month::December as u8
+    };
+    (first..=last)
+        .filter_map(|month| Month::try_from(month).ok())
+        .collect()
 }
 
 /// Return enabled years for current calendar view.

@@ -274,3 +274,9 @@ td:has(.dx_calendar_grid_cell[data-selection-end="true"]) {
         background-color 0.2s ease,
         color 0.2s ease;
 }
+
+.dx_calendar_month_select_container .dx_menu_content,
+.dx_calendar_year_select_container .dx_menu_content {
+    max-height: 20rem;
+    overflow-y: auto;
+}
