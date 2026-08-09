@@ -51,7 +51,7 @@ pub fn Demo() -> Element {
                 "data-testid": "virtual-list-states",
                 aria_label: "Virtual list state fixture",
                 class: "virtual-list-states",
-                render_item: move |idx| rsx! {
+                render_item: move |idx: usize| rsx! {
                     div {
                         key: "{idx}",
                         class: "virtual-list-states-row",

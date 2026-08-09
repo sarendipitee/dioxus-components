@@ -32,6 +32,8 @@ RUSTDOCFLAGS='--document-private-items' cargo doc --workspace --no-deps --all-fe
 )
 
 node scripts/validate-theme-contrast.mjs
+scripts/preview-web.sh build --no-wasm-split
+
 (
   cd playwright
 
