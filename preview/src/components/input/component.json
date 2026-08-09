@@ -1,6 +1,6 @@
 {
   "name": "input",
-  "description": "Defines the composable field scaffold used to share label, helper text, error, disabled, and sectioned chrome across text and custom input components.",
+  "description": "Low-level form-control primitive and layout shell. Generally used to build custom form controls rather than directly in application code (prefer TextInput instead).",
   "authors": [
     "Evan Almloff"
   ],
