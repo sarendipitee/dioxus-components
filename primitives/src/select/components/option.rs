@@ -275,7 +275,7 @@ pub struct SelectItemIndicatorProps {
 
 /// # SelectItemIndicator
 ///
-/// The `SelectItemIndicator` component is used to render an indicator for a selected item within a [`SelectList`](super::list::SelectList). The
+/// The `SelectItemIndicator` component is used to render an indicator for a selected item within a [`SelectList`]. The
 /// children will only be rendered if the option is selected.
 ///
 /// This must be used inside a [`SelectOption`](SelectOption) component.

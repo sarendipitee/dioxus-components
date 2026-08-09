@@ -51,7 +51,7 @@ jobs:
           cache-on-failure: "false"
       - uses: DioxusLabs/dioxus-ci/actions/install-dioxus-cli@v0.1.0
         with:
-          version: 0.7.10
+          version: 0.7.9
       - name: Add components and check
         run: |
           cd test-harness
@@ -86,7 +86,7 @@ jobs:
           cache-on-failure: "false"
       - uses: DioxusLabs/dioxus-ci/actions/install-dioxus-cli@v0.1.0
         with:
-          version: 0.7.10
+          version: 0.7.9
       - name: Add each component and check
         run: |
           cd preview/src/components/

@@ -30,7 +30,7 @@ fn do_format(
     thousands_sep: &str,
 ) -> String {
     let raw = match decimal_scale {
-        Some(scale) => format!("{:.prec$}", v, prec = scale),
+        Some(scale) => format!("{v:.scale$}"),
         None => v.to_string(),
     };
 
@@ -58,7 +58,7 @@ fn do_format(
     };
 
     match dec_part {
-        Some(dec) => format!("{}{}{}", int_fmt, decimal_sep, dec),
+        Some(dec) => format!("{int_fmt}{decimal_sep}{dec}"),
         None => int_fmt,
     }
 }

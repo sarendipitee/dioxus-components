@@ -29,7 +29,7 @@ pub fn Demo() -> Element {
                 RadioItem { id: "color-red", value: "red", index: 1usize, "Red" }
                 RadioItem { id: "color-green", value: "green", index: 2usize, disabled: true, "Green" }
             }
-            output { "data-testid": "preferred-color-value", {format!("{}", preferred_color().unwrap_or_default())} }
+            output { "data-testid": "preferred-color-value", {preferred_color().unwrap_or_default()} }
             output { "data-testid": "preferred-color-callback-count", {format!("{}", callback_count())} }
         }
         RadioGroup {
