@@ -661,7 +661,7 @@ pub struct MenuItemProps<T: Clone + PartialEq + 'static> {
 pub fn MenuItem<T: Clone + PartialEq + 'static>(props: MenuItemProps<T>) -> Element {
     let mut ctx: MenuContext = use_context();
     let index_value = props.index;
-    let index = ReadSignal::new(use_memo(move || index_value));
+    let index = use_memo(move || index_value);
     let disabled_value = props.disabled;
     let has_search_text = props.search_text.is_some();
     let mut warned_missing_search_text = use_signal(|| false);
@@ -678,7 +678,7 @@ pub fn MenuItem<T: Clone + PartialEq + 'static>(props: MenuItemProps<T>) -> Elem
             warned_missing_search_text.set(true);
         }
     });
-    let search_text = ReadSignal::new(use_memo(move || props.search_text.clone()));
+    let search_text = use_memo(move || props.search_text.clone());
     let visible = move || {
         let query = (ctx.filter_query)();
         query.is_empty()
