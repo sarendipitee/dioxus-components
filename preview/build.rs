@@ -5,9 +5,6 @@ fn main() {
     let out_dir = std::env::var("OUT_DIR").unwrap();
     let out_dir = std::path::PathBuf::from(out_dir);
     let generated_assets_dir = std::path::PathBuf::from("assets/generated");
-    if generated_assets_dir.exists() {
-        std::fs::remove_dir_all(&generated_assets_dir).unwrap();
-    }
     std::fs::create_dir_all(&generated_assets_dir).unwrap();
     println!("cargo:rerun-if-changed=src/components");
     // Process all markdown files in each component folder.
