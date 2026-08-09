@@ -3,11 +3,10 @@
   align-items: center;
   gap: var(--space);
   min-width: 2rem;
-  padding: var(--fine-gap) var(--control-padding-x-sm);
+  padding: var(--fine-gap) var(--control-padding-x-md);
   border-radius: 99px;
   font-size: var(--text-xs);
   display: inline-flex;
-	line-height: 2;
 }
 
 .dx_badge[padding="true"] {
