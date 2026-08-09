@@ -16,7 +16,7 @@ use crate::components::{
     radio_group::{RadioGroup, RadioItem},
     slider::Slider,
     switch::Switch,
-    tabs::{TabContent, TabList, TabTrigger, Tabs, TabsVariant},
+    tabs::{TabContent, TabList, TabTrigger, Tabs},
     textarea::{Textarea, TextareaVariant},
     toggle_group::{ToggleGroup, ToggleItem},
 };
@@ -562,14 +562,14 @@ fn CopyButton(#[props(extends=GlobalAttributes)] attributes: Vec<Attribute>) -> 
 #[component]
 fn CopyIcon() -> Element {
     rsx! {
-        Copy { width: "24px", height: "24px" }
+        Copy { width: "16px", height: "16px" }
     }
 }
 
 #[component]
 fn CheckIcon() -> Element {
     rsx! {
-        Check { width: "24px", height: "24px" }
+        Check { width: "16px", height: "16px" }
     }
 }
 
@@ -1209,6 +1209,29 @@ fn ManualComponentInstallation(component: HighlightedCode, style: HighlightedCod
 }
 
 #[component]
+fn ExpandableCodeBlock(children: Element) -> Element {
+    let mut is_expanded = use_signal(|| false);
+
+    rsx! {
+        div {
+            class: "dx-component-expandable-code",
+            data-expanded: is_expanded(),
+            {children}
+            if !is_expanded() {
+                div { class: "dx-component-code-overlay",
+                    button {
+                        class: "dx-component-view-code-btn",
+                        r#type: "button",
+                        onclick: move |_| is_expanded.set(true),
+                        "View Code"
+                    }
+                }
+            }
+        }
+    }
+}
+
+#[component]
 fn ComponentDemoHighlight(
     demo: ComponentDemoEntryData,
     main_demo: bool,
@@ -1236,46 +1259,21 @@ fn ComponentDemoHighlight(
         if description_html.is_empty() && main_demo {
             h3 { class: "dx-component-demo-title", "{name}" }
         }
-        Tabs {
-            default_value: "Demo",
-            border_bottom_left_radius: "0.5rem",
-            border_bottom_right_radius: "0.5rem",
-            horizontal: true,
-            width: "100%",
-            variant: TabsVariant::Ghost,
-            div { class: "dx-component-tabs-header",
-                TabList {
-                    TabTrigger { value: "Demo", index: 0usize, "DEMO" }
-                    TabTrigger { value: "Code", index: 1usize, "CODE" }
-                }
-                if let Some(component_name) = component_name {
-                    ComponentInstallCommand { name: component_name }
-                }
+        if let Some(component_name) = component_name {
+            div { class: "dx-component-demo-header",
+                ComponentInstallCommand { name: component_name }
             }
+        }
+        div { class: "dx-component-demo-container",
             div {
+                class: "dx-component-preview-frame",
+                id: "component-preview-frame",
                 width: "100%",
-                height: "100%",
-                display: "flex",
-                flex_direction: "column",
-                justify_content: "center",
-                align_items: "center",
-                TabContent {
-                    index: 0usize,
-                    class: "dx-component-preview-frame",
-                    id: "component-preview-frame",
-                    value: "Demo",
-                    width: "100%",
-                    position: "relative",
-                    Comp {}
-                }
-                TabContent {
-                    index: 1usize,
-                    class: "dx-component-preview-frame",
-                    value: "Code",
-                    width: "100%",
-                    position: "relative",
-                    CodeBlock { source: highlighted }
-                }
+                position: "relative",
+                Comp {}
+            }
+            ExpandableCodeBlock {
+                CodeBlock { source: highlighted }
             }
         }
     }
@@ -1321,57 +1319,33 @@ fn BlockComponentDemoHighlight(
         } else if !main_demo {
             h3 { class: "dx-component-demo-title", "{name}" }
         }
-        Tabs {
-            default_value: "Preview",
-            border_bottom_left_radius: "0.5rem",
-            border_bottom_right_radius: "0.5rem",
-            horizontal: true,
-            width: "100%",
-            variant: TabsVariant::Ghost,
-            div { class: "dx-component-tabs-header",
-                TabList {
-                    TabTrigger { value: "Preview", index: 0usize, "PREVIEW" }
-                    TabTrigger { value: "Code", index: 1usize, "CODE" }
-                }
-                if show_install {
-                    ComponentInstallCommand { name: component_name }
+        if show_install {
+            div { class: "dx-component-demo-header",
+                ComponentInstallCommand { name: component_name }
+            }
+        }
+        div { class: "dx-component-demo-container",
+            div {
+                id: "component-preview-frame",
+                width: "100%",
+                position: "relative",
+                iframe {
+                    src: "{iframe_src}",
+                    width: "100%",
+                    height: "600px",
+                    border: "1px solid var(--surface-border)",
+                    border_radius: "0.5em",
                 }
             }
-            div {
-                width: "100%",
-                height: "100%",
-                display: "flex",
-                flex_direction: "column",
-                justify_content: "center",
-                align_items: "center",
-                TabContent {
-                    index: 0usize,
-                    id: "component-preview-frame",
-                    value: "Preview",
-                    width: "100%",
-                    position: "relative",
-                    iframe {
-                        src: "{iframe_src}",
-                        width: "100%",
-                        height: "600px",
-                        border: "1px solid var(--surface-border)",
-                        border_radius: "0.5em",
+            ExpandableCodeBlock {
+                if let Some(css) = css_highlighted {
+                    ComponentCode {
+                        rs_highlighted: highlighted,
+                        css_highlighted: css,
+                        component_type: ComponentType::Block,
                     }
-                }
-                TabContent {
-                    index: 1usize,
-                    value: "Code",
-                    width: "100%",
-                    position: "relative",
-                    if let Some(css) = css_highlighted {
-                        ComponentCode {
-                            rs_highlighted: highlighted,
-                            css_highlighted: css,
-                            component_type: ComponentType::Block,
-                        }
-                    } else {
-                        CodeBlock { source: highlighted }
-                    }
+                } else {
+                    CodeBlock { source: highlighted }
                 }
             }
         }
