@@ -994,6 +994,50 @@ impl CalendarViewContext {
         base_ctx.set_view_date(date);
     }
 }
+/// Return current calendar view date.
+pub fn calendar_view_date() -> Date {
+    let view_ctx: CalendarViewContext = use_context();
+    view_ctx.offset_view_date()
+}
+
+/// Set current calendar view date.
+pub fn set_calendar_view_date(date: Date) {
+    let view_ctx: CalendarViewContext = use_context();
+    view_ctx.set_offset_view_date(date);
+}
+
+/// Return enabled months for current calendar view.
+pub fn calendar_view_months() -> Vec<Month> {
+    let base_ctx: BaseCalendarContext = use_context();
+    let date = calendar_view_date();
+    let min = base_ctx.enabled_date_range.start().month();
+    let max = base_ctx.enabled_date_range.end().month();
+    let mut month = min;
+    let mut months = Vec::new();
+    loop {
+        months.push(month);
+        if month == max {
+            break;
+        }
+        month = month.next();
+    }
+    if replace_month(date, min) < base_ctx.enabled_date_range.start() {
+        months.retain(|m| *m >= date.month());
+    }
+    months
+}
+
+/// Return enabled years for current calendar view.
+pub fn calendar_view_years() -> std::ops::RangeInclusive<i32> {
+    let base_ctx: BaseCalendarContext = use_context();
+    base_ctx.enabled_date_range.start().year()..=base_ctx.enabled_date_range.end().year()
+}
+
+/// Format current calendar view month.
+pub fn calendar_view_month_label() -> String {
+    let base_ctx: BaseCalendarContext = use_context();
+    base_ctx.format_month.call(calendar_view_date().month())
+}
 
 /// A calendar view for one visible month.
 ///

@@ -1,12 +1,14 @@
 use crate::component_styles;
+use crate::components::{
+    DropdownMenu, DropdownMenuContent, DropdownMenuTrigger, MenuItemIndicator, MenuRadioGroup,
+    MenuRadioItem,
+};
 use dioxus::prelude::*;
 use dioxus_icons::lucide::{ChevronDown, ChevronLeft, ChevronRight};
 use dioxus_primitives::calendar::{
     self, CalendarDayProps, CalendarGridBodyProps, CalendarGridCellProps,
     CalendarGridDayHeaderProps, CalendarGridHeadProps, CalendarGridHeaderRowProps,
     CalendarGridRootProps, CalendarGridWeekProps, CalendarHeaderProps, CalendarNavigationProps,
-    CalendarSelectMonthProps, CalendarSelectMonthSelectProps, CalendarSelectMonthValueProps,
-    CalendarSelectYearProps, CalendarSelectYearSelectProps, CalendarSelectYearValueProps,
     CalendarViewProps,
 };
 use dioxus_primitives::{dioxus_attributes::attributes, merge_attributes};
@@ -342,77 +344,68 @@ fn CalendarNextMonthButton(
 }
 
 #[component]
-fn CalendarSelectMonth(props: CalendarSelectMonthProps) -> Element {
+fn CalendarSelectMonth() -> Element {
+    let selected = calendar::calendar_view_date().month();
+    let months = calendar::calendar_view_months();
     rsx! {
-        calendar::CalendarSelectMonth {
-            attributes: props.attributes,
-            class: Styles::dx_calendar_month_select_container,
-            CalendarSelectMonthSelect {}
-            CalendarSelectMonthValue {
-                DropDownIcon {}
-                {props.children}
+        DropdownMenu { class: Styles::dx_calendar_month_select_container,
+            DropdownMenuTrigger {
+                button {
+                    class: Styles::dx_calendar_month_select_value,
+                    aria_label: "Month {calendar::calendar_view_month_label()}",
+                    {calendar::calendar_view_month_label()}
+                    DropDownIcon {}
+                }
+            }
+            DropdownMenuContent {
+                MenuRadioGroup::<Month> {
+                    value: Some(selected),
+                    on_value_change: move |month| {
+                        calendar::set_calendar_view_date(calendar::calendar_view_date().replace_month(month).unwrap());
+                    },
+                    for (index, month) in months.iter().copied().enumerate() {
+                        MenuRadioItem::<Month> {
+                            key: "{month:?}", value: month, index,
+                            search_text: month.to_string(), "{month}",
+                            MenuItemIndicator { if selected == month { "✓" } }
+                        }
+                    }
+                }
             }
         }
     }
 }
 
 #[component]
-fn CalendarSelectMonthSelect(props: CalendarSelectMonthSelectProps) -> Element {
+fn CalendarSelectYear() -> Element {
+    let selected = calendar::calendar_view_date().year();
+    let years = calendar::calendar_view_years();
     rsx! {
-        calendar::CalendarSelectMonthSelect {
-            class: Styles::dx_calendar_month_select,
-            attributes: props.attributes,
-        }
-    }
-}
-
-#[component]
-fn CalendarSelectMonthValue(props: CalendarSelectMonthValueProps) -> Element {
-    rsx! {
-        calendar::CalendarSelectMonthValue {
-            class: Styles::dx_calendar_month_select_value,
-            attributes: props.attributes,
-            {props.children}
-        }
-    }
-}
-
-#[component]
-fn CalendarSelectYear(props: CalendarSelectYearProps) -> Element {
-    rsx! {
-        calendar::CalendarSelectYear {
-            attributes: props.attributes,
-            class: Styles::dx_calendar_year_select_container,
-            CalendarSelectYearSelect {}
-            CalendarSelectYearValue {
-                DropDownIcon {}
-                {props.children}
+        DropdownMenu { class: Styles::dx_calendar_year_select_container,
+            DropdownMenuTrigger {
+                button {
+                    class: Styles::dx_calendar_year_select_value,
+                    aria_label: "Year {selected}", "{selected}" DropDownIcon {}
+                }
+            }
+            DropdownMenuContent {
+                MenuRadioGroup::<i32> {
+                    value: Some(selected),
+                    on_value_change: move |year| {
+                        calendar::set_calendar_view_date(calendar::calendar_view_date().replace_year(year).unwrap());
+                    },
+                    for (index, year) in years.enumerate() {
+                        MenuRadioItem::<i32> {
+                            key: "{year}", value: year, index,
+                            search_text: year.to_string(), "{year}",
+                            MenuItemIndicator { if selected == year { "✓" } }
+                        }
+                    }
+                }
             }
         }
     }
 }
-
-#[component]
-fn CalendarSelectYearSelect(props: CalendarSelectYearSelectProps) -> Element {
-    rsx! {
-        calendar::CalendarSelectYearSelect {
-            class: Styles::dx_calendar_year_select,
-            attributes: props.attributes,
-        }
-    }
-}
-
-#[component]
-fn CalendarSelectYearValue(props: CalendarSelectYearValueProps) -> Element {
-    rsx! {
-        calendar::CalendarSelectYearValue {
-            class: Styles::dx_calendar_year_select_value,
-            attributes: props.attributes,
-            {props.children}
-        }
-    }
-}
-
 #[component]
 fn CalendarGrid(
     #[props(default)] id: Option<String>,
