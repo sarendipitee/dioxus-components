@@ -1,4 +1,5 @@
 use dioxus::prelude::*;
+use dioxus_primitives::overlay::OverlayProvider;
 
 #[path = "../../../preview/src/components/combobox/demos/autocomplete/mod.rs"]
 mod demo_autocomplete;
@@ -36,8 +37,10 @@ fn App() -> Element {
             rel: "stylesheet",
             href: asset!("/assets/dx-components-theme.css"),
         }
-        div { id: "dx-preview-block-root", style: "min-height: 100vh;",
-            BlockView {}
+        OverlayProvider {
+            div { id: "dx-preview-block-root", style: "min-height: 100vh;",
+                BlockView {}
+            }
         }
     }
 }

@@ -1,4 +1,22 @@
 use dioxus::prelude::*;
+use dioxus_primitives::overlay::OverlayProvider;
+
+#[derive(Clone, PartialEq, Debug)]
+pub enum Route {
+    ComponentDemo {
+        name: String,
+        demo: String,
+        dark_mode: Option<bool>,
+    },
+}
+impl Route {
+    pub fn component(name: &str) -> String {
+        format!("#/components/{name}")
+    }
+    pub fn home() -> String {
+        "/".to_string()
+    }
+}
 
 #[path = "../../../preview/src/components/navbar/demos/main/mod.rs"]
 mod demo_main;
@@ -15,8 +33,10 @@ fn App() -> Element {
             rel: "stylesheet",
             href: asset!("/assets/dx-components-theme.css"),
         }
-        div { id: "dx-preview-block-root", style: "min-height: 100vh;",
-            BlockView {}
+        OverlayProvider {
+            div { id: "dx-preview-block-root", style: "min-height: 100vh;",
+                BlockView {}
+            }
         }
     }
 }

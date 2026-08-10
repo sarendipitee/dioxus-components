@@ -1,4 +1,5 @@
 use dioxus::prelude::*;
+use dioxus_primitives::overlay::OverlayProvider;
 
 #[path = "../../../preview/src/components/input/demos/composition/mod.rs"]
 mod demo_composition;
@@ -30,13 +31,37 @@ fn App() -> Element {
             rel: "stylesheet",
             href: asset!("/assets/dx-components-theme.css"),
         }
-        div { id: "dx-preview-block-root", style: "min-height: 100vh;",
-            BlockView {}
+        OverlayProvider {
+            div { id: "dx-preview-block-root", style: "min-height: 100vh;",
+                BlockView {}
+            }
         }
     }
 }
 
 #[component]
 fn BlockView() -> Element {
-    rsx! { demo_main::Demo {} }
+    let hash = use_signal(|| {
+        #[cfg(target_arch = "wasm32")]
+        {
+            let window = web_sys::window().unwrap();
+            let location = window.location();
+            let h = location.hash().unwrap_or_default();
+            h.trim_start_matches('#').to_string()
+        }
+        #[cfg(not(target_arch = "wasm32"))]
+        {
+            "".to_string()
+        }
+    });
+
+    match hash().as_str() {
+        "composition" => rsx! { demo_composition::Demo {} },
+        "loading" => rsx! { demo_loading::Demo {} },
+        "main" => rsx! { demo_main::Demo {} },
+        "sections" => rsx! { demo_sections::Demo {} },
+        "states" => rsx! { demo_states::Demo {} },
+        "variants" => rsx! { demo_variants::Demo {} },
+        _ => rsx! { demo_composition::Demo {} },
+    }
 }

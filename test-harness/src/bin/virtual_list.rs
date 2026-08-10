@@ -1,4 +1,5 @@
 use dioxus::prelude::*;
+use dioxus_primitives::overlay::OverlayProvider;
 
 #[path = "../../../preview/src/components/virtual_list/demos/main/mod.rs"]
 mod demo_main;
@@ -21,8 +22,10 @@ fn App() -> Element {
             rel: "stylesheet",
             href: asset!("/assets/dx-components-theme.css"),
         }
-        div { id: "dx-preview-block-root", style: "min-height: 100vh;",
-            BlockView {}
+        OverlayProvider {
+            div { id: "dx-preview-block-root", style: "min-height: 100vh;",
+                BlockView {}
+            }
         }
     }
 }

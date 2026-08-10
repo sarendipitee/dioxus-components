@@ -1,4 +1,5 @@
 use dioxus::prelude::*;
+use dioxus_primitives::overlay::OverlayProvider;
 
 #[path = "../../../preview/src/components/text_input/demos/description/mod.rs"]
 mod demo_description;
@@ -27,13 +28,36 @@ fn App() -> Element {
             rel: "stylesheet",
             href: asset!("/assets/dx-components-theme.css"),
         }
-        div { id: "dx-preview-block-root", style: "min-height: 100vh;",
-            BlockView {}
+        OverlayProvider {
+            div { id: "dx-preview-block-root", style: "min-height: 100vh;",
+                BlockView {}
+            }
         }
     }
 }
 
 #[component]
 fn BlockView() -> Element {
-    rsx! { demo_main::Demo {} }
+    let hash = use_signal(|| {
+        #[cfg(target_arch = "wasm32")]
+        {
+            let window = web_sys::window().unwrap();
+            let location = window.location();
+            let h = location.hash().unwrap_or_default();
+            h.trim_start_matches('#').to_string()
+        }
+        #[cfg(not(target_arch = "wasm32"))]
+        {
+            "".to_string()
+        }
+    });
+
+    match hash().as_str() {
+        "description" => rsx! { demo_description::Demo {} },
+        "error" => rsx! { demo_error::Demo {} },
+        "main" => rsx! { demo_main::Demo {} },
+        "sections" => rsx! { demo_sections::Demo {} },
+        "size" => rsx! { demo_size::Demo {} },
+        _ => rsx! { demo_description::Demo {} },
+    }
 }

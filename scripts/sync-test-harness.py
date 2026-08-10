@@ -2,9 +2,12 @@
 import os
 import sys
 
+import shutil
+
 REPO_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 COMPONENTS_DIR = os.path.join(REPO_ROOT, "preview", "src", "components")
 HARNESS_BIN_DIR = os.path.join(REPO_ROOT, "test-harness", "src", "bin")
+HARNESS_SRC_DIR = os.path.join(REPO_ROOT, "test-harness", "src")
 
 os.makedirs(HARNESS_BIN_DIR, exist_ok=True)
 
@@ -22,13 +25,34 @@ def generate_harness_binary(comp_name):
     if not demos:
         return
 
+    # Sync all .css files under demos/
+    for root, _dirs, files in os.walk(demos_dir):
+        for f in files:
+            if f.endswith(".css"):
+                src_path = os.path.join(root, f)
+                rel_path = os.path.relpath(src_path, demos_dir)
+                dest_path = os.path.join(HARNESS_SRC_DIR, "components", comp_name, "demos", rel_path)
+                os.makedirs(os.path.dirname(dest_path), exist_ok=True)
+                shutil.copyfile(src_path, dest_path)
+
     # Normalize binary name (e.g. color_picker -> color_picker)
     bin_name = comp_name.replace("-", "_")
 
     code_lines = [
         "use dioxus::prelude::*;",
+        "use dioxus_primitives::overlay::OverlayProvider;",
         "",
     ]
+    if bin_name == "navbar":
+        code_lines.extend([
+            "#[derive(Clone, PartialEq, Debug)]",
+            "pub enum Route { ComponentDemo { name: String, demo: String, dark_mode: Option<bool> } }",
+            "impl Route {",
+            '    pub fn component(name: &str) -> String { format!("#/components/{name}") }',
+            '    pub fn home() -> String { "/".to_string() }',
+            "}",
+            "",
+        ])
 
     for d in demos:
         mod_ident = f"demo_{d}"
@@ -50,8 +74,10 @@ def generate_harness_binary(comp_name):
         '            rel: "stylesheet",',
         '            href: asset!("/assets/dx-components-theme.css"),',
         '        }',
-        '        div { id: "dx-preview-block-root", style: "min-height: 100vh;",',
-        '            BlockView {}',
+        '        OverlayProvider {',
+        '            div { id: "dx-preview-block-root", style: "min-height: 100vh;",',
+        '                BlockView {}',
+        '            }',
         '        }',
         '    }',
         "}",
