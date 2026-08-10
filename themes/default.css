@@ -61,6 +61,7 @@
   --input-fg: var(--is-light, #111111) var(--is-dark, #d4d4d4);
   --input-fg-muted: var(--is-light, #717171) var(--is-dark, #a1a1a1);
   --input-fg-faint: var(--is-light, #b0b0b0) var(--is-dark, #5d5d5d);
+  --input-placeholder: var(--is-light, #e5e5e5) var(--is-dark, #252525);
   --input-border: var(--is-light, #d6dbdf) var(--is-dark, #3e3e3e);
 
   /* Input hover recipe. Use when a field shell is hovered but not focused. */
