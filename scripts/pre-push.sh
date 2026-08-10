@@ -20,9 +20,15 @@ if [ "$(uname -s)" = "Linux" ] && [ -x /usr/bin/pkg-config ]; then
   export PKG_CONFIG_PATH
 fi
 
+# Limit Cargo parallel compilation concurrency to prevent rustdoc/rustc process
+# fan-out and system memory exhaustion on high-core CPUs.
+CARGO_BUILD_JOBS="${CARGO_BUILD_JOBS:-4}"
+export CARGO_BUILD_JOBS
+
 printf '%s\n' 'Running pre-push checks...'
 cargo check --workspace --all-features
-cargo test --workspace
+cargo test --workspace --lib --bins
+CARGO_BUILD_JOBS="${CARGO_BUILD_JOBS_DOCTEST:-2}" cargo test --workspace --doc
 cargo fmt --all -- --check
 RUSTDOCFLAGS='--document-private-items' cargo doc --workspace --no-deps --all-features --document-private-items
 
