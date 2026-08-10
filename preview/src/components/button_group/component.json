@@ -1,0 +1,16 @@
+{
+  "name": "button_group",
+  "description": "Group related buttons into horizontal or vertical segmented controls with shared borders and native button behavior.",
+  "authors": [
+    "Dioxus Labs"
+  ],
+  "exclude": [
+    "demos",
+    "docs.md",
+    "component.json"
+  ],
+  "cargoDependencies": [],
+  "globalAssets": [
+    "../../../../themes/default.css"
+  ]
+}

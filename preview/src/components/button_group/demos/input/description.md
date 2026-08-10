@@ -1,0 +1,1 @@
+Combine search input and action button into one command bar with shared borders.

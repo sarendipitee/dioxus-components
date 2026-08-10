@@ -1,0 +1,358 @@
+/* A group member is a bare button, an input shell (`.dx_input`), or a wrapper
+   element that carries exactly one button (menu/popover triggers render a
+   `span`/`div` around a `Button`). Nested groups and separators are not
+   members. */
+.dx_button_group {
+  display: inline-flex;
+  align-items: stretch;
+}
+
+.dx_button_group[data-orientation="horizontal"] {
+  flex-direction: row;
+}
+
+.dx_button_group[data-orientation="vertical"] {
+  flex-direction: column;
+}
+
+/* Nested groups form isolated clusters: keep their borders distinct. */
+.dx_button_group:has(> .dx_button_group) {
+  gap: var(--space);
+}
+
+/* When a popup root (dropdown menu or popover) is placed directly inside the
+   group, collapse its box so its trigger button participates in the segmented
+   layout instead of introducing a phantom member. On web the popup content is
+   portaled to the shared overlay outlet and positioned from the trigger, so the
+   wrapper box is no longer a positioning/anchor context. */
+.dx_button_group > .dx_dropdown_menu,
+.dx_button_group > .dx_popover,
+.dx_button_group > .dx_input_wrapper {
+  display: contents;
+}
+
+/* A wrapped trigger collapses to its single button so it behaves like a direct
+   member. */
+.dx_button_group > :is(span, div):not(.dx_button_group):has(> .dx_button),
+.dx_button_group > .dx_dropdown_menu > :is(span, div):has(> .dx_button) {
+  display: inline-flex;
+  align-items: center;
+}
+
+/* Merge members into one segmented control: squared inner corners and shared,
+   overlapping borders. */
+.dx_button_group > .dx_button,
+.dx_button_group
+  > :is(span, div):not(.dx_button_group):has(> .dx_button)
+  > .dx_button,
+.dx_button_group > .dx_dropdown_menu > :is(span, div) > .dx_button,
+.dx_button_group > .dx_input,
+.dx_button_group > .dx_input_wrapper > .dx_input {
+  position: relative;
+  border-radius: 0;
+}
+
+/* Keep the focused member above its neighbours so its focus ring is not clipped
+   by the overlapping shared borders. */
+.dx_button_group > .dx_button:focus-visible,
+.dx_button_group
+  > :is(span, div):not(.dx_button_group):has(> .dx_button):focus-within
+  > .dx_button,
+.dx_button_group > .dx_dropdown_menu:focus-within > :is(span, div) > .dx_button,
+.dx_button_group > .dx_input:focus-within,
+.dx_button_group > .dx_input_wrapper > .dx_input:focus-within {
+  z-index: 1;
+}
+
+/* Horizontal adjacency: collapse the shared edge by nudging each member that
+   follows another member one pixel into its neighbour. */
+.dx_button_group[data-orientation="horizontal"]
+  > :is(
+    .dx_button,
+    .dx_input,
+    .dx_input_wrapper:has(> .dx_input),
+    span:has(> .dx_button),
+    div:not(.dx_button_group, .dx_button_group_separator):has(> .dx_button),
+    .dx_dropdown_menu:has(> :is(span, div) > .dx_button)
+  )
+  + :is(
+    .dx_button,
+    .dx_input,
+    .dx_input_wrapper:has(> .dx_input),
+    span:has(> .dx_button),
+    div:not(.dx_button_group, .dx_button_group_separator):has(> .dx_button)
+  ),
+.dx_button_group[data-orientation="horizontal"]
+  > :is(
+    .dx_button,
+    .dx_input,
+    .dx_input_wrapper:has(> .dx_input),
+    span:has(> .dx_button),
+    div:not(.dx_button_group, .dx_button_group_separator):has(> .dx_button),
+    .dx_dropdown_menu:has(> :is(span, div) > .dx_button)
+  )
+  + .dx_input_wrapper:has(> .dx_input)
+  > .dx_input,
+.dx_button_group[data-orientation="horizontal"]
+  > :is(
+    .dx_button,
+    .dx_input,
+    .dx_input_wrapper:has(> .dx_input),
+    span:has(> .dx_button),
+    div:not(.dx_button_group, .dx_button_group_separator):has(> .dx_button),
+    .dx_dropdown_menu:has(> :is(span, div) > .dx_button)
+  )
+  + .dx_dropdown_menu
+  > :is(span, div)
+  > .dx_button {
+  margin-inline-start: -1px;
+}
+
+/* Vertical adjacency. */
+.dx_button_group[data-orientation="vertical"]
+  > :is(
+    .dx_button,
+    .dx_input,
+    .dx_input_wrapper:has(> .dx_input),
+    span:has(> .dx_button),
+    div:not(.dx_button_group, .dx_button_group_separator):has(> .dx_button),
+    .dx_dropdown_menu:has(> :is(span, div) > .dx_button)
+  )
+  + :is(
+    .dx_button,
+    .dx_input,
+    .dx_input_wrapper:has(> .dx_input),
+    span:has(> .dx_button),
+    .dx_dropdown_menu:has(> :is(span, div) > .dx_button),
+    div:not(.dx_button_group, .dx_button_group_separator):has(> .dx_button)
+  ),
+.dx_button_group[data-orientation="vertical"]
+  > :is(
+    .dx_button,
+    .dx_input,
+    .dx_input_wrapper:has(> .dx_input),
+    span:has(> .dx_button),
+    div:not(.dx_button_group, .dx_button_group_separator):has(> .dx_button),
+    .dx_dropdown_menu:has(> :is(span, div) > .dx_button)
+  )
+  + .dx_input_wrapper:has(> .dx_input)
+  > .dx_input,
+.dx_button_group[data-orientation="vertical"]
+  > :is(
+    .dx_button,
+    .dx_input,
+    .dx_input_wrapper:has(> .dx_input),
+    span:has(> .dx_button),
+    div:not(.dx_button_group, .dx_button_group_separator):has(> .dx_button),
+    .dx_dropdown_menu:has(> :is(span, div) > .dx_button)
+  )
+  + .dx_dropdown_menu
+  > :is(span, div)
+  > .dx_button {
+  margin-block-start: -1px;
+}
+
+/* Outer corners keep the control radius. Wrapped triggers route the corner
+   through their single button. */
+.dx_button_group[data-orientation="horizontal"]
+  > :is(
+    .dx_button,
+    .dx_input,
+    .dx_input_wrapper:has(> .dx_input),
+    span:has(> .dx_button),
+    div:not(.dx_button_group, .dx_button_group_separator):has(> .dx_button),
+    .dx_dropdown_menu:has(> :is(span, div) > .dx_button)
+  ):first-child,
+.dx_button_group[data-orientation="horizontal"]
+  > :is(span, div):not(.dx_button_group):has(> .dx_button):first-child
+  > .dx_button,
+.dx_button_group[data-orientation="horizontal"]
+  > .dx_dropdown_menu:first-child
+  > :is(span, div)
+  > .dx_button {
+  border-top-left-radius: var(--radius-control);
+  border-bottom-left-radius: var(--radius-control);
+}
+
+.dx_button_group[data-orientation="horizontal"]
+  > :is(
+    .dx_button,
+    .dx_input,
+    .dx_input_wrapper:has(> .dx_input),
+    span:has(> .dx_button),
+    div:not(.dx_button_group, .dx_button_group_separator):has(> .dx_button),
+    .dx_dropdown_menu:has(> :is(span, div) > .dx_button)
+  ):last-child,
+.dx_button_group[data-orientation="horizontal"]
+  > :is(span, div):not(.dx_button_group):has(> .dx_button):last-child
+  > .dx_button,
+.dx_button_group[data-orientation="horizontal"]
+  > .dx_dropdown_menu:last-child
+  > :is(span, div)
+  > .dx_button {
+  border-top-right-radius: var(--radius-control);
+  border-bottom-right-radius: var(--radius-control);
+}
+
+.dx_button_group[data-orientation="vertical"]
+  > :is(
+    .dx_button,
+    .dx_input,
+    .dx_input_wrapper:has(> .dx_input),
+    span:has(> .dx_button),
+    div:not(.dx_button_group, .dx_button_group_separator):has(> .dx_button),
+    .dx_dropdown_menu:has(> :is(span, div) > .dx_button)
+  ):first-child,
+.dx_button_group[data-orientation="vertical"]
+  > :is(span, div):not(.dx_button_group):has(> .dx_button):first-child
+  > .dx_button,
+.dx_button_group[data-orientation="vertical"]
+  > .dx_dropdown_menu:first-child
+  > :is(span, div)
+  > .dx_button {
+  border-top-left-radius: var(--radius-control);
+  border-top-right-radius: var(--radius-control);
+}
+
+.dx_button_group[data-orientation="vertical"]
+  > :is(
+    .dx_button,
+    .dx_input,
+    .dx_input_wrapper:has(> .dx_input),
+    span:has(> .dx_button),
+    div:not(.dx_button_group, .dx_button_group_separator):has(> .dx_button),
+    .dx_dropdown_menu:has(> :is(span, div) > .dx_button)
+  ):last-child,
+.dx_button_group[data-orientation="vertical"]
+  > :is(span, div):not(.dx_button_group):has(> .dx_button):last-child
+  > .dx_button,
+.dx_button_group[data-orientation="vertical"]
+  > .dx_dropdown_menu:last-child
+  > :is(span, div)
+  > .dx_button {
+  border-bottom-left-radius: var(--radius-control);
+  border-bottom-right-radius: var(--radius-control);
+}
+.dx_input,
+    span:has(> .dx_button),
+    div:not(.dx_button_group, .dx_button_group_separator):has(> .dx_button),
+    .dx_dropdown_menu:has(> :is(span, div) > .dx_button)
+  )
+  + :is(
+    .dx_button,
+    .dx_input,
+    span:has(> .dx_button),
+    div:not(.dx_button_group, .dx_button_group_separator):has(> .dx_button)
+  ),
+.dx_button_group[data-orientation="vertical"]
+  > :is(
+    .dx_button,
+    .dx_input,
+    span:has(> .dx_button),
+    div:not(.dx_button_group, .dx_button_group_separator):has(> .dx_button),
+    .dx_dropdown_menu:has(> :is(span, div) > .dx_button)
+  )
+  + .dx_dropdown_menu
+  > :is(span, div)
+  > .dx_button {
+  margin-block-start: -1px;
+}
+
+/* Outer corners keep the control radius. Wrapped triggers route the corner
+   through their single button. */
+.dx_button_group[data-orientation="horizontal"]
+  > :is(.dx_button, .dx_input, span:has(> .dx_button)):first-child {
+  border-top-left-radius: var(--radius-control);
+  border-bottom-left-radius: var(--radius-control);
+}
+
+.dx_button_group[data-orientation="horizontal"]
+  > :is(span, div):not(.dx_button_group):has(> .dx_button):first-child
+  > .dx_button,
+.dx_button_group[data-orientation="horizontal"]
+  > .dx_dropdown_menu:first-child
+  > :is(span, div)
+  > .dx_button,
+.dx_button_group[data-orientation="horizontal"]
+  > .dx_input_wrapper:first-child
+  > .dx_input {
+  border-top-left-radius: var(--radius-control);
+  border-bottom-left-radius: var(--radius-control);
+}
+
+.dx_button_group[data-orientation="horizontal"]
+  > :is(.dx_button, .dx_input, span:has(> .dx_button)):last-child {
+  border-top-right-radius: var(--radius-control);
+  border-bottom-right-radius: var(--radius-control);
+}
+
+.dx_button_group[data-orientation="horizontal"]
+  > :is(span, div):not(.dx_button_group):has(> .dx_button):last-child
+  > .dx_button,
+.dx_button_group[data-orientation="horizontal"]
+  > .dx_dropdown_menu:last-child
+  > :is(span, div)
+  > .dx_button,
+.dx_button_group[data-orientation="horizontal"]
+  > .dx_input_wrapper:last-child
+  > .dx_input {
+  border-top-right-radius: var(--radius-control);
+  border-bottom-right-radius: var(--radius-control);
+}
+
+.dx_button_group[data-orientation="vertical"]
+  > :is(.dx_button, .dx_input, span:has(> .dx_button)):first-child {
+  border-top-left-radius: var(--radius-control);
+  border-top-right-radius: var(--radius-control);
+}
+
+.dx_button_group[data-orientation="vertical"]
+  > :is(span, div):not(.dx_button_group):has(> .dx_button):first-child
+  > .dx_button,
+.dx_button_group[data-orientation="vertical"]
+  > .dx_dropdown_menu:first-child
+  > :is(span, div)
+  > .dx_button,
+.dx_button_group[data-orientation="vertical"]
+  > .dx_input_wrapper:first-child
+  > .dx_input {
+  border-top-left-radius: var(--radius-control);
+  border-top-right-radius: var(--radius-control);
+}
+
+.dx_button_group[data-orientation="vertical"]
+  > :is(.dx_button, .dx_input, span:has(> .dx_button)):last-child {
+  border-bottom-left-radius: var(--radius-control);
+  border-bottom-right-radius: var(--radius-control);
+}
+
+.dx_button_group[data-orientation="vertical"]
+  > :is(span, div):not(.dx_button_group):has(> .dx_button):last-child
+  > .dx_button,
+.dx_button_group[data-orientation="vertical"]
+  > .dx_dropdown_menu:last-child
+  > :is(span, div)
+  > .dx_button,
+.dx_button_group[data-orientation="vertical"]
+  > .dx_input_wrapper:last-child
+  > .dx_input {
+  border-bottom-left-radius: var(--radius-control);
+  border-bottom-right-radius: var(--radius-control);
+}
+
+/* Divider drawn between adjacent members. Separators ignore the collapsed
+   margin so the 1px line stays visible rather than being swallowed by a
+   neighbouring border. */
+.dx_button_group[data-orientation="horizontal"] > .dx_button_group_separator {
+  align-self: stretch;
+  width: 3px;
+  margin-inline: 0;
+  background: var(--surface-border);
+}
+
+.dx_button_group[data-orientation="vertical"] > .dx_button_group_separator {
+  align-self: stretch;
+  height: 3px;
+  margin-block: 0;
+  background: var(--surface-border);
+}

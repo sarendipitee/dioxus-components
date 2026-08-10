@@ -1,0 +1,1 @@
+Nest groups to keep toolbar clusters visually distinct while preserving independent buttons.

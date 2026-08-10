@@ -43,12 +43,11 @@ impl ComponentCategory {
 
 pub fn category_of(name: &str) -> ComponentCategory {
     match name {
-        "button" | "input" | "text_input" | "mask_input" | "number_input" | "password_input"
-        | "textarea" | "label" | "checkbox" | "switch" | "radio_group" | "toggle"
-        | "toggle_group" | "select" | "slider" | "calendar" | "date_picker" | "date_input"
-        | "color_picker" | "color_input" | "time_picker" | "time_input" | "file_drop_zone" => {
-            ComponentCategory::Forms
-        }
+        "button_group" | "button" | "input" | "text_input" | "mask_input" | "number_input"
+        | "password_input" | "textarea" | "label" | "checkbox" | "switch" | "radio_group"
+        | "toggle" | "toggle_group" | "select" | "slider" | "calendar" | "date_picker"
+        | "date_input" | "color_picker" | "color_input" | "time_picker" | "time_input"
+        | "file_drop_zone" => ComponentCategory::Forms,
         "schedule"
         | "schedule_day_view"
         | "schedule_week_view"
@@ -273,8 +272,8 @@ macro_rules! examples {
             ],
         }
     };
-}
 
+}
 examples!(
     accordion,
     alert,
@@ -282,6 +281,7 @@ examples!(
     aspect_ratio,
     avatar,
     badge,
+    button_group[vertical, nested, separator, split, input, dropdown, popover],
     button[size, icon],
     calendar[simple, internationalized, range, multi_month, unavailable_dates],
     card,

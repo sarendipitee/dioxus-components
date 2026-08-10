@@ -1,0 +1,1 @@
+Use a button group as the anchor for a popover trigger, letting a chevron button hint at the upcoming content while sharing borders with its companion.

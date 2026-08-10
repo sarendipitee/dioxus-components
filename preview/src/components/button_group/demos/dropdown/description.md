@@ -1,0 +1,1 @@
+Pair a follow action with a compact menu for stateful controls that stay visually connected.

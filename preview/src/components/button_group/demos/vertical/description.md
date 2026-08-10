@@ -1,0 +1,1 @@
+Use vertically oriented icon buttons for compact increment and decrement controls while preserving accessible labels.
