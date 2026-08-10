@@ -1437,6 +1437,7 @@ pub fn MenuSubContent(props: MenuSubContentProps) -> Element {
         floating_ref,
         ContentSide::Right,
         ContentAlign::Start,
+        None,
     );
 
     let style = pos.style;

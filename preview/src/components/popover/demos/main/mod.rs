@@ -1,6 +1,7 @@
 use dioxus::prelude::*;
 use dioxus_components::button::Button;
 use dioxus_components::popover::*;
+use dioxus_primitives::popover::PopoverWidth;
 
 #[component]
 pub fn Demo() -> Element {
@@ -41,6 +42,18 @@ pub fn Demo() -> Element {
                     PopoverContentTitle { "Non-modal details" }
                     PopoverContentDescription { "Focus remains free to leave this popover." }
                     Button { r#type: "button", "Non-modal action" }
+                }
+            }
+
+            Popover {
+                PopoverTrigger {
+                    "data-testid": "explicit-width-trigger",
+                    Button { r#type: "button", "Open sized popover" }
+                }
+                PopoverContent {
+                    "data-testid": "explicit-width-content",
+                    width: PopoverWidth::Css("320px".to_string()),
+                    PopoverContentTitle { "Sized content" }
                 }
             }
         }

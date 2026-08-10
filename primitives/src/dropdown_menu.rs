@@ -200,22 +200,8 @@ pub fn DropdownMenuContent(props: DropdownMenuContentProps) -> Element {
     let dropdown_ctx: DropdownMenuContext = use_context();
     let mut menu_ctx: MenuContext = use_context();
     let open = menu_ctx.open;
-    let mut menu_ref: Signal<Option<Rc<MountedData>>> = use_signal(|| None);
+    let menu_ref: Signal<Option<Rc<MountedData>>> = use_signal(|| None);
     let focused = move || open() && !menu_ctx.focus.any_focused();
-
-    use_deferred_focus(menu_ctx.focus, dropdown_ctx.initial_focus, move || {
-        (menu_ctx.open)()
-    });
-    use_effect(move || {
-        let Some(menu) = menu_ref() else {
-            return;
-        };
-        if focused() {
-            spawn(async move {
-                _ = menu.set_focus(true).await;
-            });
-        }
-    });
 
     // Floating-element positioning. The trigger ref is shared via the menu context;
     // the content ref (`menu_ref`, also used for focus) doubles as the floating
@@ -228,6 +214,7 @@ pub fn DropdownMenuContent(props: DropdownMenuContentProps) -> Element {
         menu_ref,
         ContentSide::Bottom,
         ContentAlign::Start,
+        None,
     );
 
     let style = pos.style;
@@ -235,12 +222,15 @@ pub fn DropdownMenuContent(props: DropdownMenuContentProps) -> Element {
     let resolved_side = pos.side;
     let resolved_align = pos.align;
     let floating_active = pos.floating_active;
+    let on_mounted = pos.on_mounted;
 
     let position = use_memo(move || style_prop(&style.read(), "position"));
     let top = use_memo(move || style_prop(&style.read(), "top"));
     let left = use_memo(move || style_prop(&style.read(), "left"));
     let visibility = use_memo(move || if is_positioned() { "visible" } else { "hidden" });
-
+    use_deferred_focus(menu_ctx.focus, dropdown_ctx.initial_focus, move || {
+        (menu_ctx.open)() && is_positioned()
+    });
     let base = attributes!(div {
         tabindex: if focused() { "0" } else { "-1" },
         onblur: move |_| {
@@ -255,7 +245,7 @@ pub fn DropdownMenuContent(props: DropdownMenuContentProps) -> Element {
         "data-side": resolved_side.read().as_str(),
         "data-align": resolved_align.read().as_str(),
         "data-floating": floating_active.then_some("true"),
-        onmounted: move |evt| menu_ref.set(Some(evt.data())),
+        onmounted: move |evt| on_mounted.call(evt.data()),
     });
     // Floating props must win over user-forwarded coords → place `base` last.
     let attributes = merge_attributes(vec![props.attributes, base]);

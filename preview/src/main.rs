@@ -1215,7 +1215,7 @@ fn ExpandableCodeBlock(children: Element) -> Element {
     rsx! {
         div {
             class: "dx-component-expandable-code",
-            data-expanded: is_expanded(),
+            "data-expanded": is_expanded(),
             {children}
             if !is_expanded() {
                 div { class: "dx-component-code-overlay",

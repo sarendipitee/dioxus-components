@@ -1,5 +1,5 @@
 #![allow(dead_code)]
-use crate::components::schedule::*;
+use dioxus_components::schedule::*;
 use time::macros::{date, time};
 use time::{Date, PrimitiveDateTime};
 

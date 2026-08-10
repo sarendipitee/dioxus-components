@@ -119,6 +119,7 @@ pub fn DateInput(
                 popover_root: DateInputPopover,
                 open: None,
                 close_on_input_focus: false,
+                dioxus_primitives::popover::PopoverTrigger { style: "display: contents;", "data-slot": "input-wrapper",
                 InputBase {
                     label,
                     description,
@@ -147,7 +148,11 @@ pub fn DateInput(
                         on_format_year_placeholder,
                     }
                 }
-                DateInputPopoverContent { align: ContentAlign::Center,
+                }
+                DateInputPopoverContent {
+                    width: dioxus_primitives::popover::PopoverWidth::Target,
+                    target_selector: "[data-slot='input-wrapper']",
+                    align: ContentAlign::Center,
                     DatePickerSurface { month_count }
                 }
             }
@@ -237,6 +242,7 @@ pub fn DateRangePickerInput(
                 popover_root: DateInputPopover,
                 open: None,
                 close_on_input_focus: true,
+                dioxus_primitives::popover::PopoverTrigger { style: "display: contents;", "data-slot": "input-wrapper",
                 InputBase {
                     label,
                     description,
@@ -261,7 +267,11 @@ pub fn DateRangePickerInput(
                         disabled: is_disabled,
                     }
                 }
-                DateInputPopoverContent { align: ContentAlign::Center,
+                }
+                DateInputPopoverContent {
+                    width: dioxus_primitives::popover::PopoverWidth::Target,
+                    target_selector: "[data-slot='input-wrapper']",
+                    align: ContentAlign::Center,
                     DateRangePickerSurface { month_count }
                 }
             }
@@ -427,6 +437,8 @@ fn DateInputPopoverContent(
     #[props(default)] id: Option<String>,
     #[props(default = dioxus_primitives::ContentSide::Bottom)] side: dioxus_primitives::ContentSide,
     #[props(default = ContentAlign::Center)] align: ContentAlign,
+    #[props(default)] width: Option<dioxus_primitives::popover::PopoverWidth>,
+    #[props(default)] target_selector: Option<String>,
     #[props(extends = GlobalAttributes)] attributes: Vec<Attribute>,
     children: Element,
 ) -> Element {
@@ -437,6 +449,8 @@ fn DateInputPopoverContent(
             id,
             side,
             align,
+            width,
+            target_selector,
             attributes,
             DatePickerPortalContextProvider { context, {children} }
         }

@@ -154,6 +154,7 @@ fn ComboboxOptionsPortaled(props: ComboboxOptionsPortaledProps) -> Element {
         floating_ref,
         ContentSide::Bottom,
         ContentAlign::Start,
+        None,
     );
     let floating_style = pos.style.read().clone();
     let floating_position = style_prop(&floating_style, "position");

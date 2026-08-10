@@ -143,6 +143,15 @@ pub fn Popover(props: PopoverProps) -> Element {
     }
 }
 
+/// Width configuration for popover content.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum PopoverWidth {
+    /// Match the width of the trigger element.
+    Target,
+    /// Explicit CSS width string.
+    Css(String),
+}
+
 /// The props for the [`PopoverContent`] component.
 #[derive(Props, Clone, PartialEq)]
 pub struct PopoverContentProps {
@@ -156,6 +165,13 @@ pub struct PopoverContentProps {
     /// Alignment of the popover relative to the trigger.
     #[props(default = ContentAlign::Center)]
     pub align: ContentAlign,
+
+    /// Width configuration of the popover relative to the trigger.
+    #[props(default)]
+    pub width: ReadSignal<Option<PopoverWidth>>,
+    /// Optional selector used to resolve a descendant of the trigger as the positioning target.
+    #[props(default)]
+    pub target_selector: Option<String>,
 
     /// Additional attributes to apply to the content element.
     #[props(extends = GlobalAttributes)]
@@ -271,7 +287,7 @@ pub fn PopoverContent(props: PopoverContentProps) -> Element {
                     await new Promise(resolve => setTimeout(resolve, 16));
                 }
             }
-            }"#,
+            "#,
         );
         let _ = eval.send(id.to_string());
         let _ = eval.send(open.cloned());
@@ -285,6 +301,8 @@ pub fn PopoverContent(props: PopoverContentProps) -> Element {
                 id,
                 side: props.side,
                 align: props.align,
+                width: props.width,
+                target_selector: props.target_selector.clone(),
                 attributes,
                 children: props.children,
             }
@@ -299,6 +317,8 @@ struct PopoverPortaledProps {
     id: Memo<String>,
     side: ContentSide,
     align: ContentAlign,
+    width: ReadSignal<Option<PopoverWidth>>,
+    target_selector: Option<String>,
     attributes: Vec<Attribute>,
     children: Element,
 }
@@ -365,27 +385,39 @@ fn PopoverPortaled(props: PopoverPortaledProps) -> Element {
     let overlay_z = reg.z().map(|z| format!("--overlay-z: {z};"));
     let is_modal = (ctx.is_modal)();
     let labelledby = ctx.labelledby.cloned();
-    let mut floating_ref: Signal<Option<Rc<MountedData>>> = use_signal(|| None);
-    let on_floating_mounted = use_callback(move |mounted: Rc<MountedData>| {
-        floating_ref.set(Some(mounted));
-    });
-    let pos = use_position(ctx.trigger_ref, floating_ref, props.side, props.align);
+    let target_selector = props.target_selector.clone();
+    let floating_ref: Signal<Option<Rc<MountedData>>> = use_signal(|| None);
+    let pos = use_position(
+        ctx.trigger_ref,
+        floating_ref,
+        props.side,
+        props.align,
+        target_selector.clone(),
+    );
     let floating_style = pos.style.read().clone();
     let floating_position = style_prop(&floating_style, "position");
     let floating_top = style_prop(&floating_style, "top");
     let floating_left = style_prop(&floating_style, "left");
     let floating_visibility = if !is_open || (pos.is_positioned)() {
         if is_open {
-            "visible".to_string()
+            "visible"
         } else {
-            "hidden".to_string()
+            "hidden"
         }
     } else {
-        "visible".to_string()
+        "visible"
     };
     let floating_side = *pos.side.read();
     let floating_align = *pos.align.read();
+    let floating_width = match (props.width)() {
+        Some(PopoverWidth::Target) => (*pos.reference_width.read())
+            .map(|width| format!("{width}px"))
+            .unwrap_or_default(),
+        Some(PopoverWidth::Css(width)) => width,
+        None => String::new(),
+    };
     let floating_active = pos.floating_active;
+    let on_floating_mounted = pos.on_mounted;
 
     // The body is a CHILD of `PortalIn` so the re-provide lands on the *portaled*
     // render chain — the only place a portaled consumer resolves it.
@@ -398,15 +430,16 @@ fn PopoverPortaled(props: PopoverPortaledProps) -> Element {
                 is_modal,
                 labelledby,
                 overlay_z,
+                attributes: props.attributes.clone(),
                 floating_position,
                 floating_top,
                 floating_left,
                 floating_visibility,
                 floating_side,
                 floating_align,
+                floating_width,
                 floating_active,
                 on_floating_mounted,
-                attributes: props.attributes.clone(),
                 children: props.children,
             }
         }
@@ -428,18 +461,18 @@ pub struct PopoverContentRenderedProps {
     floating_position: String,
     floating_top: String,
     floating_left: String,
-    floating_visibility: String,
+    floating_visibility: &'static str,
     floating_side: ContentSide,
     floating_align: ContentAlign,
+    floating_width: String,
     floating_active: bool,
     on_floating_mounted: Callback<Rc<MountedData>>,
     attributes: Vec<Attribute>,
     children: Element,
 }
 
-/// The rendered content of the popover, rendered as a child of `PortalIn` (so
-/// this is where `PopoverCtx` is re-provided). Floating layout is snapshotted
-/// in the non-portaled parent and forwarded here as plain values.
+/// Rendered popover content. It receives floating layout snapshots from the
+/// non-portaled parent and re-provides popover context in the portal.
 #[component]
 pub fn PopoverContentRendered(props: PopoverContentRenderedProps) -> Element {
     let ctx = props.ctx;
@@ -454,27 +487,23 @@ pub fn PopoverContentRendered(props: PopoverContentRenderedProps) -> Element {
     let floating_visibility = props.floating_visibility;
     let floating_side = props.floating_side;
     let floating_align = props.floating_align;
+    let floating_width = props.floating_width;
     let floating_active = props.floating_active;
     let on_floating_mounted = props.on_floating_mounted;
     let attributes = props.attributes;
     let children = props.children;
 
-    // Re-provide a CLONE of the Root's ctx at the top of the portaled subtree so
-    // in-panel consumers resolve PopoverCtx up THIS (portaled) render chain.
     use_context_provider(|| ctx);
-
-    // z-index assigned by the overlay manager via open order. Emitted as a raw
-    // `style` string (name=""), so it coexists with the per-property
-    // position/top/left styles under `merge_attributes` (merged by name).
+    let style = format!(
+        "{} position: {floating_position}; top: {floating_top}; left: {floating_left}; visibility: {floating_visibility}; width: {floating_width};",
+        overlay_z.unwrap_or_default()
+    );
     let floating_attrs = attributes!(div {
-        position: floating_position,
-        top: floating_top,
-        left: floating_left,
-        visibility: floating_visibility,
-        style: overlay_z,
+        style,
         "data-floating": floating_active.then_some("true"),
         onmounted: move |evt| on_floating_mounted.call(evt.data()),
     });
+
     // Floating props must win over user-forwarded coords → place them in the last list.
     let attributes = merge_attributes(vec![attributes, floating_attrs]);
 

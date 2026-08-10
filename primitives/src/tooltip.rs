@@ -369,7 +369,7 @@ fn TooltipPortaled(props: TooltipPortaledProps) -> Element {
     let on_floating_mounted = use_callback(move |mounted: Rc<MountedData>| {
         floating_ref.set(Some(mounted));
     });
-    let pos = use_position(ctx.trigger_ref, floating_ref, props.side, props.align);
+    let pos = use_position(ctx.trigger_ref, floating_ref, props.side, props.align, None);
     let floating_style = pos.style.read().clone();
     let floating_position = style_prop(&floating_style, "position");
     let floating_top = style_prop(&floating_style, "top");

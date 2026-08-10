@@ -22,7 +22,7 @@ pub fn Demo() -> Element {
                 }
             }
 
-            div { display: "grid", gap: "0.5rem",
+            div { display: "grid", gap: "1rem",
                 Heading {
                     level: HeadingLevel::H3,
                     size: TypographySize::Md,
@@ -52,7 +52,7 @@ pub fn Demo() -> Element {
                 id: "typography-semantic-fixture",
                 "data-testid": "typography-semantic-fixture",
                 display: "grid",
-                gap: "0.5rem",
+                gap: "1rem",
 
                 Heading {
                     level: HeadingLevel::H1,
@@ -81,17 +81,6 @@ pub fn Demo() -> Element {
                     aria_label: "Typography semantic division",
                     "data-typography-text-element": "div",
                     "Text rendered as a semantic division with forwarded global attributes."
-                }
-                Text {
-                    element: TextElement::Label,
-                    class: "typography-semantic-label",
-                    "data-typography-text-element": "label",
-                    "Fixture input label"
-                    input {
-                        id: "typography-semantic-input",
-                        placeholder: "Fixture input",
-                        "data-typography-input": "associated"
-                    }
                 }
                 Text {
                     truncate: true,

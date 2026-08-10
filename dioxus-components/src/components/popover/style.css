@@ -74,8 +74,8 @@
 }
 
 .dx_popover_trigger {
-
 }
+
 
 /* ── Native fallback positioning ─────────────────────────────────────────────
    On web, floating-ui owns placement and emits `data-floating="true"` on the

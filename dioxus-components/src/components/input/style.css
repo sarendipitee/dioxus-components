@@ -134,7 +134,7 @@
   flex: 0 0 auto;
   align-items: center;
   justify-content: center;
-  color: var(--input-fg-faint);
+  color: var(--input-fg-muted);
 }
 
 .dx_input[data-loading="true"] {
@@ -202,8 +202,7 @@
 }
 
 .dx_text_input_control::placeholder {
-  color: var(--input-fg-faint);
-  opacity: 0.5;
+  color: var(--input-placeholder);
 }
 
 .dx_text_input_control:disabled {

@@ -171,6 +171,7 @@
 	margin-top: -2px;
 	background: var(--overlay-border);
 	margin-inline: calc(var(--content-gap) * -1);
-	margin-block: var(--content-gap);
+	margin-top: calc(var(--content-gap) / 2);
+	margin-bottom: var(--content-gap);
 }
 

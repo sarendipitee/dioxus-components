@@ -1,6 +1,6 @@
 use crate::component_styles;
 use crate::components::context_menu::ContextMenuStyles;
-use crate::components::input::{InputVariant, TextInput};
+use crate::components::input::{InputSize, InputVariant, TextInput};
 use crate::components::menubar::MenubarStyles;
 use dioxus::prelude::*;
 use dioxus_primitives::dioxus_attributes::attributes;
@@ -115,6 +115,7 @@ fn styled_filter_input_props(
             rsx! {
                 TextInput {
                     variant: InputVariant::Unstyled,
+                    size: InputSize::Sm,
                     attributes,
                 }
             }

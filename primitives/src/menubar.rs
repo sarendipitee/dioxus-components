@@ -626,6 +626,7 @@ pub fn MenubarContent(props: MenubarContentProps) -> Element {
         floating_ref,
         ContentSide::Bottom,
         ContentAlign::Start,
+        None,
     );
 
     let style = pos.style;

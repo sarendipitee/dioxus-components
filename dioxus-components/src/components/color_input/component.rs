@@ -225,6 +225,9 @@ pub fn ColorInput(props: ColorInputProps) -> Element {
                     set_open: set_popover_open,
                     disabled,
                     read_only,
+                    dioxus_primitives::popover::PopoverTrigger {
+                        style: "display: contents;",
+                        "data-slot": "input",
                     Input {
                         variant,
                         size,
@@ -247,7 +250,11 @@ pub fn ColorInput(props: ColorInputProps) -> Element {
                             attributes: input_attributes,
                         }
                     }
-                    PopoverContent { id: popover_id,
+                    }
+                    PopoverContent {
+                        id: popover_id,
+                        width: dioxus_primitives::popover::PopoverWidth::Target,
+                        target_selector: "[data-slot='input']",
                         ColorPickerRoot {
                             color,
                             on_color_change,

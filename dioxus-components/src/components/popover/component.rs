@@ -91,7 +91,7 @@ pub fn PopoverTrigger(props: PopoverTriggerProps) -> Element {
 #[component]
 pub fn PopoverOpenTrigger(props: PopoverTriggerProps) -> Element {
     let base = attributes!(div {
-        class: Styles::dx_popover_trigger
+        class: Styles::dx_popover_trigger,
     });
     let merged = merge_attributes(vec![base, props.attributes]);
 
@@ -112,6 +112,8 @@ pub fn PopoverContent(props: PopoverContentProps) -> Element {
             id: props.id,
             side: props.side,
             align: props.align,
+            width: props.width,
+            target_selector: props.target_selector,
             attributes,
             {props.children}
         }

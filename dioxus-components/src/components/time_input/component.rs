@@ -240,6 +240,7 @@ pub fn TimeInput(
                 attributes: attributes!(div {
                     class: Styles::dx_time_input_popover_root
                 }),
+                dioxus_primitives::popover::PopoverTrigger { style: "display: contents;",
                 TimePicker {
                     on_value_change,
                     on_picker_value_change,
@@ -278,7 +279,9 @@ pub fn TimeInput(
                         popover_id: popover_id.clone(),
                         popover_open: open(),
                     }
-                    TimeInputPopoverContent { id: popover_id,
+                }
+                    TimeInputPopoverContent {
+                        id: popover_id,
                         crate::components::time_picker::TimePicker {
                             selected_time,
                             selected_value,
@@ -332,7 +335,8 @@ fn StyledTimePickerInput(
     rsx! {
         TimePickerInput {
             attributes: attributes!(div {
-                class: Styles::dx_time_input_field
+                class: Styles::dx_time_input_field,
+                "data-slot": "input",
             }),
             StyledTimePickerSegments {
                 with_seconds,
@@ -378,11 +382,18 @@ fn StyledTimePickerSegments(
 }
 
 #[component]
-fn TimeInputPopoverContent(#[props(default)] id: Option<String>, children: Element) -> Element {
+fn TimeInputPopoverContent(
+    #[props(default)] id: Option<String>,
+    #[props(default)] width: Option<dioxus_primitives::popover::PopoverWidth>,
+    #[props(default)] target_selector: Option<String>,
+    children: Element,
+) -> Element {
     rsx! {
         PopoverContent {
             id,
-            align: ContentAlign::Start,
+            align: ContentAlign::Center,
+            width,
+            target_selector,
             class: Styles::dx_time_input_popover_content,
             {children}
         }

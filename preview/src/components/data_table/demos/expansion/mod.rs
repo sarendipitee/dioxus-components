@@ -11,7 +11,7 @@ use demo_support::{
     CLIENT_PAGE_SIZE,
 };
 
-#[css_module("./style.css")]
+#[css_module("/src/components/data_table/demos/expansion/style.css")]
 struct Styles;
 
 /// Renders a DataTable with expandable row detail content.
