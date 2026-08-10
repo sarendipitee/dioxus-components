@@ -734,7 +734,9 @@ pub fn MenuItem<T: Clone + PartialEq + 'static>(props: MenuItemProps<T>) -> Elem
                 if !props.is_submenu_trigger {
                     ctx.active_submenu.set(None);
                 }
-                ctx.focus.set_focus(Some(index_value));
+                if ctx.filter_input_id.peek().is_none() {
+                    ctx.focus.set_focus(Some(index_value));
+                }
             },
             onpointerdown: move |event| { pointer_select_start(&event, disabled(), down_pos); },
             onpointerup: move |event| {

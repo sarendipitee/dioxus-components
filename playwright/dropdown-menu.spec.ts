@@ -45,8 +45,10 @@ test("filterable menu restores items when query is deleted", async ({
   const menu = page.locator('[role="menu"][data-state="open"]').first();
   const input = menu.getByRole("textbox", { name: "Filter actions" });
   await expect(input).toBeFocused();
+  await menu.getByRole("menuitem", { name: "Create issue" }).hover();
+  await expect(input).toBeFocused();
 
-  await input.pressSequentially("v");
+  await page.keyboard.press("v");
   await expect(
     menu.getByRole("menuitem", { name: "Assign reviewer" }),
   ).toBeVisible();
