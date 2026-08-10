@@ -11,7 +11,8 @@ test("date input popover keeps centered horizontal placement while opening", asy
   const dueDateInput = root.locator(`#${dueDateInputId}`);
   const dueDateShell = root
     .getByTestId("due-date-field")
-    .locator("[data-slot='input-wrapper']");
+    .locator(".dx_input_wrapper")
+    .first();
   const showCalendar = dueDateShell.locator('[aria-label="Show Calendar"]');
 
   await expect(dueDateInput).toBeVisible();
@@ -23,6 +24,16 @@ test("date input popover keeps centered horizontal placement while opening", asy
   await expect(dialog).toBeVisible();
   await expect(dialog).toHaveAttribute("data-state", "open");
   await expect(dialog).toHaveAttribute("data-align", "center");
+  await expect(dialog).toHaveAttribute("data-side", "bottom");
+  await expect
+    .poll(async () => (await dialog.boundingBox())?.y ?? 0)
+    .toBeGreaterThan(0);
+  const shellBox = await dueDateShell.boundingBox();
+  const dialogBox = await dialog.boundingBox();
+  expect(shellBox).not.toBeNull();
+  expect(dialogBox!.x).toBeGreaterThanOrEqual(0);
+  expect(dialogBox!.x - shellBox!.x).toBeLessThanOrEqual(8);
+  expect(dialogBox!.y).toBeGreaterThanOrEqual(shellBox!.y + shellBox!.height);
   const dialogId = await dialog.getAttribute("id");
   expect(dialogId).toBeTruthy();
   await expect(showCalendar).toHaveAttribute("aria-controls", dialogId!);

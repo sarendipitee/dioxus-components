@@ -19,6 +19,7 @@ test("segments expose names and valid ARIA ranges", async ({ page }) => {
   await expect(root.getByRole("spinbutton", { name: "second" })).toHaveCount(0);
 });
 
+
 test("12-hour mode exposes seconds and keyboard-toggleable AM/PM", async ({
   page,
 }) => {

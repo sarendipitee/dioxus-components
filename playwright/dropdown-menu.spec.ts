@@ -4,7 +4,7 @@ test("dropdown checkbox and radio keyboard state updates keep menu open", async 
   page,
 }) => {
   await page.goto("/components/dropdown_menu");
-  const demo = page.locator(".dx-component-section").first();
+  const demo = page.locator("#dx-preview-block-root");
   const trigger = demo.getByRole("button", { name: "Open Menu" });
   const menu = page
     .getByRole("menu")
@@ -31,6 +31,30 @@ test("dropdown checkbox and radio keyboard state updates keep menu open", async 
   await expect(checkbox).toHaveAttribute("data-state", "unchecked");
   await expect(demo.getByText("Toolbar visible: false")).toBeVisible();
   await expect(menu).toHaveAttribute("data-state", "open");
+});
+
+test("first open anchors menu without scrolling trigger", async ({ page }) => {
+  await page.goto("/components/dropdown_menu");
+  const trigger = page
+    .locator("#dx-preview-block-root")
+    .getByRole("button", { name: "Open Menu" });
+
+  await trigger.evaluate((element) => element.scrollIntoView({ block: "center" }));
+  await page.waitForTimeout(50);
+
+  await trigger.press("ArrowDown");
+  const menu = page
+    .getByRole("menu")
+    .filter({ has: page.getByText("Actions") })
+    .first();
+  await expect(menu).toBeVisible();
+
+  const triggerBox = await trigger.boundingBox();
+  const menuBox = await menu.boundingBox();
+  expect(triggerBox).not.toBeNull();
+  expect(menuBox).not.toBeNull();
+  expect(Math.abs(menuBox!.x - triggerBox!.x)).toBeLessThan(4);
+  expect(menuBox!.y).toBeGreaterThanOrEqual(triggerBox!.y + triggerBox!.height);
 });
 
 test("filterable menu restores items when query is deleted", async ({

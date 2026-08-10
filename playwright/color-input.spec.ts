@@ -36,6 +36,25 @@ test("focus opens the controlled accessible dialog", async ({ page }) => {
   await expect(dialog.getByRole("slider", { name: "Hue" })).toBeVisible();
 });
 
+test("popover matches field width and is bottom centered", async ({ page }) => {
+  const { input } = await loadColorInput(page);
+  const field = input.locator("xpath=ancestor::*[@data-slot='input'][1]");
+  await input.focus();
+  const dialog = page.getByRole("dialog");
+  await expect(dialog).toBeVisible();
+  await expect(dialog).toHaveAttribute("data-side", "bottom");
+  await expect(dialog).toHaveAttribute("data-align", "center");
+
+  const fieldBox = await field.boundingBox();
+  const dialogBox = await dialog.boundingBox();
+  expect(fieldBox).not.toBeNull();
+  expect(dialogBox).not.toBeNull();
+  expect(Math.abs(dialogBox!.width - fieldBox!.width)).toBeLessThan(2);
+  expect(dialogBox!.y).toBeGreaterThanOrEqual(fieldBox!.y + fieldBox!.height);
+  expect(dialogBox!.x).toBeGreaterThanOrEqual(0);
+  expect(dialogBox!.x - fieldBox!.x).toBeLessThanOrEqual(8);
+});
+
 test("valid shorthand invokes the callback and canonicalizes on blur", async ({
   page,
 }) => {
