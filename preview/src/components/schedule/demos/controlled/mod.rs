@@ -1,5 +1,5 @@
-use crate::components::schedule::*;
 use dioxus::prelude::*;
+use dioxus_components::schedule::*;
 use time::Duration;
 #[path = "../demo_support.rs"]
 mod demo_support;

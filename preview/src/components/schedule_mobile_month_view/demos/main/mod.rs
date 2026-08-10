@@ -1,5 +1,5 @@
-use crate::components::schedule_mobile_month_view::*;
 use dioxus::prelude::*;
+use dioxus_components::schedule::*;
 #[path = "../../../schedule/demos/demo_support.rs"]
 mod demo_support;
 use demo_support::*;

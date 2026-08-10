@@ -1,5 +1,5 @@
-use crate::components::schedule::*;
 use dioxus::prelude::*;
+use dioxus_components::schedule::*;
 #[path = "../demo_support.rs"]
 mod demo_support;
 use demo_support::*;

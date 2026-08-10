@@ -1,6 +1,6 @@
-use crate::components::dialog::*;
 use dioxus::prelude::*;
 use dioxus_components::button::Button;
+use dioxus_components::dialog::*;
 
 const PARAGRAPHS: &[&str] = &[
     "Dioxus is a Rust framework for building user interfaces across web, desktop, and mobile platforms.",

@@ -1,5 +1,5 @@
-use crate::components::tabs::*;
 use dioxus::prelude::*;
+use dioxus_components::tabs::*;
 use dioxus_primitives::tabs::TabsActivationMode;
 
 #[component]

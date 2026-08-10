@@ -1,5 +1,5 @@
-use crate::components::alert_dialog::*;
 use dioxus::prelude::*;
+use dioxus_components::alert_dialog::*;
 use dioxus_components::button::{Button, ButtonVariant};
 
 #[component]

@@ -1,6 +1,6 @@
-use crate::components::dialog::*;
 use dioxus::prelude::*;
 use dioxus_components::button::{Button, ButtonVariant};
+use dioxus_components::dialog::*;
 use dioxus_components::input::TextInput;
 
 #[component]
