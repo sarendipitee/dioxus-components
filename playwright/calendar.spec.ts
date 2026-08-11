@@ -37,12 +37,14 @@ test("year dropdown panel is constrained and scrollable", async ({ page }) => {
     const styles = getComputedStyle(element);
     return {
       maxHeight: styles.maxHeight,
+      width: styles.width,
       overflowY: styles.overflowY,
       scrollHeight: element.scrollHeight,
       clientHeight: element.clientHeight,
     };
   });
 
+  expect(panelMetrics.width).toBe("96px");
   expect(panelMetrics.maxHeight).toBe("320px");
   expect(panelMetrics.overflowY).toBe("auto");
   expect(panelMetrics.scrollHeight).toBeGreaterThan(panelMetrics.clientHeight);
@@ -62,7 +64,7 @@ test("hovering year items does not cross menu signal scopes", async ({ page }) =
   await expect(calendar).toBeVisible({ timeout: 30 * 1000 });
   await calendar.getByRole("button", { name: "Year 2026" }).click();
 
-  const year = page.getByRole("menuitemradio", { name: "2025", exact: true });
+  const year = page.locator('[role="menuitemradio"]:visible').first();
   await expect(year).toBeVisible();
   await year.hover();
   await expect(year).toHaveAttribute("data-focused", "true");

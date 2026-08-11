@@ -279,3 +279,7 @@ td:has(.dx_calendar_grid_cell[data-selection-end="true"]) {
     max-height: 20rem;
     overflow-y: auto;
 }
+
+.dx_calendar_year_select_content.dx_dropdown.dx_menu_content {
+    min-width: 6rem;
+}
