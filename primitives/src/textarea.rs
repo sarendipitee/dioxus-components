@@ -426,6 +426,7 @@ fn textarea_autosize_style_from_pretext(
     ))
 }
 
+#[cfg(not(all(feature = "web", target_arch = "wasm32")))]
 fn textarea_value_text(value: Option<&AttributeValue>) -> Option<String> {
     match value? {
         AttributeValue::Text(text) => Some(text.clone()),
@@ -437,6 +438,7 @@ fn textarea_value_text(value: Option<&AttributeValue>) -> Option<String> {
     }
 }
 
+#[cfg(not(all(feature = "web", target_arch = "wasm32")))]
 fn textarea_line_count(value: &str) -> usize {
     value.lines().count() + usize::from(value.ends_with('\n'))
 }
