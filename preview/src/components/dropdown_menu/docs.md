@@ -7,11 +7,9 @@ The demos below focus on practical menu behavior instead of generic layout: labe
 ```rust
 // The dropdown menu component wraps a trigger and a menu surface in a single semantic flow.
 DropdownMenu {
-    // The trigger can host any element; the examples keep it as a button for a clear entry point.
+    // The trigger renders a styled button directly with the provided content.
     DropdownMenuTrigger {
-        Button {
-            "Open Menu"
-        }
+        "Open Menu"
     }
     Menu {
         MenuLabel { "Actions" }

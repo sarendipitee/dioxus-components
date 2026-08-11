@@ -1432,7 +1432,7 @@ pub fn MenuSubContent(props: MenuSubContentProps) -> Element {
     // left` logic). The reference is the parent submenu trigger item; the floating
     // element is this sub-content. On native the hook is inert and the
     // `:not([data-floating])` CSS fallback provides the static placement.
-    let mut floating_ref: Signal<Option<Rc<MountedData>>> = use_signal(|| None);
+    let floating_ref: Signal<Option<Rc<MountedData>>> = use_signal(|| None);
     let pos = use_position(
         sub_ctx.trigger_ref,
         floating_ref,

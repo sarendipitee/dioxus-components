@@ -233,11 +233,9 @@ fn FloatingInsideModal() -> Element {
 
                 DropdownMenu {
                     DropdownMenuTrigger {
-                        Button {
-                            variant: ButtonVariant::Outline,
-                            "data-testid": "dropdown-in-dialog-trigger",
-                            "Dropdown in dialog",
-                        }
+                        variant: ButtonVariant::Outline,
+                        "data-testid": "dropdown-in-dialog-trigger",
+                        "Dropdown in dialog",
                     }
                     Menu {
                         "data-testid": "dropdown-in-dialog-menu",
@@ -364,11 +362,9 @@ fn SubmenuInsideDialog() -> Element {
             },
             DropdownMenu {
                 DropdownMenuTrigger {
-                    Button {
-                        variant: ButtonVariant::Outline,
-                        "data-testid": "submenu-trigger",
-                        "Open menu",
-                    }
+                    variant: ButtonVariant::Outline,
+                    "data-testid": "submenu-trigger",
+                    "Open menu",
                 }
                 Menu {
                     "data-testid": "submenu-menu",

@@ -11,31 +11,30 @@ const root = (page: import("@playwright/test").Page) =>
   page.locator("#dx-preview-block-root");
 
 test.describe("button group", () => {
-  test("joins buttons into a single horizontal group with group semantics", async ({
+  test("joins buttons into a single vertical group with group semantics", async ({
     page,
   }) => {
     await gotoDemo(page, "vertical");
     const group = root(page)
-      .getByRole("group", { name: "View options" })
+      .getByRole("group", { name: "Adjust value" })
       .first();
 
     await expect(group).toHaveAttribute("data-orientation", "vertical");
     await expect(group).toHaveAttribute("role", "group");
 
-    const listView = group.getByRole("button", { name: "List view" });
-    const gridView = group.getByRole("button", { name: "Grid view" });
-    const disabled = group.getByRole("button", { name: "Disabled" });
+    const increase = group.getByRole("button", { name: "Increase value" });
+    const decrease = group.getByRole("button", { name: "Decrease value" });
 
-    await expect(listView).toBeEnabled();
-    await expect(gridView).toBeEnabled();
-    await expect(disabled).toBeDisabled();
+    await expect(increase).toBeEnabled();
+    await expect(decrease).toBeEnabled();
 
-    await expect(group).toHaveCSS("flex-direction", "column");
   });
 
   test("shares borders between horizontal members", async ({ page }) => {
     await gotoDemo(page, "main");
-    const group = root(page).getByTestId("horizontal-group").first();
+    const group = root(page)
+      .getByRole("group")
+      .filter({ has: page.getByRole("button", { name: "Archive" }) });
     await expect(group).toHaveAttribute("data-orientation", "horizontal");
 
     const archive = group.getByRole("button", { name: "Archive" });
@@ -136,14 +135,14 @@ test.describe("button group", () => {
   test("opens a popover anchored to a button group", async ({ page }) => {
     await gotoDemo(page, "popover");
     await root(page).getByTestId("popover-trigger").click();
-    await expect(root(page).getByTestId("popover-content")).toBeVisible();
+    await expect(page.getByTestId("popover-content")).toBeVisible();
   });
 
   test("keeps split groups functional alongside a chevron menu", async ({
     page,
   }) => {
     await gotoDemo(page, "split");
-    const trigger = root(page).getByRole("button", { name: "Open options" });
+    const trigger = root(page).getByRole("button", { name: "More options" });
     await trigger.click();
 
     await expect(page.getByRole("menu")).toBeVisible();

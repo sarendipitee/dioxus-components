@@ -1,10 +1,11 @@
 use crate::component_styles;
-use crate::components::menu::{provide_styled_menu_surface, Menu, StyledMenuSurface};
+use crate::components::{
+    button::{Button, ButtonSize, ButtonVariant},
+    menu::{provide_styled_menu_surface, Menu, StyledMenuSurface},
+};
 use dioxus::prelude::*;
 use dioxus_primitives::dioxus_attributes::attributes;
-use dioxus_primitives::dropdown_menu::{
-    self, DropdownMenuContentProps, DropdownMenuProps, DropdownMenuTriggerProps,
-};
+use dioxus_primitives::dropdown_menu::{self, DropdownMenuContentProps, DropdownMenuProps};
 use dioxus_primitives::merge_attributes;
 
 #[component_styles("./style.css")]
@@ -38,13 +39,40 @@ pub fn DropdownMenu(props: DropdownMenuProps) -> Element {
         }
     }
 }
+#[derive(Props, Clone, PartialEq)]
+pub struct DropdownMenuTriggerProps {
+    #[props(default)]
+    pub variant: ButtonVariant,
+    #[props(default)]
+    pub size: ButtonSize,
+    #[props(default)]
+    pub r#as: Option<Callback<Vec<Attribute>, Element>>,
+    #[props(extends = GlobalAttributes)]
+    #[props(extends = button)]
+    pub attributes: Vec<Attribute>,
+    pub children: Element,
+}
 
 /// Styled wrapper for the dropdown menu trigger.
 #[component]
 pub fn DropdownMenuTrigger(props: DropdownMenuTriggerProps) -> Element {
+    let renderer = if let Some(renderer) = props.r#as {
+        renderer
+    } else {
+        let renderer_children = props.children.clone();
+        let variant = props.variant;
+        let size = props.size;
+        Callback::new(move |attributes| {
+            let children = renderer_children.clone();
+            rsx! {
+                Button { variant, size, attributes, {children} }
+            }
+        })
+    };
+
     rsx! {
         dropdown_menu::DropdownMenuTrigger {
-            as: props.r#as,
+            as: renderer,
             attributes: props.attributes,
             {props.children}
         }

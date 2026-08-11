@@ -14,12 +14,10 @@ pub fn Demo() -> Element {
             Button { variant: ButtonVariant::Default, "{selected_name}" }
             DropdownMenu {
                 DropdownMenuTrigger {
-                    Button {
-                        size: ButtonSize::Icon,
-                        variant: ButtonVariant::Default,
-                        aria_label: "Options",
-                        ChevronDown {}
-                    }
+                    size: ButtonSize::Icon,
+                    variant: ButtonVariant::Default,
+                    aria_label: "Options",
+                    ChevronDown {}
                 }
                 Menu {
                     MenuItem::<String> {

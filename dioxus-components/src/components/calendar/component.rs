@@ -350,12 +350,10 @@ fn CalendarSelectMonth() -> Element {
     rsx! {
         DropdownMenu { class: Styles::dx_calendar_month_select_container,
             DropdownMenuTrigger {
-                button {
-                    class: Styles::dx_calendar_month_select_value,
-                    aria_label: "Month {calendar::calendar_view_month_label()}",
-                    {calendar::calendar_view_month_label()}
-                    DropDownIcon {}
-                }
+                class: Styles::dx_calendar_month_select_value,
+                aria_label: "Month {calendar::calendar_view_month_label()}",
+                {calendar::calendar_view_month_label()}
+                DropDownIcon {}
             }
             DropdownMenuContent { class: Styles::dx_calendar_select_content,
                 MenuRadioGroup::<Month> {
@@ -383,10 +381,9 @@ fn CalendarSelectYear() -> Element {
     rsx! {
         DropdownMenu { class: Styles::dx_calendar_year_select_container,
             DropdownMenuTrigger {
-                button {
-                    class: Styles::dx_calendar_year_select_value,
-                    aria_label: "Year {selected}", "{selected}" DropDownIcon {}
-                }
+                class: Styles::dx_calendar_year_select_value,
+                aria_label: "Year {selected}",
+                "{selected}" DropDownIcon {}
             }
             DropdownMenuContent { class: format!("{} {}", Styles::dx_calendar_select_content, Styles::dx_calendar_year_select_content),
                 MenuRadioGroup::<i32> {

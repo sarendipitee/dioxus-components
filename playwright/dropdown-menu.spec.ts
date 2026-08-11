@@ -4,8 +4,7 @@ test("dropdown checkbox and radio keyboard state updates keep menu open", async 
   page,
 }) => {
   await page.goto("/components/dropdown_menu");
-  const demo = page.locator("#dx-preview-block-root");
-  const trigger = demo.getByRole("button", { name: "Open Menu" });
+  const trigger = page.getByRole("button", { name: "Open Menu" });
   const menu = page
     .getByRole("menu")
     .filter({ has: page.getByText("Actions") })
@@ -21,7 +20,7 @@ test("dropdown checkbox and radio keyboard state updates keep menu open", async 
   await page.keyboard.press("Enter");
   await expect(light).toHaveAttribute("aria-checked", "true");
   await expect(system).toHaveAttribute("aria-checked", "false");
-  await expect(demo.getByText("Theme: Light")).toBeVisible();
+  await expect(page.getByText("Theme: Light")).toBeVisible();
   await expect(menu).toHaveAttribute("data-state", "open");
 
   await checkbox.focus();
@@ -29,15 +28,13 @@ test("dropdown checkbox and radio keyboard state updates keep menu open", async 
   await page.keyboard.press("Space");
   await expect(checkbox).toHaveAttribute("aria-checked", "false");
   await expect(checkbox).toHaveAttribute("data-state", "unchecked");
-  await expect(demo.getByText("Toolbar visible: false")).toBeVisible();
+  await expect(page.getByText("Toolbar visible: false")).toBeVisible();
   await expect(menu).toHaveAttribute("data-state", "open");
 });
 
 test("first open anchors menu without scrolling trigger", async ({ page }) => {
   await page.goto("/components/dropdown_menu");
-  const trigger = page
-    .locator("#dx-preview-block-root")
-    .getByRole("button", { name: "Open Menu" });
+  const trigger = page.getByRole("button", { name: "Open Menu" });
 
   await trigger.evaluate((element) => element.scrollIntoView({ block: "center" }));
   await page.waitForTimeout(50);
@@ -58,9 +55,17 @@ test("first open anchors menu without scrolling trigger", async ({ page }) => {
 });
 
 test("nested submenu demo opens each submenu level", async ({ page }) => {
-  await page.goto("/#nested_submenus");
+  await page.goto("/components/dropdown_menu#nested_submenus");
 
-  await page.getByRole("button", { name: "Move item" }).click();
+  const fixture = page
+    .locator("#component-preview-frame")
+    .filter({
+      has: page.getByRole("button", { name: "Move item", exact: true }),
+    })
+    .first();
+  await fixture
+    .getByRole("button", { name: "Move item", exact: true })
+    .click();
   const rootMenu = page.locator('[role="menu"][data-state="open"]').first();
   await expect(rootMenu).toBeVisible();
 

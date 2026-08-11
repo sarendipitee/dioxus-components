@@ -37,12 +37,10 @@ pub fn Demo() -> Element {
                     Button { variant: ButtonVariant::Outline, "Snooze" }
                     DropdownMenu {
                         DropdownMenuTrigger {
-                            Button {
-                                size: ButtonSize::Icon,
-                                variant: ButtonVariant::Outline,
-                                aria_label: "More options",
-                                Ellipsis {}
-                            }
+                            size: ButtonSize::Icon,
+                            variant: ButtonVariant::Outline,
+                            aria_label: "More options",
+                            Ellipsis {}
                         }
                         Menu {
                             MenuLabel { "Message actions" }

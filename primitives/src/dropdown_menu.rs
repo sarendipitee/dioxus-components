@@ -134,7 +134,7 @@ pub fn DropdownMenuTrigger(props: DropdownMenuTriggerProps) -> Element {
     let disabled = ctx.disabled;
 
     let mut trigger_ref = ctx.trigger_ref;
-    let base = attributes!(span {
+    let base = attributes!(button {
         id: ctx.trigger_id,
         "data-state": if open() { "open" } else { "closed" },
         "data-disabled": disabled().then_some("true"),
@@ -184,7 +184,8 @@ pub fn DropdownMenuTrigger(props: DropdownMenuTriggerProps) -> Element {
         dynamic.call(attributes)
     } else {
         rsx! {
-            span {
+            button {
+                r#type: "button",
                 ..attributes,
                 {props.children}
             }

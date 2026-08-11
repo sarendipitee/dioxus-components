@@ -14,12 +14,10 @@ pub fn Demo() -> Element {
             Button { variant: ButtonVariant::Outline, "Split button" }
             DropdownMenu {
                 DropdownMenuTrigger {
-                    Button {
-                        size: ButtonSize::Icon,
-                        variant: ButtonVariant::Outline,
-                        aria_label: "Open options",
-                        ChevronDown {}
-                    }
+                    size: ButtonSize::Icon,
+                    variant: ButtonVariant::Outline,
+                    aria_label: "More options",
+                    ChevronDown {}
                 }
                 Menu {
                     MenuItem::<String> {

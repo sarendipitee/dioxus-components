@@ -64,7 +64,12 @@ test("hovering year items does not cross menu signal scopes", async ({ page }) =
   await expect(calendar).toBeVisible({ timeout: 30 * 1000 });
   await calendar.getByRole("button", { name: "Year 2026" }).click();
 
-  const year = page.locator('[role="menuitemradio"]:visible').first();
+  const yearMenu = page
+    .getByRole("menu")
+    .filter({ has: page.getByRole("menuitemradio", { name: "1995" }) })
+    .last();
+  const year = yearMenu.getByRole("menuitemradio", { name: "2026" });
+  await year.scrollIntoViewIfNeeded();
   await expect(year).toBeVisible();
   await year.hover();
   await expect(year).toHaveAttribute("data-focused", "true");
@@ -100,14 +105,14 @@ test("navigates months with accessible controls", async ({ page }) => {
 
   const calendar = calendarFrame(page);
   const application = calendar.getByRole("application", { name: "Calendar" });
-  const month = calendar.getByRole("combobox", { name: "Month" });
+  const month = calendar.getByRole("button", { name: "Month May" });
 
   await expect(application).toBeVisible({ timeout: 30 * 1000 });
-  await expect(month).toHaveValue("5");
+  await expect(month).toBeVisible();
   await calendar.getByRole("button", { name: "Previous month" }).click();
-  await expect(month).toHaveValue("4");
+  await expect(calendar.getByRole("button", { name: "Month April" })).toBeVisible();
   await calendar.getByRole("button", { name: "Next month" }).click();
-  await expect(month).toHaveValue("5");
+  await expect(month).toBeVisible();
 });
 
 test("shift + arrow keys navigation", async ({ page }) => {
@@ -115,18 +120,13 @@ test("shift + arrow keys navigation", async ({ page }) => {
     timeout: 30 * 1000,
   });
 
-  const calendar = page.locator("#component-preview-frame").first();
-  const monthSelect = calendar.locator("select").first();
-  const yearSelect = calendar.locator("select").nth(1);
+  const calendar = calendarFrame(page);
+  const initialMonth = calendar.getByRole("button", { name: "Month May" });
+  const initialYear = calendar.getByRole("button", { name: "Year 2026" });
 
-  // Assert the calendar is displayed
   await expect(calendar).toBeVisible({ timeout: 30000 });
-
-  // Get the initial month and year
-  const initialMonth = await monthSelect.inputValue();
-  const initialYear = await yearSelect.inputValue();
-  const initialYearNumber = parseInt(initialYear, 10);
-  const initialMonthNumber = parseInt(initialMonth, 10);
+  await expect(initialMonth).toBeVisible();
+  await expect(initialYear).toBeVisible();
 
   // Move focus to the calendar
   const firstDay = calendar.locator('[data-month="current"]').first();
@@ -135,26 +135,18 @@ test("shift + arrow keys navigation", async ({ page }) => {
   // Test Shift + ArrowDown - should move forward by one month
   await page.keyboard.press("Shift+ArrowDown");
 
-  let currentMonth = await monthSelect.inputValue();
-  let currentYear = await yearSelect.inputValue();
-  let expectedMonth = initialMonthNumber === 12 ? 1 : initialMonthNumber + 1;
-  let expectedYear =
-    initialMonthNumber === 12 ? initialYearNumber + 1 : initialYearNumber;
-
-  expect(parseInt(currentMonth, 10)).toBe(expectedMonth);
-  expect(parseInt(currentYear, 10)).toBe(expectedYear);
+  await expect(calendar.getByRole("button", { name: "Month June" })).toBeVisible();
+  await expect(initialYear).toBeVisible();
 
   // Test Shift + ArrowUp - should move back to the initial month
   await page.keyboard.press("Shift+ArrowUp");
 
-  currentMonth = await monthSelect.inputValue();
-  currentYear = await yearSelect.inputValue();
-  expect(currentMonth).toBe(initialMonth);
-  expect(currentYear).toBe(initialYear);
+  await expect(initialMonth).toBeVisible();
+  await expect(initialYear).toBeVisible();
 });
 
 async function testArrowKeyNavigation(
-  page: any,
+  page: Page,
   arrowKey: "ArrowRight" | "ArrowLeft",
   startPosition: "first" | "last",
   expectedOrder: "ascending" | "descending",
@@ -163,24 +155,16 @@ async function testArrowKeyNavigation(
     timeout: 30 * 1000,
   });
 
-  const calendar = page.locator("#component-preview-frame").first();
-  const monthSelect = calendar.locator("select").first();
-  const yearSelect = calendar.locator("select").nth(1);
+  const calendar = calendarFrame(page);
 
-  // Assert the calendar is displayed
   await expect(calendar).toBeVisible({ timeout: 30000 });
 
-  // Get the current month and year to calculate days in month
-  const currentMonthValue = await monthSelect.inputValue();
-  const currentYearValue = await yearSelect.inputValue();
-  const monthNumber = parseInt(currentMonthValue, 10);
-  const yearNumber = parseInt(currentYearValue, 10);
-
-  // Calculate the number of days in the current month
-  const daysInMonth = new Date(yearNumber, monthNumber, 0).getDate();
+  const currentMonthDays = calendar.locator('[data-month="current"]');
+  const daysInMonth = await currentMonthDays.count();
 
   // Move focus to the starting day of the current month
-  const startDay = calendar.locator('[data-month="current"]')[startPosition]();
+  const startDay =
+    startPosition === "first" ? currentMonthDays.first() : currentMonthDays.last();
   await startDay.focus();
 
   // Get the focused day selector

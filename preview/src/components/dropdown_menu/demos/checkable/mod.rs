@@ -1,5 +1,4 @@
 use dioxus::prelude::*;
-use dioxus_components::button::Button;
 use dioxus_components::dropdown_menu::*;
 use dioxus_components::menu::*;
 use dioxus_components::ButtonVariant;
@@ -30,10 +29,8 @@ pub fn Demo() -> Element {
     rsx! {
         DropdownMenu {
             DropdownMenuTrigger {
-                Button {
-                    variant: ButtonVariant::Outline,
-                    "View options"
-                }
+                variant: ButtonVariant::Outline,
+                "View options"
             }
             Menu {
                 MenuLabel { "Visible items" }
