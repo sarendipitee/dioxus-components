@@ -70,7 +70,7 @@ pub fn Demo() -> Element {
                                 value: "trash",
                                 index: 2usize,
                                 on_select: move |_| last_action.set("Move to trash".to_string()),
-                                Trash2 {}
+                                Trash2 { width: "16px", height: "16px" }
                                 "Move to trash"
                             }
                         }
