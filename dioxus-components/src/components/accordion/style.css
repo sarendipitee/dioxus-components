@@ -6,13 +6,12 @@
   align-items: center;
   justify-content: flex-start;
   padding: 0;
-  padding-top: var(--surface-padding);
-  padding-bottom: var(--surface-padding);
   border: none;
   background: transparent;
-  color: var(--surface-fg);
+  padding: var(--surface-padding);
   outline: none;
   text-align: left;
+	transition: all 0.3s ease;
 }
 
 .dx_accordion_label {
@@ -51,7 +50,7 @@
 
 .dx_accordion_trigger:hover:not(:disabled) {
   cursor: pointer;
-  text-decoration-line: underline;
+	background: var(--surface-hover);
 }
 
 .dx_accordion_trigger:disabled {

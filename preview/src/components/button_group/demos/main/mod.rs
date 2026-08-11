@@ -3,11 +3,11 @@ use dioxus_components::button::{Button, ButtonSize, ButtonVariant};
 use dioxus_components::components::button_group::ButtonGroup;
 use dioxus_components::dropdown_menu::*;
 use dioxus_components::menu::*;
-use dioxus_icons::lucide::{Ellipsis, MailCheck, Trash2, Undo2};
+use dioxus_icons::lucide::{Ellipsis, Trash2, Undo2};
 
 #[component]
 pub fn Demo() -> Element {
-    let mut last_action = use_signal(|| "None".to_string());
+    let mut last_action = use_signal(|| "None");
     let mut archive_checked = use_signal(|| false);
 
     rsx! {
@@ -24,12 +24,12 @@ pub fn Demo() -> Element {
                 ButtonGroup {
                     Button {
                         variant: ButtonVariant::Outline,
-                        onclick: move |_| last_action.set("Archive".to_string()),
+                        onclick: move |_| last_action.set("Archive"),
                         "Archive"
                     }
                     Button {
                         variant: ButtonVariant::Outline,
-                        onclick: move |_| last_action.set("Report".to_string()),
+                        onclick: move |_| last_action.set("Report"),
                         "Report"
                     }
                 }
@@ -50,7 +50,7 @@ pub fn Demo() -> Element {
                                 MenuItem::<String> {
                                     value: "read",
                                     index: 0usize,
-                                    on_select: move |_| last_action.set("Mark as read".to_string()),
+                                    on_select: move |_| last_action.set("Mark as read"),
                                     "Mark as read"
                                 }
                                 MenuCheckboxItem::<String> {
@@ -69,7 +69,7 @@ pub fn Demo() -> Element {
                             MenuItem::<String> {
                                 value: "trash",
                                 index: 2usize,
-                                on_select: move |_| last_action.set("Move to trash".to_string()),
+                                on_select: move |_| last_action.set("Move to trash"),
                                 Trash2 { width: "16px", height: "16px" }
                                 "Move to trash"
                             }
