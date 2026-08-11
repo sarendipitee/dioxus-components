@@ -285,7 +285,7 @@ pub fn Sidebar(
     #[props(extends = GlobalAttributes)] attributes: Vec<Attribute>,
     children: Element,
 ) -> Element {
-    let width = use_signal(|| SIDEBAR_DEFAULT_WIDTH);
+    let width = use_signal(|| (min_width)().max(0.0));
     let ctx = use_sidebar();
     let mut ctx_side = ctx.side;
     if *ctx_side.peek() != side {
@@ -427,13 +427,11 @@ pub fn SidebarTrigger(
 pub fn SidebarRail(#[props(extends = GlobalAttributes)] attributes: Vec<Attribute>) -> Element {
     let ctx = use_sidebar();
     let resize = use_context::<SidebarResizeCtx>();
-    let rail_id = use_hook(|| SIDEBAR_RAIL_ID.fetch_add(1, Ordering::Relaxed));
-    // Keep the click decision on the Rust event path. The evaluator reports its
-    // result asynchronously, after the browser may already have dispatched click.
     let mut pointer_active = use_signal(|| false);
     let mut pointer_dragged = use_signal(|| false);
     let mut pointer_start_x = use_signal(|| 0.0_f64);
-    let mut dragged = use_signal(|| false);
+    let mut pointer_start_width = use_signal(|| 0.0_f64);
+    let mut pointer_was_collapsed = use_signal(|| false);
     let base = attributes!(button {
         class: Styles::dx_sidebar_rail,
         "data-sidebar": "rail",
@@ -446,136 +444,48 @@ pub fn SidebarRail(#[props(extends = GlobalAttributes)] attributes: Vec<Attribut
             aria_label: "Resize Sidebar",
             tabindex: -1,
             title: "Drag to resize sidebar",
-            "data-sidebar-rail-id": rail_id,
             onpointerdown: move |event| {
                 if event.trigger_button() != Some(dioxus::html::input_data::MouseButton::Primary) {
                     return;
                 }
-                let was_collapsed = (ctx.state)() == SidebarState::Collapsed;
+                event.prevent_default();
                 pointer_active.set(true);
                 pointer_dragged.set(false);
                 pointer_start_x.set(event.client_coordinates().x);
-                if !was_collapsed {
-                    event.prevent_default();
-                }
-                let start_width = (resize.width)();
-                let min = (resize.min_width)().max(0.0);
-                let max = (resize.max_width)().max(min);
-                dragged.set(false);
-                let start_x = event.client_coordinates().x;
-
-                spawn(async move {
-                    let mut eval = document::eval(&format!(r#"
-                        const rail = document.querySelector('[data-sidebar-rail-id="{rail_id}"]');
-                        const sidebar = rail.closest('[data-slot="sidebar"]');
-                        const startX = {start_x};
-                        const startWidth = {start_width};
-                        const minWidth = {min};
-                        const maxWidth = {max};
-                        const side = sidebar.dataset.side;
-                        const canExpandFromDrag = sidebar.dataset.variant !== 'floating';
-                        const direction = side === 'left' ? 1 : -1;
-                        const collapseDistance = minWidth * 0.2;
-                        const dragThreshold = 30;
-                        let width = startWidth;
-                        let moved = false;
-                        let frame = 0;
-                        let finished = false;
-
-                        sidebar.dataset.resizing = 'true';
-                        const apply = clientX => {{
-                            width = Math.min(maxWidth, Math.max(minWidth,
-                                startWidth + (clientX - startX) * direction));
-                            sidebar.style.setProperty('--dx-sidebar-width', `${{width}}px`);
-                        }};
-                        const shouldCollapse = clientX => side === 'left'
-                            ? clientX <= collapseDistance
-                            : window.innerWidth - clientX <= collapseDistance;
-                        const cleanup = () => {{
-                            cancelAnimationFrame(frame);
-                            delete sidebar.dataset.resizing;
-                            window.removeEventListener('pointermove', move);
-                            window.removeEventListener('pointerup', end);
-                            window.removeEventListener('pointercancel', cancel);
-                        }};
-                        const finish = (event, collapse) => {{
-                            if (finished) return;
-                            finished = true;
-                            if (moved && !{was_collapsed}) {{
-                                event.preventDefault();
-                                apply(event.clientX);
-                            }}
-                            const openFromClick = false;
-                            if (moved) {{
-                                rail.addEventListener('click', event => {{
-                                    event.preventDefault();
-                                    event.stopImmediatePropagation();
-                                }}, {{ once: true, capture: true }});
-                            }}
-                            const mustStayCollapsed = {was_collapsed} && !canExpandFromDrag;
-                            const result = [width, moved, moved && (collapse || mustStayCollapsed), openFromClick, true];
-                            dioxus.send(result);
-                        }};
-                        const move = event => {{
-                            event.preventDefault();
-                            moved ||= Math.abs(event.clientX - startX) >= dragThreshold;
-                            if ({was_collapsed}) {{
-                                if (canExpandFromDrag && moved) {{
-                                    finished = true;
-                                    width = minWidth;
-                                    sidebar.style.setProperty('--dx-sidebar-width', `${{width}}px`);
-                                    cleanup();
-                                    rail.addEventListener('click', event => {{
-                                        event.preventDefault();
-                                        event.stopImmediatePropagation();
-                                    }}, {{ once: true, capture: true }});
-                                    dioxus.send([width, true, false, false, true]);
-                                }}
-                                return;
-                            }}
-                            if (shouldCollapse(event.clientX)) {{
-                                finish(event, true);
-                                return;
-                            }}
-                            cancelAnimationFrame(frame);
-                            frame = requestAnimationFrame(() => apply(event.clientX));
-                        }};
-                        const end = event => finish(event, shouldCollapse(event.clientX));
-                        const cancel = event => finish(event, false);
-                        window.addEventListener('pointermove', move, {{ passive: false }});
-                        window.addEventListener('pointerup', end, {{ once: true }});
-                        window.addEventListener('pointercancel', cancel, {{ once: true }});
-                    "#));
-                    while let Ok((final_width, was_dragged, collapse, open_from_click, finished)) =
-                        eval.recv::<(f64, bool, bool, bool, bool)>().await
-                    {
-                        if !finished {
-                            ctx.set_open.call(true);
-                            continue;
-                        }
-                        if open_from_click {
-                            // Clicks are handled synchronously by the Rust `onclick` handler.
-                        }
-                        if was_dragged {
-                            dragged.set(true);
-                            let mut width = resize.width;
-                            let minimum = (resize.min_width)().max(0.0);
-                            let maximum = (resize.max_width)().max(minimum);
-                            width.set(final_width.clamp(minimum, maximum));
-                            ctx.set_open.call(!collapse);
-                        }
-                        pointer_active.set(false);
-                        pointer_dragged.set(false);
-                        break;
-                    }
-                });
+                pointer_start_width.set((resize.width)());
+                pointer_was_collapsed.set((ctx.state)() == SidebarState::Collapsed);
             },
             onpointermove: move |event| {
-                if pointer_active()
-                    && (event.client_coordinates().x - pointer_start_x()).abs() >= 30.0
-                {
-                    pointer_dragged.set(true);
+                if !pointer_active() {
+                    return;
                 }
+                let delta = event.client_coordinates().x - pointer_start_x();
+                if delta.abs() < 30.0 {
+                    return;
+                }
+                pointer_dragged.set(true);
+                if pointer_was_collapsed() {
+                    if (ctx.state)() == SidebarState::Collapsed {
+                        ctx.set_open.call(true);
+                    }
+                    pointer_active.set(false);
+                    return;
+                }
+                let minimum = (resize.min_width)().max(0.0);
+                let collapse_distance = minimum * 0.2;
+                let should_collapse = match (ctx.side)() {
+                    SidebarSide::Left => event.client_coordinates().x <= collapse_distance,
+                    SidebarSide::Right => false,
+                };
+                if should_collapse {
+                    ctx.set_open.call(false);
+                    pointer_active.set(false);
+                    return;
+                }
+                let direction = if (ctx.side)() == SidebarSide::Left { 1.0 } else { -1.0 };
+                let maximum = (resize.max_width)().max(minimum);
+                let mut width = resize.width;
+                width.set((pointer_start_width() + delta * direction).clamp(minimum, maximum));
             },
             onpointerup: move |event| {
                 if pointer_active()
@@ -583,18 +493,16 @@ pub fn SidebarRail(#[props(extends = GlobalAttributes)] attributes: Vec<Attribut
                 {
                     pointer_dragged.set(true);
                 }
+                pointer_active.set(false);
             },
             onpointercancel: move |_| {
                 pointer_active.set(false);
                 pointer_dragged.set(false);
             },
-            onclick: move |event| {
-                let was_dragged = pointer_dragged()
-                    || (pointer_active()
-                        && (event.client_coordinates().x - pointer_start_x()).abs() >= 30.0);
-                pointer_active.set(false);
-                pointer_dragged.set(false);
-                if !was_dragged {
+            onclick: move |_| {
+                if pointer_dragged() {
+                    pointer_dragged.set(false);
+                } else {
                     ctx.toggle();
                 }
             },

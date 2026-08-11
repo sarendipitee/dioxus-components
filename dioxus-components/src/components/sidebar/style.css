@@ -75,6 +75,11 @@
   width: 0;
 }
 
+[data-variant="floating"][data-collapsible="offcanvas"] .dx_sidebar_gap,
+[data-variant="inset"][data-collapsible="offcanvas"] .dx_sidebar_gap {
+  width: 0;
+}
+
 
 .dx_sidebar_hotzone {
   position: fixed;

@@ -195,6 +195,18 @@ test("offcanvas: rail collapse can reopen from trigger and rail", async ({
   await expect(gap).toHaveCSS("width", "220px");
   await expect(container).toHaveCSS("left", "0px");
 
+  const widthBeforeHover = await gap.evaluate((element) =>
+    Number.parseFloat(getComputedStyle(element).width),
+  );
+  const expandedRailBox = await rail.boundingBox();
+  expect(expandedRailBox).not.toBeNull();
+  await page.mouse.move(
+    expandedRailBox!.x + 90,
+    expandedRailBox!.y + expandedRailBox!.height / 2,
+  );
+  await page.waitForTimeout(50);
+  await expect(gap).toHaveCSS("width", `${widthBeforeHover}px`);
+
   await collapseByRail();
   await rail.click();
   await expect(sidebar).toHaveAttribute("data-state", "expanded");
