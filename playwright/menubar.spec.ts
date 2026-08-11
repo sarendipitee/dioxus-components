@@ -51,7 +51,7 @@ test("pointer navigation", async ({ page }) => {
   await expect(fileMenuContent).toHaveAttribute("data-state", "open");
 
   // After the menu is open, hover over the Edit menu item
-  const editMenuButton = page.getByRole("menuitem", { name: "View" }).first();
+  const editMenuButton = demo.getByRole("menuitem", { name: "View" }).first();
   await editMenuButton.hover();
   // Assert the Edit menu content is open
   const editMenuContent = page
@@ -74,12 +74,13 @@ test("pointer navigation", async ({ page }) => {
 
 test("keyboard navigation", async ({ page }) => {
   await page.goto("/components/menubar", { timeout: 30 * 1000 });
-  await page.getByRole("menubar").first().focus();
+  const menubar = page.getByRole("menubar").first();
+  await menubar.focus();
   const fileMenuButton = page.getByRole("menuitem", { name: "File" }).first();
   // Go right with the keyboard
   await page.keyboard.press("ArrowRight");
   // Assert the focus is on the View menu item
-  const editMenuButton = page.getByRole("menuitem", { name: "View" }).first();
+  const editMenuButton = demo.getByRole("menuitem", { name: "View" }).first();
   await expect(editMenuButton).toBeFocused();
   // Go left with the keyboard
   await page.keyboard.press("ArrowLeft");
@@ -110,8 +111,9 @@ test("keyboard navigation", async ({ page }) => {
 });
 
 test("trigger exposes menu popup and expanded state", async ({ page }) => {
-  await page.goto("/components/menubar", { timeout: 30 * 1000 });
-  const fileTrigger = page.getByRole("menuitem", { name: "File" }).first();
+  await page.goto("/components/menubar/block#main", { timeout: 30 * 1000 });
+  const demo = page.locator("#dx-preview-block-root");
+  const fileTrigger = demo.getByRole("menuitem", { name: "File" }).first();
   await expect(fileTrigger).toHaveAttribute("aria-haspopup", "menu");
   await expect(fileTrigger).toHaveAttribute("aria-expanded", "false");
   await fileTrigger.click({ force: true });
@@ -121,9 +123,10 @@ test("trigger exposes menu popup and expanded state", async ({ page }) => {
 });
 
 test("switching triggers closes the previous menu", async ({ page }) => {
-  await page.goto("/components/menubar", { timeout: 30 * 1000 });
-  const fileTrigger = page.getByRole("menuitem", { name: "File" }).first();
-  const viewTrigger = page.getByRole("menuitem", { name: "View" }).first();
+  await page.goto("/components/menubar/block#main", { timeout: 30 * 1000 });
+  const demo = page.locator("#dx-preview-block-root");
+  const fileTrigger = demo.getByRole("menuitem", { name: "File" }).first();
+  const viewTrigger = demo.getByRole("menuitem", { name: "View" }).first();
   await fileTrigger.click();
   await expect(fileTrigger).toHaveAttribute("aria-expanded", "true");
   await viewTrigger.hover();
@@ -137,9 +140,9 @@ test("switching triggers closes the previous menu", async ({ page }) => {
 test("checkbox toggles and radio selection update their outputs", async ({
   page,
 }) => {
-  await page.goto("/components/menubar", { timeout: 30 * 1000 });
-  const fileTrigger = page.getByRole("menuitem", { name: "File" }).first();
-  await fileTrigger.click();
+  await page.goto("/components/menubar/block#main", { timeout: 30 * 1000 });
+  const demo = page.locator("#dx-preview-block-root");
+  const fileTrigger = demo.getByRole("menuitem", { name: "File" }).first();
   let statusBar = page.getByRole("menuitemcheckbox", { name: "Status bar" });
   await expect(statusBar).toHaveAttribute("data-state", "checked");
   await statusBar.click();
@@ -165,9 +168,9 @@ test("checkbox toggles and radio selection update their outputs", async ({
 });
 
 test("disabled item cannot activate", async ({ page }) => {
-  await page.goto("/components/menubar", { timeout: 30 * 1000 });
-  const fileTrigger = page.getByRole("menuitem", { name: "File" }).first();
-  await expect(fileTrigger).toBeVisible();
+  await page.goto("/components/menubar/block#main", { timeout: 30 * 1000 });
+  const demo = page.locator("#dx-preview-block-root");
+  const fileTrigger = demo.getByRole("menuitem", { name: "File" }).first();
   await fileTrigger.click();
   const openItem = page.getByRole("menuitem", { name: "Open" });
   await expect(openItem).toHaveAttribute("data-disabled", "true");
@@ -177,8 +180,9 @@ test("disabled item cannot activate", async ({ page }) => {
 });
 
 test("Escape dismisses menu and restores trigger focus", async ({ page }) => {
-  await page.goto("/components/menubar", { timeout: 30 * 1000 });
-  const fileTrigger = page.getByRole("menuitem", { name: "File" }).first();
+  await page.goto("/components/menubar/block#main", { timeout: 30 * 1000 });
+  const demo = page.locator("#dx-preview-block-root");
+  const fileTrigger = demo.getByRole("menuitem", { name: "File" }).first();
   await fileTrigger.click();
   await page.keyboard.press("Escape");
   await expect(fileTrigger).toHaveAttribute("aria-expanded", "false");
@@ -186,8 +190,9 @@ test("Escape dismisses menu and restores trigger focus", async ({ page }) => {
 });
 
 test("Tab dismisses menu and moves focus outside menubar", async ({ page }) => {
-  await page.goto("/components/menubar", { timeout: 30 * 1000 });
-  const fileTrigger = page.getByRole("menuitem", { name: "File" }).first();
+  await page.goto("/components/menubar/block#main", { timeout: 30 * 1000 });
+  const demo = page.locator("#dx-preview-block-root");
+  const fileTrigger = demo.getByRole("menuitem", { name: "File" }).first();
   await fileTrigger.click();
   await page.keyboard.press("Tab");
   await expect(fileTrigger).toHaveAttribute("aria-expanded", "false");
@@ -195,8 +200,9 @@ test("Tab dismisses menu and moves focus outside menubar", async ({ page }) => {
 });
 
 test("outside pointer dismisses an open menu", async ({ page }) => {
-  await page.goto("/components/menubar", { timeout: 30 * 1000 });
-  const fileTrigger = page.getByRole("menuitem", { name: "File" }).first();
+  await page.goto("/components/menubar/block#main", { timeout: 30 * 1000 });
+  const demo = page.locator("#dx-preview-block-root");
+  const fileTrigger = demo.getByRole("menuitem", { name: "File" }).first();
   await fileTrigger.click();
   await page.mouse.click(1, page.viewportSize()!.height - 1);
   await expect(fileTrigger).toHaveAttribute("aria-expanded", "false");

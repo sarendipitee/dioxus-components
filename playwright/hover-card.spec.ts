@@ -55,7 +55,7 @@ test("pointer entry opens the hover card and pointer exit closes it", async ({
   await expect(tooltip).toBeVisible();
 
   await page
-    .locator("#component-preview-frame")
+    .locator("#dx-preview-block-root")
     .hover({ position: { x: 2, y: 2 } });
   await expect(tooltip).toHaveCount(0);
 });

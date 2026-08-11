@@ -1,6 +1,7 @@
 import { test, expect, type Locator, type Page } from "@playwright/test";
 
-const fruitRoot = (page: Page) => page.getByTestId("fruit-select-root").first();
+const fruitRoot = (page: Page) =>
+  page.getByTestId("fruit-select-root").first();
 const fruitTrigger = (page: Page) =>
   fruitRoot(page).locator("#fruit-select").first();
 const listbox = (page: Page) => page.getByRole("listbox");

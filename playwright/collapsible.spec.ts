@@ -134,6 +134,9 @@ test("inline-actions trigger keeps sibling controls outside the disclosure butto
 
   await expect(trigger.locator("svg")).toHaveCount(1);
   await expect(trigger).toHaveAttribute("aria-expanded", "false");
+  await trigger.focus();
+  await expect(moreActions).toBeVisible();
+  await expect(addItem).toBeVisible();
   await expect(moreActions).toHaveCount(1);
   await expect(addItem).toHaveCount(1);
   expect(
