@@ -36,7 +36,7 @@ struct ThemeToken {
     mode: TokenMode,
 }
 
-#[derive(Clone, Copy)]
+#[derive(Clone, Copy, PartialEq)]
 struct ThemeCustomizerContext {
     open: Signal<bool>,
     tokens: Signal<Vec<ThemeToken>>,
@@ -637,6 +637,7 @@ fn ThemeStudio() -> Element {
                   ThemeSection {
                     section,
                     tokens: tokens.clone(),
+                    ctx,
                     query: needle.clone(),
                   }
                 }
@@ -683,8 +684,12 @@ fn RevertButton(index: usize, name: String, tokens_signal: Signal<Vec<ThemeToken
 }
 
 #[component]
-fn ThemeSection(section: &'static str, tokens: Vec<ThemeToken>, query: String) -> Element {
-    let ctx = use_theme_customizer();
+fn ThemeSection(
+    section: &'static str,
+    tokens: Vec<ThemeToken>,
+    query: String,
+    ctx: ThemeCustomizerContext,
+) -> Element {
     let matches: Vec<(usize, ThemeToken)> = tokens
         .iter()
         .enumerate()

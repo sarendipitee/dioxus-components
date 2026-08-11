@@ -18,6 +18,20 @@ test.describe("homepage", () => {
   });
 });
 
+test.describe("theme studio", () => {
+  test("opens without losing its customizer context", async ({ page }) => {
+    const pageErrors: Error[] = [];
+    page.on("pageerror", (error) => pageErrors.push(error));
+
+    await page.goto("/theme", { timeout: 30 * 1000 });
+    await page.getByRole("button", { name: "Open theme studio" }).click();
+
+    await expect(page.getByRole("heading", { name: "Theme studio", level: 2 })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Core" })).toBeVisible();
+    expect(pageErrors).toEqual([]);
+  });
+});
+
 test.describe("details", () => {
   test("should not have any automatically detectable accessibility issues", async ({
     page,
