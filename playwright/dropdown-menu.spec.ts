@@ -54,6 +54,28 @@ test("first open anchors menu without scrolling trigger", async ({ page }) => {
   expect(menuBox!.y).toBeGreaterThanOrEqual(triggerBox!.y + triggerBox!.height);
 });
 
+test("closes without invoking a dropped position callback", async ({ page }) => {
+  const runtimeErrors: string[] = [];
+  page.on("console", (message) => {
+    if (message.type() === "error") runtimeErrors.push(message.text());
+  });
+  page.on("pageerror", (error) => runtimeErrors.push(error.message));
+
+  await page.goto("/components/dropdown_menu");
+  const trigger = page.getByRole("button", { name: "Open Menu" });
+  await trigger.click();
+  const menu = page
+    .getByRole("menu")
+    .filter({ has: page.getByText("Actions") })
+    .first();
+  await expect(menu).toBeVisible();
+  await page.keyboard.press("Escape");
+  await expect(menu).toBeHidden();
+  await page.waitForTimeout(100);
+
+  expect(runtimeErrors.filter((error) => error.includes("ValueDroppedError"))).toEqual([]);
+});
+
 test("nested submenu demo opens each submenu level", async ({ page }) => {
   await page.goto("/components/dropdown_menu#nested_submenus");
 

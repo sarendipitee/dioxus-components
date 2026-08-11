@@ -16,14 +16,14 @@
   /* Default foreground roles. Use for text and icons when a component does
      not need a full foreground/border recipe. */
   --bg: var(--is-light, #fff) var(--is-dark, #000);
-  --fg: var(--is-light, #111111) var(--is-dark, #d4d4d4);
+  --fg: var(--is-light, #111) var(--is-dark, #d4d4d4);
   --fg-muted: var(--is-light, #717171) var(--is-dark, #a1a1a1);
   --fg-faint: var(--is-light, #b0b0b0) var(--is-dark, #5d5d5d);
 
   /* Base surface recipe. Use for pages, cards, neutral panels, and default
      component backgrounds. */
-  --surface: var(--is-light, #ffffff) var(--is-dark, #111111);
-  --surface-fg: var(--is-light, #111111) var(--is-dark, #d4d4d4);
+  --surface: var(--is-light, #fff) var(--is-dark, #111);
+  --surface-fg: var(--is-light, #111) var(--is-dark, #d4d4d4);
   --surface-border: var(--is-light, #e5e5e5) var(--is-dark, #252525);
 
   /* Muted surface recipe. Use for secondary panels, quiet grouped regions,
@@ -35,18 +35,18 @@
   /* Hover surface recipe. Use for neutral hover states on ghost controls,
      menu items, list rows, tabs, and selectable items. */
   --surface-hover: var(--is-light, #f7f7f7) var(--is-dark, #262626);
-  --surface-hover-fg: var(--is-light, #111111) var(--is-dark, #d4d4d4);
+  --surface-hover-fg: var(--is-light, #111) var(--is-dark, #d4d4d4);
   --surface-hover-border: var(--is-light, #b0b0b0) var(--is-dark, #5d5d5d);
 
   /* Active surface recipe. Use for pressed neutral controls and active rows
      where the state is temporary or interaction-driven. */
-  --surface-active: var(--is-light, #d0d0d0) var(--is-dark, #222222);
-  --surface-active-fg: var(--is-light, #111111) var(--is-dark, #d4d4d4);
+  --surface-active: var(--is-light, #d0d0d0) var(--is-dark, #222);
+  --surface-active-fg: var(--is-light, #111) var(--is-dark, #d4d4d4);
   --surface-active-border: var(--is-light, #b0b0b0) var(--is-dark, #454545);
 
   /* Selected surface recipe. Use for current tabs, selected menu options,
      selected list rows, and persistent neutral selection. */
-  --surface-selected: var(--is-light, #eeeeee) var(--is-dark, #222222);
+  --surface-selected: var(--is-light, #eee) var(--is-dark, #222);
   --surface-selected-fg: var(--is-light, #454545) var(--is-dark, #d4d4d4);
   --surface-selected-border: var(--is-light, #c0c0c0) var(--is-dark, #454545);
 
@@ -57,22 +57,22 @@
 
   /* Input recipe. Use for text fields, textareas, selects, combobox triggers,
      date/time inputs, and other field shells. */
-  --input: var(--is-light, #ffffff) var(--is-dark, #111111);
-  --input-fg: var(--is-light, #111111) var(--is-dark, #d4d4d4);
+  --input: var(--is-light, #fff) var(--is-dark, #111);
+  --input-fg: var(--is-light, #111) var(--is-dark, #d4d4d4);
   --input-fg-muted: var(--is-light, #717171) var(--is-dark, #a1a1a1);
   --input-fg-faint: var(--is-light, #b0b0b0) var(--is-dark, #5d5d5d);
   --input-placeholder: var(--is-light, #e5e5e5) var(--is-dark, #252525);
   --input-border: var(--is-light, #d6dbdf) var(--is-dark, #3e3e3e);
 
   /* Input hover recipe. Use when a field shell is hovered but not focused. */
-  --input-hover: var(--is-light, #ffffff) var(--is-dark, #111111);
-  --input-hover-fg: var(--is-light, #111111) var(--is-dark, #d4d4d4);
+  --input-hover: var(--is-light, #fff) var(--is-dark, #111);
+  --input-hover-fg: var(--is-light, #111) var(--is-dark, #d4d4d4);
   --input-hover-border: var(--is-light, #e3e5e9) var(--is-dark, #5d5d5d);
 
   /* Input focus recipe. Use for the field shell while focus-visible or
      focus-within is active. The focus ring still uses --focus. */
-  --input-focus: var(--is-light, #ffffff) var(--is-dark, #232323);
-  --input-focus-fg: var(--is-light, #111111) var(--is-dark, #d4d4d4);
+  --input-focus: var(--is-light, #fff) var(--is-dark, #232323);
+  --input-focus-fg: var(--is-light, #111) var(--is-dark, #d4d4d4);
   --input-focus-border: var(--is-light, #2b7fff) var(--is-dark, #2b7fff);
 
   /* Input disabled recipe. Use for disabled field shells. */
@@ -82,31 +82,31 @@
 
   /* Overlay recipe. Use for popovers, dropdown menus, command palettes,
      tooltips, floating panels, and dialogs. */
-  --overlay: var(--is-light, #ffffff) var(--is-dark, #111111);
-  --overlay-fg: var(--is-light, #111111) var(--is-dark, #d4d4d4);
+  --overlay: var(--is-light, #fff) var(--is-dark, #111);
+  --overlay-fg: var(--is-light, #111) var(--is-dark, #d4d4d4);
   --overlay-border: var(--is-light, #e5e5e5) var(--is-dark, #3e3e3e);
   --overlay-shadow: var(--is-light, 0 2px 10px rgb(0 0 0 / 10%)) var(--is-dark, 0 2px 10px rgb(0 0 0 / 40%));
 
   /* Accent recipe. Use for primary actions, selected accent controls, brand
      highlights, and links that are intentionally accent-colored. */
   --accent: var(--is-light, #1769d0) var(--is-dark, #1769d0);
-  --accent-fg: var(--is-light, #ffffff) var(--is-dark, #ffffff);
+  --accent-fg: var(--is-light, #fff) var(--is-dark, #fff);
   --accent-border: var(--is-light, #0d69e7) var(--is-dark, #3c90ff);
 
   /* Accent hover recipe. Use for hovered primary/accent actions. */
   --accent-hover: var(--is-light, #0055d2) var(--is-dark, #0055d2);
-  --accent-hover-fg: var(--is-light, #ffffff) var(--is-dark, #ffffff);
+  --accent-hover-fg: var(--is-light, #fff) var(--is-dark, #fff);
   --accent-hover-border: var(--is-light, #0055d2) var(--is-dark, #50a3ff);
 
   /* Accent active recipe. Use for pressed primary/accent actions. */
   --accent-active: var(--is-light, #0055d2) var(--is-dark, #0d69e7);
-  --accent-active-fg: var(--is-light, #ffffff) var(--is-dark, #ffffff);
+  --accent-active-fg: var(--is-light, #fff) var(--is-dark, #fff);
   --accent-active-border: var(--is-light, #0041be) var(--is-dark, #277cfc);
 
   /* Accent subtle recipe. Use for low-emphasis accent badges, selected
      rows that should read as branded, and quiet accent callouts. */
   --accent-subtle: var(--is-light, #d4e9ff) var(--is-dark, #162946);
-  --accent-subtle-fg: var(--is-light, #1d5fae) var(--is-dark, #bbddff);
+  --accent-subtle-fg: var(--is-light, #1d5fae) var(--is-dark, #bdf);
   --accent-subtle-border: var(--is-light, #99b9eb) var(--is-dark, #3a5581);
 
   /* Focus indicator color. Use for focus-visible rings and outlines only. */
@@ -137,23 +137,23 @@
   /* Danger filled recipe. Use for destructive actions and high-emphasis
      error states. */
   --danger: var(--is-light, #dc2626) var(--is-dark, #a22e2e);
-  --danger-fg: var(--is-light, #ffffff) var(--is-dark, #ffffff);
+  --danger-fg: var(--is-light, #fff) var(--is-dark, #fff);
   --danger-border: var(--is-light, #dc2626) var(--is-dark, #da3d3d);
 
   /* Danger hover recipe. Use for hovered destructive actions. */
   --danger-hover: var(--is-light, #cb0314) var(--is-dark, #b6423f);
-  --danger-hover-fg: var(--is-light, #ffffff) var(--is-dark, #ffffff);
+  --danger-hover-fg: var(--is-light, #fff) var(--is-dark, #fff);
   --danger-hover-border: var(--is-light, #cb0314) var(--is-dark, #b6423f);
 
   /* Danger active recipe. Use for pressed destructive actions. */
   --danger-active: var(--is-light, #b90000) var(--is-dark, #8e181d);
-  --danger-active-fg: var(--is-light, #ffffff) var(--is-dark, #ffffff);
+  --danger-active-fg: var(--is-light, #fff) var(--is-dark, #fff);
   --danger-active-border: var(--is-light, #b90000) var(--is-dark, #8e181d);
 
   /* Danger subtle recipe. Use for validation messages, error alerts, danger
      badges, and invalid field background treatments. */
   --danger-subtle: var(--is-light, #fef2f2) var(--is-dark, #9b1c1c);
-  --danger-subtle-fg: var(--is-light, #991b1b) var(--is-dark, #ffffff);
+  --danger-subtle-fg: var(--is-light, #991b1b) var(--is-dark, #fff);
   --danger-subtle-border: var(--is-light, #fecaca) var(--is-dark, #9b1c1c);
 
   /* Info filled recipe. Use for high-emphasis informational status. */
@@ -167,16 +167,16 @@
   --info-subtle-border: var(--is-light, #bfdbfe) var(--is-dark, #1e40af);
 
   /* Focus ring shadow color. Use for standard focus-visible box shadows. */
-  --focus-ring: var(--is-light, rgba(43, 127, 255, 0.18)) var(--is-dark, rgba(43, 127, 255, 0.18));
+  --focus-ring: var(--is-light, rgb(43 127 255 / 18%)) var(--is-dark, rgb(43 127 255 / 18%));
 
   /* Strong focus ring shadow color. Use where the ring sits over busy controls. */
-  --focus-ring-strong: var(--is-light, rgba(43, 127, 255, 0.5)) var(--is-dark, rgba(43, 127, 255, 0.5));
+  --focus-ring-strong: var(--is-light, rgb(43 127 255 / 50%)) var(--is-dark, rgb(43 127 255 / 50%));
 
   /* Input focus shadow color. Use for field focus-visible box shadows. */
-  --input-focus-ring: var(--is-light, rgba(43, 127, 255, 0.18)) var(--is-dark, rgba(43, 127, 255, 0.18));
+  --input-focus-ring: var(--is-light, rgb(43 127 255 / 18%)) var(--is-dark, rgb(43 127 255 / 18%));
 
   /* Danger focus shadow color. Use for invalid focus-visible box shadows. */
-  --danger-ring: var(--is-light, rgba(220, 38, 38, 0.18)) var(--is-dark, rgba(162, 46, 46, 0.18));
+  --danger-ring: var(--is-light, rgb(220 38 38 / 18%)) var(--is-dark, rgb(162 46 46 / 18%));
 
   /* Shared typography scale. Use for reusable text and heading styles. */
   --text-xs: 0.75rem;

@@ -794,31 +794,28 @@ fn render_code_block_html(kind: &pulldown_cmark::CodeBlockKind<'_>, source: &str
         return render_plain_code_block(source);
     };
 
+    render_source_html(language, source)
+}
+
+fn render_plain_code_block(source: &str) -> String {
     let source = source.trim_end_matches('\n');
-    let highlighted: dioxus_code::advanced::HighlightedSource =
-        dioxus_code::SourceCode::new(language, source).into();
+    let lines = source.lines();
 
     dioxus_ssr::render_element(rsx! {
         div {
             class: "dx-preview-code-theme",
             tabindex: "0",
-            dioxus_code::Code {
-                src: highlighted,
-                theme: dioxus_code::CodeTheme::system(
-                    dioxus_code::Theme::AYU_LIGHT,
-                    dioxus_code::Theme::CATPPUCCIN_MOCHA,
-                ),
+            pre {
+                class: "dxc",
+                code {
+                    for line in lines {
+                        span {
+                            class: "dxc-line",
+                            "{line}\n"
+                        }
+                    }
+                }
             }
-        }
-    })
-}
-
-fn render_plain_code_block(source: &str) -> String {
-    let source = source.trim_end_matches('\n');
-
-    dioxus_ssr::render_element(rsx! {
-        pre {
-            code { "{source}" }
         }
     })
 }
@@ -827,16 +824,41 @@ fn render_source_html(language: dioxus_code::Language, source: &str) -> String {
     let highlighted: dioxus_code::advanced::HighlightedSource =
         dioxus_code::SourceCode::new(language, source.trim_end_matches('\n')).into();
 
+    let theme = dioxus_code::CodeTheme::system(
+        dioxus_code::Theme::AYU_LIGHT,
+        dioxus_code::Theme::CATPPUCCIN_MOCHA,
+    );
+    let class = format!("dxc {}", theme.classes());
+    let lines = highlighted.lines();
+
     dioxus_ssr::render_element(rsx! {
         div {
             class: "dx-preview-code-theme",
             tabindex: "0",
-            dioxus_code::Code {
-                src: highlighted,
-                theme: dioxus_code::CodeTheme::system(
-                    dioxus_code::Theme::AYU_LIGHT,
-                    dioxus_code::Theme::CATPPUCCIN_MOCHA,
-                ),
+            dioxus_code::advanced::CodeThemeStyles { theme }
+            pre {
+                class,
+                "data-language": language.slug(),
+                code {
+                    for line in lines {
+                        span {
+                            class: "dxc-line",
+                            for segment in line {
+                                if let Some(tag) = segment.tag() {
+                                    dioxus_code::advanced::TokenSpan {
+                                        text: segment.text(),
+                                        tag,
+                                    }
+                                } else {
+                                    span {
+                                        "{segment.text()}"
+                                    }
+                                }
+                            }
+                            "\n"
+                        }
+                    }
+                }
             }
         }
     })

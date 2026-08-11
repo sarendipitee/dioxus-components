@@ -20,6 +20,24 @@ test("opens basic bottom-centered content", async ({ page }) => {
   await expect(content).toHaveAttribute("data-side", "bottom");
 });
 
+test("closes without invoking a dropped position callback", async ({ page }) => {
+  const runtimeErrors: string[] = [];
+  page.on("console", (message) => {
+    if (message.type() === "error") runtimeErrors.push(message.text());
+  });
+  page.on("pageerror", (error) => runtimeErrors.push(error.message));
+
+  const root = await loadPopover(page);
+  const trigger = root.getByTestId("popover-trigger");
+  await trigger.click();
+  await expect(page.getByTestId("popover-content")).toBeVisible();
+  await page.keyboard.press("Escape");
+  await expect(page.getByTestId("popover-content")).toBeHidden();
+  await page.waitForTimeout(100);
+
+  expect(runtimeErrors.filter((error) => error.includes("ValueDroppedError"))).toEqual([]);
+});
+
 test("switches between intrinsic and extrinsic sizing", async ({ page }) => {
   const root = await loadPopover(page, SIZING_PAGE_URL);
   const trigger = root.getByTestId("sizing-popover-trigger");

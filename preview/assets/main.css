@@ -581,6 +581,31 @@ body {
   background: transparent;
 }
 
+.dx-component-expandable-code code,
+.dx-code-block code {
+  counter-reset: dxc-line;
+}
+
+.dx-component-expandable-code .dxc-line,
+.dx-code-block .dxc-line {
+  display: block;
+}
+
+.dx-component-expandable-code .dxc-line::before,
+.dx-code-block .dxc-line::before {
+  display: inline-block;
+  min-width: 2.25rem;
+  box-sizing: border-box;
+  padding-right: 1.25rem;
+  color: var(--fg-faint);
+  content: counter(dxc-line);
+  counter-increment: dxc-line;
+  font-variant-numeric: tabular-nums;
+  opacity: 0.45;
+  text-align: right;
+  user-select: none;
+}
+
 .dx-component-code-overlay {
   position: absolute;
   z-index: 5;

@@ -90,6 +90,14 @@ pub(crate) fn use_position(
     let mut is_positioned = use_signal(|| false);
     let mut measured_reference_width = use_signal(|| None);
     let cleanup = use_hook(|| Rc::new(RefCell::new(None::<Box<dyn Fn()>>)));
+    {
+        let cleanup = cleanup.clone();
+        crate::use_effect_cleanup(move || {
+            if let Some(cleanup) = cleanup.take() {
+                cleanup();
+            }
+        });
+    }
     let position_target_selector = target_selector.clone();
 
     let position = use_callback(move |_| {
