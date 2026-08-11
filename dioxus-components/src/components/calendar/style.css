@@ -280,6 +280,6 @@ td:has(.dx_calendar_grid_cell[data-selection-end="true"]) {
     overflow-y: auto;
 }
 
-.dx_calendar_year_select_content.dx_dropdown.dx_menu_content {
+.dx_dropdown.dx_menu_content.dx_calendar_year_select_content {
     min-width: 6rem;
 }

@@ -31,6 +31,7 @@ fn App() -> Element {
             rel: "stylesheet",
             href: asset!("/assets/dx-components-theme.css"),
         }
+        dioxus_components::DioxusComponentsStyles {}
         OverlayProvider {
             div { id: "dx-preview-block-root", style: "min-height: 100vh;",
                 BlockView {}
