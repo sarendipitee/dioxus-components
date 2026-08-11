@@ -30,7 +30,7 @@ pub fn Demo() -> Element {
                 on_open_change: move |next_open| open.set(Some(next_open)),
                 CollapsibleTrigger { "Version 0.3.1" }
                 CollapsibleContent {
-                    CollapsibleItem { "Improved focus handling and disclosure animations." }
+                    "Improved focus handling and disclosure animations."
                 }
             }
         }

@@ -14,12 +14,12 @@ pub fn Demo() -> Element {
             }
             CollapsibleList {
                 style: "max-width: none;",
-                CollapsibleItem { "dioxuslabs/dioxus" }
+                div { "dioxuslabs/dioxus" }
                 CollapsibleContent {
                     id: "repository-content",
                     "data-testid": "collapsible-content",
-                    CollapsibleItem { "dioxuslabs/components" }
-                    CollapsibleItem { "dioxuslabs/awesome-dioxus" }
+                    div { "dioxuslabs/components" }
+                    div { "dioxuslabs/awesome-dioxus" }
                 }
             }
         }

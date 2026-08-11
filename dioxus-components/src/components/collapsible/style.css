@@ -193,18 +193,6 @@
   gap: var(--compact-gap);
 }
 
-.dx_collapsible_item {
-  width: 100%;
-  min-width: 0;
-  box-sizing: border-box;
-  padding: var(--surface-gap) var(--surface-padding);
-  border: 1px solid var(--surface-border);
-  border-radius: var(--radius-surface);
-  background: var(--surface);
-  color: var(--surface-fg);
-  overflow-wrap: anywhere;
-}
-
 @keyframes dx-collapsible-content-in {
   from {
     opacity: 0;

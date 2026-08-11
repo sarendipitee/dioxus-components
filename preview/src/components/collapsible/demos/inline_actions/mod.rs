@@ -32,9 +32,9 @@ pub fn Demo() -> Element {
                 id: "inline-actions-content",
                 "data-testid": "inline-actions-content",
                 CollapsibleList {
-                    CollapsibleItem { "Design system notes" }
-                    CollapsibleItem { "Quarterly planning" }
-                    CollapsibleItem { "Release checklist" }
+                    div { "Design system notes" }
+                    div { "Quarterly planning" }
+                    div { "Release checklist" }
                 }
             }
         }

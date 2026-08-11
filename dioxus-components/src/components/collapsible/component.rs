@@ -135,25 +135,6 @@ pub fn CollapsibleContent(props: CollapsibleContentProps) -> Element {
     }
 }
 
-/// A bordered row for content displayed inside a [`Collapsible`].
-#[component]
-pub fn CollapsibleItem(
-    #[props(extends = GlobalAttributes)] attributes: Vec<Attribute>,
-    children: Element,
-) -> Element {
-    let base = attributes!(div {
-        class: Styles::dx_collapsible_item,
-    });
-    let attributes = merge_attributes(vec![base, attributes]);
-
-    rsx! {
-        div {
-            ..attributes,
-            {children}
-        }
-    }
-}
-
 /// A vertical group of rows displayed inside a [`Collapsible`].
 #[component]
 pub fn CollapsibleList(

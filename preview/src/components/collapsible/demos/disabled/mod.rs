@@ -10,7 +10,7 @@ pub fn Demo() -> Element {
             style: "width: 100%; max-width: 22rem;",
             CollapsibleTrigger { "Archived project" }
             CollapsibleContent {
-                CollapsibleItem { "Archived project settings are unavailable." }
+                "Archived project settings are unavailable."
             }
         }
     }

@@ -10,9 +10,7 @@ pub fn Demo() -> Element {
             style: "width: 100%; max-width: 22rem;",
             CollapsibleTrigger { "What is included?" }
             CollapsibleContent {
-                CollapsibleItem {
-                    "Accessible keyboard behavior, controlled and uncontrolled state, and reusable styling."
-                }
+                "Accessible keyboard behavior, controlled and uncontrolled state, and reusable styling."
             }
         }
     }
