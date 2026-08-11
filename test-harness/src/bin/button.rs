@@ -50,6 +50,6 @@ fn BlockView() -> Element {
         "icon" => rsx! { demo_icon::Demo {} },
         "main" => rsx! { demo_main::Demo {} },
         "size" => rsx! { demo_size::Demo {} },
-        _ => rsx! { demo_icon::Demo {} },
+        _ => rsx! { demo_main::Demo {} },
     }
 }

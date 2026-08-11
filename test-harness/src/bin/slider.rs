@@ -50,6 +50,6 @@ fn BlockView() -> Element {
         "dynamic_range" => rsx! { demo_dynamic_range::Demo {} },
         "main" => rsx! { demo_main::Demo {} },
         "range" => rsx! { demo_range::Demo {} },
-        _ => rsx! { demo_dynamic_range::Demo {} },
+        _ => rsx! { demo_main::Demo {} },
     }
 }

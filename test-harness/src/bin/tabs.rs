@@ -58,6 +58,6 @@ fn BlockView() -> Element {
         "manual" => rsx! { demo_manual::Demo {} },
         "pills" => rsx! { demo_pills::Demo {} },
         "vertical" => rsx! { demo_vertical::Demo {} },
-        _ => rsx! { demo_controlled::Demo {} },
+        _ => rsx! { demo_main::Demo {} },
     }
 }

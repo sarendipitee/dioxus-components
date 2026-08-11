@@ -50,6 +50,6 @@ fn BlockView() -> Element {
         "floating" => rsx! { demo_floating::Demo {} },
         "inset" => rsx! { demo_inset::Demo {} },
         "main" => rsx! { demo_main::Demo {} },
-        _ => rsx! { demo_floating::Demo {} },
+        _ => rsx! { demo_main::Demo {} },
     }
 }

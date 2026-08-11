@@ -50,6 +50,6 @@ fn BlockView() -> Element {
         "behavior" => rsx! { demo_behavior::Demo {} },
         "main" => rsx! { demo_main::Demo {} },
         "tokens" => rsx! { demo_tokens::Demo {} },
-        _ => rsx! { demo_behavior::Demo {} },
+        _ => rsx! { demo_main::Demo {} },
     }
 }

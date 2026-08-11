@@ -62,6 +62,6 @@ fn BlockView() -> Element {
         "nested_submenus" => rsx! { demo_nested_submenus::Demo {} },
         "presentation" => rsx! { demo_presentation::Demo {} },
         "structure" => rsx! { demo_structure::Demo {} },
-        _ => rsx! { demo_checkable::Demo {} },
+        _ => rsx! { demo_main::Demo {} },
     }
 }

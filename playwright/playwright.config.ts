@@ -144,7 +144,7 @@ export default defineConfig({
         cwd: targetComponent
           ? path.join(process.cwd(), "../test-harness")
           : path.join(process.cwd(), "../preview"),
-        command: `exec node ../playwright/start-preview.mjs ../target/dx/preview/debug/web/public ${localBasePort} ${targetComponent ?? ""}`,
+        command: `exec node ../playwright/start-preview.mjs ../target/dx/${targetComponent ?? "preview"}/debug/web/public ${localBasePort} ${targetComponent ?? ""}`,
         port: localBasePort,
         timeout: 50 * 60 * 1000,
         reuseExistingServer: false,

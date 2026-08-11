@@ -78,6 +78,6 @@ fn BlockView() -> Element {
         "open_button" => rsx! { demo_open_button::Demo {} },
         "rejected" => rsx! { demo_rejected::Demo {} },
         "single_file" => rsx! { demo_single_file::Demo {} },
-        _ => rsx! { demo_custom_content::Demo {} },
+        _ => rsx! { demo_main::Demo {} },
     }
 }

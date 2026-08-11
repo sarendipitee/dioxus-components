@@ -86,6 +86,6 @@ fn BlockView() -> Element {
         "resize" => rsx! { demo_resize::Demo {} },
         "slot_selection" => rsx! { demo_slot_selection::Demo {} },
         "static" => rsx! { demo_static::Demo {} },
-        _ => rsx! { demo_controlled::Demo {} },
+        _ => rsx! { demo_main::Demo {} },
     }
 }

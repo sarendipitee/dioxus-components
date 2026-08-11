@@ -58,6 +58,6 @@ fn BlockView() -> Element {
         "multi_month" => rsx! { demo_multi_month::Demo {} },
         "range" => rsx! { demo_range::Demo {} },
         "unavailable_dates" => rsx! { demo_unavailable_dates::Demo {} },
-        _ => rsx! { demo_internationalized::Demo {} },
+        _ => rsx! { demo_main::Demo {} },
     }
 }

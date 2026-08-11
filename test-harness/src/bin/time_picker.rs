@@ -58,6 +58,6 @@ fn BlockView() -> Element {
         "main" => rsx! { demo_main::Demo {} },
         "presets" => rsx! { demo_presets::Demo {} },
         "seconds_12_hour" => rsx! { demo_seconds_12_hour::Demo {} },
-        _ => rsx! { demo_clearable::Demo {} },
+        _ => rsx! { demo_main::Demo {} },
     }
 }

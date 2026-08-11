@@ -62,6 +62,6 @@ fn BlockView() -> Element {
         "permanent" => rsx! { demo_permanent::Demo {} },
         "with_action" => rsx! { demo_with_action::Demo {} },
         "with_description" => rsx! { demo_with_description::Demo {} },
-        _ => rsx! { demo_custom_duration::Demo {} },
+        _ => rsx! { demo_main::Demo {} },
     }
 }

@@ -46,6 +46,6 @@ fn BlockView() -> Element {
     match hash().as_str() {
         "controlled" => rsx! { demo_controlled::Demo {} },
         "main" => rsx! { demo_main::Demo {} },
-        _ => rsx! { demo_controlled::Demo {} },
+        _ => rsx! { demo_main::Demo {} },
     }
 }

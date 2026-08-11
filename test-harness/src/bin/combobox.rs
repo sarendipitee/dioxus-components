@@ -70,6 +70,6 @@ fn BlockView() -> Element {
         "multi_select" => rsx! { demo_multi_select::Demo {} },
         "tags_input" => rsx! { demo_tags_input::Demo {} },
         "virtualized" => rsx! { demo_virtualized::Demo {} },
-        _ => rsx! { demo_autocomplete::Demo {} },
+        _ => rsx! { demo_main::Demo {} },
     }
 }

@@ -66,6 +66,6 @@ fn BlockView() -> Element {
         "selectable" => rsx! { demo_selectable::Demo {} },
         "server_backed" => rsx! { demo_server_backed::Demo {} },
         "virtualized" => rsx! { demo_virtualized::Demo {} },
-        _ => rsx! { demo_controlled::Demo {} },
+        _ => rsx! { demo_main::Demo {} },
     }
 }

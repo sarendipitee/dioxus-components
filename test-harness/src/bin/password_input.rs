@@ -50,6 +50,6 @@ fn BlockView() -> Element {
         "controlled" => rsx! { demo_controlled::Demo {} },
         "main" => rsx! { demo_main::Demo {} },
         "states" => rsx! { demo_states::Demo {} },
-        _ => rsx! { demo_controlled::Demo {} },
+        _ => rsx! { demo_main::Demo {} },
     }
 }

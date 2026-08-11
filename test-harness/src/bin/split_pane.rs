@@ -74,6 +74,6 @@ fn BlockView() -> Element {
         "persistence" => rsx! { demo_persistence::Demo {} },
         "snap" => rsx! { demo_snap::Demo {} },
         "vertical" => rsx! { demo_vertical::Demo {} },
-        _ => rsx! { demo_constraints::Demo {} },
+        _ => rsx! { demo_main::Demo {} },
     }
 }

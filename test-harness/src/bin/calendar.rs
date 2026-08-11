@@ -62,6 +62,6 @@ fn BlockView() -> Element {
         "range" => rsx! { demo_range::Demo {} },
         "simple" => rsx! { demo_simple::Demo {} },
         "unavailable_dates" => rsx! { demo_unavailable_dates::Demo {} },
-        _ => rsx! { demo_internationalized::Demo {} },
+        _ => rsx! { demo_main::Demo {} },
     }
 }

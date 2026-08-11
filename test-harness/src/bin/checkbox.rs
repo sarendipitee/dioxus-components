@@ -58,6 +58,6 @@ fn BlockView() -> Element {
         "indeterminate" => rsx! { demo_indeterminate::Demo {} },
         "label_description" => rsx! { demo_label_description::Demo {} },
         "main" => rsx! { demo_main::Demo {} },
-        _ => rsx! { demo_disabled::Demo {} },
+        _ => rsx! { demo_main::Demo {} },
     }
 }

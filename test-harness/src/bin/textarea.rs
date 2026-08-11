@@ -66,6 +66,6 @@ fn BlockView() -> Element {
         "main" => rsx! { demo_main::Demo {} },
         "outline" => rsx! { demo_outline::Demo {} },
         "resize" => rsx! { demo_resize::Demo {} },
-        _ => rsx! { demo_autosize::Demo {} },
+        _ => rsx! { demo_main::Demo {} },
     }
 }

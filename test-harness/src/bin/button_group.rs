@@ -70,6 +70,6 @@ fn BlockView() -> Element {
         "separator" => rsx! { demo_separator::Demo {} },
         "split" => rsx! { demo_split::Demo {} },
         "vertical" => rsx! { demo_vertical::Demo {} },
-        _ => rsx! { demo_dropdown::Demo {} },
+        _ => rsx! { demo_main::Demo {} },
     }
 }

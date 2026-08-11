@@ -54,6 +54,6 @@ fn BlockView() -> Element {
         "main" => rsx! { demo_main::Demo {} },
         "nested" => rsx! { demo_nested::Demo {} },
         "scrollable" => rsx! { demo_scrollable::Demo {} },
-        _ => rsx! { demo_form::Demo {} },
+        _ => rsx! { demo_main::Demo {} },
     }
 }

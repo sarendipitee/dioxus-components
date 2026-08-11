@@ -58,6 +58,6 @@ fn BlockView() -> Element {
         "formatting" => rsx! { demo_formatting::Demo {} },
         "main" => rsx! { demo_main::Demo {} },
         "states" => rsx! { demo_states::Demo {} },
-        _ => rsx! { demo_constraints::Demo {} },
+        _ => rsx! { demo_main::Demo {} },
     }
 }
