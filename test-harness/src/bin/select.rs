@@ -1,8 +1,8 @@
 use dioxus::prelude::*;
 use dioxus_primitives::overlay::OverlayProvider;
 
-#[path = "../../../preview/src/components/select/demos/main/mod.rs"]
-mod demo_main;
+#[path = "../select_behavior.rs"]
+mod select_behavior;
 
 #[path = "../../../preview/src/components/select/demos/multi/mod.rs"]
 mod demo_multi;
@@ -44,8 +44,8 @@ fn BlockView() -> Element {
     });
 
     match hash().as_str() {
-        "main" => rsx! { demo_main::Demo {} },
+        "main" => rsx! { select_behavior::Demo {} },
         "multi" => rsx! { demo_multi::Demo {} },
-        _ => rsx! { demo_main::Demo {} },
+        _ => rsx! { select_behavior::Demo {} },
     }
 }

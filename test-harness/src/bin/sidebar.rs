@@ -1,5 +1,4 @@
 use dioxus::prelude::*;
-use dioxus_components::DioxusComponentsStyles;
 use dioxus_primitives::overlay::OverlayProvider;
 
 #[path = "../../../preview/src/components/sidebar/demos/floating/mod.rs"]
@@ -18,7 +17,6 @@ fn main() {
 #[component]
 fn App() -> Element {
     rsx! {
-        DioxusComponentsStyles {}
         document::Link { rel: "stylesheet", href: asset!("/assets/main.css") }
         document::Link {
             rel: "stylesheet",

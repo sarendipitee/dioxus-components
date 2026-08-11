@@ -9,6 +9,22 @@ COMPONENTS_DIR = os.path.join(REPO_ROOT, "preview", "src", "components")
 HARNESS_BIN_DIR = os.path.join(REPO_ROOT, "test-harness", "src", "bin")
 HARNESS_SRC_DIR = os.path.join(REPO_ROOT, "test-harness", "src")
 
+# Custom harness demos keyed by their canonical preview component and registered hash.
+# Each value is the Rust module name and its path relative to src/bin/*.rs.
+CUSTOM_DEMO_OVERRIDES = {
+    ("select", "main"): ("select_behavior", "../select_behavior.rs"),
+}
+
+
+def validate_custom_demo_overrides():
+    for comp_name, demo_hash in CUSTOM_DEMO_OVERRIDES:
+        demo_mod = os.path.join(COMPONENTS_DIR, comp_name, "demos", demo_hash, "mod.rs")
+        if not os.path.isfile(demo_mod):
+            raise ValueError(
+                f"Custom harness override {comp_name}#{demo_hash} does not match a preview demo"
+            )
+
+
 os.makedirs(HARNESS_BIN_DIR, exist_ok=True)
 
 def generate_harness_binary(comp_name):
@@ -24,6 +40,16 @@ def generate_harness_binary(comp_name):
 
     if not demos:
         return
+
+    overrides = {
+        demo_hash: override
+        for (component, demo_hash), override in CUSTOM_DEMO_OVERRIDES.items()
+        if component == comp_name
+    }
+    unknown_overrides = sorted(set(overrides) - set(demos))
+    if unknown_overrides:
+        unknown = ", ".join(unknown_overrides)
+        raise ValueError(f"Custom harness override for {comp_name} has unknown demo hash: {unknown}")
 
     # Sync all .css files under demos/
     for root, _dirs, files in os.walk(demos_dir):
@@ -43,21 +69,39 @@ def generate_harness_binary(comp_name):
         "use dioxus_primitives::overlay::OverlayProvider;",
         "",
     ]
+    for module_name, module_path in overrides.values():
+        code_lines.extend([
+            f'#[path = "{module_path}"]',
+            f"mod {module_name};",
+            "",
+        ])
     if bin_name == "navbar":
         code_lines.extend([
             "#[derive(Clone, PartialEq, Debug)]",
-            "pub enum Route { ComponentDemo { name: String, demo: String, dark_mode: Option<bool> } }",
+            "pub enum Route {",
+            "    ComponentDemo {",
+            "        name: String,",
+            "        demo: String,",
+            "        dark_mode: Option<bool>,",
+            "    },",
+            "}",
             "impl Route {",
-            '    pub fn component(name: &str) -> String { format!("#/components/{name}") }',
-            '    pub fn home() -> String { "/".to_string() }',
+            "    pub fn component(name: &str) -> String {",
+            "        format!(\"#/components/{name}\")",
+            "    }",
+            "    pub fn home() -> String {",
+            "        \"/\".to_string()",
+            "    }",
             "}",
             "",
         ])
 
     for d in demos:
+        if d in overrides:
+            continue
         mod_ident = f"demo_{d}"
-        path_str = f"../../../preview/src/components/{comp_name}/demos/{d}/mod.rs"
-        code_lines.append(f'#[path = "{path_str}"]')
+        mod_path = f"../../../preview/src/components/{comp_name}/demos/{d}/mod.rs"
+        code_lines.append(f'#[path = "{mod_path}"]')
         code_lines.append(f"mod {mod_ident};")
         code_lines.append("")
 
@@ -102,11 +146,12 @@ def generate_harness_binary(comp_name):
     ])
 
     for d in demos:
-        mod_ident = f"demo_{d}"
+        mod_ident = overrides.get(d, (f"demo_{d}", ""))[0]
         code_lines.append(f'        "{d}" => rsx! {{ {mod_ident}::Demo {{}} }},')
 
     default_demo = "main" if "main" in demos else demos[0]
-    code_lines.append(f'        _ => rsx! {{ demo_{default_demo}::Demo {{}} }},')
+    default_mod = overrides.get(default_demo, (f"demo_{default_demo}", ""))[0]
+    code_lines.append(f'        _ => rsx! {{ {default_mod}::Demo {{}} }},')
     code_lines.append("    }")
     code_lines.append("}")
     code_lines.append("")
@@ -119,6 +164,8 @@ def main():
     if not os.path.exists(COMPONENTS_DIR):
         print(f"Error: {COMPONENTS_DIR} does not exist", file=sys.stderr)
         sys.exit(1)
+
+    validate_custom_demo_overrides()
 
     for item in os.listdir(COMPONENTS_DIR):
         comp_dir = os.path.join(COMPONENTS_DIR, item)

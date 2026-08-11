@@ -1,3 +1,4 @@
+import { MICRO_HARNESS_COMPONENTS } from "./micro-harness-policy.mjs";
 import { execFileSync } from "node:child_process";
 import path from "node:path";
 import { defineConfig, devices } from "@playwright/test";
@@ -44,11 +45,18 @@ function findAvailablePort() {
     10,
   );
 }
-
 function getLocalBasePort() {
   const existingPort = process.env.PLAYWRIGHT_LOCAL_BASE_PORT;
   if (existingPort) {
-    return Number.parseInt(existingPort, 10);
+    if (!/^\d+$/.test(existingPort)) {
+      throw new Error(`Invalid PLAYWRIGHT_LOCAL_BASE_PORT: ${existingPort}`);
+    }
+
+    const port = Number(existingPort);
+    if (!Number.isInteger(port) || port <= 0 || port > 65_535) {
+      throw new Error(`Invalid PLAYWRIGHT_LOCAL_BASE_PORT: ${existingPort}`);
+    }
+    return port;
   }
 
   const port = findAvailablePort();
@@ -56,13 +64,32 @@ function getLocalBasePort() {
   return port;
 }
 
-function getTargetComponent(): string | null {
-  const specArg = process.argv.find(
-    (arg) => arg.endsWith(".spec.ts") || arg.includes(".spec.ts"),
-  );
-  if (!specArg) return null;
-  const basename = path.basename(specArg, ".spec.ts");
-  return basename.replace(/-/g, "_");
+// The micro harness only implements isolated block routes. The shared policy
+// keeps config selection and launcher validation fail-closed together.
+const MICRO_HARNESS_SPECS = new Set(MICRO_HARNESS_COMPONENTS);
+
+function getTargetComponent(args = process.argv): string | null {
+  const selectedSpecs = args.flatMap((arg) => {
+    const match = arg.match(/(^|.*[\\/])([^\\/]+)\.spec\.ts(?:$|:)/);
+    if (!match) return [];
+
+    const specPath = path.resolve(match[1] || ".", `${match[2]}.spec.ts`);
+    return [{
+      component: match[2].replace(/-/g, "_"),
+      specPath,
+    }];
+  });
+
+  if (selectedSpecs.length === 0) return null;
+
+  const uniqueSpecPaths = new Set(selectedSpecs.map(({ specPath }) => specPath));
+  if (uniqueSpecPaths.size !== 1) return null;
+
+  const [{ component, specPath }] = selectedSpecs;
+  const canonicalSpecPath = path.resolve(process.cwd(), `${path.basename(specPath)}`);
+  if (specPath !== canonicalSpecPath) return null;
+
+  return MICRO_HARNESS_SPECS.has(component) ? component : null;
 }
 
 const targetComponent = getTargetComponent();

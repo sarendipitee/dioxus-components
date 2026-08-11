@@ -1,4 +1,5 @@
-import { createReadStream, existsSync, readFileSync, statSync } from "node:fs";
+import { MICRO_HARNESS_COMPONENTS } from "./micro-harness-policy.mjs";
+import { createReadStream, existsSync, readFileSync, rmSync, statSync } from "node:fs";
 import { createServer } from "node:http";
 import { extname, join, normalize, resolve } from "node:path";
 import { spawn } from "node:child_process";
@@ -18,14 +19,33 @@ const MIME_TYPES = new Map([
   [".woff2", "font/woff2"],
 ]);
 
+const SPA_ROUTE_EXTENSIONS = new Set(["", ".html"]);
+
+const MICRO_HARNESS_COMPONENT_SET = new Set(MICRO_HARNESS_COMPONENTS);
+
 const rootArg = process.argv[2];
 const portArg = process.argv[3];
-const componentArg = process.argv[4] || process.env.PLAYWRIGHT_TARGET_COMPONENT;
+const cliComponentArg = process.argv[4] || "";
+const envComponentArg = process.env.PLAYWRIGHT_TARGET_COMPONENT || "";
 
 if (!rootArg || !portArg) {
   console.error("Usage: node start-preview.mjs <public-dir> <port> [component]");
   process.exit(1);
 }
+if (!/^\d+$/.test(portArg) || Number(portArg) <= 0 || Number(portArg) > 65_535) {
+  console.error(`Invalid port: ${portArg}`);
+  process.exit(1);
+}
+
+if (cliComponentArg && envComponentArg && cliComponentArg !== envComponentArg) {
+  console.error(
+    `Requested component mismatch: argument=${cliComponentArg}, environment=${envComponentArg}`,
+  );
+  process.exit(1);
+}
+
+const componentArg = cliComponentArg || envComponentArg;
+const expectedTarget = componentArg || "preview";
 
 // ─── Build phase ─────────────────────────────────────────────────────────────
 
@@ -116,14 +136,73 @@ if (process.stdin.isTTY) {
   process.stdin.resume();
 }
 
-async function runBuild() {
-  const buildArgs = ["build", "--web"];
+function validateLaunchRequest() {
+  if (componentArg && !MICRO_HARNESS_COMPONENT_SET.has(componentArg)) {
+    throw new Error(`Component is not eligible for the micro harness: ${componentArg}`);
+  }
+
+  const rootDir = resolve(rootArg);
+  const expectedRoot = resolve(
+    process.cwd(),
+    "../target/dx",
+    expectedTarget,
+    "debug/web/public",
+  );
+  if (rootDir !== expectedRoot) {
+    throw new Error(
+      `Requested output mismatch: expected ${expectedRoot}, received ${rootDir}`,
+    );
+  }
+
   if (componentArg) {
     const harnessBin = join(process.cwd(), `src/bin/${componentArg}.rs`);
-    if (existsSync(harnessBin)) {
-      buildArgs.push("--bin", componentArg);
-      console.log(`[Playwright] Fast-path building micro-binary harness: ${componentArg}`);
+    if (!existsSync(harnessBin) || !statSync(harnessBin).isFile()) {
+      throw new Error(`Micro-harness source binary does not exist: ${harnessBin}`);
     }
+  }
+
+  // A successful build must recreate its public tree. Removing prior output
+  // prevents a no-op or misdirected build from serving stale same-target files.
+  rmSync(rootDir, { recursive: true, force: true });
+}
+
+function validateBuiltOutput() {
+  const rootDir = resolve(rootArg);
+  if (!existsSync(rootDir) || !statSync(rootDir).isDirectory()) {
+    throw new Error(`Built public directory does not exist: ${rootDir}`);
+  }
+
+  const indexPath = join(rootDir, "index.html");
+  if (!existsSync(indexPath) || !statSync(indexPath).isFile()) {
+    throw new Error(`Built output is missing index.html: ${indexPath}`);
+  }
+
+  const indexHtml = readFileSync(indexPath, "utf8");
+  const scriptTargets = [
+    ...indexHtml.matchAll(/(?:src=["'][^"']*\/wasm\/)([^/"']+)\.js["']/g),
+  ].map((match) => match[1]);
+  if (scriptTargets.length !== 1 || scriptTargets[0] !== expectedTarget) {
+    throw new Error(
+      `Built output identity mismatch: expected ${expectedTarget}, found ${scriptTargets.join(", ") || "none"}`,
+    );
+  }
+
+  for (const asset of [
+    join(rootDir, "wasm", `${expectedTarget}.js`),
+    join(rootDir, "wasm", `${expectedTarget}_bg.wasm`),
+  ]) {
+    if (!existsSync(asset) || !statSync(asset).isFile()) {
+      throw new Error(`Built output is missing target asset: ${asset}`);
+    }
+  }
+}
+
+async function runBuild() {
+  validateLaunchRequest();
+  const buildArgs = ["build", "--web"];
+  if (componentArg) {
+    buildArgs.push("--bin", componentArg);
+    console.log(`[Playwright] Fast-path building micro-binary harness: ${componentArg}`);
   }
 
   await new Promise((resolve, reject) => {
@@ -153,6 +232,7 @@ async function runBuild() {
       resolve();
     });
   });
+  validateBuiltOutput();
 }
 
 function cleanupBuildHandlers() {
@@ -173,11 +253,7 @@ function startPreviewServer(rootArg, portArg) {
     throw new Error(`Preview directory does not exist: ${rootDir}`);
   }
 
-  const port = Number.parseInt(portArg, 10);
-
-  if (!Number.isInteger(port) || port <= 0) {
-    throw new Error(`Invalid port: ${portArg}`);
-  }
+  const port = Number(portArg);
 
   // Read index.html once at startup; served for every unknown path so the
   // Dioxus WASM router can handle client-side navigation.
@@ -197,6 +273,15 @@ function startPreviewServer(rootArg, portArg) {
         "Cache-Control": "no-cache",
       });
       createReadStream(filePath).pipe(res);
+      return;
+    }
+
+    if (!SPA_ROUTE_EXTENSIONS.has(extname(pathname))) {
+      res.writeHead(404, {
+        "Content-Type": "text/plain; charset=utf-8",
+        "Cache-Control": "no-cache",
+      });
+      res.end(`Asset not found: ${pathname}`);
       return;
     }
 
@@ -241,6 +326,7 @@ function startPreviewServer(rootArg, portArg) {
       serverShuttingDown = true;
       server.close((error) => {
         serverClosed = true;
+
 
         if (error) {
           console.error(error);

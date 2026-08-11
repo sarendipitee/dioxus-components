@@ -3,9 +3,8 @@ import { test, expect, type Locator, type Page } from "@playwright/test";
 const URL = "/components/accordion/block";
 const LOAD_TIMEOUT = 30 * 1000;
 
-async function loadAccordion(page: Page, id: string) {
-  const demo = id.replace(/-accordion$/, "");
-  await page.goto(`${URL}?demo=${demo}#${demo}`, {
+async function loadAccordion(page: Page, demo: string, id: string) {
+  await page.goto(`${URL}#${demo}`, {
     timeout: LOAD_TIMEOUT,
     waitUntil: "networkidle",
   });
@@ -19,7 +18,7 @@ function items(accordion: Locator) {
 }
 
 test("main accordion has visible width", async ({ page }) => {
-  const accordion = await loadAccordion(page, "single-accordion");
+  const accordion = await loadAccordion(page, "main", "single-accordion");
   const box = await accordion.boundingBox();
 
   expect(box).not.toBeNull();
@@ -27,7 +26,7 @@ test("main accordion has visible width", async ({ page }) => {
 });
 
 test("content padding participates in collapse animation", async ({ page }) => {
-  const accordion = await loadAccordion(page, "single-accordion");
+  const accordion = await loadAccordion(page, "main", "single-accordion");
   const account = accordion.getByRole("button", { name: "Account settings" });
 
   await account.click();
@@ -49,7 +48,7 @@ test("content padding participates in collapse animation", async ({ page }) => {
 test("single accordion exposes state and switches the visible panel", async ({
   page,
 }) => {
-  const accordion = await loadAccordion(page, "single-accordion");
+  const accordion = await loadAccordion(page, "main", "single-accordion");
   const accordionItems = items(accordion);
   const account = accordion.getByRole("button", { name: "Account settings" });
   const billing = accordion.getByRole("button", { name: "Billing" });
@@ -93,7 +92,7 @@ test("single accordion exposes state and switches the visible panel", async ({
 test("multiple accordion keeps panels open and honors non-collapsible default", async ({
   page,
 }) => {
-  const accordion = await loadAccordion(page, "multiple-accordion");
+  const accordion = await loadAccordion(page, "multiple", "multiple-accordion");
   const shipping = accordion.getByRole("button", { name: "Shipping details" });
   const returns = accordion.getByRole("button", { name: "Returns policy" });
 
@@ -115,7 +114,7 @@ test("multiple accordion keeps panels open and honors non-collapsible default", 
 test("disabled items and disabled accordions cannot be activated", async ({
   page,
 }) => {
-  const accordion = await loadAccordion(page, "single-accordion");
+  const accordion = await loadAccordion(page, "main", "single-accordion");
   const archived = accordion.getByRole("button", { name: "Archived projects" });
   await expect(archived).toBeDisabled();
   await archived.click({ force: true });
@@ -124,7 +123,11 @@ test("disabled items and disabled accordions cannot be activated", async ({
     accordion.getByText("Archived project settings are unavailable."),
   ).toBeHidden();
 
-  const disabledAccordion = await loadAccordion(page, "disabled-accordion");
+  const disabledAccordion = await loadAccordion(
+    page,
+    "disabled",
+    "disabled-accordion",
+  );
   const disabledTrigger = disabledAccordion.getByRole("button", {
     name: "Disabled accordion",
   });
@@ -138,7 +141,7 @@ test("disabled items and disabled accordions cannot be activated", async ({
 test("keyboard activation and vertical focus navigation skip disabled items", async ({
   page,
 }) => {
-  const accordion = await loadAccordion(page, "single-accordion");
+  const accordion = await loadAccordion(page, "main", "single-accordion");
   const account = accordion.getByRole("button", { name: "Account settings" });
   const billing = accordion.getByRole("button", { name: "Billing" });
   const notifications = accordion.getByRole("button", {
@@ -163,7 +166,11 @@ test("keyboard activation and vertical focus navigation skip disabled items", as
 });
 
 test("horizontal accordion uses horizontal arrow keys", async ({ page }) => {
-  const accordion = await loadAccordion(page, "horizontal-accordion");
+  const accordion = await loadAccordion(
+    page,
+    "horizontal",
+    "horizontal-accordion",
+  );
   const overview = accordion.getByRole("button", { name: "Overview" });
   const activity = accordion.getByRole("button", { name: "Activity" });
 
