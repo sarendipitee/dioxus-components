@@ -3,58 +3,25 @@ use dioxus_components::collapsible::*;
 
 #[component]
 pub fn Demo() -> Element {
-    let mut controlled_open = use_signal(|| Some(false));
-
     rsx! {
         Collapsible {
             id: "uncontrolled-collapsible",
             "data-testid": "collapsible-root",
+            style: "width: 100%; max-width: 22rem;",
             CollapsibleTrigger {
                 "data-testid": "collapsible-trigger",
-                b { "Recent Activity" }
+                "3 repositories"
             }
             CollapsibleList {
-                CollapsibleItem { "Added a new feature to the collapsible component" }
+                style: "max-width: none;",
+                CollapsibleItem { "dioxuslabs/dioxus" }
                 CollapsibleContent {
-                    id: "recent-activity-content",
+                    id: "repository-content",
                     "data-testid": "collapsible-content",
-                    CollapsibleItem { "Fixed a bug in the collapsible component" }
-                    CollapsibleItem { "Updated the documentation for the collapsible component" }
+                    CollapsibleItem { "dioxuslabs/components" }
+                    CollapsibleItem { "dioxuslabs/awesome-dioxus" }
                 }
             }
-        }
-
-        Collapsible {
-            id: "default-open-collapsible",
-            default_open: true,
-            CollapsibleTrigger { "Default open details" }
-            CollapsibleContent { "This content starts open." }
-        }
-
-        Collapsible {
-            id: "controlled-collapsible",
-            open: controlled_open,
-            on_open_change: move |open| controlled_open.set(Some(open)),
-            CollapsibleTrigger { "Controlled details" }
-            CollapsibleContent { "This content is controlled." }
-        }
-        button {
-            onclick: move |_| controlled_open.set(Some(true)),
-            "Set controlled open"
-        }
-        p {
-            if controlled_open().unwrap_or(false) {
-                "Controlled state: open"
-            } else {
-                "Controlled state: closed"
-            }
-        }
-
-        Collapsible {
-            id: "disabled-collapsible",
-            disabled: true,
-            CollapsibleTrigger { "Disabled details" }
-            CollapsibleContent { "Disabled content should stay hidden." }
         }
     }
 }

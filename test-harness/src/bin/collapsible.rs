@@ -1,6 +1,18 @@
 use dioxus::prelude::*;
 use dioxus_primitives::overlay::OverlayProvider;
 
+#[path = "../../../preview/src/components/collapsible/demos/controlled/mod.rs"]
+mod demo_controlled;
+
+#[path = "../../../preview/src/components/collapsible/demos/default_open/mod.rs"]
+mod demo_default_open;
+
+#[path = "../../../preview/src/components/collapsible/demos/disabled/mod.rs"]
+mod demo_disabled;
+
+#[path = "../../../preview/src/components/collapsible/demos/inline_actions/mod.rs"]
+mod demo_inline_actions;
+
 #[path = "../../../preview/src/components/collapsible/demos/main/mod.rs"]
 mod demo_main;
 
@@ -41,6 +53,10 @@ fn BlockView() -> Element {
     });
 
     match hash().as_str() {
+        "controlled" => rsx! { demo_controlled::Demo {} },
+        "default_open" => rsx! { demo_default_open::Demo {} },
+        "disabled" => rsx! { demo_disabled::Demo {} },
+        "inline_actions" => rsx! { demo_inline_actions::Demo {} },
         "main" => rsx! { demo_main::Demo {} },
         _ => rsx! { demo_main::Demo {} },
     }

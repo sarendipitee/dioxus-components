@@ -1,6 +1,6 @@
 {
   "name": "collapsible",
-  "description": "Build compact, keyboard-friendly panels that reveal detail only when the user explicitly opens each section.",
+  "description": "Reveal one optional region beneath a persistent summary, with keyboard support and controlled or uncontrolled state.",
   "authors": [
     "Evan Almloff"
   ],

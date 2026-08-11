@@ -286,7 +286,7 @@ examples!(
     calendar[simple, internationalized, range, multi_month, unavailable_dates],
     card,
     checkbox[label_description, element_label, disabled, indeterminate],
-    collapsible,
+    collapsible[default_open, controlled, disabled, inline_actions],
     color_input,
     color_picker,
     autocomplete[server_backed],
