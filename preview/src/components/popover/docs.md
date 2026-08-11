@@ -6,6 +6,9 @@ Use it for quick action menus, inline forms, metadata cards, or any ephemeral su
 
 ```rust
 use dioxus_components::popover::*;
+use dioxus_components::typography::{
+    Heading, HeadingLevel, Text, TypographySize, TypographyTone, TypographyWeight,
+};
 use dioxus_primitives::{ContentAlign, ContentSide};
 
 // Popover owns the open state and positions content relative to the trigger.
@@ -21,8 +24,17 @@ Popover {
     PopoverContent {
         side: ContentSide::Bottom,   // Top | Right | Bottom | Left
         align: ContentAlign::Center, // Start | Center | End
-        PopoverContentTitle { "Details" }
-        PopoverContentDescription { "Short supporting copy." }
+        Heading {
+            level: HeadingLevel::H3,
+            size: TypographySize::Lg,
+            weight: TypographyWeight::Bold,
+            "Details"
+        }
+        Text {
+            size: TypographySize::Md,
+            tone: TypographyTone::Muted,
+            "Short supporting copy."
+        }
         {children}
     }
 }
@@ -48,9 +60,6 @@ Content automatically flips and shifts when near a viewport edge to stay in view
 | `side` | `ContentSide` | `Bottom` | Preferred side relative to trigger |
 | `align` | `ContentAlign` | `Center` | Alignment along the side axis |
 
-### PopoverContentTitle / PopoverContentDescription
-
-Use these optional content slots for popovers that need a short heading and supporting copy.
 
 ## Triggers
 

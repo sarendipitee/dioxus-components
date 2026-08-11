@@ -184,13 +184,6 @@
   border-radius: 0 0.1rem 0 0;
 }
 
-.dx_popover_content_title {
-  color: var(--overlay-fg);
-}
-
-.dx_popover_content_description {
-  color: var(--fg-muted);
-}
 
 .dx_popover_content_actions {
   display: flex;
