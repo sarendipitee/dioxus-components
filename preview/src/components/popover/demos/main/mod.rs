@@ -1,59 +1,56 @@
 use dioxus::prelude::*;
-use dioxus_components::button::Button;
+use dioxus_components::button::{Button, ButtonSize, ButtonVariant};
 use dioxus_components::popover::*;
-use dioxus_primitives::popover::PopoverWidth;
+use dioxus_components::typography::{
+    Heading, HeadingLevel, Text, TypographySize, TypographyTone, TypographyWeight,
+};
 
 #[component]
 pub fn Demo() -> Element {
     let mut open = use_signal(|| false);
-    let mut non_modal_open = use_signal(|| false);
 
     rsx! {
-        div { display: "flex", flex_direction: "column", gap: "1rem",
-            Popover { open: open(), on_open_change: move |v| open.set(v),
-                PopoverTrigger {
-                    "data-testid": "popover-trigger",
-                    Button { r#type: "button", "Open popover" }
-                }
-                PopoverContent {
-                    "data-testid": "popover-content",
-                    PopoverContentTitle { "Details" }
-                    PopoverContentDescription { "This is the popover content." }
-                    Button { r#type: "button", "First action" }
-                    Button { r#type: "button", "Second action" }
+        Popover { open: open(), on_open_change: move |v| open.set(v),
+            PopoverTrigger {
+                "data-testid": "popover-trigger",
+                Button {
+                    r#type: "button",
+                    variant: ButtonVariant::Outline,
+                    "Open popover"
                 }
             }
-            output {
-                "data-testid": "popover-state",
-                "Popover is "
-                if open() { "open" } else { "closed" }
-            }
-
-            Popover {
-                is_modal: false,
-                open: non_modal_open(),
-                on_open_change: move |v| non_modal_open.set(v),
-                PopoverTrigger {
-                    "data-testid": "non-modal-popover-trigger",
-                    Button { r#type: "button", "Open non-modal popover" }
-                }
-                PopoverContent {
-                    "data-testid": "non-modal-popover-content",
-                    PopoverContentTitle { "Non-modal details" }
-                    PopoverContentDescription { "Focus remains free to leave this popover." }
-                    Button { r#type: "button", "Non-modal action" }
-                }
-            }
-
-            Popover {
-                PopoverTrigger {
-                    "data-testid": "explicit-width-trigger",
-                    Button { r#type: "button", "Open sized popover" }
-                }
-                PopoverContent {
-                    "data-testid": "explicit-width-content",
-                    width: PopoverWidth::Css("320px".to_string()),
-                    PopoverContentTitle { "Sized content" }
+            PopoverContent {
+                "data-testid": "popover-content",
+                div { style: "display: grid; gap: var(--surface-gap);",
+                    div { style: "display: grid; gap: var(--space);",
+                        Heading {
+                            level: HeadingLevel::H3,
+                            size: TypographySize::Md,
+                            weight: TypographyWeight::Semibold,
+                            "Details"
+                        }
+                        Text {
+                            size: TypographySize::Sm,
+                            tone: TypographyTone::Muted,
+                            "This is the popover content."
+                        }
+                    }
+                    div {
+                        style: "display: flex; justify-content: flex-end; gap: var(--content-gap);",
+                        Button {
+                            r#type: "button",
+                            size: ButtonSize::Sm,
+                            variant: ButtonVariant::Outline,
+                            onclick: move |_| open.set(false),
+                            "Cancel"
+                        }
+                        Button {
+                            r#type: "button",
+                            size: ButtonSize::Sm,
+                            onclick: move |_| open.set(false),
+                            "Confirm"
+                        }
+                    }
                 }
             }
         }

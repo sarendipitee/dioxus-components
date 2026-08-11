@@ -1,16 +1,17 @@
 import { test, expect, type Page } from "@playwright/test";
-const PAGE_URL = "/components/popover/block#main";
+const MAIN_PAGE_URL = "/components/popover/block#main";
+const SIZING_PAGE_URL = "/components/popover/block#sizing";
 const PREVIEW_ROOT = "#dx-preview-block-root";
 
-async function loadPopover(page: Page) {
-  await page.goto(PAGE_URL, { timeout: 30 * 1000, waitUntil: "load" });
+async function loadPopover(page: Page, url = MAIN_PAGE_URL) {
+  await page.goto(url, { timeout: 30 * 1000, waitUntil: "load" });
   const root = page.locator(PREVIEW_ROOT);
   await expect(root).toBeVisible();
   return root;
 }
 
 
-test("defaults to bottom-centered intrinsic content", async ({ page }) => {
+test("opens basic bottom-centered content", async ({ page }) => {
   const root = await loadPopover(page);
   const trigger = root.getByTestId("popover-trigger");
   await trigger.click();
@@ -19,11 +20,18 @@ test("defaults to bottom-centered intrinsic content", async ({ page }) => {
   await expect(content).toHaveAttribute("data-side", "bottom");
 });
 
-test("accepts an explicit CSS width", async ({ page }) => {
-  const root = await loadPopover(page);
-  const trigger = root.getByTestId("explicit-width-trigger");
+test("switches between intrinsic and extrinsic sizing", async ({ page }) => {
+  const root = await loadPopover(page, SIZING_PAGE_URL);
+  const trigger = root.getByTestId("sizing-popover-trigger");
+  const content = page.getByTestId("sizing-popover-content");
+
   await trigger.click();
-  const content = page.getByTestId("explicit-width-content");
+  await expect(content).toBeVisible();
+  await expect(content).not.toHaveCSS("width", "320px");
+
+  await page.keyboard.press("Escape");
+  await root.getByTestId("extrinsic-size-option").click();
+  await trigger.click();
   await expect(content).toBeVisible();
   await expect(content).toHaveCSS("width", "320px");
 });

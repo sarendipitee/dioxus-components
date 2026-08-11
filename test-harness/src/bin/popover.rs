@@ -4,8 +4,8 @@ use dioxus_primitives::overlay::OverlayProvider;
 #[path = "../../../preview/src/components/popover/demos/main/mod.rs"]
 mod demo_main;
 
-#[path = "../../../preview/src/components/popover/demos/positioning/mod.rs"]
-mod demo_positioning;
+#[path = "../../../preview/src/components/popover/demos/sizing/mod.rs"]
+mod demo_sizing;
 
 fn main() {
     dioxus::launch(App);
@@ -45,7 +45,7 @@ fn BlockView() -> Element {
 
     match hash().as_str() {
         "main" => rsx! { demo_main::Demo {} },
-        "positioning" => rsx! { demo_positioning::Demo {} },
+        "sizing" => rsx! { demo_sizing::Demo {} },
         _ => rsx! { demo_main::Demo {} },
     }
 }

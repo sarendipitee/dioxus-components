@@ -321,7 +321,7 @@ examples!(
     navbar,
     pagination[controlled],
     pills_input,
-    popover[positioning],
+    popover[sizing],
     progress,
     radio_group,
     scroll_area,
