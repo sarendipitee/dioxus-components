@@ -357,7 +357,7 @@ fn CalendarSelectMonth() -> Element {
                     DropDownIcon {}
                 }
             }
-            DropdownMenuContent {
+            DropdownMenuContent { class: Styles::dx_calendar_select_content,
                 MenuRadioGroup::<Month> {
                     value: Some(selected),
                     on_value_change: move |month| {
@@ -388,7 +388,7 @@ fn CalendarSelectYear() -> Element {
                     aria_label: "Year {selected}", "{selected}" DropDownIcon {}
                 }
             }
-            DropdownMenuContent {
+            DropdownMenuContent { class: Styles::dx_calendar_select_content,
                 MenuRadioGroup::<i32> {
                     value: Some(selected),
                     on_value_change: move |year| {

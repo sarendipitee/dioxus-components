@@ -1,7 +1,7 @@
 import { test, expect, type Page } from "@playwright/test";
 
 const calendarFrame = (page: Page) =>
-  page.locator("#component-preview-frame").first();
+  page.locator("#component-preview-frame, #dx-preview-block-root").first();
 
 test("shows fixed May 2026 calendar without native selectors", async ({ page }) => {
   await page.goto("/components/calendar", { timeout: 30 * 1000 });
@@ -19,6 +19,54 @@ test("shows fixed May 2026 calendar without native selectors", async ({ page }) 
   await expect(day).toHaveAttribute("data-selected", "false");
   await day.click();
   await expect(day).toHaveAttribute("data-selected", "true");
+});
+test("year dropdown panel is constrained and scrollable", async ({ page }) => {
+  await page.goto("/components/calendar", { timeout: 30 * 1000 });
+
+  const calendar = calendarFrame(page);
+  await expect(calendar).toBeVisible({ timeout: 30 * 1000 });
+
+  await calendar.getByRole("button", { name: "Year 2026" }).click();
+  const yearMenu = page
+    .getByRole("menu")
+    .filter({ has: page.getByRole("menuitemradio", { name: "1995" }) })
+    .last();
+  await expect(yearMenu).toBeVisible();
+
+  const panelMetrics = await yearMenu.evaluate((element) => {
+    const styles = getComputedStyle(element);
+    return {
+      maxHeight: styles.maxHeight,
+      overflowY: styles.overflowY,
+      scrollHeight: element.scrollHeight,
+      clientHeight: element.clientHeight,
+    };
+  });
+
+  expect(panelMetrics.maxHeight).toBe("320px");
+  expect(panelMetrics.overflowY).toBe("auto");
+  expect(panelMetrics.scrollHeight).toBeGreaterThan(panelMetrics.clientHeight);
+});
+
+test("hovering year items does not cross menu signal scopes", async ({ page }) => {
+  const scopeWarnings: string[] = [];
+  page.on("console", (message) => {
+    if (message.text().includes("Copy Value created in ScopeId")) {
+      scopeWarnings.push(message.text());
+    }
+  });
+
+  await page.goto("/components/calendar", { timeout: 30 * 1000 });
+
+  const calendar = calendarFrame(page);
+  await expect(calendar).toBeVisible({ timeout: 30 * 1000 });
+  await calendar.getByRole("button", { name: "Year 2026" }).click();
+
+  const year = page.getByRole("menuitemradio", { name: "2025", exact: true });
+  await expect(year).toBeVisible();
+  await year.hover();
+  await expect(year).toHaveAttribute("data-focused", "true");
+  expect(scopeWarnings).toEqual([]);
 });
 
 test("deselects the selected day when activated again", async ({ page }) => {
