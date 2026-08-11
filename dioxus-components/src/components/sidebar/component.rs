@@ -20,7 +20,6 @@ const SIDEBAR_WIDTH: &str = "16rem";
 const SIDEBAR_WIDTH_MOBILE: &str = "18rem";
 const SIDEBAR_WIDTH_ICON: &str = "3rem";
 const SIDEBAR_KEYBOARD_SHORTCUT: &str = "b";
-const SIDEBAR_DEFAULT_WIDTH: f64 = 256.0;
 const SIDEBAR_DEFAULT_MIN_WIDTH: f64 = 192.0;
 const SIDEBAR_DEFAULT_MAX_WIDTH: f64 = 480.0;
 static SIDEBAR_RAIL_ID: AtomicUsize = AtomicUsize::new(0);
@@ -427,6 +426,7 @@ pub fn SidebarTrigger(
 pub fn SidebarRail(#[props(extends = GlobalAttributes)] attributes: Vec<Attribute>) -> Element {
     let ctx = use_sidebar();
     let resize = use_context::<SidebarResizeCtx>();
+    let rail_id = use_hook(|| SIDEBAR_RAIL_ID.fetch_add(1, Ordering::Relaxed));
     let mut pointer_active = use_signal(|| false);
     let mut pointer_dragged = use_signal(|| false);
     let mut pointer_start_x = use_signal(|| 0.0_f64);
@@ -444,6 +444,7 @@ pub fn SidebarRail(#[props(extends = GlobalAttributes)] attributes: Vec<Attribut
             aria_label: "Resize Sidebar",
             tabindex: -1,
             title: "Drag to resize sidebar",
+            "data-sidebar-rail-id": rail_id,
             onpointerdown: move |event| {
                 if event.trigger_button() != Some(dioxus::html::input_data::MouseButton::Primary) {
                     return;
@@ -458,7 +459,7 @@ pub fn SidebarRail(#[props(extends = GlobalAttributes)] attributes: Vec<Attribut
                 spawn(async move {
                     let _ = document::eval(&format!(
                         r#"
-                        const el = document.querySelector('[data-slot="sidebar-rail"]');
+                        const el = document.querySelector('[data-sidebar-rail-id="{rail_id}"]');
                         if (el?.setPointerCapture) el.setPointerCapture({pointer_id});
                         "#
                     ))
