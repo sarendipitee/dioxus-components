@@ -51,6 +51,14 @@ fn curated_prop_types(folder_name: &str) -> Option<&'static [&'static str]> {
     };
     Some(types)
 }
+fn write_if_changed(path: &std::path::Path, contents: impl AsRef<[u8]>) -> std::io::Result<()> {
+    let contents = contents.as_ref();
+    if std::fs::read(path).is_ok_and(|existing| existing == contents) {
+        return Ok(());
+    }
+
+    std::fs::write(path, contents)
+}
 
 fn write_generated_html(
     out_path: &std::path::Path,
@@ -60,8 +68,8 @@ fn write_generated_html(
     if let Some(parent) = asset_path.parent() {
         std::fs::create_dir_all(parent)?;
     }
-    std::fs::write(out_path, &html)?;
-    std::fs::write(asset_path, html)
+    write_if_changed(out_path, &html)?;
+    write_if_changed(asset_path, html)
 }
 
 fn walk_markdown_dir(
@@ -93,7 +101,7 @@ fn walk_markdown_dir(
         if file.file_name() == "component.json" {
             let description = read_component_description(&file.path());
             let out_file_path = out_folder.join("description.txt");
-            std::fs::write(out_file_path, description).unwrap();
+            write_if_changed(&out_file_path, description).unwrap();
         }
         if file.file_name() == "component.rs" {
             let source = std::fs::read_to_string(file.path())?;
@@ -131,7 +139,7 @@ fn walk_markdown_dir(
     {
         let description_path = out_folder.join("description.html");
         if !description_path.exists() {
-            std::fs::write(description_path, "")?;
+            write_if_changed(&description_path, "")?;
         }
     }
 
@@ -183,7 +191,7 @@ fn walk_markdown_dir(
         }
 
         if !wrote_props_metadata {
-            std::fs::write(out_folder.join("props.rs"), "&[]\n")?;
+            write_if_changed(&out_folder.join("props.rs"), "&[]\n")?;
         }
     }
 
@@ -269,7 +277,7 @@ fn write_props_rs(props: &[PropMetadata], out_folder: &std::path::Path) -> std::
     }
     output.push_str("]\n");
 
-    std::fs::write(out_folder.join("props.rs"), output)
+    write_if_changed(&out_folder.join("props.rs"), output)
 }
 
 /// Extracts props from plain structs whose identifier is in `types`.
@@ -845,7 +853,7 @@ fn render_theme_css(
     let source = dioxus_components_themes::DEFAULT_CSS;
     let app_assets = std::path::Path::new("assets");
     std::fs::create_dir_all(app_assets)?;
-    std::fs::write(app_assets.join("dx-components-theme.css"), source)?;
+    write_if_changed(&app_assets.join("dx-components-theme.css"), source)?;
 
     let out_assets = out_dir.join("assets");
     std::fs::create_dir_all(&out_assets)?;
