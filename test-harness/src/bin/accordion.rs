@@ -1,8 +1,20 @@
 use dioxus::prelude::*;
 use dioxus_primitives::overlay::OverlayProvider;
 
+#[path = "../../../preview/src/components/accordion/demos/customization/mod.rs"]
+mod demo_customization;
+
+#[path = "../../../preview/src/components/accordion/demos/disabled/mod.rs"]
+mod demo_disabled;
+
+#[path = "../../../preview/src/components/accordion/demos/horizontal/mod.rs"]
+mod demo_horizontal;
+
 #[path = "../../../preview/src/components/accordion/demos/main/mod.rs"]
 mod demo_main;
+
+#[path = "../../../preview/src/components/accordion/demos/multiple/mod.rs"]
+mod demo_multiple;
 
 fn main() {
     dioxus::launch(App);
@@ -41,7 +53,11 @@ fn BlockView() -> Element {
     });
 
     match hash().as_str() {
+        "customization" => rsx! { demo_customization::Demo {} },
+        "disabled" => rsx! { demo_disabled::Demo {} },
+        "horizontal" => rsx! { demo_horizontal::Demo {} },
         "main" => rsx! { demo_main::Demo {} },
+        "multiple" => rsx! { demo_multiple::Demo {} },
         _ => rsx! { demo_main::Demo {} },
     }
 }

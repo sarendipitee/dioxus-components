@@ -105,8 +105,8 @@ def generate_harness_binary(comp_name):
         mod_ident = f"demo_{d}"
         code_lines.append(f'        "{d}" => rsx! {{ {mod_ident}::Demo {{}} }},')
 
-    first_demo = demos[0]
-    code_lines.append(f'        _ => rsx! {{ demo_{first_demo}::Demo {{}} }},')
+    default_demo = "main" if "main" in demos else demos[0]
+    code_lines.append(f'        _ => rsx! {{ demo_{default_demo}::Demo {{}} }},')
     code_lines.append("    }")
     code_lines.append("}")
     code_lines.append("")

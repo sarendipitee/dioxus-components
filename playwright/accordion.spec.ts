@@ -1,10 +1,14 @@
 import { test, expect, type Locator, type Page } from "@playwright/test";
 
-const URL = "/components/accordion/block#main";
+const URL = "/components/accordion/block";
 const LOAD_TIMEOUT = 30 * 1000;
 
 async function loadAccordion(page: Page, id: string) {
-  await page.goto(URL, { timeout: LOAD_TIMEOUT, waitUntil: "networkidle" });
+  const demo = id.replace(/-accordion$/, "");
+  await page.goto(`${URL}?demo=${demo}#${demo}`, {
+    timeout: LOAD_TIMEOUT,
+    waitUntil: "networkidle",
+  });
   const accordion = page.locator(`#${id}`);
   await expect(accordion).toBeVisible({ timeout: LOAD_TIMEOUT });
   return accordion;
@@ -23,6 +27,9 @@ test("single accordion exposes state and switches the visible panel", async ({
   const billing = accordion.getByRole("button", { name: "Billing" });
 
   await expect(account).toHaveAttribute("aria-expanded", "false");
+  const accountIcon = account.locator("svg");
+  await expect(accountIcon).toBeVisible();
+  await expect(accountIcon).toHaveAttribute("aria-hidden", "true");
   await account.click();
   await expect(account).toHaveAttribute("aria-expanded", "true");
   await expect(
@@ -89,7 +96,7 @@ test("disabled items and disabled accordions cannot be activated", async ({
     accordion.getByText("Archived project settings are unavailable."),
   ).toBeHidden();
 
-  const disabledAccordion = page.locator("#disabled-accordion");
+  const disabledAccordion = await loadAccordion(page, "disabled-accordion");
   const disabledTrigger = disabledAccordion.getByRole("button", {
     name: "Disabled accordion",
   });
@@ -137,4 +144,46 @@ test("horizontal accordion uses horizontal arrow keys", async ({ page }) => {
   await expect(activity).toBeFocused();
   await page.keyboard.press("ArrowLeft");
   await expect(overview).toBeFocused();
+});
+
+test("styled accordion supports trigger slots and chevron configuration", async ({
+  page,
+}) => {
+  await page.goto("/components/accordion/block#customization", {
+    timeout: LOAD_TIMEOUT,
+    waitUntil: "networkidle",
+  });
+
+  const custom = page.locator("#custom-slots-accordion");
+  await expect(custom).toHaveAttribute("data-chevron-position", "right");
+  const customTrigger = custom.getByRole("button", {
+    name: "Can I replace trigger visuals?",
+  });
+  await expect(customTrigger.getByTestId("leading-icon")).toBeVisible();
+  const customChevron = customTrigger.getByTestId("custom-chevron");
+  await expect(customChevron).toBeVisible();
+  await expect(customChevron).toHaveAttribute("width", "20");
+  const rightChevronSlot = customTrigger.locator(
+    ':scope > span[data-rotate="true"]',
+  );
+  await expect(rightChevronSlot).toHaveAttribute("aria-hidden", "true");
+
+  const left = page.locator("#left-chevron-accordion");
+  await expect(left).toHaveAttribute("data-chevron-position", "left");
+  const leftTrigger = left.getByRole("button", {
+    name: "Left aligned without rotation",
+  });
+  const leftChevronSlot = leftTrigger.locator(
+    ':scope > span[data-rotate="false"]',
+  );
+  await expect(leftChevronSlot).toBeVisible();
+  await expect(leftChevronSlot.locator("svg")).toHaveAttribute("width", "16px");
+
+  const rotateBefore = await leftChevronSlot.evaluate(
+    (element) => getComputedStyle(element).rotate,
+  );
+  await leftTrigger.click();
+  await expect(leftTrigger).toHaveAttribute("aria-expanded", "true");
+  await page.waitForTimeout(350);
+  await expect(leftChevronSlot).toHaveCSS("rotate", rotateBefore);
 });

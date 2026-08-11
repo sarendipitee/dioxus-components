@@ -275,7 +275,7 @@ macro_rules! examples {
 
 }
 examples!(
-    accordion,
+    accordion[disabled, multiple, horizontal, customization],
     alert,
     alert_dialog[destructive],
     aspect_ratio,
