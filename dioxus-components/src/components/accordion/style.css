@@ -70,6 +70,18 @@
   min-height: 0;
 }
 
+.dx_accordion_content_body {
+  padding: var(--accordion-content-padding, var(--surface-padding));
+}
+
+.dx_accordion_content[data-open="false"] .dx_accordion_content_body {
+  animation: dx-accordion-padding-out 300ms cubic-bezier(0.87, 0, 0.13, 1) forwards;
+}
+
+.dx_accordion_content[data-open="true"] .dx_accordion_content_body {
+  animation: dx-accordion-padding-in 300ms cubic-bezier(0.87, 0, 0.13, 1) forwards;
+}
+
 .dx_accordion_content[data-open="false"] {
   animation: dx-accordion-slide-up 300ms cubic-bezier(0.87, 0, 0.13, 1) forwards;
 }
@@ -95,6 +107,26 @@
 
   to {
     grid-template-rows: 1fr;
+  }
+}
+
+@keyframes dx-accordion-padding-out {
+  from {
+    padding-block: var(--accordion-content-padding, var(--surface-padding));
+  }
+
+  to {
+    padding-block: 0;
+  }
+}
+
+@keyframes dx-accordion-padding-in {
+  from {
+    padding-block: 0;
+  }
+
+  to {
+    padding-block: var(--accordion-content-padding, var(--surface-padding));
   }
 }
 

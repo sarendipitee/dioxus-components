@@ -4,7 +4,7 @@ use dioxus_components::accordion::{Accordion, AccordionContent, AccordionItem, A
 #[component]
 pub fn Demo() -> Element {
     rsx! {
-        Accordion { id: "multiple-accordion", allow_multiple_open: true, collapsible: false,
+        Accordion { id: "multiple-accordion", style: "width: 100%; max-width: 32rem;", allow_multiple_open: true, collapsible: false,
             AccordionItem { index: 0, default_open: true,
                 AccordionTrigger { "Shipping details" }
                 AccordionContent { "Orders are shipped within two business days." }

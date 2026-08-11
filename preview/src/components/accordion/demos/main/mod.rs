@@ -3,10 +3,10 @@ use dioxus_components::accordion::{Accordion, AccordionContent, AccordionItem, A
 #[component]
 pub fn Demo() -> Element {
     rsx! {
-        Accordion { id: "single-accordion",
+        Accordion { id: "single-accordion", style: "width: 100%; max-width: 32rem;",
             AccordionItem { index: 0,
                 AccordionTrigger { "Account settings" }
-                AccordionContent { "Update your profile and account preferences." }
+                AccordionContent { style: "--accordion-content-padding: 1.5rem;", "Update your profile and account preferences." }
             }
             AccordionItem { index: 1,
                 AccordionTrigger { "Billing" }

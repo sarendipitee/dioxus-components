@@ -18,6 +18,34 @@ function items(accordion: Locator) {
   return accordion.locator(":scope > [data-open]");
 }
 
+test("main accordion has visible width", async ({ page }) => {
+  const accordion = await loadAccordion(page, "single-accordion");
+  const box = await accordion.boundingBox();
+
+  expect(box).not.toBeNull();
+  expect(box!.width).toBeGreaterThan(0);
+});
+
+test("content padding participates in collapse animation", async ({ page }) => {
+  const accordion = await loadAccordion(page, "single-accordion");
+  const account = accordion.getByRole("button", { name: "Account settings" });
+
+  await account.click();
+  const contentId = await account.getAttribute("aria-controls");
+  expect(contentId).toBeTruthy();
+  const region = page.locator(`#${contentId}`);
+  const clip = region.locator('[data-slot="accordion-content-inner"]');
+  const body = region.locator('[data-slot="accordion-content-body"]');
+  await expect(body).toHaveCSS("padding-top", "24px");
+  await expect(body).toHaveCSS("padding-right", "24px");
+
+  await account.click();
+  await expect(region).toBeHidden();
+  await account.click();
+  await expect(body).toHaveCSS("padding-top", "24px");
+  await expect(body).toHaveCSS("padding-bottom", "24px");
+});
+
 test("single accordion exposes state and switches the visible panel", async ({
   page,
 }) => {

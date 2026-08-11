@@ -4,7 +4,7 @@ use dioxus_components::accordion::{Accordion, AccordionContent, AccordionItem, A
 #[component]
 pub fn Demo() -> Element {
     rsx! {
-        Accordion { id: "horizontal-accordion", horizontal: true,
+        Accordion { id: "horizontal-accordion", style: "width: 100%; max-width: 32rem;", horizontal: true,
             AccordionItem { index: 0,
                 AccordionTrigger { "Overview" }
                 AccordionContent { "Overview content." }

@@ -178,14 +178,30 @@ pub fn AccordionTrigger(props: AccordionTriggerProps) -> Element {
     }
 }
 
+/// Styled accordion panel. Root attributes, including CSS custom properties, are inherited by the
+/// animated inner content container.
 #[component]
 pub fn AccordionContent(props: AccordionContentProps) -> Element {
+    let base = attributes!(div {
+        class: Styles::dx_accordion_content,
+        "data-slot": "accordion-content",
+    });
+    let attributes = merge_attributes(vec![base, props.attributes]);
+
     rsx! {
         accordion::AccordionContent {
-            class: Styles::dx_accordion_content,
             id: props.id,
-            attributes: props.attributes,
-            div { class: Styles::dx_accordion_content_inner, {props.children} }
+            attributes,
+            div {
+                class: Styles::dx_accordion_content_inner,
+                "data-slot": "accordion-content-inner",
+                div {
+                    class: Styles::dx_accordion_content_body,
+                    "data-slot": "accordion-content-body",
+                    style: "padding: var(--accordion-content-padding, var(--surface-padding));",
+                    {props.children}
+                }
+            }
         }
     }
 }
