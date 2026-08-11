@@ -69,7 +69,7 @@ pub(crate) fn use_focus_controlled_item_disabled(
     use_focus_control_disabled(ctx, index, disabled)
 }
 
-#[derive(Clone, Copy)]
+#[derive(Clone, Copy, PartialEq)]
 pub(crate) enum FocusPlacement {
     First,
     Last,

@@ -142,6 +142,10 @@ fn use_select_root(
     let mut typeahead_clear_task: Signal<Option<Task>> = use_signal(|| None);
     let trigger_ref = use_signal(|| None);
     let open = selectable.open;
+    let mut portal_open = use_hook(move || Signal::new_in_scope(open(), ScopeId::ROOT));
+    use_effect(move || {
+        portal_open.set(open());
+    });
 
     // Clear the typeahead buffer when the select is closed
     use_effect(move || {
@@ -159,6 +163,7 @@ fn use_select_root(
         typeahead_clear_task,
         typeahead_timeout,
         trigger_ref,
+        portal_open,
     });
 
     open

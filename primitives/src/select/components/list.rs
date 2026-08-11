@@ -90,7 +90,7 @@ pub fn SelectList(props: SelectListProps) -> Element {
     let listbox_ctx: ListboxContext = use_context();
 
     rsx! {
-        if render() {
+        if render() || (ctx.selectable.open)() {
             SelectListRegistration {
                 id: listbox.id.cloned(),
                 children: props.children.clone(),
@@ -98,7 +98,7 @@ pub fn SelectList(props: SelectListProps) -> Element {
             SelectListPortaled {
                 ctx,
                 id: listbox.id,
-                should_render: (listbox_ctx.render)(),
+                should_render: (listbox_ctx.render)() || (ctx.selectable.open)(),
                 attributes: props.attributes.clone(),
                 children: props.children,
             }
@@ -173,10 +173,9 @@ fn SelectListPortaled(props: SelectListPortaledProps) -> Element {
         reg.set_closing(!open());
     });
 
-    // Subscribe to `open` HERE, in the non-portaled (Root-descendant) scope, and
-    // forward the snapshot into the portaled body as a plain bool so the body
-    // never reads the Root-owned `open` Memo across the portal boundary.
-    let is_open = open();
+    // Forward open state through a Root-scoped signal so the portaled body can
+    // react without reading the select subtree's memo across the portal boundary.
+    let is_open = ctx.portal_open;
     let is_multi = ctx.multi();
     let should_render = props.should_render;
     let root_disabled = ctx.selectable.disabled.cloned();
@@ -186,10 +185,7 @@ fn SelectListPortaled(props: SelectListPortaledProps) -> Element {
     let options = ctx.selectable.options.read().clone();
     let content_id = id.cloned();
     let overlay_z = reg.z();
-    let mut floating_ref: Signal<Option<Rc<MountedData>>> = use_signal(|| None);
-    let on_floating_mounted = use_callback(move |mounted: Rc<MountedData>| {
-        floating_ref.set(Some(mounted));
-    });
+    let floating_ref: Signal<Option<Rc<MountedData>>> = use_signal(|| None);
     let pos = use_position(
         ctx.trigger_ref,
         floating_ref,
@@ -197,6 +193,7 @@ fn SelectListPortaled(props: SelectListPortaledProps) -> Element {
         ContentAlign::Start,
         None,
     );
+    let on_floating_mounted = pos.on_mounted;
     let floating_style = pos.style.read().clone();
     let floating_position = style_prop(&floating_style, "position");
     let floating_top = style_prop(&floating_style, "top");
@@ -279,7 +276,7 @@ fn SelectListPortaled(props: SelectListPortaledProps) -> Element {
                 is_open,
                 is_multi,
                 should_render,
-                focused: is_open && !any_focused,
+                focused: is_open() && !any_focused,
                 id: content_id,
                 overlay_z,
                 portal_ctx: SelectPortalContext {
@@ -318,9 +315,8 @@ fn SelectListPortaled(props: SelectListPortaledProps) -> Element {
 /// Props for [`SelectListRendered`], the portaled DOM body.
 #[derive(Props, Clone, PartialEq)]
 struct SelectListRenderedProps {
-    /// Open snapshot threaded from the non-portaled parent — see the matching
-    /// note on `DialogPortalBodyProps::is_open`.
-    is_open: bool,
+    /// Root-scoped open state bridge for the portaled body.
+    is_open: Signal<bool>,
     is_multi: bool,
     should_render: bool,
     focused: bool,
@@ -354,7 +350,7 @@ struct SelectListRenderedProps {
 /// snapshotted in the non-portaled parent and forwarded here as plain values.
 #[component]
 fn SelectListRendered(props: SelectListRenderedProps) -> Element {
-    let is_open = props.is_open;
+    let is_open = (props.is_open)();
     let id = props.id.clone();
     let is_multi = props.is_multi;
     let should_render = props.should_render;
@@ -380,11 +376,14 @@ fn SelectListRendered(props: SelectListRenderedProps) -> Element {
     let on_floating_mounted = props.on_floating_mounted;
     let attributes = props.attributes;
     let children = props.children;
-    let mut render_signal = use_signal(|| should_render);
+    let mut render_signal = use_signal(|| should_render || is_open);
 
-    use_effect(use_reactive(&should_render, move |should_render| {
-        render_signal.set(should_render);
-    }));
+    use_effect(use_reactive(
+        &(should_render, is_open),
+        move |(should_render, is_open)| {
+            render_signal.set(should_render || is_open);
+        },
+    ));
     // Context providers initialize once. Keep a portal-local signal so every
     // root-side snapshot update reaches descendants after portal mounting.
     let mut portal_ctx = use_context_provider(|| Signal::new(portal_ctx_snapshot.clone()));

@@ -33,6 +33,8 @@ pub(super) struct SelectContext {
     /// position the dropdown relative to the trigger. Set by
     /// [`SelectTrigger`](super::components::SelectTrigger) via `onmounted`.
     pub trigger_ref: Signal<Option<Rc<MountedData>>>,
+    /// Root-scoped open state consumed by the portaled listbox body.
+    pub portal_open: Signal<bool>,
 }
 
 impl SelectContext {

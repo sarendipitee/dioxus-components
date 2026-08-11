@@ -470,13 +470,13 @@ fn MenuContentPortaled(props: MenuContentPortaledProps) -> Element {
             MenuContentRendered {
                 set_open,
                 parent_set_open: ctx.parent_set_open,
-                active_submenu: ctx.active_submenu,
+                active_submenu: ctx.active_submenu.cloned(),
                 is_open,
                 panel_id,
                 aria_labelledby,
                 is_disabled,
-                focus: ctx.focus,
-                initial_focus: ctx.initial_focus,
+                roving_loop: (ctx.focus.roving_loop)(),
+                initial_focus: ctx.initial_focus.cloned(),
                 content_overlay_id,
                 filter_query,
                 overlay_z,
@@ -493,14 +493,14 @@ fn MenuContentPortaled(props: MenuContentPortaledProps) -> Element {
 struct MenuContentRenderedProps {
     set_open: Callback<bool>,
     parent_set_open: Option<Callback<bool>>,
-    active_submenu: Signal<Option<String>>,
+    active_submenu: Option<String>,
     /// note on `DialogPortalBodyProps::is_open`.
     is_open: bool,
     panel_id: String,
     aria_labelledby: String,
     is_disabled: bool,
-    focus: FocusState,
-    initial_focus: Signal<Option<FocusPlacement>>,
+    roving_loop: bool,
+    initial_focus: Option<FocusPlacement>,
     content_overlay_id: Option<OverlayId>,
     overlay_z: Option<String>,
     filter_query: String,
@@ -518,6 +518,7 @@ fn MenuContentRendered(props: MenuContentRenderedProps) -> Element {
     let open = use_memo(use_reactive(&props.is_open, |is_open| is_open));
     let disabled = use_memo(use_reactive(&props.is_disabled, |is_disabled| is_disabled));
     let filter_query = use_signal(|| props.filter_query.clone());
+    let active_submenu = use_signal(|| props.active_submenu.clone());
     let mut trigger_id = use_signal(|| props.aria_labelledby.clone());
     use_effect(use_reactive(
         &props.aria_labelledby,
@@ -528,8 +529,9 @@ fn MenuContentRendered(props: MenuContentRenderedProps) -> Element {
 
     // The trigger and the portaled panel must share one focus controller. Recreating
     // it here disconnects trigger ArrowDown/ArrowUp from the mounted menu items.
-    let mut focus = props.focus;
-    let initial_focus = props.initial_focus;
+    let roving_loop = use_signal(|| props.roving_loop);
+    let mut focus = use_focus_provider(roving_loop.into());
+    let initial_focus = use_signal(|| props.initial_focus);
     use_deferred_focus(focus, initial_focus, move || *open.read());
 
     let trigger_ref = use_signal(|| None);
@@ -554,10 +556,9 @@ fn MenuContentRendered(props: MenuContentRenderedProps) -> Element {
         overlay_id,
         filter_query,
         filter_input_id,
-        active_submenu: props.active_submenu,
+        active_submenu,
     };
     use_context_provider(|| portal_ctx);
-    use_context_provider(|| focus);
 
     let base = attributes!(div {
         style: props
