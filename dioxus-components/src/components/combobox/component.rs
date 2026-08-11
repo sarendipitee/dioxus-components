@@ -119,6 +119,9 @@ pub struct ComboboxProps<T: Clone + PartialEq + 'static = String> {
     /// Shows a loading spinner in the trailing section and marks the field busy.
     #[props(default = false)]
     pub loading: bool,
+    /// Renders a clear button that clears the selected value and search query.
+    #[props(default = false)]
+    pub clearable: bool,
 
     /// Visual variant for the shared input shell.
     #[props(default)]
@@ -192,6 +195,8 @@ pub fn Combobox<T: Clone + PartialEq + 'static>(props: ComboboxProps<T>) -> Elem
                 with_asterisk: props.with_asterisk,
                 disabled: (props.disabled)(),
                 loading: props.loading,
+                clearable: props.clearable,
+                on_clear: move |_| props.on_value_change.call(None),
                 variant: props.variant,
                 size: props.size,
                 radius: props.radius,
@@ -324,6 +329,9 @@ pub struct AutocompleteProps {
     /// Shows a loading spinner in the trailing section and marks the field busy.
     #[props(default = false)]
     pub loading: bool,
+    /// Renders a clear button that clears the selected value and search query.
+    #[props(default = false)]
+    pub clearable: bool,
 
     /// Visual variant for the shared input shell.
     #[props(default)]
@@ -378,6 +386,7 @@ pub fn Autocomplete(props: AutocompleteProps) -> Element {
             filter: props.filter,
             placeholder: props.placeholder,
             aria_label: props.aria_label,
+            clearable: props.clearable,
             list_aria_label: props.list_aria_label,
             label: props.label,
             description: props.description,

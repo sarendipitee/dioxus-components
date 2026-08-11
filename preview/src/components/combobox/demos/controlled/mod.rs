@@ -41,6 +41,7 @@ pub fn Demo() -> Element {
                 on_open_change: move |next| open.set(Some(next)),
                 placeholder: "Select framework...",
                 aria_label: "Controlled framework",
+                clearable: true,
                 list_aria_label: "Controlled frameworks",
                 ComboboxEmpty { "No framework found." }
                 for (i , (value , label)) in frameworks.iter().enumerate() {

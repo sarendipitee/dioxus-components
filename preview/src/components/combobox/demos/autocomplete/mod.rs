@@ -3,7 +3,7 @@ use dioxus_components::combobox::{Autocomplete, ComboboxEmpty, ComboboxOption};
 
 #[component]
 pub fn Demo() -> Element {
-    let mut value = use_signal(|| None::<String>);
+    let mut value = use_signal(|| Some("svelte".to_string()));
     let frameworks: &[(&str, &str)] = &[
         ("next", "Next.js"),
         ("svelte", "SvelteKit"),
@@ -20,6 +20,7 @@ pub fn Demo() -> Element {
                 value: Some(value.into()),
                 on_value_change: move |next| value.set(next),
                 placeholder: "Type a framework...",
+                clearable: true,
                 ComboboxEmpty { "No framework found." }
                 for (index, (value, label)) in frameworks.iter().enumerate() {
                     ComboboxOption::<String> {

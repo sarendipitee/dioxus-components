@@ -367,6 +367,31 @@ test("controlled value and controlled open stay in sync", async ({ page }) => {
   await expect(storedValue).toHaveText("dioxus");
 });
 
+test("clearable Combobox clears the controlled value", async ({ page }) => {
+  await page.goto(demoUrl("controlled"), { timeout: 30 * 1000 });
+  await page.waitForLoadState("domcontentloaded");
+
+  const trigger = page.getByRole("combobox", { name: "Controlled framework" });
+  const shell = trigger.locator("xpath=ancestor::*[@data-slot='input'][1]");
+  await expect(trigger).toHaveValue("SvelteKit");
+  await shell.getByRole("button", { name: "Clear value" }).click();
+  await expect(trigger).toHaveValue("");
+  await expect(page.getByTestId("combobox-controlled-value")).toHaveText("none");
+});
+
+test("clearable Autocomplete clears the controlled value", async ({ page }) => {
+  await page.goto(demoUrl("autocomplete"), { timeout: 30 * 1000 });
+  await page.waitForLoadState("domcontentloaded");
+
+  const trigger = page.getByRole("combobox");
+  await expect(trigger).toHaveValue("SvelteKit");
+
+  const shell = trigger.locator("xpath=ancestor::*[@data-slot='input'][1]");
+  await shell.getByRole("button", { name: "Clear value" }).click();
+  await expect(trigger).toHaveValue("");
+  await expect(page.getByText("Selected: none")).toBeVisible();
+});
+
 test("dynamic option mutation keeps list open, while an ordinary outside click dismisses it", async ({
   page,
 }) => {
