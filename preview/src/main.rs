@@ -1290,7 +1290,7 @@ fn BlockComponentDemoHighlight(
         name,
         description_html,
         rs_highlighted: highlighted,
-        css_highlighted,
+        css_highlighted: _,
         component: _,
     } = demo;
 
@@ -1338,15 +1338,7 @@ fn BlockComponentDemoHighlight(
                 }
             }
             ExpandableCodeBlock {
-                if let Some(css) = css_highlighted {
-                    ComponentCode {
-                        rs_highlighted: highlighted,
-                        css_highlighted: css,
-                        component_type: ComponentType::Block,
-                    }
-                } else {
-                    CodeBlock { source: highlighted }
-                }
+                CodeBlock { source: highlighted }
             }
         }
     }
