@@ -454,6 +454,16 @@ pub fn SidebarRail(#[props(extends = GlobalAttributes)] attributes: Vec<Attribut
                 pointer_start_x.set(event.client_coordinates().x);
                 pointer_start_width.set((resize.width)());
                 pointer_was_collapsed.set((ctx.state)() == SidebarState::Collapsed);
+                let pointer_id = event.data().pointer_id();
+                spawn(async move {
+                    let _ = document::eval(&format!(
+                        r#"
+                        const el = document.querySelector('[data-slot="sidebar-rail"]');
+                        if (el?.setPointerCapture) el.setPointerCapture({pointer_id});
+                        "#
+                    ))
+                    .await;
+                });
             },
             onpointermove: move |event| {
                 if !pointer_active() {
