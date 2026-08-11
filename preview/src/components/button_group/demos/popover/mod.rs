@@ -2,6 +2,9 @@ use dioxus::prelude::*;
 use dioxus_components::button::{Button, ButtonSize, ButtonVariant};
 use dioxus_components::components::button_group::ButtonGroup;
 use dioxus_components::popover::*;
+use dioxus_components::typography::{
+    Heading, HeadingLevel, Text, TypographySize, TypographyTone, TypographyWeight,
+};
 use dioxus_icons::lucide::{Bot, ChevronDown};
 
 #[component]
@@ -26,8 +29,15 @@ pub fn Demo() -> Element {
             }
             PopoverContent {
                 "data-testid": "popover-content",
-                PopoverContentTitle { "Copilot Summary" }
-                PopoverContentDescription {
+                Heading {
+                    level: HeadingLevel::H3,
+                    size: TypographySize::Lg,
+                    weight: TypographyWeight::Bold,
+                    "Copilot Summary"
+                }
+                Text {
+                    size: TypographySize::Md,
+                    tone: TypographyTone::Muted,
                     "Ask copilot to summarize this page into a note."
                 }
                 Button { r#type: "button", Bot {}, "Generate summary" }

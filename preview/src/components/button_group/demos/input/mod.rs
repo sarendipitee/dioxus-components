@@ -3,6 +3,7 @@ use dioxus_components::button::{Button, ButtonVariant};
 use dioxus_components::components::button_group::ButtonGroup;
 use dioxus_components::input::*;
 use dioxus_icons::lucide::Search;
+use dioxus_primitives::dioxus_attributes::attributes;
 
 #[component]
 pub fn Demo() -> Element {
