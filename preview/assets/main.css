@@ -432,7 +432,6 @@ body {
 
 /* GitHub-flavored markdown prose for docs pages */
 .dx-docs-prose {
-  color: var(--fg-muted);
   font-size: var(--text-md);
   line-height: 1.65;
 }
@@ -781,7 +780,6 @@ body {
 }
 
 .dx-component-description {
-  color: var(--fg-muted);
   font-size: var(--text-md);
   line-height: 1.65;
 
