@@ -1,3 +1,4 @@
+use dioxus::core::AttributeValue;
 use dioxus::prelude::*;
 
 use dioxus_components::typography::*;
@@ -81,6 +82,23 @@ pub fn Demo() -> Element {
                     aria_label: "Typography semantic division",
                     "data-typography-text-element": "div",
                     "Text rendered as a semantic division with forwarded global attributes."
+                }
+                Text {
+                    element: TextElement::Label,
+                    attributes: vec![Attribute::new(
+                        "for",
+                        AttributeValue::Text("typography-semantic-input".to_string()),
+                        None,
+                        false,
+                    )],
+                    id: "typography-semantic-label",
+                    class: "typography-semantic-label",
+                    "data-typography-text-element": "label",
+                    "Fixture input label"
+                }
+                input {
+                    id: "typography-semantic-input",
+                    "data-typography-input": "associated",
                 }
                 Text {
                     truncate: true,
