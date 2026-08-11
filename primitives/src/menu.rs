@@ -1446,6 +1446,7 @@ pub fn MenuSubContent(props: MenuSubContentProps) -> Element {
     let resolved_side = pos.side;
     let resolved_align = pos.align;
     let floating_active = pos.floating_active;
+    let on_mounted = pos.on_mounted;
 
     let position = use_memo(move || style_prop(&style.read(), "position"));
     let top = use_memo(move || style_prop(&style.read(), "top"));
@@ -1460,7 +1461,7 @@ pub fn MenuSubContent(props: MenuSubContentProps) -> Element {
         "data-side": resolved_side.read().as_str(),
         "data-align": resolved_align.read().as_str(),
         "data-floating": floating_active.then_some("true"),
-        onmounted: move |evt: MountedEvent| floating_ref.set(Some(evt.data())),
+        onmounted: move |evt: MountedEvent| on_mounted.call(evt.data()),
     });
     // Floating props must win over user-forwarded coords → place them last.
     let attributes = merge_attributes(vec![props.attributes, floating_attrs]);

@@ -57,6 +57,33 @@ test("first open anchors menu without scrolling trigger", async ({ page }) => {
   expect(menuBox!.y).toBeGreaterThanOrEqual(triggerBox!.y + triggerBox!.height);
 });
 
+test("nested submenu demo opens each submenu level", async ({ page }) => {
+  await page.goto("/#nested_submenus");
+
+  await page.getByRole("button", { name: "Move item" }).click();
+  const rootMenu = page.locator('[role="menu"][data-state="open"]').first();
+  await expect(rootMenu).toBeVisible();
+
+  const alphaTrigger = rootMenu.getByRole("menuitem", {
+    name: "Workspace Alpha",
+    exact: true,
+  });
+  await alphaTrigger.hover();
+  await expect(alphaTrigger).toHaveAttribute("aria-expanded", "true");
+  const alphaMenu = page
+    .getByRole("menu")
+    .filter({ has: page.getByText("Alpha folders", { exact: true }) });
+  await expect(alphaMenu).toBeVisible();
+
+  await alphaMenu
+    .getByRole("menuitem", { name: "Workspace Alpha / Projects", exact: true })
+    .hover();
+  const projectsMenu = page
+    .getByRole("menu")
+    .filter({ has: page.getByText("Project streams", { exact: true }) });
+  await expect(projectsMenu).toBeVisible();
+});
+
 test("filterable menu restores items when query is deleted", async ({
   page,
 }) => {
