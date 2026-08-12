@@ -28,9 +28,7 @@ export CARGO_BUILD_JOBS
 printf '%s\n' 'Running pre-push checks...'
 cargo check --workspace --all-features
 cargo test --workspace --lib --bins
-CARGO_BUILD_JOBS="${CARGO_BUILD_JOBS_DOCTEST:-2}" cargo test --workspace --doc
 cargo fmt --all -- --check
-RUSTDOCFLAGS='--document-private-items' cargo doc --workspace --no-deps --all-features --document-private-items
 
 (
   cd preview

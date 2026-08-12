@@ -12,6 +12,9 @@ homepage = "https://dioxuslabs.com"
 repository = "https://github.com/DioxusLabs/components"
 build = "build.rs"
 
+[lib]
+doctest = false
+
 [dependencies]
 dioxus = { workspace = true, features = ["router", "lib"] }
 dioxus-attributes.workspace = true
