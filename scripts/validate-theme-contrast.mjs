@@ -114,10 +114,15 @@ function srgbToLinear(channels) {
 }
 
 function parseColor(value) {
-  const hexMatch = value.match(/^#([0-9a-f]{6})$/i);
+  const hexMatch = value.match(/^#([0-9a-f]{3}|[0-9a-f]{6})$/i);
   if (hexMatch) {
+    const hex =
+      hexMatch[1].length === 3
+        ? [...hexMatch[1]].map((channel) => channel.repeat(2)).join("")
+        : hexMatch[1];
+
     return srgbToLinear(
-      hexMatch[1].match(/.{2}/g).map((channel) => parseInt(channel, 16)),
+      hex.match(/.{2}/g).map((channel) => parseInt(channel, 16)),
     );
   }
 
