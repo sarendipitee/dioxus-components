@@ -44,6 +44,9 @@ jobs:
       matrix:
         shardIndex: [1, 2, 3, 4]
         shardTotal: [4]
+    env:
+      PLAYWRIGHT_SHARD_INDEX: ${{ matrix.shardIndex }}
+      PLAYWRIGHT_SHARD_TOTAL: ${{ matrix.shardTotal }}
     steps:
       # Do our best to cache the toolchain and node install steps
       - uses: actions/checkout@v4
@@ -63,7 +66,7 @@ jobs:
       - name: Install Playwright Browsers
         run: cd ./playwright && npx playwright install --with-deps
       - name: Run Playwright tests
-        run: cd ./playwright && npx playwright test --project=chromium --shard=${{ matrix.shardIndex }}/${{ matrix.shardTotal }}
+        run: cd ./playwright && node run-suite.mjs
       - name: Upload blob report to GitHub Actions Artifacts
         if: ${{ !cancelled() }}
         uses: actions/upload-artifact@v4

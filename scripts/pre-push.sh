@@ -67,26 +67,9 @@ scripts/preview-web.sh build --no-wasm-split
   fi
 
   # Harness-backed specs require fixtures that intentionally do not ship in the
-  # preview gallery. Run each against its matching isolated binary, then run the
-  # remaining preview specs against the full preview app.
-  node --input-type=module -e '
-    import { spawnSync } from "node:child_process";
-    import { existsSync } from "node:fs";
-    import { MICRO_HARNESS_COMPONENTS } from "./micro-harness-policy.mjs";
-
-    for (const component of MICRO_HARNESS_COMPONENTS) {
-      const spec = existsSync(`${component}.spec.ts`)
-        ? `${component}.spec.ts`
-        : `${component.replaceAll("_", "-")}.spec.ts`;
-      const result = spawnSync(
-        "npx",
-        ["playwright", "test", spec, "--project=chromium"],
-        { stdio: "inherit", env: process.env },
-      );
-      if (result.status !== 0) process.exit(result.status ?? 1);
-    }
-  '
-  PLAYWRIGHT_PREVIEW_ONLY=1 npx playwright test --project=chromium
+  # preview gallery. Shared runner selects each matching isolated binary, then
+  # runs remaining specs against the full preview app.
+  node run-suite.mjs
 
 )
 printf '%s\n' 'Pre-push checks passed.'
