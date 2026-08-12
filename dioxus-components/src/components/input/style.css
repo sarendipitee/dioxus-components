@@ -210,8 +210,12 @@
   cursor: not-allowed;
 }
 
+.dx_input_clear_button[hidden] {
+    display: none;
+}
+
 .dx_input_clear_button {
-  display: inline-flex;
+    display: inline-flex;
   width: 1.5rem;
   height: 1.5rem;
   box-sizing: border-box;

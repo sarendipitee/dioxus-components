@@ -588,6 +588,7 @@ pub fn Input(
     let clear = clearable.then(|| {
         rsx! {
             InputClearButton {
+                hidden: true,
                 disabled: disabled || clear_disabled,
                 onclick: move |event| {
                     clear_input_control(button_clear_id.clone());

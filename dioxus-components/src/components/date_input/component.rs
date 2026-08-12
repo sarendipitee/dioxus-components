@@ -19,10 +19,21 @@ use crate::components::input::{
     use_input_control_context, InputBase, InputClearButton, InputContent, InputLabel, InputRadius,
     InputSize, InputVariant,
 };
-use crate::components::popover::{Popover, PopoverContent, PopoverOpenTrigger};
+use crate::components::popover::{Popover, PopoverContent};
 
 #[component_styles("./style.css")]
 struct Styles;
+
+fn use_date_input_id() -> String {
+    use std::sync::atomic::{AtomicUsize, Ordering};
+
+    static NEXT_ID: AtomicUsize = AtomicUsize::new(0);
+
+    use_hook(move || {
+        let id = NEXT_ID.fetch_add(1, Ordering::Relaxed);
+        format!("dx-date-input-{id}")
+    })
+}
 
 fn fixed_date(year: i32, month: Month, day: u8) -> Date {
     Date::from_calendar_date(year, month, day).expect("valid fixed date")
@@ -103,6 +114,8 @@ pub fn DateInput(
 ) -> Element {
     let is_disabled = disabled();
     let month_count = month_count.max(1);
+    let popover_id = format!("{}-popover", use_date_input_id());
+    let mut open = use_signal(|| false);
 
     rsx! {
         date_picker::DatePicker {
@@ -118,6 +131,7 @@ pub fn DateInput(
             date_picker::DatePickerPopover {
                 popover_root: DateInputPopover,
                 open: None,
+                on_open_change: move |value| open.set(value),
                 close_on_input_focus: false,
                 dioxus_primitives::popover::PopoverTrigger { style: "display: contents;", "data-slot": "input-wrapper",
                 InputBase {
@@ -138,7 +152,11 @@ pub fn DateInput(
                                 onclick: move |_| on_value_change.call(None),
                             }
                         }
-                        DateInputPopoverTrigger { disabled: is_disabled }
+                        DateInputPopoverTrigger {
+                            disabled: is_disabled,
+                            open,
+                            popover_id: popover_id.clone(),
+                        }
                     },
                     DateInputControl {
                         disabled: is_disabled,
@@ -150,6 +168,7 @@ pub fn DateInput(
                 }
                 }
                 DateInputPopoverContent {
+                    id: popover_id.clone(),
                     width: dioxus_primitives::popover::PopoverWidth::Target,
                     target_selector: "[data-slot='input-wrapper']",
                     align: ContentAlign::Center,
@@ -226,6 +245,8 @@ pub fn DateRangePickerInput(
 ) -> Element {
     let is_disabled = disabled();
     let month_count = month_count.max(1);
+    let popover_id = format!("{}-popover", use_date_input_id());
+    let mut open = use_signal(|| false);
 
     rsx! {
         date_picker::DateRangePicker {
@@ -241,6 +262,7 @@ pub fn DateRangePickerInput(
             date_picker::DatePickerPopover {
                 popover_root: DateInputPopover,
                 open: None,
+                on_open_change: move |value| open.set(value),
                 close_on_input_focus: true,
                 dioxus_primitives::popover::PopoverTrigger { style: "display: contents;", "data-slot": "input-wrapper",
                 InputBase {
@@ -261,7 +283,11 @@ pub fn DateRangePickerInput(
                                 onclick: move |_| on_range_change.call(None),
                             }
                         }
-                        DateInputPopoverTrigger { disabled: is_disabled }
+                        DateInputPopoverTrigger {
+                            disabled: is_disabled,
+                            open,
+                            popover_id: popover_id.clone(),
+                        }
                     },
                     DateRangeInputControl {
                         disabled: is_disabled,
@@ -269,6 +295,7 @@ pub fn DateRangePickerInput(
                 }
                 }
                 DateInputPopoverContent {
+                    id: popover_id.clone(),
                     width: dioxus_primitives::popover::PopoverWidth::Target,
                     target_selector: "[data-slot='input-wrapper']",
                     align: ContentAlign::Center,
@@ -409,20 +436,31 @@ fn DateInputYearSegment() -> Element {
 #[component]
 fn DateInputPopoverTrigger(
     disabled: bool,
+    open: ReadSignal<bool>,
+    popover_id: String,
     #[props(extends = GlobalAttributes)] attributes: Vec<Attribute>,
 ) -> Element {
     let attributes = merge_attributes(vec![
         attributes!(button {
+            r#type: "button",
             aria_label: "Show Calendar",
+            aria_controls: popover_id,
+            aria_expanded: open,
+            aria_haspopup: "dialog",
             disabled,
+            onclick: move |event| {
+                if open() {
+                    event.stop_propagation();
+                }
+            },
         }),
         attributes,
     ]);
 
     rsx! {
-        PopoverOpenTrigger {
+        button {
             class: Styles::dx_date_input_popover_trigger,
-            attributes,
+            ..attributes,
             ChevronDown {
                 class: Styles::dx_date_input_trigger,
                 size: "14px",
