@@ -146,9 +146,6 @@ fn ComboboxOptionsPortaled(props: ComboboxOptionsPortaledProps) -> Element {
     // Snapshot every floating-layout value HERE so the portaled body never reads
     // Root-owned position memos or the combobox store's target ref.
     let mut floating_ref: Signal<Option<Rc<MountedData>>> = use_signal(|| None);
-    let on_floating_mounted = use_callback(move |mounted: Rc<MountedData>| {
-        floating_ref.set(Some(mounted));
-    });
     let pos = use_position(
         ctx.store.target_mount_ref(),
         floating_ref,
@@ -156,6 +153,11 @@ fn ComboboxOptionsPortaled(props: ComboboxOptionsPortaledProps) -> Element {
         ContentAlign::Start,
         None,
     );
+    let on_position_mounted = pos.on_mounted;
+    let on_floating_mounted = use_callback(move |mounted: Rc<MountedData>| {
+        floating_ref.set(Some(mounted.clone()));
+        on_position_mounted.call(mounted);
+    });
     let floating_style = pos.style.read().clone();
     let floating_position = style_prop(&floating_style, "position");
     let floating_top = style_prop(&floating_style, "top");

@@ -366,10 +366,12 @@ fn TooltipPortaled(props: TooltipPortaledProps) -> Element {
     let rendered_id = id.cloned();
     let overlay_z = reg.z().map(|z| format!("--overlay-z: {z};"));
     let mut floating_ref: Signal<Option<Rc<MountedData>>> = use_signal(|| None);
-    let on_floating_mounted = use_callback(move |mounted: Rc<MountedData>| {
-        floating_ref.set(Some(mounted));
-    });
     let pos = use_position(ctx.trigger_ref, floating_ref, props.side, props.align, None);
+    let on_position_mounted = pos.on_mounted;
+    let on_floating_mounted = use_callback(move |mounted: Rc<MountedData>| {
+        floating_ref.set(Some(mounted.clone()));
+        on_position_mounted.call(mounted);
+    });
     let floating_style = pos.style.read().clone();
     let floating_position = style_prop(&floating_style, "position");
     let floating_top = style_prop(&floating_style, "top");

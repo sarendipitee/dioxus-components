@@ -1193,7 +1193,7 @@ pub fn MenuSub(props: MenuSubProps) -> Element {
                         `width:${triangleWidth}px`,
                         `height:${contentRect.height + padding * 2}px`,
                         'background:transparent',
-                        'pointer-events:auto',
+                        'pointer-events:none',
                         'z-index:2147483647',
                         `clip-path:polygon(${opensRight ? '100% 0,0 50%,100% 100%' : '0 0,100% 50%,0 100%'})`,
                     ].join(';');
@@ -1307,10 +1307,8 @@ pub fn MenuSubTrigger<T: Clone + PartialEq + 'static>(props: MenuSubTriggerProps
     let disabled_value = props.disabled;
     let on_select = props.on_select;
     let open_submenu = use_callback(move |_| {
-        // Pointer-move fires continuously while the cursor is over a trigger.
-        // Once this submenu is open, rewriting the coordination/open signals
-        // needlessly reconciles its portaled content under the pointer and can
-        // detach the trigger before Playwright (or a user) completes the hover.
+        // Pointer entry is edge-triggered; retain this guard for repeated
+        // keyboard or click activation after the submenu has opened.
         if !open() {
             sub_ctx.initial_focus.set(Some(FocusPlacement::First));
             (parent_ctx.active_submenu).set(Some((sub_ctx.trigger_id)()));
@@ -1319,11 +1317,6 @@ pub fn MenuSubTrigger<T: Clone + PartialEq + 'static>(props: MenuSubTriggerProps
     });
     let base = attributes!(div {
         onmouseenter: move |_| {
-            if !(sub_ctx.disabled)() && !disabled_value {
-                open_submenu.call(());
-            }
-        },
-        onpointermove: move |_| {
             if !(sub_ctx.disabled)() && !disabled_value {
                 open_submenu.call(());
             }
