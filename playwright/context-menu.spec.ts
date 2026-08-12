@@ -51,7 +51,7 @@ test("pointer navigation", async ({ page }) => {
     arrangeBox.x - 24,
     arrangeBox.y + arrangeBox.height / 2,
   );
-  await expect(submenu).toHaveAttribute("data-state", "closed");
+  await expect(submenu).toHaveCount(0);
   await arrangeItem.hover();
   await expect(submenu).toHaveAttribute("data-state", "open");
   await submenu.getByRole("menuitem", { name: "Send to back" }).click();
