@@ -91,12 +91,12 @@ test("calendar selection updates the controlled date status", async ({
   const wrapper = await dueDateWrapper(root);
   await wrapper.locator('[aria-label="Show Calendar"]').click();
   const dialog = page.locator('[role="dialog"][data-state="open"]');
-  const date = dialog.getByRole("button", { name: "Wednesday, May 15, 2024" });
+  const date = dialog.getByRole("button", { name: "Thursday, May 16, 2024" });
   await wrapper.getByRole("spinbutton", { name: "year" }).focus();
   await expect(dialog).toBeVisible();
   await expect(date).toBeVisible();
   await date.click();
-  await expect(root.getByTestId("due-date-value")).toHaveText("2024-05-15");
+  await expect(root.getByTestId("due-date-value")).toHaveText("2024-05-16");
 });
 
 test("required error, disabled, and read-only date inputs expose state semantics", async ({

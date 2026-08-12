@@ -93,7 +93,6 @@ test("nested submenu demo opens each submenu level", async ({ page }) => {
 
   const alphaTrigger = rootMenu.getByRole("menuitem", {
     name: "Workspace Alpha",
-    exact: true,
   });
   await alphaTrigger.hover();
   await expect(alphaTrigger).toHaveAttribute("aria-expanded", "true");

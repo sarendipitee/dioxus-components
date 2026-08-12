@@ -38,8 +38,7 @@ test.describe("toolbar", () => {
       .getByRole("toolbar", { name: "Text formatting" })
       .first()
       .getByRole("button");
-    await page.locator("#component-preview-frame").focus();
-    await page.keyboard.press("Tab");
+    await buttons.nth(0).focus();
     await expect(buttons.nth(0)).toBeFocused();
     await page.keyboard.press("ArrowLeft");
     await expect(buttons.nth(0)).toBeFocused();

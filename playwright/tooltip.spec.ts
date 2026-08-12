@@ -1,6 +1,6 @@
 import { test, expect, type Page } from "@playwright/test";
 
-const FRAME = "#component-preview-frame";
+const FRAME = "#dx-preview-block-root";
 
 function fixture(page: Page) {
   const frame = page.locator(FRAME).first();

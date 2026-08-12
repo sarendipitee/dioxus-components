@@ -1,6 +1,7 @@
 import { test, expect } from "@playwright/test";
 
 test("pointer navigation", async ({ page }) => {
+  await page.emulateMedia({ colorScheme: "light" });
   await page.goto("/components/menubar", { timeout: 30 * 1000 });
   const fileMenuButton = page.getByRole("menuitem", { name: "File" }).first();
   await fileMenuButton.click();
@@ -31,7 +32,7 @@ test("pointer navigation", async ({ page }) => {
     submenu.getByRole("menuitem", { name: "Copy link" }),
   ).toBeVisible();
   await fileMenuContent.getByRole("menuitem", { name: "New" }).hover();
-  await expect(submenu).toHaveAttribute("data-state", "closed");
+  await expect(shareItem).toHaveAttribute("aria-expanded", "false");
   await shareItem.hover();
   await expect(submenu).toHaveAttribute("data-state", "open");
   await expect(shareItem).toHaveCSS("background-color", "rgb(247, 247, 247)");
@@ -51,7 +52,7 @@ test("pointer navigation", async ({ page }) => {
   await expect(fileMenuContent).toHaveAttribute("data-state", "open");
 
   // After the menu is open, hover over the Edit menu item
-  const editMenuButton = demo.getByRole("menuitem", { name: "View" }).first();
+  const editMenuButton = page.getByRole("menuitem", { name: "View" }).first();
   await editMenuButton.hover();
   // Assert the Edit menu content is open
   const editMenuContent = page
@@ -80,7 +81,7 @@ test("keyboard navigation", async ({ page }) => {
   // Go right with the keyboard
   await page.keyboard.press("ArrowRight");
   // Assert the focus is on the View menu item
-  const editMenuButton = demo.getByRole("menuitem", { name: "View" }).first();
+  const editMenuButton = page.getByRole("menuitem", { name: "View" }).first();
   await expect(editMenuButton).toBeFocused();
   // Go left with the keyboard
   await page.keyboard.press("ArrowLeft");
@@ -143,6 +144,7 @@ test("checkbox toggles and radio selection update their outputs", async ({
   await page.goto("/components/menubar/block#main", { timeout: 30 * 1000 });
   const demo = page.locator("#dx-preview-block-root");
   const fileTrigger = demo.getByRole("menuitem", { name: "File" }).first();
+  await fileTrigger.click();
   let statusBar = page.getByRole("menuitemcheckbox", { name: "Status bar" });
   await expect(statusBar).toHaveAttribute("data-state", "checked");
   await statusBar.click();
