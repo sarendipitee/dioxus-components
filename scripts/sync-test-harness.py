@@ -64,11 +64,17 @@ def generate_harness_binary(comp_name):
     # Normalize binary name (e.g. color_picker -> color_picker)
     bin_name = comp_name.replace("-", "_")
 
+    component_style_lines = ["        DioxusComponentsStyles {},"]
+
     code_lines = [
         "use dioxus::prelude::*;",
         "use dioxus_primitives::overlay::OverlayProvider;",
         "",
     ]
+    code_lines.extend([
+        "use dioxus_components::DioxusComponentsStyles;",
+        "",
+    ])
     for module_name, module_path in overrides.values():
         code_lines.extend([
             f'#[path = "{module_path}"]',
@@ -113,6 +119,7 @@ def generate_harness_binary(comp_name):
         "#[component]",
         "fn App() -> Element {",
         '    rsx! {',
+        *component_style_lines,
         '        document::Link { rel: "stylesheet", href: asset!("/assets/main.css") }',
         '        document::Link {',
         '            rel: "stylesheet",',

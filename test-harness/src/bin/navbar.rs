@@ -1,6 +1,8 @@
 use dioxus::prelude::*;
 use dioxus_primitives::overlay::OverlayProvider;
 
+use dioxus_components::DioxusComponentsStyles;
+
 #[derive(Clone, PartialEq, Debug)]
 pub enum Route {
     ComponentDemo {
@@ -28,6 +30,7 @@ fn main() {
 #[component]
 fn App() -> Element {
     rsx! {
+        DioxusComponentsStyles {},
         document::Link { rel: "stylesheet", href: asset!("/assets/main.css") }
         document::Link {
             rel: "stylesheet",

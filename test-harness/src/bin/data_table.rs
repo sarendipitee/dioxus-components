@@ -1,6 +1,8 @@
 use dioxus::prelude::*;
 use dioxus_primitives::overlay::OverlayProvider;
 
+use dioxus_components::DioxusComponentsStyles;
+
 #[path = "../../../preview/src/components/data_table/demos/controlled/mod.rs"]
 mod demo_controlled;
 
@@ -29,6 +31,7 @@ fn main() {
 #[component]
 fn App() -> Element {
     rsx! {
+        DioxusComponentsStyles {},
         document::Link { rel: "stylesheet", href: asset!("/assets/main.css") }
         document::Link {
             rel: "stylesheet",

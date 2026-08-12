@@ -1,6 +1,8 @@
 use dioxus::prelude::*;
 use dioxus_primitives::overlay::OverlayProvider;
 
+use dioxus_components::DioxusComponentsStyles;
+
 #[path = "../../../preview/src/components/split_pane/demos/constraints/mod.rs"]
 mod demo_constraints;
 
@@ -35,6 +37,7 @@ fn main() {
 #[component]
 fn App() -> Element {
     rsx! {
+        DioxusComponentsStyles {},
         document::Link { rel: "stylesheet", href: asset!("/assets/main.css") }
         document::Link {
             rel: "stylesheet",
