@@ -1,5 +1,6 @@
 import { MICRO_HARNESS_COMPONENTS } from "./micro-harness-policy.mjs";
 import { execFileSync } from "node:child_process";
+import { existsSync } from "node:fs";
 import path from "node:path";
 import { defineConfig, devices } from "@playwright/test";
 
@@ -7,6 +8,9 @@ const runHeaded = process.env.PLAYWRIGHT_HEADED === "1";
 const externalBaseUrl = process.env.PLAYWRIGHT_BASE_URL;
 const chromiumExecutablePath = process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE;
 const localBasePort = externalBaseUrl ? null : getLocalBasePort();
+const playwrightTargetDir = externalBaseUrl
+  ? null
+  : path.resolve(process.cwd(), `../target/playwright/${localBasePort}`);
 const baseURL = externalBaseUrl ?? `http://127.0.0.1:${localBasePort}`;
 
 /**
@@ -67,6 +71,16 @@ function getLocalBasePort() {
 // The micro harness only implements isolated block routes. The shared policy
 // keeps config selection and launcher validation fail-closed together.
 const MICRO_HARNESS_SPECS = new Set(MICRO_HARNESS_COMPONENTS);
+const previewOnly = process.env.PLAYWRIGHT_PREVIEW_ONLY === "1";
+
+function specPattern(component: string): string {
+  const basename = existsSync(
+    path.resolve(process.cwd(), `${component}.spec.ts`),
+  )
+    ? component
+    : component.replaceAll("_", "-");
+  return `**/${basename}.spec.ts`;
+}
 
 function getTargetComponent(args = process.argv): string | null {
   const selectedSpecs = args.flatMap((arg) => {
@@ -96,6 +110,10 @@ const targetComponent = getTargetComponent();
 
 export default defineConfig({
   testDir: ".",
+  testIgnore: previewOnly
+    ? MICRO_HARNESS_COMPONENTS.map(specPattern)
+    : undefined,
+  testMatch: targetComponent ? [specPattern(targetComponent)] : undefined,
   /* Run tests in files in parallel */
   fullyParallel: true,
   /* Fail the build on CI if you accidentally left test.only in the source code. */
@@ -171,16 +189,15 @@ export default defineConfig({
         cwd: targetComponent
           ? path.join(process.cwd(), "../test-harness")
           : path.join(process.cwd(), "../preview"),
-        command: `exec node ../playwright/start-preview.mjs ../target/dx/${targetComponent ?? "preview"}/debug/web/public ${localBasePort} ${targetComponent ?? ""}`,
+        command: `exec node ../playwright/start-preview.mjs ${playwrightTargetDir}/dx/${targetComponent ?? "preview"}/debug/web/public ${localBasePort} ${targetComponent ?? ""}`,
         port: localBasePort,
         timeout: 50 * 60 * 1000,
         reuseExistingServer: false,
         stdout: "pipe",
         env: {
           ...process.env,
+          CARGO_TARGET_DIR: playwrightTargetDir!,
           PLAYWRIGHT_TARGET_COMPONENT: targetComponent ?? "",
         },
       },
 });
-
-

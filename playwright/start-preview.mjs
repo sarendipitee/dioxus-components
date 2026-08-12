@@ -142,9 +142,12 @@ function validateLaunchRequest() {
   }
 
   const rootDir = resolve(rootArg);
+  const targetDir = resolve(
+    process.env.CARGO_TARGET_DIR || join(process.cwd(), "../target"),
+  );
   const expectedRoot = resolve(
-    process.cwd(),
-    "../target/dx",
+    targetDir,
+    "dx",
     expectedTarget,
     "debug/web/public",
   );
@@ -254,10 +257,19 @@ function startPreviewServer(rootArg, portArg) {
   }
 
   const port = Number(portArg);
-
   // Read index.html once at startup; served for every unknown path so the
   // Dioxus WASM router can handle client-side navigation.
-  const indexHtml = readFileSync(join(rootDir, "index.html"));
+  const rawIndexHtml = readFileSync(join(rootDir, "index.html"));
+  const indexHtml = componentArg
+    ? Buffer.from(
+        rawIndexHtml
+          .toString("utf8")
+          .replace(
+            "</body>",
+            '<script>addEventListener("hashchange", () => location.reload())</script></body>',
+          ),
+      )
+    : rawIndexHtml;
 
   const server = createServer((req, res) => {
     const url = new URL(req.url ?? "/", `http://${req.headers.host ?? "127.0.0.1"}`);
