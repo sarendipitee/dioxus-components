@@ -85,11 +85,17 @@ test("nested submenu demo opens each submenu level", async ({ page }) => {
       has: page.getByRole("button", { name: "Move item", exact: true }),
     })
     .first();
-  await fixture
-    .getByRole("button", { name: "Move item", exact: true })
-    .click();
+  const moveTrigger = fixture.getByRole("button", {
+    name: "Move item",
+    exact: true,
+  });
+  await moveTrigger.click();
   const rootMenu = page.locator('[role="menu"][data-state="open"]').first();
   await expect(rootMenu).toBeVisible();
+  await expect(moveTrigger).toHaveAttribute("aria-expanded", "true");
+  await moveTrigger.evaluate((element) =>
+    element.scrollIntoView({ block: "center" }),
+  );
 
   const alphaTrigger = rootMenu.getByRole("menuitem", {
     name: "Workspace Alpha",
@@ -102,7 +108,9 @@ test("nested submenu demo opens each submenu level", async ({ page }) => {
   await expect(alphaMenu).toBeVisible();
 
   await alphaMenu
-    .getByRole("menuitem", { name: "Workspace Alpha / Projects", exact: true })
+    .getByRole("menuitem", {
+      name: /^Workspace Alpha \/ Projects(?: ›)?$/,
+    })
     .hover();
   const projectsMenu = page
     .getByRole("menu")
