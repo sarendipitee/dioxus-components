@@ -1193,7 +1193,7 @@ pub fn MenuSub(props: MenuSubProps) -> Element {
                         `width:${triangleWidth}px`,
                         `height:${contentRect.height + padding * 2}px`,
                         'background:transparent',
-                        'pointer-events:none',
+                        'pointer-events:auto',
                         'z-index:2147483647',
                         `clip-path:polygon(${opensRight ? '100% 0,0 50%,100% 100%' : '0 0,100% 50%,0 100%'})`,
                     ].join(';');
