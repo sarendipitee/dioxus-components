@@ -880,6 +880,15 @@ body {
   font-size: var(--text-sm);
 }
 
+.dx-component-props-table-title {
+  padding: 0.7rem 0.85rem;
+  border-bottom: 1px solid var(--surface-border);
+  margin: 0;
+  color: var(--fg);
+  font-size: var(--text-sm);
+  font-weight: 650;
+}
+
 .dx-component-props-table-heading {
   padding: 0.7rem 0.85rem;
   border-bottom: 1px solid var(--surface-border);

@@ -1131,42 +1131,59 @@ fn ComponentHighlight(demo: ComponentDemoData) -> Element {
 #[allow(non_snake_case)]
 fn ComponentPropsSection(props: ComponentPropsSectionProps) -> Element {
     let ComponentPropsSectionProps { props } = props;
+    let mut components = Vec::new();
+    for prop in props {
+        if !components.contains(&prop.component) {
+            components.push(prop.component);
+        }
+    }
 
     rsx! {
         section { class: "dx-component-section",
             div { class: "dx-component-section-heading",
                 h2 { "Props" }
-                p { "Generated from the component source at build time." }
             }
-            div { class: "dx-component-props-table-wrap",
-                table { class: "dx-component-props-table",
-                    thead {
-                        tr {
-                            for heading in ["Component", "Prop", "Type", "Value", "Docs"] {
-                                th { class: "dx-component-props-table-heading", "{heading}" }
-                            }
-                        }
+            Tabs {
+                default_value: components.first().copied().unwrap_or_default(),
+                horizontal: true,
+                width: "100%",
+                TabList {
+                    flex_wrap: "wrap",
+                    for (index, component) in components.iter().enumerate() {
+                        TabTrigger { value: "{component}", index, "{component}" }
                     }
-                    tbody {
-                        for prop in props {
-                            tr {
-                                td { class: "dx-component-props-table-cell dx-component-props-table-cell-muted",
-                                    code { "{prop.component}" }
+                }
+                for (index, component) in components.iter().enumerate() {
+                    TabContent { index, value: "{component}",
+                        div { class: "dx-component-props-table-wrap",
+                            table { class: "dx-component-props-table",
+                                thead {
+                                    tr {
+                                        for heading in ["Prop", "Type", "Value", "Docs"] {
+                                            th { class: "dx-component-props-table-heading", "{heading}" }
+                                        }
+                                    }
                                 }
-                                td { class: "dx-component-props-table-cell",
-                                    code { "{prop.name}" }
-                                }
-                                td { class: "dx-component-props-table-cell dx-component-props-table-cell-muted",
-                                    code { "{prop.ty}" }
-                                }
-                                td { class: "dx-component-props-table-cell dx-component-props-table-cell-muted",
-                                    code { "{prop.value}" }
-                                }
-                                td { class: "dx-component-props-table-cell dx-component-props-table-cell-docs",
-                                    if prop.docs.is_empty() {
-                                        span { "none" }
-                                    } else {
-                                        span { "{prop.docs}" }
+                                tbody {
+                                    for prop in props.iter().filter(|prop| prop.component == *component) {
+                                        tr {
+                                            td { class: "dx-component-props-table-cell",
+                                                code { "{prop.name}" }
+                                            }
+                                            td { class: "dx-component-props-table-cell dx-component-props-table-cell-muted",
+                                                code { "{prop.ty}" }
+                                            }
+                                            td { class: "dx-component-props-table-cell dx-component-props-table-cell-muted",
+                                                code { "{prop.value}" }
+                                            }
+                                            td { class: "dx-component-props-table-cell dx-component-props-table-cell-docs",
+                                                if prop.docs.is_empty() {
+                                                    span { class: "dx-component-props-table-cell-muted", "—" }
+                                                } else {
+                                                    "{prop.docs}"
+                                                }
+                                            }
+                                        }
                                     }
                                 }
                             }
