@@ -84,7 +84,9 @@ fi
 
 if [ "$command" = build ]; then
   rm -rf "${public_dir%/public}"
-  if "$dx" build -p preview --web "$@"; then
+  # Dioxus CLI inserts itself into rustc probing and is incompatible with
+  # compiler wrappers such as Kache 0.8.0.
+  if MISE_NO_ENV=1 env -u RUSTC_WRAPPER "$dx" build -p preview --web "$@"; then
     :
   else
     exit $?
@@ -130,5 +132,5 @@ if [ "$command" = build ]; then
 
   cp "$index" "$public_dir/404.html"
 else
-  exec "$dx" serve -p preview --web "$@"
+  exec env -u RUSTC_WRAPPER MISE_NO_ENV=1 "$dx" serve -p preview --web "$@"
 fi

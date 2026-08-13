@@ -1,8 +1,33 @@
-#!/usr/bin/env sh
-set -eu
+#!/usr/bin/env bash
+set -euo pipefail
 
 repo_root=$(git rev-parse --show-toplevel)
 cd "$repo_root"
+
+PATH=/usr/bin:/bin:$PATH SHARED_KACHE_TEST_ENDPOINT=http://127.0.0.1:29989 scripts/shared-kache-service.spec.sh
+scripts/mise-env.spec.sh
+
+cache_wrapper_added=0
+if [ "${KACHE_SHARED_SERVICE:-1}" != '0' ] && command -v mise >/dev/null 2>&1; then
+  if kache_bin=$(mise -C "$repo_root" which kache 2>/dev/null) && rustfs_bin=$(mise -C "$repo_root" which rustfs 2>/dev/null); then
+    if [ -z "${RUSTC_WRAPPER:-}" ]; then
+      export RUSTC_WRAPPER=$kache_bin
+      cache_wrapper_added=1
+    fi
+    export KACHE_VERSION="${KACHE_VERSION:-0.8.0}"
+    export RUSTFS_VERSION="${RUSTFS_VERSION:-1.0.0-beta.8}"
+    # shellcheck disable=SC1091
+    . "$repo_root/scripts/mise-env.sh"
+    if ! "$repo_root/scripts/mise-ensure-shared-kache.sh"; then
+      printf '%s\n' 'warning: shared Kache service unavailable; continuing without Kache wrapper' >&2
+      if [ "$cache_wrapper_added" -eq 1 ]; then
+        unset RUSTC_WRAPPER
+      fi
+    fi
+  else
+    printf '%s\n' 'warning: Mise cache tools missing; run mise install --locked' >&2
+  fi
+fi
 
 # Rust doctests invoke linkers that use TMPDIR for large temporary outputs. Keep
 # those outputs on the repository filesystem rather than a constrained /tmp tmpfs.

@@ -30,6 +30,10 @@ incremental = false
 
 [profile.dev]
 debug = 0
+incremental = false
+
+[profile.test]
+incremental = false
 
 [profile.dev.build-override]
 opt-level = 3

@@ -1,0 +1,11 @@
+[tools]
+"github:kunobi-ninja/kache" = "0.8.0"
+"github:rustfs/rustfs" = "1.0.0-beta.8"
+
+[env]
+KACHE_VERSION = "0.8.0"
+RUSTFS_VERSION = "1.0.0-beta.8"
+_.source = { path = "scripts/mise-env.sh", tools = true }
+
+[hooks]
+enter = { run = "scripts/mise-ensure-shared-kache.sh || printf 'warning: shared Kache service unavailable; builds will continue without remote cache\\n' >&2", shell = "bash -c" }

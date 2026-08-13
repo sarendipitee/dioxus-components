@@ -208,9 +208,15 @@ async function runBuild() {
     console.log(`[Playwright] Fast-path building micro-binary harness: ${componentArg}`);
   }
 
+  // Dioxus compiler probing cannot run through Kache 0.8.0. Prevent a Mise
+  // Cargo shim from restoring the wrapper after it is removed here.
+  const buildEnv = { ...process.env, MISE_NO_ENV: "1" };
+  delete buildEnv.RUSTC_WRAPPER;
+
   await new Promise((resolve, reject) => {
     buildProcess = spawn("dx", buildArgs, {
       stdio: "inherit",
+      env: buildEnv,
     });
 
     buildExitPromise = new Promise((resolveExit) => {
