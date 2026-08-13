@@ -1,16 +1,12 @@
 //! Defines the [`RadioGroup`] component and its sub-components.
 
 use std::collections::HashMap;
-#[cfg(target_family = "wasm")]
-use std::time::Duration;
 
 use crate::{
     focus::{use_focus_controlled_item_disabled, use_focus_provider, FocusState},
     use_controlled, use_effect_with_cleanup,
 };
 use dioxus::prelude::*;
-#[cfg(target_family = "wasm")]
-use gloo_timers::future::sleep;
 
 #[derive(Clone, Copy)]
 struct RadioGroupCtx {
@@ -297,25 +293,7 @@ pub fn RadioItem(props: RadioItemProps) -> Element {
         "-1"
     });
 
-    let mut mounted_ref: Signal<Option<std::rc::Rc<MountedData>>> = use_signal(|| None);
-    let mut focus_registration = use_focus_controlled_item_disabled(props.index, disabled);
-    let onmounted = move |event: MountedEvent| {
-        mounted_ref.set(Some(event.data()));
-        focus_registration(event);
-    };
-    let focused = move || ctx.focus.is_focused((props.index)());
-    use_effect(move || {
-        let _ = ctx.focus.current_focus();
-        if focused() {
-            if let Some(mounted) = mounted_ref() {
-                spawn(async move {
-                    #[cfg(target_family = "wasm")]
-                    sleep(Duration::from_millis(16)).await;
-                    let _ = mounted.set_focus(true).await;
-                });
-            }
-        }
-    });
+    let onmounted = use_focus_controlled_item_disabled(props.index, disabled);
 
     rsx! {
         button {
