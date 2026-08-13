@@ -73,6 +73,7 @@ def generate_harness_binary(comp_name):
     ]
     code_lines.extend([
         "use dioxus_components::DioxusComponentsStyles;",
+        "use dioxus_components_themes::DEFAULT_CSS;",
         "",
     ])
     for module_name, module_path in overrides.values():
@@ -120,11 +121,8 @@ def generate_harness_binary(comp_name):
         "fn App() -> Element {",
         '    rsx! {',
         *component_style_lines,
+        '        document::Style { {DEFAULT_CSS} }',
         '        document::Link { rel: "stylesheet", href: asset!("/assets/main.css") }',
-        '        document::Link {',
-        '            rel: "stylesheet",',
-        '            href: asset!("/assets/dx-components-theme.css"),',
-        '        }',
         '        OverlayProvider {',
         '            div { id: "dx-preview-block-root", style: "min-height: 100vh;",',
         '                BlockView {}',

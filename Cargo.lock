@@ -8153,6 +8153,7 @@ version = "0.1.0"
 dependencies = [
  "dioxus",
  "dioxus-components",
+ "dioxus-components-themes",
  "dioxus-i18n",
  "dioxus-icons",
  "dioxus-primitives",

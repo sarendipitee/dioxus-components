@@ -2,6 +2,7 @@ use dioxus::prelude::*;
 use dioxus_primitives::overlay::OverlayProvider;
 
 use dioxus_components::DioxusComponentsStyles;
+use dioxus_components_themes::DEFAULT_CSS;
 
 #[path = "../../../preview/src/components/dropdown_menu/demos/checkable/mod.rs"]
 mod demo_checkable;
@@ -29,11 +30,8 @@ fn main() {
 fn App() -> Element {
     rsx! {
         DioxusComponentsStyles {},
+        document::Style { {DEFAULT_CSS} }
         document::Link { rel: "stylesheet", href: asset!("/assets/main.css") }
-        document::Link {
-            rel: "stylesheet",
-            href: asset!("/assets/dx-components-theme.css"),
-        }
         OverlayProvider {
             div { id: "dx-preview-block-root", style: "min-height: 100vh;",
                 BlockView {}

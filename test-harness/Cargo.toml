@@ -7,6 +7,7 @@ rust-version = "1.88.0"
 [dependencies]
 dioxus = { workspace = true, features = ["launch", "lib", "router"] }
 dioxus-components = { path = "../dioxus-components" }
+dioxus-components-themes = { path = "../themes" }
 dioxus-router = "0.7.9"
 dioxus-icons = "0.1.0"
 dioxus-primitives.workspace = true
