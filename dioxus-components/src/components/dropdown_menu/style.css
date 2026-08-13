@@ -141,17 +141,3 @@
   margin-right: var(--space);
   margin-left: 0;
 }
-
-.dx_dropdown.dx_menu_sub_content::before {
-  position: absolute;
-  top: 0;
-  right: 100%;
-  width: var(--space);
-  height: 100%;
-  content: "";
-}
-
-.dx_dropdown.dx_menu_sub_content[data-side="left"]::before {
-  right: auto;
-  left: 100%;
-}

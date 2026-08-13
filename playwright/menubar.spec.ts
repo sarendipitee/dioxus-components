@@ -27,6 +27,10 @@ test("pointer navigation", async ({ page }) => {
   await shareItem.hover();
   const submenu = page.locator(".dx_menu_sub_content").first();
   await expect(submenu).toHaveAttribute("data-state", "open");
+  const grace = submenu.locator("[data-menu-pointer-grace]");
+  await expect(grace).toBeVisible();
+  await expect(grace).toHaveCSS("pointer-events", "auto");
+  await expect(grace).toHaveCSS("width", "128px");
   await expect(shareItem).toHaveAttribute("aria-expanded", "true");
   await expect(
     submenu.getByRole("menuitem", { name: "Copy link" }),

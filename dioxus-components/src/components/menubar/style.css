@@ -199,7 +199,3 @@
   right: 100%;
   left: auto;
 }
-
-.dx_menubar_sub_content::before {
-  content: none;
-}

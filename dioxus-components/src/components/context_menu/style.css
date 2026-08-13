@@ -154,12 +154,3 @@
   margin-right: var(--space);
   margin-left: 0;
 }
-
-.dx_context_menu_sub_content::before {
-  position: absolute;
-  top: 0;
-  right: 100%;
-  width: var(--space);
-  height: 100%;
-  content: "";
-}

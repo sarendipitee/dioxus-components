@@ -1122,15 +1122,9 @@ pub fn MenuSub(props: MenuSubProps) -> Element {
     let content_id = use_signal(String::new);
 
     use_effect_with_cleanup(move || {
-        // The trigger still lives inside `sub_id`, but the submenu content panel is
-        // portaled OUT to the shared overlay outlet.
-        // The trigger still lives inside `sub_id`, but the submenu content panel is
-        // portaled OUT to the shared overlay outlet — so it can no longer be found
-        // by querying descendants of `sub_id`. Resolve the trigger from the sub
-        // subtree and the content from the registered portaled panel id. Reading
-        // `content_id` here makes this effect re-run (tearing down and recreating
-        // the listener) once `MenuSubContent` publishes the panel id, so the
-        // hover-leave predicate picks up the portaled panel.
+        // Resolve trigger and portaled content roots by id for cross-portal
+        // pointer dismissal. Reading `content_id` reruns this listener when the
+        // content root mounts.
         let panel_id = content_id();
         let Some(sub_id_value) = sub_id.try_peek().ok().map(|v| v.clone()) else {
             return Box::new(|| {}) as Box<dyn FnOnce()>;
@@ -1139,24 +1133,6 @@ pub fn MenuSub(props: MenuSubProps) -> Element {
             "const ids = await dioxus.recv();
             const subId = ids[0];
             const contentId = ids[1];
-            const pointInRect = (x, y, rect, padding) =>
-                x >= rect.left - padding &&
-                x <= rect.right + padding &&
-                y >= rect.top - padding &&
-                y <= rect.bottom + padding;
-            const pointInTriangle = (point, a, b, c) => {
-                const sign = (p1, p2, p3) =>
-                    (p1.x - p3.x) * (p2.y - p3.y) -
-                    (p2.x - p3.x) * (p1.y - p3.y);
-                const d1 = sign(point, a, b);
-                const d2 = sign(point, b, c);
-                const d3 = sign(point, c, a);
-                const hasNegative = d1 < 0 || d2 < 0 || d3 < 0;
-                const hasPositive = d1 > 0 || d2 > 0 || d3 > 0;
-                return !(hasNegative && hasPositive);
-            };
-            const padding = 8;
-            let triangleOrigin = null;
             const onMove = e => {
                 const root = document.getElementById(subId);
                 if (!root) return;
@@ -1174,66 +1150,15 @@ pub fn MenuSub(props: MenuSubProps) -> Element {
                 // hit-test target. Treat that transient state as indeterminate;
                 // closing here races the submenu open transition.
                 if (!pointTarget) return;
-                const triggerRect = trigger?.getBoundingClientRect();
-                const contentRect = content.getBoundingClientRect();
-                const guardId = `${subId}-pointer-grace`;
-                let guard = document.getElementById(guardId);
-                if (!guard && triggerRect) {
-                    const opensRight = contentRect.left >= triggerRect.right;
-                    const edgeX = opensRight ? contentRect.left : contentRect.right;
-                    const triangleWidth = Math.max(48, Math.abs(
-                        edgeX - (opensRight ? triggerRect.right : triggerRect.left)
-                    ));
-                    guard = document.createElement('div');
-                    guard.id = guardId;
-                    guard.style.cssText = [
-                        'position:fixed',
-                        `left:${opensRight ? edgeX - triangleWidth : edgeX}px`,
-                        `top:${contentRect.top - padding}px`,
-                        `width:${triangleWidth}px`,
-                        `height:${contentRect.height + padding * 2}px`,
-                        'background:transparent',
-                        'pointer-events:auto',
-                        'z-index:2147483647',
-                        `clip-path:polygon(${opensRight ? '100% 0,0 50%,100% 100%' : '0 0,100% 50%,0 100%'})`,
-                    ].join(';');
-                    document.body.appendChild(guard);
-                }
-                const insideTrigger = trigger && (
-                    trigger.contains(pointTarget) ||
-                    pointInRect(e.clientX, e.clientY, triggerRect, padding)
-                );
-                const insideContent = content.contains(pointTarget) ||
-                    pointInRect(e.clientX, e.clientY, contentRect, padding);
+                const insideTrigger = trigger?.contains(pointTarget);
+                const insideContent = content.contains(pointTarget);
                 const insideNestedSubmenu = pointTarget.closest('[role=\"menu\"][data-side]');
-                const insidePointerGrace = pointTarget.id === `${subId}-pointer-grace`;
-                if (insideTrigger) {
-                    triangleOrigin = { x: e.clientX, y: e.clientY };
-                    return;
-                }
-                if (insideContent || insideNestedSubmenu || insidePointerGrace) {
-                    triangleOrigin = null;
-                    return;
-                }
-                if (triggerRect) {
-                    const opensRight = contentRect.left >= triggerRect.right;
-                    const edgeX = opensRight ? contentRect.left : contentRect.right;
-                    const origin = triangleOrigin ?? {
-                        x: opensRight ? triggerRect.right : triggerRect.left,
-                        y: triggerRect.top + triggerRect.height / 2,
-                    };
-                    const point = { x: e.clientX, y: e.clientY };
-                    const top = { x: edgeX, y: contentRect.top - padding };
-                    const bottom = { x: edgeX, y: contentRect.bottom + padding };
-                    if (pointInTriangle(point, origin, top, bottom)) return;
-                }
-                triangleOrigin = null;
+                if (insideTrigger || insideContent || insideNestedSubmenu) return;
                 dioxus.send(true);
             };
             document.addEventListener('pointermove', onMove, true);
             await dioxus.recv();
             document.removeEventListener('pointermove', onMove, true);
-            document.getElementById(`${subId}-pointer-grace`)?.remove();
             ",
         );
         let _ = eval.send(vec![sub_id_value, panel_id]);
@@ -1464,6 +1389,10 @@ pub fn MenuSubContent(props: MenuSubContentProps) -> Element {
             id: Some(id.cloned()),
             role: props.role,
             attributes,
+            div {
+                "data-menu-pointer-grace": "true",
+                aria_hidden: "true",
+            }
             {props.children}
         }
     }

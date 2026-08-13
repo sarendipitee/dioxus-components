@@ -116,6 +116,73 @@ test("nested submenu demo opens each submenu level", async ({ page }) => {
     .getByRole("menu")
     .filter({ has: page.getByText("Project streams", { exact: true }) });
   await expect(projectsMenu).toBeVisible();
+  const grace = projectsMenu.locator("[data-menu-pointer-grace]");
+  await expect(grace).toBeVisible();
+  await expect(grace).toHaveCSS("pointer-events", "auto");
+  await expect(grace).toHaveCSS("width", "128px");
+});
+
+test("nested submenu keeps open during slow gap travel", async ({ page }) => {
+  await page.goto("/components/dropdown_menu#nested_submenus");
+
+  const fixture = page
+    .locator("#component-preview-frame")
+    .filter({
+      has: page.getByRole("button", { name: "Move item", exact: true }),
+    })
+    .first();
+  const moveTrigger = fixture.getByRole("button", {
+    name: "Move item",
+    exact: true,
+  });
+  await moveTrigger.click();
+  const rootMenu = page.locator('[role="menu"][data-state="open"]').first();
+  await moveTrigger.evaluate((element) =>
+    element.scrollIntoView({ block: "center" }),
+  );
+  const alphaTrigger = rootMenu.getByRole("menuitem", {
+    name: "Workspace Alpha",
+  });
+  await alphaTrigger.hover();
+  const alphaMenu = page
+    .getByRole("menu")
+    .filter({ has: page.getByText("Alpha folders", { exact: true }) });
+  await expect(alphaMenu).toBeVisible();
+
+  const projectsTrigger = alphaMenu.getByRole("menuitem", {
+    name: /^Workspace Alpha \/ Projects(?: ›)?$/,
+  });
+  await projectsTrigger.hover();
+  const projectsMenu = page
+    .getByRole("menu")
+    .filter({ has: page.getByText("Project streams", { exact: true }) });
+  await expect(projectsMenu).toBeVisible();
+  const grace = projectsMenu.locator("[data-menu-pointer-grace]");
+  await expect(grace).toBeVisible();
+  await expect(grace).toHaveCSS("pointer-events", "auto");
+  await expect(grace).toHaveCSS("width", "128px");
+
+  const triggerBox = await projectsTrigger.boundingBox();
+  const menuBox = await projectsMenu.boundingBox();
+  if (!triggerBox || !menuBox) {
+    throw new Error("nested submenu geometry unavailable");
+  }
+  const side = await projectsMenu.getAttribute("data-side");
+  const targetX = side === "left" ? menuBox.x + menuBox.width - 20 : menuBox.x + 20;
+
+  await page.mouse.move(
+    triggerBox.x + triggerBox.width / 2,
+    triggerBox.y + triggerBox.height / 2,
+  );
+  await page.mouse.move(targetX, menuBox.y + menuBox.height / 2, {
+    steps: 24,
+  });
+  await expect(projectsMenu).toHaveAttribute("data-state", "open");
+  await page.waitForTimeout(150);
+  await expect(projectsMenu).toHaveAttribute("data-state", "open");
+
+  await page.mouse.move(10, 10);
+  await expect(projectsMenu).toHaveCount(0);
 });
 
 test("filterable menu restores items when query is deleted", async ({

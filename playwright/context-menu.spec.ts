@@ -23,6 +23,10 @@ test("pointer navigation", async ({ page }) => {
   await arrangeItem.hover();
   const submenu = page.locator(".dx_menu_sub_content").first();
   await expect(submenu).toHaveAttribute("data-state", "open");
+  const grace = submenu.locator("[data-menu-pointer-grace]");
+  await expect(grace).toBeVisible();
+  await expect(grace).toHaveCSS("pointer-events", "auto");
+  await expect(grace).toHaveCSS("width", "128px");
   await expect(
     submenu.getByRole("menuitem", { name: "Bring to front" }),
   ).toBeVisible();
@@ -39,10 +43,22 @@ test("pointer navigation", async ({ page }) => {
     arrangeBox.x + arrangeBox.width / 2,
     arrangeBox.y + arrangeBox.height / 2,
   );
+  const gracePoint = {
+    x: submenuBox.x - 20,
+    y: submenuBox.y + submenuBox.height / 2,
+  };
+  await page.mouse.move(
+    gracePoint.x,
+    gracePoint.y,
+    { steps: 10 },
+  );
+  await expect(submenu).toHaveAttribute("data-state", "open");
+  await page.waitForTimeout(150);
+  await expect(submenu).toHaveAttribute("data-state", "open");
   await page.mouse.move(
     submenuBox.x + 8,
-    submenuBox.y + submenuBox.height / 2 + 12,
-    { steps: 10 },
+    submenuBox.y + submenuBox.height / 2,
+    { steps: 4 },
   );
   await expect(submenu).toHaveAttribute("data-state", "open");
   await submenu.getByRole("menuitem", { name: "Send to back" }).hover();
@@ -58,6 +74,61 @@ test("pointer navigation", async ({ page }) => {
   // Assert the context menu is closed after clicking a submenu item
   await expect(contextMenu).toHaveCount(0);
   await expect(page.getByText("Selected: Send to back")).toBeVisible();
+});
+
+test("flipped submenu keeps slow pointer travel through grace area", async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 800, height: 600 });
+  await page.goto("/components/context_menu", { timeout: 30 * 1000 });
+
+  const contextRoot = page.locator(".dx_context_menu").first();
+  await contextRoot.evaluate((element) => {
+    const root = element as HTMLElement;
+    root.style.position = "fixed";
+    root.style.left = "500px";
+    root.style.top = "220px";
+  });
+
+  const trigger = page.getByRole("button", { name: "right click here" }).first();
+  await trigger.click({ button: "right" });
+  const contextMenu = page.getByRole("menu").first();
+  await expect(contextMenu).toHaveAttribute("data-state", "open");
+
+  const arrangeItem = contextMenu.getByRole("menuitem", { name: "Arrange" });
+  await arrangeItem.hover();
+  const submenu = page.locator(".dx_menu_sub_content").first();
+  await expect(submenu).toHaveAttribute("data-state", "open");
+  await expect(submenu).toHaveAttribute("data-side", "left");
+  const grace = submenu.locator("[data-menu-pointer-grace]");
+  await expect(grace).toBeVisible();
+  await expect(grace).toHaveCSS("pointer-events", "auto");
+  await expect(grace).toHaveCSS("width", "128px");
+
+  const arrangeBox = await arrangeItem.boundingBox();
+  const submenuBox = await submenu.boundingBox();
+  if (!arrangeBox || !submenuBox) {
+    throw new Error("flipped submenu geometry unavailable");
+  }
+  expect(submenuBox.x + submenuBox.width).toBeLessThanOrEqual(
+    arrangeBox.x + 8,
+  );
+
+  await page.mouse.move(
+    arrangeBox.x + arrangeBox.width / 2,
+    arrangeBox.y + arrangeBox.height / 2,
+  );
+  await page.mouse.move(
+    submenuBox.x + submenuBox.width - 20,
+    submenuBox.y + submenuBox.height / 2,
+    { steps: 24 },
+  );
+  await expect(submenu).toHaveAttribute("data-state", "open");
+  await page.waitForTimeout(150);
+  await expect(submenu).toHaveAttribute("data-state", "open");
+
+  await page.mouse.move(20, 20);
+  await expect(submenu).toHaveCount(0);
 });
 
 test("menu lands at the tap coordinates on touch long-press", async ({
