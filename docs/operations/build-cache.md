@@ -1,6 +1,6 @@
 # Rust Build Cache
 
-This repository uses Kache `0.8.0` as `RUSTC_WRAPPER` and RustFS
+This repository uses Kache `0.14.0` as `RUSTC_WRAPPER` and RustFS
 `1.0.0-beta.8` as its local S3-compatible remote store. Mise installs both
 release binaries from the checksummed `mise.lock`.
 
@@ -48,10 +48,13 @@ lifecycle manager.
 
 ## Dioxus
 
-Cargo checks and tests use Kache. Dioxus CLI `0.7.10` does not: its compiler
-probe inserts `dx` between Kache and `rustc`, which Kache `0.8.0` rejects as an
-unknown subcommand. `scripts/preview-web.sh` therefore removes `RUSTC_WRAPPER`
-and disables Mise environment reloading only for `dx` subprocess trees. No
+Cargo checks, tests, and Dioxus CLI `0.7.10` builds keep Kache in the compiler
+wrapper chain. Dioxus adds `RUSTC_WORKSPACE_WRAPPER=dx` around workspace
+compiler calls; Kache `0.14.0` recognizes that nested wrapper shape and forwards
+it to Dioxus instead of treating `dx` as an invalid subcommand. Kache still
+caches eligible non-workspace `rustc` calls, while Dioxus owns capture for the
+workspace calls. `scripts/preview-web.sh` keeps `RUSTC_WRAPPER` enabled and
+disables Mise environment reloading only for `dx` subprocess trees. No
 `rustc-wrapper` is set in `.cargo/config.toml`; environment activation remains
 the single integration point.
 

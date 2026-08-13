@@ -42,7 +42,7 @@ shared_kache_export_environment() {
 shared_kache_init_paths() {
 	local data_home="${XDG_DATA_HOME:-$HOME/.local/share}"
 	local state_home="${XDG_STATE_HOME:-$HOME/.local/state}"
-	local kache_version="${KACHE_VERSION:-0.8.0}"
+	local kache_version="${KACHE_VERSION:-0.14.0}"
 	local rustfs_version="${RUSTFS_VERSION:-1.0.0-beta.8}"
 
 	shared_kache_data_root="$data_home/kache-shared"
@@ -841,7 +841,7 @@ shared_kache_ensure() {
 	fi
 
 	shared_kache_acquire_lock || return 1
-	shared_kache_install_binary "$source_kache" "$shared_kache_kache_bin" "${KACHE_VERSION:-0.8.0}" || result=$?
+	shared_kache_install_binary "$source_kache" "$shared_kache_kache_bin" "${KACHE_VERSION:-0.14.0}" || result=$?
 	if [ "$result" -eq 0 ]; then
 		shared_kache_install_binary "$source_rustfs" "$shared_kache_rustfs_bin" "${RUSTFS_VERSION:-1.0.0-beta.8}" || result=$?
 	fi

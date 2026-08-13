@@ -1,9 +1,9 @@
 [tools]
-"github:kunobi-ninja/kache" = "0.8.0"
+"github:kunobi-ninja/kache" = "0.14.0"
 "github:rustfs/rustfs" = "1.0.0-beta.8"
 
 [env]
-KACHE_VERSION = "0.8.0"
+KACHE_VERSION = "0.14.0"
 RUSTFS_VERSION = "1.0.0-beta.8"
 _.source = { path = "scripts/mise-env.sh", tools = true }
 

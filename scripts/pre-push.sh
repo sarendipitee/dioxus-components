@@ -14,7 +14,7 @@ if [ "${KACHE_SHARED_SERVICE:-1}" != '0' ] && command -v mise >/dev/null 2>&1; t
       export RUSTC_WRAPPER=$kache_bin
       cache_wrapper_added=1
     fi
-    export KACHE_VERSION="${KACHE_VERSION:-0.8.0}"
+    export KACHE_VERSION="${KACHE_VERSION:-0.14.0}"
     export RUSTFS_VERSION="${RUSTFS_VERSION:-1.0.0-beta.8}"
     # shellcheck disable=SC1091
     . "$repo_root/scripts/mise-env.sh"

@@ -84,9 +84,9 @@ fi
 
 if [ "$command" = build ]; then
   rm -rf "${public_dir%/public}"
-  # Dioxus CLI inserts itself into rustc probing and is incompatible with
-  # compiler wrappers such as Kache 0.8.0.
-  if MISE_NO_ENV=1 env -u RUSTC_WRAPPER "$dx" build -p preview --web "$@"; then
+  # Dioxus uses RUSTC_WORKSPACE_WRAPPER for its own capture layer. Kache 0.14.0
+  # understands that nested wrapper shape, so retain RUSTC_WRAPPER here.
+  if MISE_NO_ENV=1 "$dx" build -p preview --web "$@"; then
     :
   else
     exit $?
@@ -132,5 +132,5 @@ if [ "$command" = build ]; then
 
   cp "$index" "$public_dir/404.html"
 else
-  exec env -u RUSTC_WRAPPER MISE_NO_ENV=1 "$dx" serve -p preview --web "$@"
+  MISE_NO_ENV=1 exec "$dx" serve -p preview --web "$@"
 fi

@@ -4,7 +4,7 @@ set -euo pipefail
 script_dir="$(cd -- "$(dirname -- "$0")" && pwd -P)"
 repo_root="$(cd "$script_dir/.." && pwd -P)"
 
-export KACHE_VERSION="${KACHE_VERSION:-0.8.0}"
+export KACHE_VERSION="${KACHE_VERSION:-0.14.0}"
 export RUSTFS_VERSION="${RUSTFS_VERSION:-1.0.0-beta.8}"
 
 # shellcheck disable=SC1091

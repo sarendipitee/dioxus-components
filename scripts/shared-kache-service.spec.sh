@@ -979,7 +979,7 @@ test_services_survive_caller_process_group_teardown() (
 
 	cat > "$source_kache" <<'SH'
 #!/usr/bin/env bash
-if [ "${1:-}" = '--version' ]; then printf 'kache 0.8.0\n'; exit 0; fi
+if [ "${1:-}" = '--version' ]; then printf 'kache 0.14.0\n'; exit 0; fi
 if [ "${1:-}" = 'daemon' ] && [ "${2:-}" = 'stop' ]; then exit 0; fi
 if [ "${1:-}" = 'daemon' ] && [ "${2:-}" = 'run' ]; then
 	pwd > "$XDG_STATE_HOME/kache-cwd"
