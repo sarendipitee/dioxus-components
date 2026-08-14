@@ -263,7 +263,7 @@ test_daemon_scan_rejects_command_containing_target_text() (
 
 	. "$script"
 	shared_kache_init_paths
-	bash -c "while :; do sleep 1; done # $shared_kache_kache_bin daemon run" &
+	bash -c "while :; do sleep 0.01; done # $shared_kache_kache_bin daemon run" &
 	local decoy_pid=$!
 	trap 'kill "$decoy_pid" 2>/dev/null || true' EXIT
 
@@ -286,7 +286,7 @@ test_daemon_scan_finds_exact_managed_process() (
 	cat > "$shared_kache_kache_bin" <<'SH'
 #!/usr/bin/env bash
 trap 'exit 0' TERM INT
-while :; do sleep 1; done
+while :; do sleep 0.01; done
 SH
 	chmod +x "$shared_kache_kache_bin"
 	"$shared_kache_kache_bin" daemon run >/dev/null &
@@ -315,7 +315,7 @@ test_daemon_ambiguous_exact_orphans_fail_closed() (
 	cat > "$shared_kache_kache_bin" <<'SH'
 #!/usr/bin/env bash
 trap 'exit 0' TERM INT
-while :; do sleep 1; done
+while :; do sleep 0.01; done
 SH
 	chmod +x "$shared_kache_kache_bin"
 	local daemon_pids=()
@@ -366,7 +366,7 @@ PY
 #!/usr/bin/env bash
 printf 'rustfs=%s:%s:%s:%s\n' "$RUSTFS_ACCESS_KEY" "$RUSTFS_SECRET_KEY" "$RUSTFS_REGION" "${AWS_ACCESS_KEY_ID-unset}" >> "$XDG_DATA_HOME/scoped-credentials"
 trap 'exit 0' TERM INT
-while :; do sleep 1; done
+while :; do sleep 0.01; done
 SH
 	chmod +x "$shared_kache_rustfs_bin"
 	shared_kache_rustfs_pid_ready() { shared_kache_rustfs_pid_running; }
@@ -381,7 +381,7 @@ if [ "${1:-}" = 'daemon' ] && [ "${2:-}" = 'run' ]; then
 		"$AWS_ACCESS_KEY_ID" "$AWS_SECRET_ACCESS_KEY" "$AWS_REGION" \
 		"$KACHE_S3_ACCESS_KEY" "$KACHE_S3_SECRET_KEY" >> "$XDG_DATA_HOME/scoped-credentials"
 	trap 'exit 0' TERM INT
-	while :; do sleep 1; done
+	while :; do sleep 0.01; done
 fi
 SH
 	chmod +x "$shared_kache_kache_bin"
@@ -575,7 +575,7 @@ test_rustfs_pid_file_swap_never_signals_unrelated_process() (
 	cat > "$shared_kache_rustfs_bin" <<'SH'
 #!/usr/bin/env bash
 trap 'exit 0' TERM INT
-while :; do sleep 1; done
+while :; do sleep 0.01; done
 SH
 	chmod +x "$shared_kache_rustfs_bin"
 	"$shared_kache_rustfs_bin" server test-data &
@@ -616,9 +616,10 @@ test_rustfs_pid_rejects_command_that_only_mentions_binary_path() (
 	unset CI
 
 	. "$script"
+	shared_kache_export_environment
 	shared_kache_init_paths
 	mkdir -p "$shared_kache_rustfs_state_dir"
-	bash -c "while :; do sleep 1; done # $shared_kache_rustfs_bin" &
+	bash -c "while :; do sleep 0.01; done # $shared_kache_rustfs_bin" &
 	local unrelated_pid=$!
 	printf '%s\n' "$unrelated_pid" > "$shared_kache_rustfs_pid_file"
 
@@ -710,6 +711,7 @@ test_foreign_listener_does_not_bless_exact_orphan() (
 	export XDG_DATA_HOME="$tmp_dir/foreign-data"
 	export XDG_STATE_HOME="$tmp_dir/foreign-state"
 	export SHARED_KACHE_TESTING=1
+	export SHARED_KACHE_TEST_READINESS_ATTEMPTS=1
 	export SHARED_KACHE_TEST_ENDPOINT='http://127.0.0.1:29988'
 	export SHARED_KACHE_TEST_CONSOLE_ADDRESS='127.0.0.1:29987'
 	unset CI
@@ -721,7 +723,7 @@ test_foreign_listener_does_not_bless_exact_orphan() (
 	cat > "$shared_kache_rustfs_bin" <<'SH'
 #!/usr/bin/env bash
 trap 'exit 0' TERM INT
-while :; do sleep 1; done
+while :; do sleep 0.01; done
 SH
 	chmod +x "$shared_kache_rustfs_bin"
 	python3 -m http.server 29988 --bind 127.0.0.1 >/dev/null 2>&1 &
@@ -767,12 +769,12 @@ test_interrupted_rustfs_launch_adopts_exact_orphan_and_rejects_decoy() (
 	cat > "$shared_kache_rustfs_bin" <<'SH'
 #!/usr/bin/env bash
 trap 'exit 0' TERM INT
-while :; do sleep 1; done
+while :; do sleep 0.01; done
 SH
 	chmod +x "$shared_kache_rustfs_bin"
 	local expected
 	expected="$(shared_kache_rustfs_expected_command)"
-	bash -c "while :; do sleep 1; done # $expected" &
+	bash -c "while :; do sleep 0.01; done # $expected" &
 	local decoy_pid=$!
 	"$shared_kache_rustfs_bin" server \
 		--address "${KACHE_S3_ENDPOINT#*://}" \
@@ -809,7 +811,7 @@ test_rustfs_ambiguous_exact_orphans_fail_closed() (
 	cat > "$shared_kache_rustfs_bin" <<'SH'
 #!/usr/bin/env bash
 trap 'exit 0' TERM INT
-while :; do sleep 1; done
+while :; do sleep 0.01; done
 SH
 	chmod +x "$shared_kache_rustfs_bin"
 	local orphan_pids=()
@@ -854,7 +856,7 @@ test_unready_adopted_rustfs_is_stopped_after_exact_revalidation() (
 	cat > "$shared_kache_rustfs_bin" <<'SH'
 #!/usr/bin/env bash
 trap 'exit 0' TERM INT
-while :; do sleep 1; done
+while :; do sleep 0.01; done
 SH
 	chmod +x "$shared_kache_rustfs_bin"
 	"$shared_kache_rustfs_bin" server \
@@ -893,10 +895,11 @@ test_failed_rustfs_start_stops_captured_process() (
 #!/usr/bin/env bash
 printf '%s\n' "$$" > "$XDG_STATE_HOME/failed-start.pid"
 trap 'exit 0' TERM INT
-while :; do sleep 1; done
+while :; do sleep 0.01; done
 SH
 	chmod +x "$shared_kache_rustfs_bin"
 	shared_kache_rustfs_pid_ready() { return 1; }
+	sleep() { command sleep 0.001; }
 
 	if shared_kache_start_rustfs; then
 		fail 'RustFS start unexpectedly passed failed readiness probe'
@@ -924,13 +927,13 @@ test_rustfs_version_transition_replaces_managed_process() (
 #!/usr/bin/env bash
 if [ "${1:-}" = '--version' ]; then printf 'rustfs 1.0.0-old\n'; exit 0; fi
 trap 'exit 0' TERM INT
-while :; do sleep 1; done
+while :; do sleep 0.01; done
 SH
 	cat > "$new_source" <<'SH'
 #!/usr/bin/env bash
 if [ "${1:-}" = '--version' ]; then printf 'rustfs 1.0.0-new\n'; exit 0; fi
 trap 'exit 0' TERM INT
-while :; do sleep 1; done
+while :; do sleep 0.01; done
 SH
 	chmod +x "$old_source" "$new_source"
 
@@ -984,7 +987,7 @@ if [ "${1:-}" = 'daemon' ] && [ "${2:-}" = 'stop' ]; then exit 0; fi
 if [ "${1:-}" = 'daemon' ] && [ "${2:-}" = 'run' ]; then
 	pwd > "$XDG_STATE_HOME/kache-cwd"
 	trap 'exit 0' TERM INT
-	while :; do sleep 1; done
+	while :; do sleep 0.01; done
 fi
 exit 1
 SH
@@ -994,7 +997,7 @@ if [ "${1:-}" = '--version' ]; then printf 'rustfs 1.0.0-beta.8\n'; exit 0; fi
 if [ "${1:-}" = 'server' ]; then
 	pwd > "$XDG_STATE_HOME/rustfs-cwd"
 	trap 'exit 0' TERM INT
-	while :; do sleep 1; done
+	while :; do sleep 0.01; done
 fi
 exit 1
 SH
@@ -1014,7 +1017,7 @@ printf '%s %s %s\n' \
 	"$$" \
 	"$(cat "$shared_kache_rustfs_pid_file")" \
 	"$(cat "$shared_kache_daemon_pid_file")" > "$READY_FILE"
-while :; do sleep 1; done
+while :; do sleep 0.01; done
 SH
 	chmod +x "$worker_script"
 

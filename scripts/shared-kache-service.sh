@@ -628,7 +628,11 @@ shared_kache_start_rustfs() {
 	fi
 	if shared_kache_rustfs_pid_running; then
 		pid="$(cat "$shared_kache_rustfs_pid_file" 2>/dev/null || true)"
-		for _ in $(seq 1 30); do
+		local readiness_attempts=30
+		if [ "${SHARED_KACHE_TESTING:-0}" = '1' ] && [ -n "${SHARED_KACHE_TEST_READINESS_ATTEMPTS:-}" ]; then
+			readiness_attempts="$SHARED_KACHE_TEST_READINESS_ATTEMPTS"
+		fi
+		for _ in $(seq 1 "$readiness_attempts"); do
 			shared_kache_rustfs_pid_ready "$pid" && return 0
 			sleep 0.1
 		done
@@ -647,7 +651,11 @@ shared_kache_start_rustfs() {
 	if pid="$(shared_kache_find_rustfs_pid)"; then
 		if [ -n "$pid" ]; then
 			shared_kache_write_pid_file "$shared_kache_rustfs_pid_file" "$pid" || return 1
-			for _ in $(seq 1 100); do
+			local adoption_attempts=100
+			if [ "${SHARED_KACHE_TESTING:-0}" = '1' ] && [ -n "${SHARED_KACHE_TEST_READINESS_ATTEMPTS:-}" ]; then
+				adoption_attempts="$SHARED_KACHE_TEST_READINESS_ATTEMPTS"
+			fi
+			for _ in $(seq 1 "$adoption_attempts"); do
 				if shared_kache_rustfs_pid_ready "$pid"; then
 					printf 'Adopted shared rustfs pid %s at %s\n' "$pid" "$KACHE_S3_ENDPOINT" >&2
 					return 0
@@ -682,7 +690,11 @@ shared_kache_start_rustfs() {
 		"$shared_kache_rustfs_data_dir"
 	pid="$(cat "$shared_kache_rustfs_pid_file")"
 
-	for _ in $(seq 1 100); do
+	local startup_attempts=100
+	if [ "${SHARED_KACHE_TESTING:-0}" = '1' ] && [ -n "${SHARED_KACHE_TEST_READINESS_ATTEMPTS:-}" ]; then
+		startup_attempts="$SHARED_KACHE_TEST_READINESS_ATTEMPTS"
+	fi
+	for _ in $(seq 1 "$startup_attempts"); do
 		if shared_kache_rustfs_pid_ready "$pid"; then
 			printf 'Started shared rustfs pid %s at %s\n' "$pid" "$KACHE_S3_ENDPOINT" >&2
 			return 0

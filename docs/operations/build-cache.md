@@ -58,6 +58,11 @@ disables Mise environment reloading only for `dx` subprocess trees. No
 `rustc-wrapper` is set in `.cargo/config.toml`; environment activation remains
 the single integration point.
 
+Playwright uses the repository `target/` directory by default so its Dioxus
+builds can reuse both Cargo fingerprints and Kache artifacts. Set
+`PLAYWRIGHT_TARGET_DIR` when an isolated target directory is required for
+concurrent runs.
+
 ## CI
 
 Local RustFS is intentionally not started in GitHub Actions. Independent

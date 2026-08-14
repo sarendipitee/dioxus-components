@@ -8,9 +8,13 @@ const runHeaded = process.env.PLAYWRIGHT_HEADED === "1";
 const externalBaseUrl = process.env.PLAYWRIGHT_BASE_URL;
 const chromiumExecutablePath = process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE;
 const localBasePort = externalBaseUrl ? null : getLocalBasePort();
+const configuredTargetDir =
+  process.env.PLAYWRIGHT_TARGET_DIR ?? process.env.CARGO_TARGET_DIR;
+// Web servers use fresh ports per run, but their Cargo artifacts should remain
+// shared so Dioxus builds can reuse Cargo's fingerprints and Kache artifacts.
 const playwrightTargetDir = externalBaseUrl
   ? null
-  : path.resolve(process.cwd(), `../target/playwright/${localBasePort}`);
+  : path.resolve(process.cwd(), configuredTargetDir ?? "../target");
 const baseURL = externalBaseUrl ?? `http://127.0.0.1:${localBasePort}`;
 
 /**
