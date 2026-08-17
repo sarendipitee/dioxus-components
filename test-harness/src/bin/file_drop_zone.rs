@@ -1,5 +1,5 @@
 use dioxus::prelude::*;
-use dioxus_primitives::overlay::OverlayProvider;
+use dioxus_primitives::overlay::OverlayManager;
 
 use dioxus_components::DioxusComponentsStyles;
 use dioxus_components_themes::DEFAULT_CSS;
@@ -44,7 +44,7 @@ fn App() -> Element {
         DioxusComponentsStyles {},
         document::Style { {DEFAULT_CSS} }
         document::Link { rel: "stylesheet", href: asset!("/assets/main.css") }
-        OverlayProvider {
+        OverlayManager {
             div { id: "dx-preview-block-root", style: "min-height: 100vh;",
                 BlockView {}
             }

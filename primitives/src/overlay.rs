@@ -150,7 +150,7 @@ pub struct RegisterArgs {
     pub stack_key: Option<String>,
 }
 
-/// Root-scope overlay manager state. Provided once by [`OverlayProvider`] (or
+/// Root-scope overlay manager state. Provided once by [`OverlayManager`] (or
 /// lazily auto-provisioned, mirroring `portal.rs`). Cheap `Copy`.
 #[derive(Clone, Copy, PartialEq)]
 pub struct OverlayCtx {
@@ -289,8 +289,8 @@ impl OverlayCtx {
 }
 
 /// Read the root [`OverlayCtx`], lazily auto-provisioning it at the root scope if
-/// no [`OverlayProvider`] has provided one yet (mirrors `portal.rs`). Note: the
-/// [`OverlayOutlet`] still has to be mounted once via [`OverlayProvider`] for any
+/// no [`OverlayManager`] has provided one yet (mirrors `portal.rs`). Note: the
+/// [`OverlayOutlet`] still has to be mounted once via [`OverlayManager`] for any
 /// content to render.
 pub fn use_overlay() -> OverlayCtx {
     use_hook(consume_overlay)
@@ -428,14 +428,14 @@ fn inside_ids_for(entries: &[OverlayEntry], target: OverlayId) -> Vec<String> {
     ids
 }
 
-/// The root overlay provider. Provides [`OverlayCtx`] and mounts the single
-/// [`OverlayOutlet`]. Wrap your app once: `OverlayProvider { App {} }`.
+/// The root overlay manager. Provides [`OverlayCtx`] and mounts the single
+/// [`OverlayOutlet`]. Wrap your app once: `OverlayManager { App {} }`.
 ///
 /// Auto-provisioning via [`use_overlay`] removes the *context* requirement, but
 /// the outlet must still be mounted somewhere in the tree — that is what this
 /// component guarantees.
 #[component]
-pub fn OverlayProvider(children: Element) -> Element {
+pub fn OverlayManager(children: Element) -> Element {
     // Provide (or reuse) the root ctx at this scope so descendants and the
     // outlet share it.
     let ctx = use_hook(|| match try_consume_context::<OverlayCtx>() {
@@ -949,7 +949,7 @@ mod tests {
     #[component]
     fn SmokeApp() -> Element {
         rsx! {
-            OverlayProvider {
+            OverlayManager {
                 // This ctx sits above the registering overlay in the definition
                 // tree. Because context does NOT inherit through the portal, the
                 // portaled `SmokeChild` must NOT see this value.

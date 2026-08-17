@@ -656,7 +656,7 @@ mod tests {
     //! `PopoverCtx` up the *portaled* render chain, and the panel carries the
     //! manager-assigned `--overlay-z`.
     use super::*;
-    use crate::overlay::OverlayProvider;
+    use crate::overlay::OverlayManager;
 
     /// A test-only consumer that resolves `PopoverCtx` from inside the portaled
     /// panel. If the re-provide were on the wrong scope, `use_context` would panic
@@ -673,7 +673,7 @@ mod tests {
     #[component]
     fn OpenPopoverApp() -> Element {
         rsx! {
-            OverlayProvider {
+            OverlayManager {
                 Popover {
                     open: Some(true),
                     PopoverTrigger { "trigger" }

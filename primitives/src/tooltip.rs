@@ -485,7 +485,7 @@ mod tests {
     //! `TooltipCtx` up the *portaled* render chain, and the panel carries the
     //! manager-assigned `--overlay-z`.
     use super::*;
-    use crate::overlay::OverlayProvider;
+    use crate::overlay::OverlayManager;
 
     /// A test-only consumer that resolves `TooltipCtx` from inside the portaled
     /// panel. If the re-provide were on the wrong scope, `use_context` would panic.
@@ -501,7 +501,7 @@ mod tests {
     #[component]
     fn OpenTooltipApp() -> Element {
         rsx! {
-            OverlayProvider {
+            OverlayManager {
                 Tooltip {
                     open: Some(true),
                     TooltipTrigger { "trigger" }

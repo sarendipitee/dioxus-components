@@ -225,12 +225,12 @@ mod tests {
     //! resolve their context inside the portal. Renders an open alert dialog and
     //! asserts the in-portal, context-dependent buttons render without panic.
     use super::*;
-    use crate::overlay::OverlayProvider;
+    use crate::overlay::OverlayManager;
 
     #[component]
     fn OpenAlertApp() -> Element {
         rsx! {
-            OverlayProvider {
+            OverlayManager {
                 AlertDialog {
                     open: Some(true),
                     AlertDialogContent {

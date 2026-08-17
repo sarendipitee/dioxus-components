@@ -1588,7 +1588,7 @@ mod tests {
     /// `popover::tests::open_popover_portals_and_resolves_popover_ctx_inside_portal`.
     mod overlay {
         use super::super::*;
-        use crate::overlay::OverlayProvider;
+        use crate::overlay::OverlayManager;
 
         /// Resolves `MenuContext` from inside the portaled panel. If the re-provide
         /// were on the wrong scope, `use_context` would panic during render.
@@ -1606,7 +1606,7 @@ mod tests {
             let open = use_memo(|| true);
             let set_open = use_callback(|_| {});
             rsx! {
-                OverlayProvider {
+                OverlayManager {
                     Menu {
                         open,
                         set_open,
@@ -1672,7 +1672,7 @@ mod tests {
             let open = use_memo(|| true);
             let set_open = use_callback(|_| {});
             rsx! {
-                OverlayProvider {
+                OverlayManager {
                     SubmenuParentProbe {}
                     Menu {
                         open,

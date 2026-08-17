@@ -332,7 +332,7 @@ mod tests {
     use super::super::super::context::ComboboxPortalContext;
     use super::super::{Combobox, ComboboxInput, ComboboxOption, ComboboxOptions};
     use crate::listbox::ListboxContext;
-    use crate::overlay::OverlayProvider;
+    use crate::overlay::OverlayManager;
     use dioxus::prelude::*;
 
     /// Resolves portal-local `ComboboxPortalContext` from inside the portaled listbox. If the
@@ -354,7 +354,7 @@ mod tests {
     #[component]
     fn OpenHoverComboboxApp() -> Element {
         rsx! {
-            OverlayProvider {
+            OverlayManager {
                 Combobox::<String> {
                     default_open: ReadSignal::new(Signal::new(true)),
                     ComboboxInput {}
@@ -373,7 +373,7 @@ mod tests {
     #[component]
     fn OpenComboboxApp() -> Element {
         rsx! {
-            OverlayProvider {
+            OverlayManager {
                 Combobox::<String> {
                     default_open: ReadSignal::new(Signal::new(true)),
                     ComboboxInput {}

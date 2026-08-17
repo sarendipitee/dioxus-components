@@ -68,7 +68,7 @@ def generate_harness_binary(comp_name):
 
     code_lines = [
         "use dioxus::prelude::*;",
-        "use dioxus_primitives::overlay::OverlayProvider;",
+        "use dioxus_primitives::overlay::OverlayManager;",
         "",
     ]
     code_lines.extend([
@@ -123,7 +123,7 @@ def generate_harness_binary(comp_name):
         *component_style_lines,
         '        document::Style { {DEFAULT_CSS} }',
         '        document::Link { rel: "stylesheet", href: asset!("/assets/main.css") }',
-        '        OverlayProvider {',
+        '        OverlayManager {',
         '            div { id: "dx-preview-block-root", style: "min-height: 100vh;",',
         '                BlockView {}',
         '            }',

@@ -137,7 +137,7 @@ pub fn Dialog(props: DialogProps) -> Element {
     });
 
     // Scroll-lock, the Escape listener, outside-dismiss, and the focus trap are
-    // now owned centrally by the overlay manager (`OverlayProvider`). The Root no
+    // now owned centrally by the overlay manager (`OverlayManager`). The Root no
     // longer runs per-component versions of those.
 
     rsx! {
@@ -462,7 +462,7 @@ fn DialogPortaled(props: DialogPortaledProps) -> Element {
     // not under `DialogPortaled`, so reading `reg` there is a cross-scope
     // `CopyValue` access (warns, and can fault once this scope unmounts first).
     // These reads still subscribe to the manager's `entries` (owned by the common
-    // `OverlayProvider` ancestor), so `DialogPortaled` re-renders and forwards
+    // `OverlayManager` ancestor), so `DialogPortaled` re-renders and forwards
     // fresh values whenever the stack changes.
     let overlay_z = reg.z();
     let depth = reg.depth();
@@ -801,12 +801,12 @@ mod tests {
     //! wrong scope, `use_context::<DialogCtx>()` inside those components would
     //! panic during render, failing this test.
     use super::*;
-    use crate::overlay::OverlayProvider;
+    use crate::overlay::OverlayManager;
 
     #[component]
     fn OpenDialogApp() -> Element {
         rsx! {
-            OverlayProvider {
+            OverlayManager {
                 Dialog {
                     open: Some(true),
                     DialogContent {

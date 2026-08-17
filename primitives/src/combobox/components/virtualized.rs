@@ -584,7 +584,7 @@ async fn sync_scroll(container_id: String, scroll_top: u32) {
 #[cfg(test)]
 mod tests {
     use super::super::{Combobox, ComboboxInput, ComboboxOption, VirtualizedComboboxOptions};
-    use crate::overlay::OverlayProvider;
+    use crate::overlay::OverlayManager;
     use dioxus::prelude::*;
 
     #[component]
@@ -601,7 +601,7 @@ mod tests {
         });
 
         rsx! {
-            OverlayProvider {
+            OverlayManager {
                 Combobox::<String> {
                     default_open: ReadSignal::new(Signal::new(true)),
                     ComboboxInput {}

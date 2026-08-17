@@ -153,9 +153,9 @@ pub fn App() -> Element {
         // Mount the unified overlay manager once at the app root. Every migrated
         // overlay (Dialog, Sheet, AlertDialog, Popover, Tooltip, HoverCard, Menu,
         // DropdownMenu, Menubar, ContextMenu, Select, Combobox) portals its
-        // content through the single `OverlayOutlet` this provider mounts; without
+        // content through the single `OverlayOutlet` this manager mounts; without
         // it those overlays render nothing.
-        dioxus_primitives::overlay::OverlayProvider {
+        dioxus_primitives::overlay::OverlayManager {
             Router::<Route> {}
         }
     }
@@ -769,7 +769,7 @@ fn Docs(dark_mode: Option<bool>) -> Element {
                     h2 { "Set up the overlay manager" }
                     p {
                         "Every overlay component — Dialog, Sheet, AlertDialog, Popover, Tooltip, HoverCard, Menu, DropdownMenu, Menubar, ContextMenu, Select, and Combobox — renders its content through a single portal mounted at the root of your app. Wrap your app once in "
-                        code { "OverlayProvider" }
+                        code { "OverlayManager" }
                         ". Without it, those components register nothing to render and stay invisible."
                     }
                     p {
@@ -782,14 +782,14 @@ fn Docs(dark_mode: Option<bool>) -> Element {
                     pre {
                         code {
                             r#"use dioxus::prelude::*;
-use dioxus_primitives::overlay::OverlayProvider;
+use dioxus_primitives::overlay::OverlayManager;
 
 fn App() -> Element {{
     rsx! {{
         DioxusComponentsStyles {{}}
         // Wrap once at the root. Every Dialog/Sheet/Popover/Select
         // anywhere below here portals out to a single root outlet.
-        OverlayProvider {{
+        OverlayManager {{
             // ... rest of your app
         }}
     }}
@@ -797,7 +797,7 @@ fn App() -> Element {{
                         }
                     }
                     p { class: "dx-docs-muted",
-                        "OverlayProvider lives in the primitives library, so it is available whether you copy components with the CLI or depend on the crate. If you also use toasts, keep ToastProvider as well — it can sit inside OverlayProvider."
+                        "OverlayManager lives in the primitives library, so it is available whether you copy components with the CLI or depend on the crate. If you also use toasts, keep ToastProvider as well — it can sit inside OverlayManager."
                     }
                 }
                 section { class: "dx-docs-section",

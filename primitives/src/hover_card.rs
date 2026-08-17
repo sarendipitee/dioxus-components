@@ -508,7 +508,7 @@ mod tests {
     //! resolves `HoverCardCtx` up the *portaled* render chain, and the panel
     //! carries the manager-assigned `--overlay-z`.
     use super::*;
-    use crate::overlay::OverlayProvider;
+    use crate::overlay::OverlayManager;
 
     /// A test-only consumer that resolves `HoverCardCtx` from inside the portaled
     /// panel. If the re-provide were on the wrong scope, `use_context` would panic.
@@ -524,7 +524,7 @@ mod tests {
     #[component]
     fn OpenHoverCardApp() -> Element {
         rsx! {
-            OverlayProvider {
+            OverlayManager {
                 HoverCard {
                     open: Some(true),
                     HoverCardTrigger { "trigger" }

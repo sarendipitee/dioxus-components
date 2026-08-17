@@ -542,7 +542,7 @@ mod tests {
     use super::super::super::context::SelectPortalContext;
     use super::super::{Select, SelectList, SelectTrigger};
     use crate::listbox::ListboxContext;
-    use crate::overlay::OverlayProvider;
+    use crate::overlay::OverlayManager;
     use dioxus::prelude::*;
 
     /// Resolves `SelectPortalContext` from inside the portaled listbox. If the
@@ -564,7 +564,7 @@ mod tests {
     #[component]
     fn OpenSelectApp() -> Element {
         rsx! {
-            OverlayProvider {
+            OverlayManager {
                 Select::<String> {
                     default_open: ReadSignal::new(Signal::new(true)),
                     SelectTrigger { "trigger" }
