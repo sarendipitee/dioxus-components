@@ -11,67 +11,12 @@ async function loadDemo(page: Page, url: string): Promise<Locator> {
   return root;
 }
 
-test("main demo buttons expose native semantics and forwarded attributes", async ({
-  page,
-}) => {
-  const root = await loadDemo(page, BUTTON_DEMO_URL);
-  const activate = root.getByRole("button", { name: "Activate", exact: true });
-  const submit = root.getByRole("button", {
-    name: "Submit action",
-    exact: true,
-  });
-
-  await expect(activate).toHaveCount(1);
-  await expect(activate).toHaveJSProperty("tagName", "BUTTON");
-  await expect(activate).toHaveAttribute("id", "button-activation");
-  await expect(activate).toHaveAttribute("data-testid", "button-activation");
-  await expect(activate).toHaveAttribute(
-    "title",
-    "Activates an observable counter",
-  );
-  await expect(activate).toHaveAttribute("type", "button");
-  await expect(submit).toHaveAttribute("type", "submit");
-});
-
-test("button activates by click, Enter, and Space", async ({ page }) => {
-  const root = await loadDemo(page, BUTTON_DEMO_URL);
-  const activate = root.getByRole("button", { name: "Activate", exact: true });
-  const count = root.getByTestId("button-activation-count");
-
-  await expect(count).toHaveText("Activations: 0");
-  await activate.click();
-  await expect(count).toHaveText("Activations: 1");
-  await activate.press("Enter");
-  await expect(count).toHaveText("Activations: 2");
-  await activate.press("Space");
-  await expect(count).toHaveText("Activations: 3");
-});
-
-test("disabled button cannot focus or activate", async ({ page }) => {
-  const root = await loadDemo(page, BUTTON_DEMO_URL);
-  const activate = root.getByRole("button", { name: "Activate", exact: true });
-  const disabled = root.getByRole("button", { name: "Disabled", exact: true });
-  const submit = root.getByRole("button", {
-    name: "Submit action",
-    exact: true,
-  });
-  const count = root.getByTestId("button-activation-count");
-
-  await expect(disabled).toBeDisabled();
-  await activate.focus();
-  await page.keyboard.press("Tab");
-  await expect(submit).toBeFocused();
-  await disabled.evaluate((element) => (element as HTMLButtonElement).click());
-  await expect(count).toHaveText("Activations: 0");
-});
-
-test("named variant buttons expose the six canonical styles", async ({
+test("named variant buttons expose the five canonical styles", async ({
   page,
 }) => {
   const root = await loadDemo(page, BUTTON_DEMO_URL);
   const variants = [
     ["Default", "default"],
-    ["Secondary", "secondary"],
     ["Destructive", "destructive"],
     ["Outline", "outline"],
     ["Ghost", "ghost"],

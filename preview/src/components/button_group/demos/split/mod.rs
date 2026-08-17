@@ -38,12 +38,12 @@ pub fn Demo() -> Element {
         ButtonGroup {
             Button {
                 size: ButtonSize::Icon,
-                variant: ButtonVariant::Secondary,
+                variant: ButtonVariant::Default,
                 aria_label: "Copy",
                 "⌘"
             }
             ButtonGroupSeparator {}
-            Button { variant: ButtonVariant::Secondary, "Paste" }
+            Button { variant: ButtonVariant::Default, "Paste" }
         }
         p { "Selected option: {selected_option}" }
     }

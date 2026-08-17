@@ -33,13 +33,13 @@ Draw a divider between adjacent buttons with `ButtonGroupSeparator`:
 
 ```rust
 ButtonGroup {
-    Button { variant: ButtonVariant::Secondary, "Save" }
+    Button { variant: ButtonVariant::Default, "Save" }
     ButtonGroupSeparator {}
-    Button { variant: ButtonVariant::Secondary, "Save as…" }
+    Button { variant: ButtonVariant::Default, "Save as…" }
 }
 ```
 
-Separators work in both orientations and are handy when you want a crisp internal division between secondary or destructive buttons that lack an outline border.
+Separators work in both orientations and are handy when you want a crisp internal division between default or destructive buttons that lack an outline border.
 
 ## Custom Children
 

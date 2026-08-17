@@ -1,1 +1,1 @@
-Use separators to divide secondary actions while keeping one compact toolbar.
+Use separators to divide default actions while keeping one compact toolbar.

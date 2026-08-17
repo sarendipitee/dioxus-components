@@ -600,7 +600,7 @@ fn ThemeStudio() -> Element {
                   "Reset all"
                 }
                 Button {
-                  variant: ButtonVariant::Secondary,
+                  variant: ButtonVariant::Default,
                   size: ButtonSize::Sm,
                   onclick: move |_| {
                       let eval = document::eval(

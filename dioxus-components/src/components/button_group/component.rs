@@ -74,7 +74,7 @@ pub fn ButtonGroup(
 /// Vertical divider drawn between adjacent buttons in a [`ButtonGroup`].
 ///
 /// Primarily intended for buttons without a visible outline border (for
-/// example `secondary` or `destructive` variants) where the group needs a
+/// example `default`, `ghost`, or `destructive` variants) where the group needs a
 /// crisp internal division. Outline buttons already provide their own border,
 /// so a separator is optional for them.
 ///
@@ -89,9 +89,9 @@ pub fn ButtonGroup(
 /// fn SplitAction() -> Element {
 ///     rsx! {
 ///         ButtonGroup {
-///             Button { variant: ButtonVariant::Secondary, "Save" }
+///             Button { variant: ButtonVariant::Default, "Save" }
 ///             ButtonGroupSeparator {}
-///             Button { variant: ButtonVariant::Secondary, "Save as…" }
+///             Button { variant: ButtonVariant::Default, "Save as…" }
 ///         }
 ///     }
 /// }

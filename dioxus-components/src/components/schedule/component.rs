@@ -120,7 +120,7 @@ pub fn ScheduleViewSwitcher(props: ScheduleViewSwitcherProps) -> Element {
         let active = (props.state.view)() == target;
         rsx! {
             Button {
-                variant: if active { ButtonVariant::Secondary } else { ButtonVariant::Ghost },
+                variant: if active { ButtonVariant::Default } else { ButtonVariant::Ghost },
                 "aria-pressed": active,
                 "data-schedule-view-button": target.as_str(),
                 "data-active": active,

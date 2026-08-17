@@ -7,11 +7,11 @@ pub fn Demo() -> Element {
     rsx! {
         ButtonGroup {
             "data-testid": "separator-group",
-            Button { variant: ButtonVariant::Secondary, "Copy" }
-            Button { variant: ButtonVariant::Secondary, "Paste" }
+            Button { variant: ButtonVariant::Default, "Copy" }
+            Button { variant: ButtonVariant::Default, "Paste" }
             ButtonGroupSeparator { "data-testid": "group-separator" }
-            Button { variant: ButtonVariant::Secondary, "Archive" }
-            Button { variant: ButtonVariant::Secondary, "Delete" }
+            Button { variant: ButtonVariant::Default, "Archive" }
+            Button { variant: ButtonVariant::Default, "Delete" }
         }
     }
 }

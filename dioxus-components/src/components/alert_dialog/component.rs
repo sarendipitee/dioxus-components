@@ -139,7 +139,7 @@ pub fn AlertDialog(props: AlertDialogProps) -> Element {
                     div { class: DialogStyles::dx_dialog_footer,
                         if let Some(c) = cancel_el {
                             AlertDialogButton {
-                                variant: ButtonVariant::Secondary,
+                                variant: ButtonVariant::Outline,
                                 on_click: props.on_cancel,
                                 content: c,
                             }

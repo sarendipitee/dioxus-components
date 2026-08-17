@@ -112,13 +112,18 @@
   pointer-events: none;
 }
 
-.dx_button:not(:disabled):hover {
+.dx_button:not(:disabled):not([data-style="outline"]):hover {
   border-color: var(--button-hover-border);
   background: var(--button-hover-bg);
   color: var(--button-hover-fg);
 }
 
-.dx_button:not(:disabled):active {
+.dx_button:not(:disabled)[data-style="outline"]):hover {
+  border-color: var(--button-hover-border);
+  color: var(--button-hover-fg);
+}
+
+.dx_button:not(:disabled):not([data-style="outline"]):active {
   border-color: var(--button-active-border);
   background: var(--button-active-bg);
   color: var(--button-active-fg);
@@ -149,17 +154,6 @@
   --button-active-border: var(--fg);
 }
 
-.dx_button[data-style="secondary"] {
-  --button-bg: var(--surface-muted);
-  --button-fg: var(--surface-fg);
-  --button-border: var(--surface-muted-border);
-  --button-hover-bg: var(--surface-hover);
-  --button-hover-fg: var(--surface-hover-fg);
-  --button-hover-border: var(--surface-hover-border);
-  --button-active-bg: var(--surface-active);
-  --button-active-fg: var(--surface-active-fg);
-  --button-active-border: var(--surface-active-border);
-}
 
 .dx_button[data-style="destructive"] {
   --button-bg: var(--danger);

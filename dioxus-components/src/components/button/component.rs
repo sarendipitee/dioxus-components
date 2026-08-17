@@ -11,9 +11,6 @@ struct Styles;
 pub enum ButtonVariant {
     #[default]
     Default,
-    #[deprecated(note = "Use ButtonVariant::Default instead.")]
-    Primary,
-    Secondary,
     Destructive,
     Outline,
     Ghost,
@@ -21,11 +18,9 @@ pub enum ButtonVariant {
 }
 
 impl ButtonVariant {
-    #[allow(deprecated)]
     pub fn class(&self) -> &'static str {
         match self {
-            ButtonVariant::Default | ButtonVariant::Primary => "default",
-            ButtonVariant::Secondary => "secondary",
+            ButtonVariant::Default => "default",
             ButtonVariant::Destructive => "destructive",
             ButtonVariant::Outline => "outline",
             ButtonVariant::Ghost => "ghost",
