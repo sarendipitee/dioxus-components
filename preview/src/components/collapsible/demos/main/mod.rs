@@ -14,7 +14,6 @@ pub fn Demo() -> Element {
             }
             CollapsibleList {
                 style: "max-width: none;",
-                div { "dioxuslabs/dioxus" }
                 CollapsibleContent {
                     id: "repository-content",
                     "data-testid": "collapsible-content",
