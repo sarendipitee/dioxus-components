@@ -1014,6 +1014,7 @@ trap 'exit 0' TERM INT
 shared_kache_rustfs_pid_ready() {
 	shared_kache_rustfs_pid_running
 }
+shared_kache_ensure "$SOURCE_KACHE" "$SOURCE_RUSTFS" "$BUCKET_SCRIPT"
 ready_tmp="${READY_FILE}.tmp.$$"
 printf '%s %s %s\n' \
 	"$$" \
