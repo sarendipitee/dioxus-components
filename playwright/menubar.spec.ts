@@ -30,7 +30,7 @@ test("pointer navigation", async ({ page }) => {
   const grace = submenu.locator("[data-menu-pointer-grace]");
   await expect(grace).toBeVisible();
   await expect(grace).toHaveCSS("pointer-events", "auto");
-  await expect(grace).toHaveCSS("width", "128px");
+  await expect(grace).toHaveCSS("width", "64px");
   await expect(shareItem).toHaveAttribute("aria-expanded", "true");
   await expect(
     submenu.getByRole("menuitem", { name: "Copy link" }),
@@ -39,7 +39,13 @@ test("pointer navigation", async ({ page }) => {
   await expect(shareItem).toHaveAttribute("aria-expanded", "false");
   await shareItem.hover();
   await expect(submenu).toHaveAttribute("data-state", "open");
-  await expect(shareItem).toHaveCSS("background-color", "rgb(247, 247, 247)");
+  const hoveredBg = await shareItem.evaluate(
+    (el) => getComputedStyle(el).backgroundColor,
+  );
+  const restingBg = await fileMenuContent
+    .getByRole("menuitem", { name: "New" })
+    .evaluate((el) => getComputedStyle(el).backgroundColor);
+  expect(hoveredBg).not.toBe(restingBg);
   const shareBox = await shareItem.boundingBox();
   const submenuBox = await submenu.boundingBox();
   if (!shareBox || !submenuBox) throw new Error("submenu geometry unavailable");

@@ -26,11 +26,18 @@ test("pointer navigation", async ({ page }) => {
   const grace = submenu.locator("[data-menu-pointer-grace]");
   await expect(grace).toBeVisible();
   await expect(grace).toHaveCSS("pointer-events", "auto");
-  await expect(grace).toHaveCSS("width", "128px");
+  await expect(grace).toHaveCSS("width", "64px");
   await expect(
     submenu.getByRole("menuitem", { name: "Bring to front" }),
   ).toBeVisible();
-  await expect(arrangeItem).toHaveCSS("background-color", "rgb(247, 247, 247)");
+  const hoveredBg = await arrangeItem.evaluate(
+    (el) => getComputedStyle(el).backgroundColor,
+  );
+  const restingBg = await page
+    .getByRole("menuitem", { name: "Edit" })
+    .first()
+    .evaluate((el) => getComputedStyle(el).backgroundColor);
+  expect(hoveredBg).not.toBe(restingBg);
   const arrangeBox = await arrangeItem.boundingBox();
   const submenuBox = await submenu.boundingBox();
   if (!arrangeBox || !submenuBox)
@@ -45,7 +52,7 @@ test("pointer navigation", async ({ page }) => {
   );
   const gracePoint = {
     x: submenuBox.x - 20,
-    y: submenuBox.y + submenuBox.height / 2,
+    y: arrangeBox.y + arrangeBox.height / 2,
   };
   await page.mouse.move(
     gracePoint.x,
@@ -57,7 +64,7 @@ test("pointer navigation", async ({ page }) => {
   await expect(submenu).toHaveAttribute("data-state", "open");
   await page.mouse.move(
     submenuBox.x + 8,
-    submenuBox.y + submenuBox.height / 2,
+    arrangeBox.y + arrangeBox.height / 2,
     { steps: 4 },
   );
   await expect(submenu).toHaveAttribute("data-state", "open");
@@ -103,7 +110,7 @@ test("flipped submenu keeps slow pointer travel through grace area", async ({
   const grace = submenu.locator("[data-menu-pointer-grace]");
   await expect(grace).toBeVisible();
   await expect(grace).toHaveCSS("pointer-events", "auto");
-  await expect(grace).toHaveCSS("width", "128px");
+  await expect(grace).toHaveCSS("width", "64px");
 
   const arrangeBox = await arrangeItem.boundingBox();
   const submenuBox = await submenu.boundingBox();

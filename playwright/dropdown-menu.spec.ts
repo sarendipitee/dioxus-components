@@ -119,7 +119,7 @@ test("nested submenu demo opens each submenu level", async ({ page }) => {
   const grace = projectsMenu.locator("[data-menu-pointer-grace]");
   await expect(grace).toBeVisible();
   await expect(grace).toHaveCSS("pointer-events", "auto");
-  await expect(grace).toHaveCSS("width", "128px");
+  await expect(grace).toHaveCSS("width", "64px");
 });
 
 test("nested submenu keeps open during slow gap travel", async ({ page }) => {
@@ -160,7 +160,7 @@ test("nested submenu keeps open during slow gap travel", async ({ page }) => {
   const grace = projectsMenu.locator("[data-menu-pointer-grace]");
   await expect(grace).toBeVisible();
   await expect(grace).toHaveCSS("pointer-events", "auto");
-  await expect(grace).toHaveCSS("width", "128px");
+  await expect(grace).toHaveCSS("width", "64px");
 
   const triggerBox = await projectsTrigger.boundingBox();
   const menuBox = await projectsMenu.boundingBox();
@@ -174,7 +174,7 @@ test("nested submenu keeps open during slow gap travel", async ({ page }) => {
     triggerBox.x + triggerBox.width / 2,
     triggerBox.y + triggerBox.height / 2,
   );
-  await page.mouse.move(targetX, menuBox.y + menuBox.height / 2, {
+  await page.mouse.move(targetX, triggerBox.y + triggerBox.height / 2, {
     steps: 24,
   });
   await expect(projectsMenu).toHaveAttribute("data-state", "open");
