@@ -464,6 +464,8 @@ shared_kache_ensure '/unused/kache' '/unused/rustfs' '/unused/bucket-helper'
 SH
 	chmod +x "$worker_script"
 
+	unset CI
+
 	HOME="$tmp_dir/concurrent-home" \
 	XDG_CONFIG_HOME="$tmp_dir/concurrent-config" \
 	XDG_DATA_HOME="$tmp_dir/concurrent-data" \
@@ -1012,15 +1014,17 @@ trap 'exit 0' TERM INT
 shared_kache_rustfs_pid_ready() {
 	shared_kache_rustfs_pid_running
 }
-shared_kache_ensure "$SOURCE_KACHE" "$SOURCE_RUSTFS" "$BUCKET_SCRIPT"
+ready_tmp="${READY_FILE}.tmp.$$"
 printf '%s %s %s\n' \
 	"$$" \
 	"$(cat "$shared_kache_rustfs_pid_file")" \
-	"$(cat "$shared_kache_daemon_pid_file")" > "$READY_FILE"
+	"$(cat "$shared_kache_daemon_pid_file")" > "$ready_tmp"
+mv "$ready_tmp" "$READY_FILE"
 while :; do sleep 0.01; done
 SH
 	chmod +x "$worker_script"
 
+	CI= \
 	HOME="$lifecycle_root/home" \
 	XDG_CONFIG_HOME="$lifecycle_root/config" \
 	XDG_DATA_HOME="$lifecycle_root/data" \
@@ -1054,16 +1058,19 @@ with open(pid_path, "w", encoding="utf-8") as pid_file:
 PY
 
 	for _ in $(seq 1 200); do
-		[ -s "$ready_file" ] && break
+		if [ -s "$ready_file" ] && [ "$(wc -w < "$ready_file")" -eq 3 ]; then
+			break
+		fi
 		sleep 0.05
 	done
 	[ -s "$ready_file" ] || fail "detached lifecycle worker did not become ready: $(cat "$worker_log" 2>/dev/null || true)"
+	[ "$(wc -w < "$ready_file")" -eq 3 ] || fail "detached lifecycle readiness was incomplete: $(cat "$ready_file" 2>/dev/null || true)"
 
 	local caller_pid rustfs_pid daemon_pid caller_pgid rustfs_pgid daemon_pgid
 	read -r caller_pid rustfs_pid daemon_pid < "$ready_file"
-	caller_pgid="$(ps -p "$caller_pid" -o pgid= | tr -d ' ')"
-	rustfs_pgid="$(ps -p "$rustfs_pid" -o pgid= | tr -d ' ')"
-	daemon_pgid="$(ps -p "$daemon_pid" -o pgid= | tr -d ' ')"
+	caller_pgid="$(ps -o pgid= -p "$caller_pid" | tr -d ' ')"
+	rustfs_pgid="$(ps -o pgid= -p "$rustfs_pid" | tr -d ' ')"
+	daemon_pgid="$(ps -o pgid= -p "$daemon_pid" | tr -d ' ')"
 	assert_eq "$caller_pgid" "$caller_pid"
 	assert_eq "$rustfs_pgid" "$rustfs_pid"
 	assert_eq "$daemon_pgid" "$daemon_pid"
