@@ -30,11 +30,11 @@
      subtle callouts, and low-emphasis rows. */
   --surface-muted: var(--is-light, #f5f5f5) var(--is-dark, #232323);
   --surface-muted-fg: var(--is-light, #707070) var(--is-dark, #a1a1a1);
-  --surface-muted-border: var(--is-light, #e5e5e5) var(--is-dark, #3e3e3e);
+  --surface-muted-border: var(--is-light, #e8e8e8) var(--is-dark, #3e3e3e);
 
   /* Hover surface recipe. Use for neutral hover states on ghost controls,
      menu items, list rows, tabs, and selectable items. */
-  --surface-hover: var(--is-light, #f7f7f7) var(--is-dark, #262626);
+  --surface-hover: var(--is-light, #f5f5f5) var(--is-dark, #262626);
   --surface-hover-fg: var(--is-light, #111) var(--is-dark, #d4d4d4);
   --surface-hover-border: var(--is-light, #b0b0b0) var(--is-dark, #5d5d5d);
 
@@ -51,9 +51,9 @@
   --surface-selected-border: var(--is-light, #c0c0c0) var(--is-dark, #454545);
 
   /* Disabled surface recipe. Use for disabled controls and disabled rows. */
-  --surface-disabled: var(--is-light, #f5f5f5) var(--is-dark, #232323);
-  --surface-disabled-fg: var(--is-light, #b0b0b0) var(--is-dark, #5d5d5d);
-  --surface-disabled-border: var(--is-light, #e5e5e5) var(--is-dark, #3e3e3e);
+	--surface-disabled: var(--is-light, #f5f5f5) var(--is-dark, #1d1d1d);
+	--surface-disabled-fg: var(--is-light, #b0b0b0) var(--is-dark, #363636);
+	--surface-disabled-border: var(--is-light, #e5e5e5) var(--is-dark, #282828);
 
   /* Input recipe. Use for text fields, textareas, selects, combobox triggers,
      date/time inputs, and other field shells. */

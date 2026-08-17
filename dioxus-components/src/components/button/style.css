@@ -112,15 +112,16 @@
   pointer-events: none;
 }
 
-.dx_button:not(:disabled):not([data-style="outline"]):hover {
+.dx_button:not(:disabled):hover {
   border-color: var(--button-hover-border);
   background: var(--button-hover-bg);
   color: var(--button-hover-fg);
 }
 
-.dx_button:not(:disabled)[data-style="outline"]):hover {
-  border-color: var(--button-hover-border);
-  color: var(--button-hover-fg);
+@supports (color:color-mix(in lab, red, red)) {
+		.dx_button:not(:disabled):not([data-style="ghost"]):hover {
+				background-color: color-mix(in oklab, var(--button-hover-bg) 50%, var(--button-bg))
+		}
 }
 
 .dx_button:not(:disabled):not([data-style="outline"]):active {
@@ -170,13 +171,13 @@
 }
 
 .dx_button[data-style="outline"] {
-  --button-bg: var(--surface);
+  --button-bg: 0% 0 0 / 0;
   --button-fg: var(--surface-fg);
   --button-border: var(--input-border);
   --button-hover-bg: var(--surface-hover);
   --button-hover-fg: var(--surface-hover-fg);
   --button-hover-border: var(--input-hover-border);
-  --button-active-bg: var(--surface-active);
+  --button-active-bg: 0% 0 0 / 0;
   --button-active-fg: var(--surface-active-fg);
   --button-active-border: var(--input-border);
 
@@ -184,7 +185,7 @@
 }
 
 .dx_button[data-style="ghost"] {
-  --button-bg: var(--surface);
+  --button-bg: 0% 0 0 / 0;
   --button-fg: var(--surface-fg);
   --button-border: 0% 0 0 / 0;
   --button-hover-bg: var(--surface-hover);
@@ -193,22 +194,19 @@
   --button-active-bg: var(--surface-active);
   --button-active-fg: var(--surface-active-fg);
   --button-active-border: 0% 0 0 / 0;
-
-  background: transparent;
 }
 
 .dx_button[data-style="link"] {
-  --button-bg: var(--surface);
+  --button-bg: 0% 0 0 / 0;
   --button-fg: var(--fg);
   --button-border: 0% 0 0 / 0;
-  --button-hover-bg: var(--surface);
-  --button-hover-fg: var(--fg-muted);
+  --button-hover-bg: 0% 0 0 / 0;
+  --button-hover-fg: var(--fg);
   --button-hover-border: 0% 0 0 / 0;
-  --button-active-bg: var(--surface);
+  --button-active-bg: 0% 0 0 / 0);
   --button-active-fg: var(--fg);
   --button-active-border: 0% 0 0 / 0;
 
-  background: transparent;
   text-decoration: none;
   text-underline-offset: 0.25rem;
 }
