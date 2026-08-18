@@ -6,6 +6,7 @@ cd "$repo_root"
 
 PATH=/usr/bin:/bin:$PATH SHARED_KACHE_TEST_ENDPOINT=http://127.0.0.1:29989 scripts/shared-kache-service.spec.sh
 scripts/mise-env.spec.sh
+node playwright/kache-build-env.spec.mjs
 
 cache_wrapper_added=0
 if [ "${KACHE_SHARED_SERVICE:-1}" != '0' ] && command -v mise >/dev/null 2>&1; then

@@ -1,5 +1,6 @@
 import { MICRO_HARNESS_COMPONENTS } from "./micro-harness-policy.mjs";
 import { execFileSync } from "node:child_process";
+import { randomUUID } from "node:crypto";
 import { existsSync } from "node:fs";
 import path from "node:path";
 import { defineConfig, devices } from "@playwright/test";
@@ -10,11 +11,13 @@ const chromiumExecutablePath = process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE;
 const localBasePort = externalBaseUrl ? null : getLocalBasePort();
 const configuredTargetDir =
   process.env.PLAYWRIGHT_TARGET_DIR ?? process.env.CARGO_TARGET_DIR;
-// Web servers use fresh ports per run, but their Cargo artifacts should remain
-// shared so Dioxus builds can reuse Cargo's fingerprints and Kache artifacts.
+const playwrightRunsRoot = path.resolve(process.cwd(), "../target/playwright");
+const generatedPlaywrightTargetDir = configuredTargetDir
+  ? null
+  : path.join(playwrightRunsRoot, `run-${process.pid}-${randomUUID()}`);
 const playwrightTargetDir = externalBaseUrl
   ? null
-  : path.resolve(process.cwd(), configuredTargetDir ?? "../target");
+  : path.resolve(configuredTargetDir ?? generatedPlaywrightTargetDir!);
 const baseURL = externalBaseUrl ?? `http://127.0.0.1:${localBasePort}`;
 
 /**
@@ -195,12 +198,15 @@ export default defineConfig({
           : path.join(process.cwd(), "../preview"),
         command: `exec node ../playwright/start-preview.mjs ${playwrightTargetDir}/dx/${targetComponent ?? "preview"}/debug/web/public ${localBasePort} ${targetComponent ?? ""}`,
         port: localBasePort,
-        timeout: 50 * 60 * 1000,
-        reuseExistingServer: false,
-        stdout: "pipe",
         env: {
           ...process.env,
           CARGO_TARGET_DIR: playwrightTargetDir!,
+          ...(process.env.PLAYWRIGHT_TARGET_DIR
+            ? { PLAYWRIGHT_TARGET_DIR: playwrightTargetDir! }
+            : {}),
+          PLAYWRIGHT_OWNED_TARGET_DIR: generatedPlaywrightTargetDir
+            ? playwrightTargetDir!
+            : "",
           PLAYWRIGHT_TARGET_COMPONENT: targetComponent ?? "",
         },
       },

@@ -140,13 +140,24 @@ npm install
 npx stylelint "src/**/*.css"
 ```
 
-To run the Playwright end-to-end tests, use:
+To run the Playwright end-to-end tests, install the browser dependencies and
+use the repository suite runner. The preview launcher establishes the required
+Kache environment itself, including when this command is run outside Mise:
 
 ```sh
 cd playwright
 npm install
-npx playwright test
+npx playwright install --with-deps chromium
+node run-suite.mjs
 ```
+
+Each normal local Playwright invocation creates a collision-resistant, launcher-owned
+Cargo target directory directly beneath `target/playwright` and removes it when the
+preview launcher stops, including failed builds. This keeps concurrent runs isolated
+without retaining per-run targets. `PLAYWRIGHT_TARGET_DIR` or `CARGO_TARGET_DIR` can
+select a caller-owned directory; the launcher preserves that directory and never
+deletes it.
+
 
 ### Running the preview
 

@@ -1,8 +1,10 @@
 import { MICRO_HARNESS_COMPONENTS } from "./micro-harness-policy.mjs";
 import { createReadStream, existsSync, readFileSync, rmSync, statSync } from "node:fs";
 import { createServer } from "node:http";
-import { extname, join, normalize, resolve } from "node:path";
+import { dirname, extname, join, normalize, resolve } from "node:path";
+import { fileURLToPath } from "node:url";
 import { spawn } from "node:child_process";
+import { createKacheBuildEnvironment } from "./kache-build-env.mjs";
 
 // How long to wait for `dx build` to exit cleanly before sending SIGKILL.
 const BUILD_SHUTDOWN_GRACE_MS = 1500;
@@ -46,6 +48,27 @@ if (cliComponentArg && envComponentArg && cliComponentArg !== envComponentArg) {
 
 const componentArg = cliComponentArg || envComponentArg;
 const expectedTarget = componentArg || "preview";
+const explicitPlaywrightTargetDir = process.env.PLAYWRIGHT_TARGET_DIR;
+const targetDir = resolve(
+  explicitPlaywrightTargetDir || process.env.CARGO_TARGET_DIR || join(process.cwd(), "../target"),
+);
+const playwrightRunsRoot = resolve(
+  dirname(fileURLToPath(import.meta.url)),
+  "../target/playwright",
+);
+const ownedTargetMarker = process.env.PLAYWRIGHT_OWNED_TARGET_DIR;
+const ownedPlaywrightTargetDir =
+  ownedTargetMarker === targetDir &&
+  dirname(targetDir) === playwrightRunsRoot &&
+  /^run-\d+-[0-9a-f-]{36}$/i.test(targetDir.slice(playwrightRunsRoot.length + 1))
+    ? targetDir
+    : null;
+
+function cleanupOwnedPlaywrightTarget() {
+  if (ownedPlaywrightTargetDir) {
+    rmSync(ownedPlaywrightTargetDir, { recursive: true, force: true });
+  }
+}
 
 // ─── Build phase ─────────────────────────────────────────────────────────────
 
@@ -113,6 +136,7 @@ async function handleSignal(signal, exitCode) {
   shuttingDown = true;
   shutdownRequest = { exitCode };
   await shutdownBuild(signal);
+  cleanupOwnedPlaywrightTarget();
   process.exit(exitCode);
 }
 
@@ -142,9 +166,6 @@ function validateLaunchRequest() {
   }
 
   const rootDir = resolve(rootArg);
-  const targetDir = resolve(
-    process.env.CARGO_TARGET_DIR || join(process.cwd(), "../target"),
-  );
   const expectedRoot = resolve(
     targetDir,
     "dx",
@@ -210,7 +231,9 @@ async function runBuild() {
 
   // Keep Kache enabled. Kache 0.14.0 understands Dioxus's nested
   // RUSTC_WORKSPACE_WRAPPER invocation.
-  const buildEnv = { ...process.env, MISE_NO_ENV: "1" };
+  // MISE_NO_ENV prevents Dioxus’s nested tool invocation from reloading Mise;
+  // establish the repository’s canonical cache policy before that boundary.
+  const buildEnv = { ...createKacheBuildEnvironment(), MISE_NO_ENV: "1" };
 
   await new Promise((resolve, reject) => {
     buildProcess = spawn("dx", buildArgs, {
@@ -325,6 +348,8 @@ function startPreviewServer(rootArg, portArg) {
 
     const finalizeExit = (code = 0) => {
       cleanupServerHandlers();
+      // Server.close has completed before this function is called on shutdown.
+      cleanupOwnedPlaywrightTarget();
       process.exit(code);
     };
 
@@ -378,6 +403,7 @@ function startPreviewServer(rootArg, portArg) {
 
     server.once("error", (error) => {
       cleanupServerHandlers();
+      cleanupOwnedPlaywrightTarget();
       rejectServer(error);
     });
 
@@ -403,5 +429,6 @@ runBuild()
     }
 
     console.error(error instanceof Error ? error.message : error);
+    cleanupOwnedPlaywrightTarget();
     process.exit(1);
   });

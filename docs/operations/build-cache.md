@@ -58,10 +58,13 @@ disables Mise environment reloading only for `dx` subprocess trees. No
 `rustc-wrapper` is set in `.cargo/config.toml`; environment activation remains
 the single integration point.
 
-Playwright uses the repository `target/` directory by default so its Dioxus
-builds can reuse both Cargo fingerprints and Kache artifacts. Set
-`PLAYWRIGHT_TARGET_DIR` when an isolated target directory is required for
-concurrent runs.
+Normal Playwright invocations use a collision-resistant, launcher-owned Cargo target
+directory directly beneath `target/playwright`. The config passes that path as
+`CARGO_TARGET_DIR` and marks it with `PLAYWRIGHT_OWNED_TARGET_DIR`; the preview
+launcher removes only that marked generated path after shutdown or any build/output
+failure. This keeps concurrent browser runs isolated without retaining per-run
+artifacts. `PLAYWRIGHT_TARGET_DIR` and `CARGO_TARGET_DIR` remain caller-owned
+overrides and are never removed by the launcher.
 
 ## CI
 
