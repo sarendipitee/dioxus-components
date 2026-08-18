@@ -468,18 +468,18 @@ Existing checks:
 cargo test -p dioxus-primitives
 cargo check -p dioxus-components
 cd preview && npx stylelint "src/**/*.css"
-cd playwright && npx playwright test tabs.spec.ts
-cd playwright && npx playwright test schedule.spec.ts
-cd playwright && npx playwright test color-picker.spec.ts
-cd playwright && npx playwright test navbar.spec.ts
-cd playwright && npx playwright test sidebar.spec.ts
+cd playwright && npx playwright test tests/tabs.spec.ts
+cd playwright && npx playwright test tests/schedule.spec.ts
+cd playwright && npx playwright test tests/color-picker.spec.ts
+cd playwright && npx playwright test tests/navbar.spec.ts
+cd playwright && npx playwright test tests/sidebar.spec.ts
 ```
 
 Visual snapshot checks:
 
 ```sh
-cd playwright && npx playwright test preview-visual.spec.ts --update-snapshots
-cd playwright && npx playwright test preview-visual.spec.ts
+cd playwright && npx playwright test tests/preview-visual.spec.ts --update-snapshots
+cd playwright && npx playwright test tests/preview-visual.spec.ts
 ```
 
 Use `--update-snapshots` only when intentionally establishing or accepting a baseline. Migration work should normally run the compare command and investigate diffs before updating snapshots.

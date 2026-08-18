@@ -84,9 +84,11 @@ const MICRO_HARNESS_SPECS = new Set(MICRO_HARNESS_COMPONENTS);
 const previewOnly = process.env.PLAYWRIGHT_PREVIEW_ONLY === "1";
 const SUPPORT_SPECS = ["**/kache-build-env.spec.mjs"];
 
+const testsDir = path.join(playwrightDir, "tests");
+
 function specPattern(component: string): string {
   const basename = existsSync(
-    path.resolve(playwrightDir, `${component}.spec.ts`),
+    path.resolve(testsDir, `${component}.spec.ts`),
   )
     ? component
     : component.replaceAll("_", "-");
@@ -127,7 +129,7 @@ function getTargetComponent(args = process.argv): string | null {
 const targetComponent = getTargetComponent();
 
 export default defineConfig({
-  testDir: playwrightDir,
+  testDir: testsDir,
   testIgnore: [
     ...SUPPORT_SPECS,
     ...(previewOnly ? MICRO_HARNESS_COMPONENTS.map(specPattern) : []),

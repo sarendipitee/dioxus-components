@@ -7,6 +7,7 @@ import { fileURLToPath } from "node:url";
 import { MICRO_HARNESS_COMPONENTS } from "./micro-harness-policy.mjs";
 
 const playwrightDir = dirname(fileURLToPath(import.meta.url));
+const testsDir = join(playwrightDir, "tests");
 const shardIndex = parseShardValue("PLAYWRIGHT_SHARD_INDEX", 1);
 const shardTotal = parseShardValue("PLAYWRIGHT_SHARD_TOTAL", 1);
 
@@ -46,14 +47,14 @@ function parseShardValue(name, fallback) {
 }
 
 function componentSpec(component) {
-  const basename = existsSync(join(playwrightDir, `${component}.spec.ts`))
+  const basename = existsSync(join(testsDir, `${component}.spec.ts`))
     ? component
     : component.replaceAll("_", "-");
   const spec = `${basename}.spec.ts`;
-  if (!existsSync(join(playwrightDir, spec))) {
+  if (!existsSync(join(testsDir, spec))) {
     throw new Error(`Missing Playwright spec for micro harness: ${component}`);
   }
-  return spec;
+  return join(testsDir, spec);
 }
 
 function runPlaywright(args, extraEnv = {}) {

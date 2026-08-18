@@ -4,9 +4,9 @@ import { chmodSync, existsSync, mkdtempSync, mkdirSync, readFileSync, rmSync, wr
 import { fileURLToPath } from "node:url";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
-import { createKacheBuildEnvironment } from "./kache-build-env.mjs";
+import { createKacheBuildEnvironment } from "../kache-build-env.mjs";
 
-const launcherPath = fileURLToPath(new URL("./start-preview.mjs", import.meta.url));
+const launcherPath = fileURLToPath(new URL("../start-preview.mjs", import.meta.url));
 
 function runLauncher({ rootDir, targetDir, environment, ownedTargetDir = "" }) {
   return new Promise((resolve) => {
