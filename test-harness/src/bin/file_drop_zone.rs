@@ -54,7 +54,8 @@ fn App() -> Element {
 
 #[component]
 fn BlockView() -> Element {
-    let hash = use_signal(|| {
+    #[allow(unused_mut)]
+    let mut hash = use_signal(|| {
         #[cfg(target_arch = "wasm32")]
         {
             let window = web_sys::window().unwrap();
@@ -65,6 +66,23 @@ fn BlockView() -> Element {
         #[cfg(not(target_arch = "wasm32"))]
         {
             "".to_string()
+        }
+    });
+
+    #[cfg(target_arch = "wasm32")]
+    use_effect(move || {
+        use wasm_bindgen::closure::Closure;
+        use wasm_bindgen::JsCast;
+        if let Some(window) = web_sys::window() {
+            let closure = Closure::<dyn FnMut()>::new(move || {
+                if let Some(win) = web_sys::window() {
+                    let h = win.location().hash().unwrap_or_default();
+                    hash.set(h.trim_start_matches('#').to_string());
+                }
+            });
+            let _ = window
+                .add_event_listener_with_callback("hashchange", closure.as_ref().unchecked_ref());
+            closure.forget();
         }
     });
 

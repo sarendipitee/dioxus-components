@@ -287,17 +287,7 @@ function startPreviewServer(rootArg, portArg) {
   const port = Number(portArg);
   // Read index.html once at startup; served for every unknown path so the
   // Dioxus WASM router can handle client-side navigation.
-  const rawIndexHtml = readFileSync(join(rootDir, "index.html"));
-  const indexHtml = componentArg
-    ? Buffer.from(
-        rawIndexHtml
-          .toString("utf8")
-          .replace(
-            "</body>",
-            '<script>addEventListener("hashchange", () => location.reload())</script></body>',
-          ),
-      )
-    : rawIndexHtml;
+  const indexHtml = readFileSync(join(rootDir, "index.html"));
 
   const server = createServer((req, res) => {
     const url = new URL(req.url ?? "/", `http://${req.headers.host ?? "127.0.0.1"}`);

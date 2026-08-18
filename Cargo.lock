@@ -8164,6 +8164,7 @@ dependencies = [
  "strum",
  "time",
  "tracing",
+ "wasm-bindgen",
  "web-sys",
 ]
 
