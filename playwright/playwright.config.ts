@@ -5,13 +5,16 @@ import { existsSync } from "node:fs";
 import path from "node:path";
 import { defineConfig, devices } from "@playwright/test";
 
+const playwrightDir = __dirname;
+const workspaceRoot = path.resolve(playwrightDir, "..");
+
 const runHeaded = process.env.PLAYWRIGHT_HEADED === "1";
 const externalBaseUrl = process.env.PLAYWRIGHT_BASE_URL;
 const chromiumExecutablePath = process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE;
 const localBasePort = externalBaseUrl ? null : getLocalBasePort();
 const configuredTargetDir =
   process.env.PLAYWRIGHT_TARGET_DIR ?? process.env.CARGO_TARGET_DIR;
-const playwrightRunsRoot = path.resolve(process.cwd(), "../target/playwright");
+const playwrightRunsRoot = path.resolve(workspaceRoot, "target/playwright");
 const generatedPlaywrightTargetDir = configuredTargetDir
   ? null
   : path.join(playwrightRunsRoot, `run-${process.pid}-${randomUUID()}`);
@@ -83,7 +86,7 @@ const SUPPORT_SPECS = ["**/kache-build-env.spec.mjs"];
 
 function specPattern(component: string): string {
   const basename = existsSync(
-    path.resolve(process.cwd(), `${component}.spec.ts`),
+    path.resolve(playwrightDir, `${component}.spec.ts`),
   )
     ? component
     : component.replaceAll("_", "-");
@@ -91,33 +94,40 @@ function specPattern(component: string): string {
 }
 
 function getTargetComponent(args = process.argv): string | null {
-  const selectedSpecs = args.flatMap((arg) => {
-    const match = arg.match(/(^|.*[\\/])([^\\/]+)\.spec\.ts(?:$|:)/);
-    if (!match) return [];
+  if (process.env.PLAYWRIGHT_TARGET_COMPONENT) {
+    const envComp = process.env.PLAYWRIGHT_TARGET_COMPONENT.replace(/-/g, "_");
+    if (MICRO_HARNESS_SPECS.has(envComp)) return envComp;
+  }
 
-    const specPath = path.resolve(match[1] || ".", `${match[2]}.spec.ts`);
-    return [{
-      component: match[2].replace(/-/g, "_"),
-      specPath,
-    }];
-  });
+  const selectedComponents = new Set<string>();
 
-  if (selectedSpecs.length === 0) return null;
+  for (const arg of args) {
+    if (arg.startsWith("-")) continue;
+    const specMatch = arg.match(/(?:^|[\\/])([^\\/]+)\.spec\.(?:ts|js|mjs)(?:$|:)/);
+    if (specMatch) {
+      const comp = specMatch[1].replace(/-/g, "_");
+      if (MICRO_HARNESS_SPECS.has(comp)) {
+        selectedComponents.add(comp);
+      }
+      continue;
+    }
+    const bareName = arg.trim().replace(/-/g, "_");
+    if (MICRO_HARNESS_SPECS.has(bareName)) {
+      selectedComponents.add(bareName);
+    }
+  }
 
-  const uniqueSpecPaths = new Set(selectedSpecs.map(({ specPath }) => specPath));
-  if (uniqueSpecPaths.size !== 1) return null;
+  if (selectedComponents.size === 1) {
+    return Array.from(selectedComponents)[0];
+  }
 
-  const [{ component, specPath }] = selectedSpecs;
-  const canonicalSpecPath = path.resolve(process.cwd(), `${path.basename(specPath)}`);
-  if (specPath !== canonicalSpecPath) return null;
-
-  return MICRO_HARNESS_SPECS.has(component) ? component : null;
+  return null;
 }
 
 const targetComponent = getTargetComponent();
 
 export default defineConfig({
-  testDir: ".",
+  testDir: playwrightDir,
   testIgnore: [
     ...SUPPORT_SPECS,
     ...(previewOnly ? MICRO_HARNESS_COMPONENTS.map(specPattern) : []),
@@ -202,9 +212,9 @@ export default defineConfig({
         // terminates the web-server process group.
         gracefulShutdown: { signal: "SIGTERM", timeout: 60 * 1000 },
         cwd: targetComponent
-          ? path.join(process.cwd(), "../test-harness")
-          : path.join(process.cwd(), "../preview"),
-        command: `exec node ../playwright/start-preview.mjs ${playwrightTargetDir}/dx/${targetComponent ?? "preview"}/debug/web/public ${localBasePort} ${targetComponent ?? ""}`,
+          ? path.join(workspaceRoot, "test-harness")
+          : path.join(workspaceRoot, "preview"),
+        command: `exec node ${JSON.stringify(path.join(playwrightDir, "start-preview.mjs"))} ${JSON.stringify(path.join(playwrightTargetDir!, "dx", targetComponent ?? "preview", "debug/web/public"))} ${localBasePort} ${targetComponent ?? ""}`,
         port: localBasePort,
         stdout: "pipe",
         env: {

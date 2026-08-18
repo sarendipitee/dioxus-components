@@ -2,7 +2,6 @@
 
 import { spawnSync } from "node:child_process";
 import { existsSync } from "node:fs";
-import { createServer } from "node:net";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { MICRO_HARNESS_COMPONENTS } from "./micro-harness-policy.mjs";
@@ -10,8 +9,6 @@ import { MICRO_HARNESS_COMPONENTS } from "./micro-harness-policy.mjs";
 const playwrightDir = dirname(fileURLToPath(import.meta.url));
 const shardIndex = parseShardValue("PLAYWRIGHT_SHARD_INDEX", 1);
 const shardTotal = parseShardValue("PLAYWRIGHT_SHARD_TOTAL", 1);
-const localBasePort =
-  process.env.PLAYWRIGHT_LOCAL_BASE_PORT ?? String(await findAvailablePort());
 
 if (shardIndex > shardTotal) {
   throw new Error(
@@ -59,23 +56,6 @@ function componentSpec(component) {
   return spec;
 }
 
-function findAvailablePort() {
-  return new Promise((resolve, reject) => {
-    const server = createServer();
-    server.unref();
-    server.once("error", reject);
-    server.listen({ host: "127.0.0.1", port: 0, exclusive: true }, () => {
-      const address = server.address();
-      if (!address || typeof address === "string") {
-        server.close();
-        reject(new Error("Failed to resolve Playwright suite port"));
-        return;
-      }
-      server.close(() => resolve(address.port));
-    });
-  });
-}
-
 function runPlaywright(args, extraEnv = {}) {
   const npx = process.platform === "win32" ? "npx.cmd" : "npx";
   const result = spawnSync(npx, ["playwright", ...args], {
@@ -83,7 +63,6 @@ function runPlaywright(args, extraEnv = {}) {
     stdio: "inherit",
     env: {
       ...process.env,
-      PLAYWRIGHT_LOCAL_BASE_PORT: localBasePort,
       ...extraEnv,
     },
   });
