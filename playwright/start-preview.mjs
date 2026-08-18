@@ -366,6 +366,11 @@ function startPreviewServer(rootArg, portArg) {
       }
 
       serverShuttingDown = true;
+      // Playwright gives this process a graceful-shutdown window so the
+      // launcher can remove its owned target directory. Do not let an active
+      // browser connection hold server.close() open until Playwright force-kills
+      // the process group.
+      server.closeAllConnections?.();
       server.close((error) => {
         serverClosed = true;
 

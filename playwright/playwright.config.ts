@@ -79,6 +79,7 @@ function getLocalBasePort() {
 // keeps config selection and launcher validation fail-closed together.
 const MICRO_HARNESS_SPECS = new Set(MICRO_HARNESS_COMPONENTS);
 const previewOnly = process.env.PLAYWRIGHT_PREVIEW_ONLY === "1";
+const SUPPORT_SPECS = ["**/kache-build-env.spec.mjs"];
 
 function specPattern(component: string): string {
   const basename = existsSync(
@@ -117,9 +118,10 @@ const targetComponent = getTargetComponent();
 
 export default defineConfig({
   testDir: ".",
-  testIgnore: previewOnly
-    ? MICRO_HARNESS_COMPONENTS.map(specPattern)
-    : undefined,
+  testIgnore: [
+    ...SUPPORT_SPECS,
+    ...(previewOnly ? MICRO_HARNESS_COMPONENTS.map(specPattern) : []),
+  ],
   testMatch: targetComponent ? [specPattern(targetComponent)] : undefined,
   /* Run tests in files in parallel */
   fullyParallel: true,
@@ -193,11 +195,18 @@ export default defineConfig({
   webServer: externalBaseUrl
     ? undefined
     : {
+        // The preview web server starts only after dx finishes the WASM build.
+        // A cold or cache-miss build can exceed Playwright's 60-second default.
+        timeout: 5 * 60 * 1000,
+        // Let start-preview clean its owned Cargo target before Playwright
+        // terminates the web-server process group.
+        gracefulShutdown: { signal: "SIGTERM", timeout: 60 * 1000 },
         cwd: targetComponent
           ? path.join(process.cwd(), "../test-harness")
           : path.join(process.cwd(), "../preview"),
         command: `exec node ../playwright/start-preview.mjs ${playwrightTargetDir}/dx/${targetComponent ?? "preview"}/debug/web/public ${localBasePort} ${targetComponent ?? ""}`,
         port: localBasePort,
+        stdout: "pipe",
         env: {
           ...process.env,
           CARGO_TARGET_DIR: playwrightTargetDir!,
