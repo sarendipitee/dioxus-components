@@ -4,10 +4,13 @@ members = [
 	"primitives",
 	"preview",
 	"test-harness",
-	"dioxus-attributes",
 	"dioxus-components",
 	"themes",
 ]
+# Dioxus wraps workspace members with `dx rustc`, which bypasses Kache's
+# reusable compiler cache. Keep this local proc-macro as a path dependency,
+# but compile it as an external package so the outer Kache wrapper can cache it.
+exclude = ["dioxus-attributes"]
 
 [workspace.dependencies]
 dioxus-components = { path = "dioxus-components" }
