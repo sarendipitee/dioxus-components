@@ -15,6 +15,11 @@ CUSTOM_DEMO_OVERRIDES = {
     ("select", "main"): ("select_behavior", "../select_behavior.rs"),
 }
 
+# These preview components include the same demo helper in several demos. The
+# gallery gives each demo its own module tree, while the harness aggregates all
+# demos into one binary crate.
+DUPLICATE_MODULE_COMPONENTS = {"data_table", "schedule"}
+
 
 def validate_custom_demo_overrides():
     for comp_name, demo_hash in CUSTOM_DEMO_OVERRIDES:
@@ -66,11 +71,17 @@ def generate_harness_binary(comp_name):
 
     component_style_lines = ["        DioxusComponentsStyles {},"]
 
-    code_lines = [
+    code_lines = []
+    if comp_name in DUPLICATE_MODULE_COMPONENTS:
+        code_lines.extend([
+            "#![allow(clippy::duplicate_mod)]",
+            "",
+        ])
+    code_lines.extend([
         "use dioxus::prelude::*;",
         "use dioxus_primitives::overlay::OverlayManager;",
         "",
-    ]
+    ])
     code_lines.extend([
         "use dioxus_components::DioxusComponentsStyles;",
         "use dioxus_components_themes::DEFAULT_CSS;",

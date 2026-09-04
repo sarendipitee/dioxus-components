@@ -1,3 +1,5 @@
+#![allow(clippy::duplicate_mod)]
+
 use dioxus::prelude::*;
 use dioxus_primitives::overlay::OverlayManager;
 
