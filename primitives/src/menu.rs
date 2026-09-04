@@ -924,6 +924,12 @@ pub fn MenuCheckboxItem<T: Clone + PartialEq + 'static>(
     let on_checked_change = props.on_checked_change;
     let on_select = props.on_select;
 
+    let checkbox_attributes = attributes!(div {
+        aria_checked: checked,
+        "data-state": if checked { "checked" } else { "unchecked" },
+    });
+    let attributes = merge_attributes(vec![checkbox_attributes, props.attributes]);
+
     rsx! {
         MenuItem {
             value: props.value,
@@ -936,9 +942,7 @@ pub fn MenuCheckboxItem<T: Clone + PartialEq + 'static>(
                 on_checked_change.call(!checked);
                 on_select.call(value);
             },
-            aria_checked: checked,
-            "data-state": if checked { "checked" } else { "unchecked" },
-            attributes: props.attributes,
+            attributes,
             {props.children}
         }
     }
@@ -1022,6 +1026,12 @@ pub fn MenuRadioItem<T: Clone + PartialEq + 'static>(props: MenuRadioItemProps<T
         .is_some_and(|current| current == &value);
     let on_select = props.on_select;
 
+    let radio_attributes = attributes!(div {
+        aria_checked: checked,
+        "data-state": if checked { "checked" } else { "unchecked" },
+    });
+    let attributes = merge_attributes(vec![radio_attributes, props.attributes]);
+
     rsx! {
         MenuItem {
             value: props.value,
@@ -1034,9 +1044,7 @@ pub fn MenuRadioItem<T: Clone + PartialEq + 'static>(props: MenuRadioItemProps<T
                 group.on_value_change.call(value.clone());
                 on_select.call(value);
             },
-            aria_checked: checked,
-            "data-state": if checked { "checked" } else { "unchecked" },
-            attributes: props.attributes,
+            attributes,
             {props.children}
         }
     }
@@ -1250,9 +1258,15 @@ pub fn MenuSubTrigger<T: Clone + PartialEq + 'static>(props: MenuSubTriggerProps
         // trigger can blur while the open signal is propagating; do not clear the
         // shared parent focus state during that handoff.
     });
+    let trigger_attributes = attributes!(div {
+        id: (sub_ctx.trigger_id)(),
+        aria_haspopup: "menu",
+        aria_expanded: open(),
+        "data-state": if open() { "open" } else { "closed" },
+    });
     // Focus is owned by the shared roving controller; item blur must not
     // clear it while a submenu transfers focus through the portal.
-    let attributes = merge_attributes(vec![base, props.attributes]);
+    let attributes = merge_attributes(vec![base, trigger_attributes, props.attributes]);
 
     rsx! {
         div {
@@ -1279,10 +1293,6 @@ pub fn MenuSubTrigger<T: Clone + PartialEq + 'static>(props: MenuSubTriggerProps
                     open_submenu.call(());
                     on_select.call(value);
                 },
-                id: sub_ctx.trigger_id,
-                aria_haspopup: "menu",
-                aria_expanded: open(),
-                "data-state": if open() { "open" } else { "closed" },
                 on_mounted: move |data| trigger_ref.set(Some(data)),
                 attributes,
                 {props.children}
