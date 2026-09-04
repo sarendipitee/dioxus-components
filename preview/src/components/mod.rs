@@ -60,7 +60,7 @@ pub fn category_of(name: &str) -> ComponentCategory {
             ComponentCategory::Combobox
         }
         "navbar" | "sidebar" | "tabs" | "pagination" | "menubar" | "toolbar" | "context_menu"
-        | "dropdown_menu" | "table_of_contents" => ComponentCategory::Navigation,
+        | "dropdown_menu" | "table_of_contents" | "tree_view" => ComponentCategory::Navigation,
         "dialog" | "alert_dialog" | "sheet" | "popover" | "tooltip" | "hover_card" => {
             ComponentCategory::Overlays
         }
@@ -360,13 +360,14 @@ examples!(
         custom_divider,
         persistence
     ],
-    slider[dynamic_range, range],
+    slider[disabled, dynamic_range, field, inverted, range],
     switch,
     tabs[manual, vertical, controlled, pills],
     table_of_contents,
     text_input[description, error, size, sections],
     textarea[outline, fade, ghost, bottom_section, autosize, resize],
     tags_input,
+    tree_view,
     time_input[with_seconds, presets, with_picker],
     time_picker[clearable, seconds_12_hour, duration, presets],
     toast[with_description, permanent, custom_duration, with_action, loading],

@@ -3,22 +3,16 @@ use dioxus_components::slider::*;
 
 #[component]
 pub fn Demo() -> Element {
-    let mut value = use_signal(|| Some(50.0));
-
     rsx! {
         div {
             style: "display: grid; gap: 1rem;",
-            output {
-                aria_live: "polite",
-                "{value().unwrap_or_default():.0}"
-            }
             Slider {
-                label: "Slider",
+                label: "Disabled Slider",
+                disabled: true,
                 min: 0.0,
                 max: 100.0,
                 step: 1.0,
-                value,
-                on_value_change: move |val: f64| value.set(Some(val)),
+                default_value: 35.0,
             }
         }
     }

@@ -4,8 +4,17 @@ use dioxus_primitives::overlay::OverlayManager;
 use dioxus_components::DioxusComponentsStyles;
 use dioxus_components_themes::DEFAULT_CSS;
 
+#[path = "../../../preview/src/components/slider/demos/disabled/mod.rs"]
+mod demo_disabled;
+
 #[path = "../../../preview/src/components/slider/demos/dynamic_range/mod.rs"]
 mod demo_dynamic_range;
+
+#[path = "../../../preview/src/components/slider/demos/field/mod.rs"]
+mod demo_field;
+
+#[path = "../../../preview/src/components/slider/demos/inverted/mod.rs"]
+mod demo_inverted;
 
 #[path = "../../../preview/src/components/slider/demos/main/mod.rs"]
 mod demo_main;
@@ -66,7 +75,10 @@ fn BlockView() -> Element {
     });
 
     match hash().as_str() {
+        "disabled" => rsx! { demo_disabled::Demo {} },
         "dynamic_range" => rsx! { demo_dynamic_range::Demo {} },
+        "field" => rsx! { demo_field::Demo {} },
+        "inverted" => rsx! { demo_inverted::Demo {} },
         "main" => rsx! { demo_main::Demo {} },
         "range" => rsx! { demo_range::Demo {} },
         _ => rsx! { demo_main::Demo {} },
