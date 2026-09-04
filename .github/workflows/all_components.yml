@@ -64,5 +64,8 @@ jobs:
           # Switch to the local versions of dioxus-primitives and dioxus-components
           cargo add dioxus-primitives --path ../primitives
           cargo add dioxus-components --path ../dioxus-components
+          # The component registry command replaces test-harness assets. Restore
+          # preview demo styles and generated harness entry points before compiling.
+          python3 ../scripts/sync-test-harness.py
           # Make sure it still builds
           cargo check --all-features
