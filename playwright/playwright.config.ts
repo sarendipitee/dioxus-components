@@ -1,6 +1,5 @@
 import { MICRO_HARNESS_COMPONENTS } from "./micro-harness-policy.mjs";
 import { execFileSync } from "node:child_process";
-import { randomUUID } from "node:crypto";
 import { existsSync } from "node:fs";
 import path from "node:path";
 import { defineConfig, devices } from "@playwright/test";
@@ -14,13 +13,11 @@ const chromiumExecutablePath = process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE;
 const localBasePort = externalBaseUrl ? null : getLocalBasePort();
 const configuredTargetDir =
   process.env.PLAYWRIGHT_TARGET_DIR ?? process.env.CARGO_TARGET_DIR;
-const playwrightRunsRoot = path.resolve(workspaceRoot, "target/playwright");
-const generatedPlaywrightTargetDir = configuredTargetDir
-  ? null
-  : path.join(playwrightRunsRoot, `run-${process.pid}-${randomUUID()}`);
+// Keep Cargo's target stable across the separate Playwright processes used by
+// run-suite. Set PLAYWRIGHT_TARGET_DIR when concurrent runs need isolation.
 const playwrightTargetDir = externalBaseUrl
   ? null
-  : path.resolve(configuredTargetDir ?? generatedPlaywrightTargetDir!);
+  : path.resolve(configuredTargetDir ?? path.join(workspaceRoot, "target"));
 const baseURL = externalBaseUrl ?? `http://127.0.0.1:${localBasePort}`;
 
 /**
@@ -210,8 +207,8 @@ export default defineConfig({
         // The preview web server starts only after dx finishes the WASM build.
         // A cold or cache-miss build can exceed Playwright's 60-second default.
         timeout: 5 * 60 * 1000,
-        // Let start-preview clean its owned Cargo target before Playwright
-        // terminates the web-server process group.
+        // Give start-preview time to stop dx cleanly before Playwright tears
+        // down the web-server process group.
         gracefulShutdown: { signal: "SIGTERM", timeout: 60 * 1000 },
         cwd: targetComponent
           ? path.join(workspaceRoot, "test-harness")
@@ -225,9 +222,6 @@ export default defineConfig({
           ...(process.env.PLAYWRIGHT_TARGET_DIR
             ? { PLAYWRIGHT_TARGET_DIR: playwrightTargetDir! }
             : {}),
-          PLAYWRIGHT_OWNED_TARGET_DIR: generatedPlaywrightTargetDir
-            ? playwrightTargetDir!
-            : "",
           PLAYWRIGHT_TARGET_COMPONENT: targetComponent ?? "",
         },
       },

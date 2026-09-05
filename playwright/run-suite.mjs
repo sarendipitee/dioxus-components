@@ -8,6 +8,10 @@ import { MICRO_HARNESS_COMPONENTS } from "./micro-harness-policy.mjs";
 
 const playwrightDir = dirname(fileURLToPath(import.meta.url));
 const testsDir = join(playwrightDir, "tests");
+const suiteTargetDir =
+  process.env.PLAYWRIGHT_TARGET_DIR ??
+  process.env.CARGO_TARGET_DIR ??
+  join(playwrightDir, "../target");
 const shardIndex = parseShardValue("PLAYWRIGHT_SHARD_INDEX", 1);
 const shardTotal = parseShardValue("PLAYWRIGHT_SHARD_TOTAL", 1);
 
@@ -23,14 +27,19 @@ const assignedComponents = MICRO_HARNESS_COMPONENTS.filter(
 
 for (const component of assignedComponents) {
   const spec = componentSpec(component);
-  runPlaywright(["test", spec, "--project=chromium"]);
+  runPlaywright(["test", spec, "--project=chromium"], {
+    PLAYWRIGHT_TARGET_DIR: suiteTargetDir,
+  });
 }
 
 const previewArgs = ["test", "--project=chromium"];
 if (shardTotal > 1) {
   previewArgs.push(`--shard=${shardIndex}/${shardTotal}`);
 }
-runPlaywright(previewArgs, { PLAYWRIGHT_PREVIEW_ONLY: "1" });
+runPlaywright(previewArgs, {
+  PLAYWRIGHT_PREVIEW_ONLY: "1",
+  PLAYWRIGHT_TARGET_DIR: suiteTargetDir,
+});
 
 function parseShardValue(name, fallback) {
   const rawValue = process.env[name];
