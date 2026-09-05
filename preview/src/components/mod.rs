@@ -367,7 +367,7 @@ examples!(
     text_input[description, error, size, sections],
     textarea[outline, fade, ghost, bottom_section, autosize, resize],
     tags_input,
-    tree_view,
+    tree_view[data],
     time_input[with_seconds, presets, with_picker],
     time_picker[clearable, seconds_12_hour, duration, presets],
     toast[with_description, permanent, custom_duration, with_action, loading],

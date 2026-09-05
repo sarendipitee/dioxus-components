@@ -1,0 +1,25 @@
+{
+  "name": "tree_view",
+  "description": "Displays nested items with accessible expansion, selection, and keyboard navigation for file browsers, outlines, and hierarchical data.",
+  "authors": [
+    "Dioxus Labs"
+  ],
+  "exclude": [
+    "demos",
+    "docs.md",
+    "component.json"
+  ],
+  "cargoDependencies": [
+    {
+      "name": "dioxus-primitives",
+      "git": "https://github.com/DioxusLabs/components"
+    },
+    {
+      "name": "dioxus-icons",
+      "version": "0.1.0"
+    }
+  ],
+  "globalAssets": [
+    "../../../../themes/default.css"
+  ]
+}

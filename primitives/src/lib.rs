@@ -62,6 +62,8 @@ pub mod toggle;
 pub mod toggle_group;
 pub mod toolbar;
 pub mod tooltip;
+pub mod tree;
+pub mod tree_view;
 pub mod r#virtual;
 pub mod virtual_list;
 

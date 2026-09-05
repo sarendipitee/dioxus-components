@@ -27,5 +27,6 @@ export const MICRO_HARNESS_COMPONENTS = Object.freeze([
   "toggle",
   "tooltip",
   "toggle_group",
+  "tree_view",
   "typography",
 ]);
