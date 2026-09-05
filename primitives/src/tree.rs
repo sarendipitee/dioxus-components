@@ -212,7 +212,6 @@ pub fn use_tree(options: UseTreeOptions) -> TreeController {
             Signal::new(options.initial_expanded.into_iter().collect());
         let selected: Signal<Option<Vec<String>>> = Signal::new(Some(options.initial_selected));
         let set_expanded_state = Callback::new({
-            let expanded = expanded;
             move |(id, is_expanded): (String, bool)| {
                 let mut state = expanded;
                 let mut values = state.write();
@@ -224,14 +223,12 @@ pub fn use_tree(options: UseTreeOptions) -> TreeController {
             }
         });
         let set_expanded_values = Callback::new({
-            let expanded = expanded;
             move |values: HashSet<String>| {
                 let mut state = expanded;
                 state.set(values);
             }
         });
         let set_selected_state = Callback::new({
-            let selected = selected;
             move |values: Vec<String>| {
                 let mut state = selected;
                 state.set(Some(values));
