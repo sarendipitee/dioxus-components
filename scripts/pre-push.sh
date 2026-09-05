@@ -53,6 +53,7 @@ export CARGO_BUILD_JOBS
 
 printf '%s\n' 'Running pre-push checks...'
 cargo check --workspace --all-features
+cargo clippy --workspace --examples --tests --all-features --all-targets -- -D warnings
 cargo test --workspace --lib --bins
 cargo fmt --all -- --check
 
